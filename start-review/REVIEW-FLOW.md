@@ -26,6 +26,8 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 | Read MR description | `glab mr view <id>` |
 | Read MR metadata JSON | `glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'` |
 | Read diff | `glab mr diff <id>` |
+| Read diffstat | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --stat /tmp/mr-<id>.patch` |
+| Read changed paths | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` |
 | Read linked issue | `glab issue view <issue-id>` |
 | Check CI status | `glab mr view <id> -F json | jq '{mr_sha:.sha, pipeline:.pipeline, merge:.detailed_merge_status}'` |
 | Branch CI status | `glab ci status --branch <source-branch> -F json` |
@@ -37,7 +39,7 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 | Reject | `glab mr close <id>` then `glab mr note create <id> --message "<rationale>"` |
 | Pull branch locally | `glab mr checkout <id>` |
 
-For `--state` / `--opened` / output-flag pitfalls and the `glab mr note create` form, see [SKILL.md](SKILL.md) §Essential tooling.
+For `--state` / `--opened` / output-flag pitfalls, the lack of `glab mr diff --stat`, and the `glab mr note create` form, see [SKILL.md](SKILL.md) §Essential tooling.
 
 ## MR pickup
 
@@ -49,7 +51,7 @@ When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise 
 4. Deprioritize drafts, blocked MRs, MRs labeled needs-revision/needs-unblock/WIP, and obviously red-CI MRs unless the user asked for failure triage.
 5. Inspect 3-5 candidates with `glab mr view <id> --comments` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 6. If one MR or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
-7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths from `glab mr diff <id>` headers (or the GitLab changes API) before declaring the set decoupled.
+7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` (or the GitLab changes API) before declaring the set decoupled. Do not use `glab mr diff --stat`; that flag does not exist.
 
 ## Handoff integrity check
 
@@ -68,7 +70,7 @@ Before reading the full diff, validate the builder handoff:
 Use when the user supplies multiple MRs, asks for multiple reviews, or asks to review the next N ready MRs.
 
 1. Resolve candidates first. Collect at least IID, title, source branch, target branch, head SHA, author, labels, CI state, linked issue, and changed paths.
-2. **Read the builder's `Reviewer Lift > Decoupling proof` from each MR description first.** If every MR in the set has a proof and the proofs are mutually consistent (each lists the others' IIDs and the no-overlap claims align with the changed-paths headers you sampled), accept the proof and skip to the integrity-check below. Only re-derive the proof when (a) one or more MRs have no Decoupling proof, (b) the proofs disagree about co-running IIDs, or (c) a sampled `glab mr diff` header contradicts the claimed no-overlap. A set is decoupled only when:
+2. **Read the builder's `Reviewer Lift > Decoupling proof` from each MR description first.** If every MR in the set has a proof and the proofs are mutually consistent (each lists the others' IIDs and the no-overlap claims align with the changed paths you sampled via raw diff + `git apply --numstat`), accept the proof and skip to the integrity-check below. Only re-derive the proof when (a) one or more MRs have no Decoupling proof, (b) the proofs disagree about co-running IIDs, or (c) sampled changed paths contradict the claimed no-overlap. A set is decoupled only when:
    - MRs target the same default branch and are not stacked on each other;
    - linked issues/MR descriptions have no dependency, ordering, or shared blocker;
    - changed paths and behavior-critical surfaces do not overlap;

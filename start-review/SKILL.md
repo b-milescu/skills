@@ -38,6 +38,8 @@ Requires `glab` on PATH, authenticated to the project's GitLab host. If missing 
 | Read MR + threads | `glab mr view <id> --comments` |
 | Read MR metadata JSON | `glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'` |
 | Read diff | `glab mr diff <id>` |
+| Read diffstat | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --stat /tmp/mr-<id>.patch` |
+| Read changed paths | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` |
 | Read linked issue | `glab issue view <issue-id>` |
 | Post report | `glab mr note create <id> --message "$(cat /tmp/report.md)"` |
 | Approve | `glab mr approve <id> --sha <reviewed-sha>` |
@@ -54,6 +56,7 @@ See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full command reference (worktrees, 
 - **`--opened` is deprecated** on `glab issue list` and not present on `glab mr list`. Omit it; pass `--closed` only when you want closed items.
 - Filter MRs with `--not-draft`/`-d/--draft`, `-c/--closed`, `-M/--merged`, `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch`. Output flag is `-F/--output` (`text`|`json`).
 - Filter issues with `-l/--label`, `-a/--assignee=@me`, `--author`, `-m/--milestone`. Output flag on `issue list` is `-O/--output` (not `-F` — that's `--output-format` on issue list).
+- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, pipe the raw patch to git: `glab mr diff <id> --raw --color=never | git apply --stat` or `git apply --numstat`. Do not mask unknown-flag failures with `|| true`; correct the command.
 - `glab mr note <id> --message ...` is deprecated — use `glab mr note create`.
 
 ## MR pickup summary

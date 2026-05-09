@@ -52,6 +52,7 @@ See [BUILD-FLOW.md](BUILD-FLOW.md) for the full command reference (worktree prun
 - **`--opened` is deprecated** on `glab issue list` and not present on `glab mr list`. Omit it; pass `--closed` only when you want closed items.
 - Filter issues with `-l/--label`, `-a/--assignee=@me`, `--author`, `-m/--milestone`. Output flag is `-O/--output` (`text`|`json`).
 - Filter MRs with `--not-draft`/`-d/--draft`, `-c/--closed`, `-M/--merged`, `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch`. Output flag is `-F/--output` (`text`|`json`).
+- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, pipe the raw patch to git: `glab mr diff <id> --raw --color=never | git apply --stat` or `git apply --numstat`. Do not mask unknown-flag failures with `|| true`; correct the command.
 - `glab mr note <id> --message ...` is deprecated — use `glab mr note create`.
 - Default list output is human-scannable; only use `--output json` when piping to `jq`.
 
