@@ -20,10 +20,14 @@ SKILL_DESTS=(
   "$HOME/.pi/agent/skills"
 )
 
-realpath --relative-to=/ / >/dev/null 2>&1 || {
+if realpath --relative-to=/ / >/dev/null 2>&1; then
+  REALPATH=realpath
+elif command -v grealpath >/dev/null 2>&1; then
+  REALPATH=grealpath
+else
   echo "install.sh: GNU realpath required (on macOS: brew install coreutils)" >&2
   exit 1
-}
+fi
 
 mkdir -p "$BIN_DIR"
 
@@ -34,7 +38,7 @@ link() {
     return
   fi
   local rel
-  rel=$(realpath --relative-to="$(dirname "$dest")" "$src")
+  rel=$("$REALPATH" --relative-to="$(dirname "$dest")" "$src")
   ln -sfn "$rel" "$dest"
   printf '  linked:  %s -> %s\n' "$dest" "$rel"
 }
