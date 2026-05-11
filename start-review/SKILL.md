@@ -11,7 +11,7 @@ Review GitLab Merge Requests against project rules and safety invariants. Single
 
 This skill is language- and domain-agnostic; domain-specific safety terms below are examples to map onto the host project's equivalent surfaces. **Load the host project's rulebook first** (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, architecture docs, ADRs). Project rules override this skill where stricter. Reviews live in **GitLab**: read description and diff, leave inline comments where useful, post one structured Review Report comment per MR, and use GitLab's approve/request-changes/merge controls.
 
-For behavior-touching MRs, evaluate test evidence using `tdd` principles: tests should prove observable behavior through public interfaces, not implementation shape. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the behavior tests themselves are weak.
+For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak.
 
 ## Quick start
 
@@ -79,7 +79,7 @@ See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full pickup and review workflow.
 
 - Read linked issue + MR description before the diff.
 - Block on scope creep, live product/runtime/operator external mutation evidence, credential leakage, weakened gates, broken sequencing/locks, missing/weak behavior tests, red/stale CI, or omitted CI/local gate evidence without explanation.
-- Use `tdd` principles to judge test quality: public-interface behavior coverage matters more than implementation-coupled assertions. Missing red-first trace is usually an evidence request, not a standalone blocker.
+- Apply `tdd` principles to test quality (see intro for the missing-red-first rule).
 - Treat style as non-blocking unless it creates concrete hazard or waste.
 - Multiple MR review requires separate Review Reports, decisions, and reviewed SHAs; never batch approvals into one report.
 - Approval is allowed when no Must Fix remains, all `OQ-N` are answered/escalated, the head SHA equals the reviewed SHA, and CI/checks are green, explicitly waived, or pending under the CI-pending auto-merge policy (builder local gate PASS, pipeline belongs to the reviewed SHA when exposed, and GitLab merge checks enforce green CI before merge).

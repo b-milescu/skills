@@ -75,13 +75,11 @@ Every non-trivial task needs a GitLab issue describing the user/operator-visible
 
 1. What user/operator-visible behavior changes (CLI, daemon, state, metrics, docs)?
 2. Which safety invariant is closest: external mutation, sequencing, locking, immutable baselines, gates, secrets, schemas, deploy?
-3. Which public interface or operator-visible seam should tests exercise?
-4. What first tracer-bullet test proves one behavior, and what failure should RED show?
-5. If TDD is not applicable, why?
-6. What evidence defines correctness (specs, ADRs, prior reviews, vendor quirks)?
-7. What is out of scope?
-8. If refactoring, is any surface behavior-touching? See [SAFETY.md](SAFETY.md).
-9. What is the merge authority for this MR: approval-only, reviewer may merge, queue auto-merge, human release, or project default?
+3. If TDD is not applicable, why?
+4. What evidence defines correctness (specs, ADRs, prior reviews, vendor quirks)?
+5. What is out of scope?
+6. If refactoring, is any surface behavior-touching? See [SAFETY.md](SAFETY.md).
+7. What is the merge authority for this MR: approval-only, reviewer may merge, queue auto-merge, human release, or project default?
 
 ## Check gate discovery
 
@@ -114,14 +112,9 @@ Before marking ready or requesting review, validate the MR handoff:
    - `git pull --ff-only origin <default>`. If FF fails, stop and ask; do not force.
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
-3. Load relevant context: rulebook, architecture docs, source/tests, ADRs. For behavior-touching work, also load the `tdd` skill before writing tests/code.
+3. Load relevant context: rulebook, architecture docs, source/tests, ADRs.
 4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely (push the first commit or use `glab mr create --push` after committing). Use `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block (Reviewed SHA, CI pipeline, Local gate, RED, GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, Delta since last ready push) — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
-5. Implement behavior-touching changes with TDD vertical slices (per `tdd` skill):
-   - **RED:** one failing test for one observable behavior; run focused command, see expected failure.
-   - **GREEN:** minimal code to pass; rerun focused command.
-   - **REFACTOR:** only while green; rerun tests after each step.
-   - Commit coherent green slices, referencing issue/slice. Revision commits cite review-thread items (e.g. `MF-1: <fix>`).
-   - For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
+5. For behavior-touching changes, implement vertical slices per the `tdd` skill. Commit coherent green slices, referencing issue/slice; revision commits cite review-thread items (e.g. `MF-1: <fix>`). For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live product/runtime/operator external systems as regression evidence.
 8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill `Reviewed SHA` (MR head), `CI pipeline` (URL/ID + status + commit SHA when available), `Local gate` (PASS/FAIL/N/A + exact command), `RED`/`GREEN` one-liners, `Changed paths`, `Touched safety surfaces`, `Decoupling proof` (or N/A), `Reviewer Focus` (1-2 areas to read hardest, or "none"), `Open Questions` (count + IDs, or "none"), `Merge authority`, and `Delta since last ready push`. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.

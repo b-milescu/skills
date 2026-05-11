@@ -77,7 +77,7 @@ For revision rounds N≥2, load only the latest commit range and unresolved thre
 
 ## Tests: strong vs weak
 
-Use `tdd` principles for behavior-touching MRs: tests should verify observable behavior through public interfaces and survive internal refactors. A red-green trace is strong supporting evidence. Absence of red-first proof alone is not a blocker unless project rules require strict TDD or the final tests/evidence are weak.
+Apply `tdd` principles for behavior-touching MRs. A red-green trace is strong supporting evidence; absence of red-first proof alone is not a blocker unless project rules require strict TDD or the final tests/evidence are weak.
 
 Strong evidence: reported RED command and expected failure followed by GREEN result; table-driven pure cases for gates; fake adapters or recorded HTTP, not live network; real temp dirs for git/lock/state; fake clocks/sleeps for orchestration; assert calls *not* made in observe/failure branches; assert exact CLI stdout JSON where consumed; cover success and failure for safety-critical recovery.
 
