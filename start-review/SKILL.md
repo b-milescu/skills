@@ -15,7 +15,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles: tests 
 
 ## Quick start
 
-1. Verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Run `gl-preflight` to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-CHECKLIST.md](REVIEW-CHECKLIST.md) before reviewing any diff.
 3. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
 4. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs in the current project (or a decoupled set).
@@ -28,25 +28,28 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles: tests 
 
 ## Essential tooling
 
-Requires `glab` on PATH, authenticated to the project's GitLab host. If missing or unauthenticated, stop and ask the user to install it or run `glab auth login`. Prefer `-F json` for machine-readable output; do not use `glab ci status --mr`. Never paste secrets into report comments, screenshots, or `Code I Ran` output.
+Requires `glab` on PATH, authenticated to the project's GitLab host. Run `gl-preflight` (it's the real auth check; `glab auth status` is noisy when multiple hosts are configured). If it fails, stop and ask the user to install `glab` or run `glab auth login`. Prefer `-F json` for machine-readable output; do not use `glab ci status --mr`. Never paste secrets into report comments, screenshots, or `Code I Ran` output.
+
+**`gl-*` wrappers.** Composite GitLab operations (multi-step pipelines, JSON projections, file-based MR commands) live in `~/.local/bin/` as `gl-<verb>` scripts (source: `~/.agent-skills/scripts/gitlab/`). Prefer them in skill flows — they normalize the noisy bits (no `glab mr diff --stat`, deprecated `glab mr note <id>`, etc.). Run any wrapper with `--help` for usage. Direct `glab` is fine for simple read calls; see flag pitfalls below.
 
 | Action | Command |
 |---|---|
-| Confirm project | `git rev-parse --show-toplevel && glab repo view` |
+| Preflight (glab + repo) | `gl-preflight` |
 | List candidate MRs | `glab mr list --not-draft -F json --per-page 50` |
 | View current branch MR | `glab mr view` |
 | Read MR + threads | `glab mr view <id> --comments` |
-| Read MR metadata JSON | `glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'` |
+| Read MR metadata JSON | `gl-mr-metadata <id>` |
 | Read diff | `glab mr diff <id>` |
-| Read diffstat | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --stat /tmp/mr-<id>.patch` |
-| Read changed paths | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` |
+| Read diffstat | `gl-mr-diffstat <id>` |
+| Read changed paths | `gl-mr-changed-paths <id>` |
 | Read linked issue | `glab issue view <issue-id>` |
-| Post report | `glab mr note create <id> --message "$(cat /tmp/report.md)"` |
+| Read MR CI/SHA/merge triple | `gl-mr-ci <id>` |
+| Post report | `gl-mr-comment <id> /tmp/report.md` |
 | Approve | `glab mr approve <id> --sha <reviewed-sha>` |
 | Merge approved MR | `glab mr merge <id> --yes --sha <reviewed-sha>` |
 | Queue auto-merge (checks pending) | `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>` |
 | Request changes | `glab mr update <id> --label "needs-revision"` |
-| Reject | `glab mr close <id>` then `glab mr note create <id> --message "<rationale>"` |
+| Reject | `glab mr close <id>` then `gl-mr-comment <id> /tmp/rationale.md` |
 
 See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full command reference (worktrees, CI status, branch CI, etc.).
 
@@ -56,7 +59,7 @@ See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full command reference (worktrees, 
 - **`--opened` is deprecated** on `glab issue list` and not present on `glab mr list`. Omit it; pass `--closed` only when you want closed items.
 - Filter MRs with `--not-draft`/`-d/--draft`, `-c/--closed`, `-M/--merged`, `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch`. Output flag is `-F/--output` (`text`|`json`).
 - Filter issues with `-l/--label`, `-a/--assignee=@me`, `--author`, `-m/--milestone`. Output flag on `issue list` is `-O/--output` (not `-F` — that's `--output-format` on issue list).
-- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, pipe the raw patch to git: `glab mr diff <id> --raw --color=never | git apply --stat` or `git apply --numstat`. Do not mask unknown-flag failures with `|| true`; correct the command.
+- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, prefer the wrappers (`gl-mr-diffstat <id>`, `gl-mr-changed-paths <id>`); they pipe the raw patch through `git apply --stat`/`--numstat`. If hand-rolling, do not mask unknown-flag failures with `|| true`; correct the command.
 - `glab mr note <id> --message ...` is deprecated — use `glab mr note create`.
 
 ## MR pickup summary

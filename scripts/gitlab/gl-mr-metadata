@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# gl-mr-metadata — print the canonical MR metadata projection used by build/review skills.
+
+set -euo pipefail
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -lt 1 ]]; then
+  cat <<'USAGE'
+Usage: gl-mr-metadata <mr-id>
+
+Prints a JSON object with the MR fields that build/review flows actually use:
+  iid, title, state, source_branch, target_branch, sha, author (username),
+  pipeline, detailed_merge_status, web_url
+
+Requires glab + jq.
+USAGE
+  [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]] && exit 0 || exit 2
+fi
+
+command -v jq >/dev/null 2>&1 || { echo "gl-mr-metadata: jq required" >&2; exit 1; }
+glab mr view "$1" -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'

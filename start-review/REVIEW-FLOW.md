@@ -9,12 +9,15 @@ Detailed workflow for `start-review`. Read before selecting MR(s), commenting, a
 
 Builder and reviewer may share the same GitLab account/PAT — review independence comes from session/context separation, not GitLab identity. Approval is reviewer-driven. If the reviewer approves, approve in GitLab with the reviewed SHA. Merge immediately or queue auto-merge only when the builder/project-declared `Merge authority` allows it; otherwise stop after approval and report the reviewed SHA. For multiple MRs, approval and merge/auto-merge happen independently per MR.
 
-## Full `glab` reference
+## Full `glab` / `gl-*` reference
+
+Composite operations are wrapped as `gl-<verb>` scripts on PATH (source: `~/.agent-skills/scripts/gitlab/`). Prefer them — they're documented in [SKILL.md](SKILL.md) §Essential tooling. Single-shot `glab` calls stay direct.
 
 | Action | Command |
 |---|---|
-| Confirm auth | `command -v glab && glab auth status` |
-| Confirm current project | `git rev-parse --show-toplevel && glab repo view` |
+| Preflight (glab + repo) | `gl-preflight` |
+| Detect default branch | `gl-repo-default-branch` |
+| Confirm current project | `glab repo view` |
 | Confirm current project JSON | `glab repo view -F json | jq '{name,web_url,default_branch}'` |
 | List worktrees | `git worktree list` |
 | Add review worktree from MR ref | `git fetch origin +refs/merge-requests/<id>/head:refs/tmp/review/mr-<id> && git worktree add --detach <path> refs/tmp/review/mr-<id>` |
@@ -24,19 +27,19 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 | View current branch MR | `glab mr view` |
 | Read MR + threads | `glab mr view <id> --comments` |
 | Read MR description | `glab mr view <id>` |
-| Read MR metadata JSON | `glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'` |
+| Read MR metadata JSON | `gl-mr-metadata <id>` |
 | Read diff | `glab mr diff <id>` |
-| Read diffstat | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --stat /tmp/mr-<id>.patch` |
-| Read changed paths | `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` |
+| Read diffstat | `gl-mr-diffstat <id>` |
+| Read changed paths | `gl-mr-changed-paths <id>` |
 | Read linked issue | `glab issue view <issue-id>` |
-| Check CI status | `glab mr view <id> -F json | jq '{mr_sha:.sha, pipeline:.pipeline, merge:.detailed_merge_status}'` |
+| Check CI status | `gl-mr-ci <id>` |
 | Branch CI status | `glab ci status --branch <source-branch> -F json` |
-| Post Review Report | `glab mr note create <id> --message "$(cat /tmp/report.md)"` |
+| Post Review Report | `gl-mr-comment <id> /tmp/report.md` |
 | Approve | `glab mr approve <id> --sha <reviewed-sha>` |
 | Merge approved MR | `glab mr merge <id> --yes --sha <reviewed-sha>` |
 | Queue auto-merge (checks pending) | `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>` |
 | Request changes | `glab mr update <id> --label "needs-revision"` |
-| Reject | `glab mr close <id>` then `glab mr note create <id> --message "<rationale>"` |
+| Reject | `glab mr close <id>` then `gl-mr-comment <id> /tmp/rationale.md` |
 | Pull branch locally | `glab mr checkout <id>` |
 
 For `--state` / `--opened` / output-flag pitfalls, the lack of `glab mr diff --stat`, and the `glab mr note create` form, see [SKILL.md](SKILL.md) §Essential tooling.
@@ -45,13 +48,13 @@ For `--state` / `--opened` / output-flag pitfalls, the lack of `glab mr diff --s
 
 When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick one MR or a decoupled set from the **current GitLab project**:
 
-1. Confirm `glab` exists/auths and cwd is the intended git repo (`command -v glab`, `glab auth status`, `git rev-parse --show-toplevel`, `glab repo view`; use `glab repo view -F json` for machine-readable repo metadata — not `--json`). If not in a GitLab-backed repo, stop and ask.
+1. Run `gl-preflight` to confirm `glab` resolves to the cwd repo. (Note: `glab repo view -F json` — not `--json` — is the machine-readable form for repo metadata.) If preflight fails, stop and ask.
 2. If the current branch has an MR (`glab mr view`), prefer it when the user says "this branch" or the branch is clearly under review.
 3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled ready-for-review, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
 4. Deprioritize drafts, blocked MRs, MRs labeled needs-revision/needs-unblock/WIP, and obviously red-CI MRs unless the user asked for failure triage.
 5. Inspect 3-5 candidates with `glab mr view <id> --comments` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 6. If one MR or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
-7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never > /tmp/mr-<id>.patch && git apply --numstat /tmp/mr-<id>.patch` (or the GitLab changes API) before declaring the set decoupled. Do not use `glab mr diff --stat`; that flag does not exist.
+7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `gl-mr-changed-paths <id>` (or the GitLab changes API) before declaring the set decoupled. Do not use `glab mr diff --stat`; that flag does not exist.
 
 ## Handoff integrity check
 
@@ -99,11 +102,11 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 5. Check labels/status, changed paths, and declared safety-critical surfaces without changing approval eligibility solely due to label absence/mismatch.
 6. **Sweep `Reviewer Focus` first** — read those areas hardest before walking the full diff (`glab mr diff <id>`) with the description as a map. Note your findings in the Review Report's `Reviewer Focus Sweep` section even when nothing is wrong.
 7. Walk the categories in [REVIEW-CHECKLIST.md](REVIEW-CHECKLIST.md). For behavior-touching MRs, apply `tdd` test-quality principles when judging evidence.
-8. Verify CI status against the lifted `CI pipeline` value: `glab mr view <id> -F json | jq '{mr_sha:.sha, pipeline:.pipeline, merge:.detailed_merge_status}'` (do not rely on `glab ci status --mr`), or `glab ci status --branch <source-branch> -F json` for branch pipeline state. When GitLab exposes the pipeline commit SHA, it must equal the reviewed SHA before green CI counts. Flag stale/mismatched CI.
+8. Verify CI status against the lifted `CI pipeline` value: `gl-mr-ci <id>` (do not rely on `glab ci status --mr`), or `glab ci status --branch <source-branch> -F json` for branch pipeline state. When GitLab exposes the pipeline commit SHA, it must equal the reviewed SHA before green CI counts. Flag stale/mismatched CI.
 9. Pull and run targeted tests in that MR's worktree when behavior needs confirmation, tests look light, you suspect a bug, or migration/CLI/health behavior is easier to verify by execution. Do **not** run mutating commands.
 10. **Address every `OQ-N` from the MR description in the report's `Open Questions Addressed` section.** For each: answer it, escalate to human, or downgrade to an evidence request. An MR cannot be approved while OQs sit unanswered.
 11. Post inline comments for specific lines where useful.
-12. Post one top-level **Review Report** comment per MR via `glab mr note create <id> --message "$(cat /tmp/report.md)"` using `templates/review-report.md`. Fill **Reviewer** metadata as `@reviewer — <model-id>` (e.g. `@reviewer — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing.
+12. Post one top-level **Review Report** comment per MR via `gl-mr-comment <id> /tmp/report.md` using `templates/review-report.md`. Fill **Reviewer** metadata as `@reviewer — <model-id>` (e.g. `@reviewer — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing.
 13. **Re-read MR metadata immediately before approving.** If `sha` no longer matches the SHA you reviewed (builder pushed during your review), re-diff the new commits before approving — never approve a SHA you haven't read.
 14. Decide per MR via GitLab controls: approve, request changes, or reject. Approval uses `glab mr approve <id> --sha <reviewed-sha>`. Merge or queue auto-merge for that MR's reviewed SHA only when `Merge authority` allows it.
 

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# gl-mr-changed-paths — print numstat (added/removed/path) for an MR's diff.
+
+set -euo pipefail
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" || $# -lt 1 ]]; then
+  cat <<'USAGE'
+Usage: gl-mr-changed-paths <mr-id>
+
+Fetches the MR's raw patch and pipes it through `git apply --numstat`.
+Useful for decoupling checks across multiple MRs.
+USAGE
+  [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]] && exit 0 || exit 2
+fi
+
+glab mr diff "$1" --raw --color=never | git apply --numstat

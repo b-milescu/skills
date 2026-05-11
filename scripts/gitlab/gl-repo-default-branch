@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# gl-repo-default-branch — print the current project's default branch name.
+
+set -euo pipefail
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<'USAGE'
+Usage: gl-repo-default-branch
+
+Prints the default branch name for the current GitLab project, e.g. "main".
+Requires glab + jq. Wraps: glab repo view -F json | jq -r .default_branch
+USAGE
+  exit 0
+fi
+
+command -v jq >/dev/null 2>&1 || { echo "gl-repo-default-branch: jq required" >&2; exit 1; }
+glab repo view -F json | jq -er '.default_branch'

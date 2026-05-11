@@ -15,7 +15,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill â€
 
 ## Quick start
 
-1. Verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Run `gl-preflight` to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [SAFETY.md](SAFETY.md) before changing files.
 3. Read [BUILD-FLOW.md](BUILD-FLOW.md) before selecting issue(s), creating/updating MR(s), commenting, or marking ready.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.
@@ -28,20 +28,23 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill â€
 
 ## Essential tooling
 
-Requires `glab` on PATH, authenticated to the project's GitLab host. If missing or unauthenticated, stop and ask the user to install it or run `glab auth login`. Never paste secrets into MR descriptions, comments, CI logs, or screenshots.
+Requires `glab` on PATH, authenticated to the project's GitLab host. Run `gl-preflight` (it's the real auth check; `glab auth status` is noisy when multiple hosts are configured). If it fails, stop and ask the user to install `glab` or run `glab auth login`. Never paste secrets into MR descriptions, comments, CI logs, or screenshots.
+
+**`gl-*` wrappers.** Composite GitLab operations (multi-step pipelines, JSON projections, file-based MR commands) live in `~/.local/bin/` as `gl-<verb>` scripts (source: `~/.agent-skills/scripts/gitlab/`). Prefer them in skill flows â€” they normalize the noisy bits (no `glab mr diff --stat`, deprecated `glab mr note <id>`, etc.). Run any wrapper with `--help` for usage. Direct `glab` is fine for simple read calls; see flag pitfalls below.
 
 | Action | Command |
 |---|---|
-| Confirm project | `git rev-parse --show-toplevel && glab repo view` |
+| Preflight (glab + repo) | `gl-preflight` |
+| Detect default branch | `gl-repo-default-branch` |
 | List candidate issues | `glab issue list --per-page 50` |
 | Read issue | `glab issue view <id>` |
 | Add issue worktree | `git worktree add -b <branch> <path> origin/<default-branch>` |
 | Push source branch for early MR | `git push -u origin <branch>` |
-| Create Draft MR | `glab mr create --draft --target-branch <default-branch> --source-branch <branch> --title "<title>" --description "$(cat /tmp/packet.md)"` |
-| Update MR description | `glab mr update <id> --description "$(cat /tmp/packet.md)"` |
+| Create Draft MR | `gl-mr-create-draft <target-branch> <source-branch> "<title>" /tmp/packet.md` |
+| Update MR description | `gl-mr-update-description <id> /tmp/packet.md` |
 | Mark ready | `glab mr update <id> --ready` |
 | Request reviewer | `glab mr update <id> --reviewer <username>` |
-| Post comment | `glab mr note create <id> --message "$(cat /tmp/comment.md)"` |
+| Post comment | `gl-mr-comment <id> /tmp/comment.md` |
 | Check CI for branch | `glab ci status --branch <branch>` |
 
 See [BUILD-FLOW.md](BUILD-FLOW.md) for the full command reference (worktree prune, MR labels, pipeline view, etc.).
@@ -52,7 +55,7 @@ See [BUILD-FLOW.md](BUILD-FLOW.md) for the full command reference (worktree prun
 - **`--opened` is deprecated** on `glab issue list` and not present on `glab mr list`. Omit it; pass `--closed` only when you want closed items.
 - Filter issues with `-l/--label`, `-a/--assignee=@me`, `--author`, `-m/--milestone`. Output flag is `-O/--output` (`text`|`json`).
 - Filter MRs with `--not-draft`/`-d/--draft`, `-c/--closed`, `-M/--merged`, `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch`. Output flag is `-F/--output` (`text`|`json`).
-- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, pipe the raw patch to git: `glab mr diff <id> --raw --color=never | git apply --stat` or `git apply --numstat`. Do not mask unknown-flag failures with `|| true`; correct the command.
+- **No `--stat` flag on `glab mr diff`.** Supported useful flags are `--raw`, `--color`, and `-R/--repo`. For diffstat or numstat, prefer the wrappers (`gl-mr-diffstat <id>`, `gl-mr-changed-paths <id>`); they pipe the raw patch through `git apply --stat`/`--numstat`. If hand-rolling, do not mask unknown-flag failures with `|| true`; correct the command.
 - `glab mr note <id> --message ...` is deprecated â€” use `glab mr note create`.
 - Default list output is human-scannable; only use `--output json` when piping to `jq`.
 
