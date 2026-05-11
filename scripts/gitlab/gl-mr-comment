@@ -17,4 +17,4 @@ id="$1"
 msg="$2"
 [[ -f "$msg" ]] || { echo "gl-mr-comment: message file not found: $msg" >&2; exit 1; }
 
-glab mr note create "$id" --message "$(cat "$msg")"
+glab mr note "$id" --message "$(cat "$msg")"
