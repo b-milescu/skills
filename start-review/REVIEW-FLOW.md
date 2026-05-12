@@ -1,6 +1,6 @@
 # Start Review Flow
 
-Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and `glab` flag pitfalls.
+Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide for `glab`/`gl-*` command syntax and flag pitfalls.
 
 ## Review modes
 
@@ -9,40 +9,9 @@ Detailed workflow for `start-review`. Read before selecting MR(s), commenting, a
 
 Builder and reviewer may share the same GitLab account/PAT — review independence comes from session/context separation, not GitLab identity. Approval is reviewer-driven. If the reviewer approves, approve in GitLab with the reviewed SHA. Merge immediately or queue auto-merge only when the builder/project-declared `Merge authority` allows it; otherwise stop after approval and report the reviewed SHA. For multiple MRs, approval and merge/auto-merge happen independently per MR.
 
-## Full `glab` / `gl-*` reference
+## GitLab tooling reference
 
-Composite operations are wrapped as `gl-<verb>` scripts on PATH (source: `~/.agent-skills/scripts/gitlab/`). Prefer them — they're documented in [SKILL.md](SKILL.md) §Essential tooling. Single-shot `glab` calls stay direct.
-
-| Action | Command |
-|---|---|
-| Preflight (glab + repo) | `gl-preflight` |
-| Detect default branch | `gl-repo-default-branch` |
-| Confirm current project | `glab repo view` |
-| Confirm current project JSON | `glab repo view -F json | jq '{name,web_url,default_branch}'` |
-| List worktrees | `git worktree list` |
-| Add review worktree from MR ref | `git fetch origin +refs/merge-requests/<id>/head:refs/tmp/review/mr-<id> && git worktree add --detach <path> refs/tmp/review/mr-<id>` |
-| Remove clean worktree | `git worktree remove <path>` |
-| Remove review temp ref | `git update-ref -d refs/tmp/review/mr-<id>` |
-| List candidate MRs | `glab mr list --not-draft -F json --per-page 50` |
-| View current branch MR | `glab mr view` |
-| Read MR + threads | `glab mr view <id> --comments` |
-| Read MR description | `glab mr view <id>` |
-| Read MR metadata JSON | `gl-mr-metadata <id>` |
-| Read diff | `glab mr diff <id>` |
-| Read diffstat | `gl-mr-diffstat <id>` |
-| Read changed paths | `gl-mr-changed-paths <id>` |
-| Read linked issue | `glab issue view <issue-id>` |
-| Check CI status | `gl-mr-ci <id>` |
-| Branch CI status | `glab ci status --branch <source-branch> -F json` |
-| Post Review Report | `gl-mr-comment <id> /tmp/report.md` |
-| Approve | `glab mr approve <id> --sha <reviewed-sha>` |
-| Merge approved MR | `glab mr merge <id> --yes --sha <reviewed-sha>` |
-| Queue auto-merge (checks pending) | `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>` |
-| Request changes | `glab mr update <id> --label "needs-revision"` |
-| Reject | `glab mr close <id>` then `gl-mr-comment <id> /tmp/rationale.md` |
-| Pull branch locally | `glab mr checkout <id>` |
-
-For `--state` / `--opened` / output-flag pitfalls, the lack of `glab mr diff --stat`, and the `glab mr note create` form, see [SKILL.md](SKILL.md) §Essential tooling.
+The command reference intentionally lives in the host project's issue-tracker guide (in this repo, `docs/agents/issue-tracker.md`). Use it for preflight/auth, wrapper commands, issue/MR/CI syntax, worktree snippets, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
 
 ## MR pickup
 

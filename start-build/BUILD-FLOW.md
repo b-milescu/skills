@@ -1,39 +1,10 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and `glab` flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide for `glab`/`gl-*` command syntax and flag pitfalls.
 
-## Full `glab` / `gl-*` reference
+## GitLab tooling reference
 
-Composite operations are wrapped as `gl-<verb>` scripts on PATH (source: `~/.agent-skills/scripts/gitlab/`). Prefer them — they're documented in [SKILL.md](SKILL.md) §Essential tooling. Single-shot `glab` calls stay direct.
-
-| Action | Command |
-|---|---|
-| Preflight (glab + repo) | `gl-preflight` |
-| Detect default branch | `gl-repo-default-branch` |
-| Confirm current project | `glab repo view` |
-| List worktrees | `git worktree list` |
-| Add issue worktree | `git worktree add -b <branch> <path> origin/<default-branch>` |
-| Remove clean worktree | `git worktree remove <path>` |
-| Prune stale worktree metadata | `git worktree prune` |
-| List candidate issues (scan) | `glab issue list --per-page 50` |
-| List candidate issues (script) | `glab issue list --output json --per-page 50` |
-| Filter issues by label | `glab issue list --label "<label>" --per-page 30` |
-| Filter issues assigned to me | `glab issue list --assignee=@me --per-page 30` |
-| Read issue | `glab issue view <id>` |
-| List existing MRs (spot dupes/renovate) | `glab mr list --per-page 20` |
-| Push source branch for early MR | `git push -u origin <branch>` |
-| Open Draft MR | `gl-mr-create-draft <target-branch> <source-branch> "<title>" /tmp/packet.md` |
-| Update description | `gl-mr-update-description <id> /tmp/packet.md` |
-| Mark ready | `glab mr update <id> --ready` |
-| Request reviewer | `glab mr update <id> --reviewer <username>` |
-| Post comment | `gl-mr-comment <id> /tmp/comment.md` |
-| Add/change label | `glab mr update <id> --label "<label>"` |
-| View MR state (no comments) | `glab mr view <id>` |
-| View MR threads | `glab mr view <id> --comments` |
-| Check CI status for branch | `glab ci status --branch <branch>` |
-| View a specific pipeline | `glab ci view --pipelineid <pipeline-id>` |
-
-`glab ci status --branch <branch>` prints job-by-job statuses plus the rolled-up pipeline state. Use it to verify CI on a freshly-pushed commit; do not poll in a tight loop. When recording CI evidence, include pipeline URL or ID, status, and commit SHA when GitLab exposes it; stale green CI for an older SHA is not evidence for the current MR head. `glab mr create` infers `--source-branch` from the current checkout, but passing it explicitly is harmless and makes scripted/agent flows reproducible. For early Draft MRs, the source branch must exist remotely — push the first commit (`git push -u origin <branch>`) or use `glab mr create --push` when you have committed changes. For `--state` / `--opened` / output-flag pitfalls, see [SKILL.md](SKILL.md) §Essential tooling.
+The command reference intentionally lives in the host project's issue-tracker guide (in this repo, `docs/agents/issue-tracker.md`). Use it for preflight/auth, wrapper commands, issue/MR/CI syntax, worktree snippets, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
 
 ## Issue pickup
 
