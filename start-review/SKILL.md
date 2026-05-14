@@ -15,7 +15,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## Quick start
 
-1. Run `gl-preflight` to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-CHECKLIST.md](REVIEW-CHECKLIST.md) before reviewing any diff.
 3. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
 4. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs in the current project (or a decoupled set).
@@ -28,9 +28,9 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## Essential tooling
 
-Use the host project's issue-tracker guide as the single source of truth for `glab`, `gl-*` wrappers, command snippets, and flag pitfalls (in this repo, `docs/agents/issue-tracker.md`, loaded through the project rulebook). Keep this skill focused on workflow, review evidence, and decision policy.
+Use the host project's issue-tracker guide as the single source of truth for `glab` command snippets and flag pitfalls. If the project has none, load `local-gitlab`. Keep this skill focused on workflow, review evidence, and decision policy.
 
-Minimum invariants still apply everywhere: `glab` must be installed/authenticated, `gl-preflight` must pass before GitLab operations, wrappers should be preferred for composite/file-based MR actions, and secrets must never be pasted into report comments, screenshots, or `Code I Ran` output. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
+Minimum invariants still apply everywhere: `glab` must be installed/authenticated, direct preflight from `local-gitlab` must pass before GitLab operations, file-backed report comments should use direct `glab mr note create <id> --message "$(cat file)"`, and secrets must never be pasted into report comments, screenshots, or `Code I Ran` output. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
 
 ## MR pickup summary
 

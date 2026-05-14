@@ -15,7 +15,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Quick start
 
-1. Run `gl-preflight` to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [SAFETY.md](SAFETY.md) before changing files.
 3. Read [BUILD-FLOW.md](BUILD-FLOW.md) before selecting issue(s), creating/updating MR(s), commenting, or marking ready.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.
@@ -28,9 +28,9 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Essential tooling
 
-Use the host project's issue-tracker guide as the single source of truth for `glab`, `gl-*` wrappers, command snippets, and flag pitfalls (in this repo, `docs/agents/issue-tracker.md`, loaded through the project rulebook). Keep this skill focused on workflow and handoff policy.
+Use the host project's issue-tracker guide as the single source of truth for `glab` command snippets and flag pitfalls. If the project has none, load `local-gitlab`. Keep this skill focused on workflow and handoff policy.
 
-Minimum invariants still apply everywhere: `glab` must be installed/authenticated, `gl-preflight` must pass before GitLab operations, wrappers should be preferred for composite/file-based MR actions, and secrets must never be pasted into MR descriptions, comments, CI logs, or screenshots. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
+Minimum invariants still apply everywhere: `glab` must be installed/authenticated, direct preflight from `local-gitlab` must pass before GitLab operations, file-backed MR descriptions/comments should use direct `glab ... --description "$(cat file)"` / `glab ... --message "$(cat file)"`, and secrets must never be pasted into MR descriptions, comments, CI logs, or screenshots. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
 
 ## Issue pickup summary
 

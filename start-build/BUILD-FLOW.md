@@ -1,16 +1,16 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide for `glab`/`gl-*` command syntax and flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
 
 ## GitLab tooling reference
 
-The command reference intentionally lives in the host project's issue-tracker guide (in this repo, `docs/agents/issue-tracker.md`). Use it for preflight/auth, wrapper commands, issue/MR/CI syntax, worktree snippets, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
+The command reference intentionally lives in the host project's issue-tracker guide, or in the `local-gitlab` skill when a project has no guide. Use it for preflight/auth, issue/MR/CI syntax, worktree snippets, file-backed comments/descriptions, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
 
 ## Issue pickup
 
 When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick one issue or a decoupled set from the **current GitLab project**:
 
-1. Run `gl-preflight` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
+1. Run the direct preflight from `local-gitlab` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
 2. List open issues (`glab issue list --per-page 50`; add `--output json` only if you need `jq`). Narrow with `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate. Prefer issues that are unassigned or `@me`, ready/triaged, with clear acceptance criteria, fit one MR, not blocked/confidential/security-sensitive unless requested.
 3. Deprioritize blocked, needs-info, needs-human, in-progress/WIP labels, or issues with an existing open MR. Infer from repo docs if labels differ.
 4. Inspect 3-5 candidates with `glab issue view <id>` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize ID, title, labels, assignee, suitability, coupling risk.
@@ -31,7 +31,7 @@ Use when the user supplies multiple issues, asks for multiple tasks, or requests
 4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
    - `git status --porcelain` empty;
    - `git fetch origin`;
-   - detect default branch (`gl-repo-default-branch`, or project docs if jq isn't available);
+   - detect default branch (`glab repo view "$repo_url" -F json | jq -er '.default_branch'`, or project docs if jq isn't available);
    - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
 5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
 6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** List the co-running MR IIDs and why decoupled (no file/module overlap, no shared migrations/locks/lockfiles, tests independent). Also keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this rather than re-deriving it from each MR's metadata.
@@ -79,7 +79,7 @@ Before marking ready or requesting review, validate the MR handoff:
 2. For a single issue, start clean from latest default branch:
    - `git status --porcelain` empty. If dirty, stop and ask — never auto-stash, reset, or clean.
    - `git fetch origin`.
-   - `git checkout <default>` (check via `gl-repo-default-branch` if not `main`).
+   - `git checkout <default>` (check via `glab repo view "$repo_url" -F json | jq -er '.default_branch'` if not `main`).
    - `git pull --ff-only origin <default>`. If FF fails, stop and ask; do not force.
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
@@ -108,7 +108,7 @@ Use `templates/review-packet-compact.md` when the diff is simple enough that a s
 If blocked for more than 2 hours:
 
 1. Keep the MR in Draft.
-2. Post `templates/stuck-packet.md` as an MR comment via `gl-mr-comment <id> templates/stuck-packet.md` (after filling it).
+2. Post `templates/stuck-packet.md` as an MR comment after filling it: `glab mr note create <id> --message "$(cat templates/stuck-packet.md)"`.
 3. Apply a `needs-unblock` label.
 4. Request review explicitly for unblocking.
 5. List ranked hypotheses.
