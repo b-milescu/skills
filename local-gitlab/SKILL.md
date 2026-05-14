@@ -1,6 +1,12 @@
 ---
 name: local-gitlab
-description: Works with local/self-hosted GitLab projects using the glab CLI directly: repository/auth preflight, default-branch lookup, issue/MR pickup, metadata, CI, diffs, file-backed comments/descriptions, approvals, and merges. Use when a task needs GitLab issue or Merge Request operations through glab, especially local/private GitLab, or when start-build/start-review needs issue-tracker command guidance.
+description: >-
+  Works with local/self-hosted GitLab projects using the glab CLI directly:
+  repository/auth preflight, default-branch lookup, issue/MR pickup, metadata, CI,
+  diffs, file-backed comments/descriptions, approvals, and merges. Use when a task
+  needs GitLab issue or Merge Request operations through glab, especially
+  local/private GitLab, or when start-build/start-review needs issue-tracker
+  command guidance.
 ---
 
 # Local GitLab via glab
