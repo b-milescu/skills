@@ -75,13 +75,48 @@ glab mr diff <id> --raw --color=never | git apply --numstat
 glab mr diff <id> --color=never
 ```
 
-### Comments, approval, and merge
+### Comments, review decisions, approval, and merge
+
+Use file-backed messages for long reports/comments. This avoids shell escaping problems and keeps secrets out of pasted command lines.
 
 ```bash
 glab mr note create <id> --message "$(cat /tmp/report.md)"
 glab issue note create <id> --message "$(cat /tmp/comment.md)"
+```
 
+Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read.
+
+```bash
+reviewed_sha="<sha-you-reviewed>"
+current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
+[ "$current_sha" = "$reviewed_sha" ] || {
+  echo "MR head changed: current=$current_sha reviewed=$reviewed_sha" >&2
+  exit 1
+}
+```
+
+Request changes: post the Review Report, then apply the repo's revision label (example: `needs-revision`; use the project's actual label vocabulary).
+
+```bash
+glab mr note create <id> --message "$(cat /tmp/report.md)"
+glab mr update <id> --label needs-revision --yes
+```
+
+After a revision is verified, remove the revision label if the project uses one.
+
+```bash
+glab mr update <id> --unlabel needs-revision --yes
+```
+
+Approve the exact reviewed SHA.
+
+```bash
 glab mr approve <id> --sha "$reviewed_sha"
+```
+
+Merge or queue auto-merge only when project policy / MR `Merge authority` allows it, and always bind to the reviewed SHA.
+
+```bash
 glab mr merge <id> --yes --sha "$reviewed_sha"
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
 ```
