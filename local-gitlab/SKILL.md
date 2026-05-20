@@ -18,12 +18,11 @@ Run from the GitLab-backed git worktree:
 ```bash
 command -v glab >/dev/null || { echo "glab missing"; exit 1; }
 git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
-branch="$(git branch --show-current 2>/dev/null || true)"
-remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
-[ -n "$remote" ] && [ "$remote" != "." ] || remote=origin
-repo_url="$(git remote get-url "$remote" 2>/dev/null || git remote get-url origin)"
+remote="$(git config --get "branch.$(git branch --show-current).remote" 2>/dev/null)"
+repo_url="$(git remote get-url "${remote:-origin}" 2>/dev/null || git remote get-url origin)"
 glab repo view "$repo_url" >/dev/null || { echo "glab cannot access repo"; exit 1; }
-default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')"
+default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')" \
+  || { echo "no default_branch"; exit 1; }
 ```
 
 Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/host. `glab auth status` is useful, but successful `glab repo view "$repo_url"` is the real local-project auth check.
@@ -50,8 +49,9 @@ glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
 ### Merge Request creation and updates
 
 ```bash
-# Create/update with a file-backed description.
-glab mr create --draft \
+# Create with a file-backed description. Add --push when the source branch
+# is not yet on the remote (first-commit MR open); omit if already pushed.
+glab mr create --draft --push \
   --target-branch "$default_branch" \
   --source-branch "$source_branch" \
   --title "$title" \
@@ -62,22 +62,29 @@ glab mr update <id> --description "$(cat /tmp/review-packet.md)"
 glab mr update <id> --ready
 ```
 
-### MR metadata, CI, and diffs
+### MR pickup, metadata, CI, and diffs
 
 ```bash
+# Pickup
+glab mr view                                                 # MR for the current branch (no id)
+glab mr list --not-draft -F json --per-page 50               # open non-draft MRs (filter with -a/-r/-l/-t)
+
+# Metadata: one canonical projection + one decision-time projection
 glab mr view <id> --comments
-glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,sha,author:.author.username,pipeline:.pipeline,detailed_merge_status,web_url}'
-glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'
+glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,author:.author.username,web_url}'
+glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'
+
+# CI: read the MR's pipeline field above, or query by branch
 glab ci status --branch "$source_branch" -F json
 
-glab mr diff <id> --raw --color=never | git apply --stat
+# Diffs
 glab mr diff <id> --raw --color=never | git apply --numstat
 glab mr diff <id> --color=never
 ```
 
 ### Comments, review decisions, approval, and merge
 
-Use file-backed messages for long reports/comments. This avoids shell escaping problems and keeps secrets out of pasted command lines.
+Use file-backed messages for long reports/comments — avoids shell escaping problems.
 
 ```bash
 glab mr note create <id> --message "$(cat /tmp/report.md)"
@@ -120,6 +127,13 @@ Merge or queue auto-merge only when project policy / MR `Merge authority` allows
 glab mr merge <id> --yes --sha "$reviewed_sha"
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
 ```
+
+## Known glab pitfalls
+
+- `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`.
+- `glab mr diff` has **no** `--stat` flag. Use `glab mr diff <id> --raw --color=never | git apply --numstat` for a path-level changeset.
+- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via `glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'`.
+- Before treating green CI as evidence: the pipeline's commit SHA (when GitLab exposes it) must equal the MR head SHA — stale green CI is a real risk after a post-ready push.
 
 ## Troubleshooting
 
