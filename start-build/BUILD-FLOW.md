@@ -1,21 +1,11 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, the Issue pickup summary, and the Essential tooling pointer, plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
 
-## GitLab tooling reference
-
-The command reference intentionally lives in the host project's issue-tracker guide, or in the `local-gitlab` skill when a project has no guide. Use it for preflight/auth, issue/MR/CI syntax, worktree snippets, file-backed comments/descriptions, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
-
-## Issue pickup
-
-When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick one issue or a decoupled set from the **current GitLab project**:
+## Issue pickup (operational extras to SKILL.md summary)
 
 1. Run the direct preflight from `local-gitlab` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
-2. List open issues (`glab issue list --per-page 50`; add `--output json` only if you need `jq`). Narrow with `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate. Prefer issues that are unassigned or `@me`, ready/triaged, with clear acceptance criteria, fit one MR, not blocked/confidential/security-sensitive unless requested.
-3. Deprioritize blocked, needs-info, needs-human, in-progress/WIP labels, or issues with an existing open MR. Infer from repo docs if labels differ.
-4. Inspect 3-5 candidates with `glab issue view <id>` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize ID, title, labels, assignee, suitability, coupling risk.
-5. If one issue or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
-6. Claim issues only when project convention is clear (e.g. self-assign or `in-progress` label). Do not create/mutate labels casually.
+2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `--output json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
 
 ## Multiple issue worktree mode
 
