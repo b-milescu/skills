@@ -4,11 +4,9 @@ These rules protect safety boundaries while implementing GitLab issues. Project-
 
 ## Non-negotiables
 
-Violations must be fixed or explicitly accepted/waived in the MR before approval.
+Violations must be fixed or explicitly accepted/waived in the MR before approval. SKILL.md's Essential safety summary owns the entry-level rules (external mutations, credentials, adapters, scope, behavior-change tests, TDD); the bullets below add detail not in SKILL.md.
 
-- **No unintended effects on product/runtime/operator external systems.** During development/review, do not call mutating APIs, send messages, modify shared state, or trigger production actions unless the human explicitly asked for an operator action. Tests use fakes/recorded fixtures, never live endpoints. GitLab issue/MR comments, labels, approvals, and merges are allowed only as prescribed by this workflow and project rules.
-- **No raw external calls outside approved adapters.** New direct HTTP/SDK/CLI calls bypassing the project's adapter layer require ADR-level justification.
-- **Never touch or expose credentials.** Don't read, print, edit, commit, or summarize secret stores. Don't log API keys, auth headers, or sensitive payloads. Never paste secrets into MR descriptions, comments, CI logs, or screenshots.
+- **Credential operational detail.** Beyond "never touch credentials": don't read, print, edit, commit, or summarize secret stores; don't log API keys, auth headers, or sensitive payloads; never paste secrets into MR descriptions, comments, CI logs, or screenshots.
 - **Stay inside the approved domain envelope.** No new venues, scopes, capabilities, or rule changes unless a human approved it and the rulebook/docs changed.
 - **Don't relax safety gates casually.** Removing guard errors, weakening dry-run/observe semantics, or enabling enforce/production paths must be explicit in the issue/MR with tests and reviewer-accepted rationale.
 - **Preserve protective sequencing.** Multi-step flows that protect invariants keep their full sequence and never leave the system unprotected without escalation.
@@ -18,10 +16,8 @@ Violations must be fixed or explicitly accepted/waived in the MR before approval
 - **Pure engines stay pure.** Deterministic rule modules don't read files, call APIs/DB, or use wall-clock time internally.
 - **State changes go through typed/atomic paths.** Use the project's repository/transaction abstractions, not ad-hoc writes. Required state fields fail loud; never coerce missing critical values to defaults.
 - **Migrations are append-only.** Never edit a migration that may have run outside a throwaway DB. Add a new numbered migration and test it.
-- **Every behavior change has tests** with meaningful assertions.
 - **Behavior-touching refactors require regression evidence.** See below.
 - **Project's full check gate green before requesting review.** Run the gate locally (lint, format, typecheck, full test suite, shellcheck/etc as the project defines) before pushing. Once the local gate is green and the branch is pushed, mark the MR ready immediately — do not block ready-marking on CI; CI is the reviewer's clean-checkout safety net, not a builder-side wait. Wait for CI before ready only when the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or when the change touches CI infrastructure itself; in those cases, say so in the MR. Record CI pipeline URL/ID/status/SHA when available so reviewers can detect stale green CI.
-- **No scope creep.** Log follow-ups as separate GitLab issues; don't drive-by refactor unrelated modules in this MR.
 
 ## Behavior-touching refactors
 
