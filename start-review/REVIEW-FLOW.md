@@ -17,13 +17,13 @@ The command reference intentionally lives in the host project's issue-tracker gu
 
 When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick one MR or a decoupled set from the **current GitLab project**:
 
-1. Run the direct preflight from `local-gitlab` to confirm `glab` resolves to the cwd repo. (Note: `glab repo view -F json` — not `--json` — is the machine-readable form for repo metadata.) If preflight fails, stop and ask.
+1. Run the direct preflight from `local-gitlab` to confirm `glab` resolves to the cwd repo. If preflight fails, stop and ask.
 2. If the current branch has an MR (`glab mr view`), prefer it when the user says "this branch" or the branch is clearly under review.
 3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled ready-for-review, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
 4. Deprioritize drafts, blocked MRs, MRs labeled needs-revision/needs-unblock/WIP, and obviously red-CI MRs unless the user asked for failure triage.
 5. Inspect 3-5 candidates with `glab mr view <id> --comments` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 6. If one MR or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
-7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never | git apply --numstat` (or the GitLab changes API) before declaring the set decoupled. Do not use `glab mr diff --stat`; that flag does not exist.
+7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never | git apply --numstat` (or the GitLab changes API) before declaring the set decoupled.
 
 ## Handoff integrity check
 
@@ -71,7 +71,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 5. Check labels/status, changed paths, and declared safety-critical surfaces without changing approval eligibility solely due to label absence/mismatch.
 6. **Sweep `Reviewer Focus` first** — read those areas hardest before walking the full diff (`glab mr diff <id>`) with the description as a map. Note your findings in the Review Report's `Reviewer Focus Sweep` section even when nothing is wrong.
 7. Walk the review categories: scope match, strategy/safety invariants, architecture boundaries, correctness (edges, recovery, exact-decimal math, concurrency, timestamps), tests/evidence, external-API safety (adapters/quirks/redaction), state/DB/migrations (typed models, atomic writes, append-only migrations), observability/ops (metrics, health, runbooks), security/credentials, and engineering quality. For behavior-touching MRs, apply `tdd` test-quality principles when judging evidence.
-8. Verify CI status against the lifted `CI pipeline` value: `glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'` (do not rely on `glab ci status --mr`), or `glab ci status --branch <source-branch> -F json` for branch pipeline state. When GitLab exposes the pipeline commit SHA, it must equal the reviewed SHA before green CI counts. Flag stale/mismatched CI.
+8. Verify CI status against the lifted `CI pipeline` value: `glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'`, or `glab ci status --branch <source-branch> -F json` for branch pipeline state. When GitLab exposes the pipeline commit SHA, it must equal the reviewed SHA before green CI counts. Flag stale/mismatched CI.
 9. Pull and run targeted tests in that MR's worktree when behavior needs confirmation, tests look light, you suspect a bug, or migration/CLI/health behavior is easier to verify by execution. Do **not** run mutating commands.
 10. **Address every `OQ-N` from the MR description in the report's `Open Questions Addressed` section.** For each: answer it, escalate to human, or downgrade to an evidence request. An MR cannot be approved while OQs sit unanswered.
 11. Post inline comments for specific lines where useful.
