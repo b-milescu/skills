@@ -17,7 +17,7 @@ Violations must be fixed or explicitly accepted/waived in the MR before approval
 - **State changes go through typed/atomic paths.** Use the project's repository/transaction abstractions, not ad-hoc writes. Required state fields fail loud; never coerce missing critical values to defaults.
 - **Migrations are append-only.** Never edit a migration that may have run outside a throwaway DB. Add a new numbered migration and test it.
 - **Behavior-touching refactors require regression evidence.** See below.
-- **Project's full check gate green before requesting review.** Run the gate locally before pushing. See [BUILD-FLOW.md](BUILD-FLOW.md) §Implementation flow step 9 for the full CI-ready policy (when to mark ready, when to wait, and pipeline SHA tracking).
+- **Project's full check gate green before requesting review.** Run the gate locally before pushing. See [BUILD-FLOW.md §Implementation flow](BUILD-FLOW.md#implementation-flow) step 9 for the full CI-ready policy (when to mark ready, when to wait, and pipeline SHA tracking).
 
 ## Behavior-touching refactors
 

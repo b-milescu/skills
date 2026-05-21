@@ -21,11 +21,11 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
-3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see REVIEW-FLOW.md §MR pickup).
-4. For multiple MRs, keep only a clearly decoupled set; use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode].
-5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` block into the matching Review Report fields [see §Handoff integrity check].
+3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup)).
+4. For multiple MRs, keep only a clearly decoupled set; use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
+5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` block into the matching Review Report fields [see §Handoff integrity check](REVIEW-FLOW.md#handoff-integrity-check).
 6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
-7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure].
+7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
 8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
 9. Post one Review Report per MR via `templates/review-report.md` and decide independently.
 10. **SHA discipline:** approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
