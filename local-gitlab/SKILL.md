@@ -18,7 +18,8 @@ Run from the GitLab-backed git worktree:
 ```bash
 command -v glab >/dev/null || { echo "glab missing"; exit 1; }
 git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
-remote="$(git config --get "branch.$(git branch --show-current).remote" 2>/dev/null)"
+branch="$(git branch --show-current)"
+remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
 repo_url="$(git remote get-url "${remote:-origin}" 2>/dev/null || git remote get-url origin)"
 glab repo view "$repo_url" >/dev/null || { echo "glab cannot access repo"; exit 1; }
 default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')" \
@@ -32,6 +33,8 @@ Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/h
 - Use direct `glab`, `git`, and `jq` commands.
 - Verify uncertain syntax with `glab <subcommand> --help`; `glab` flags vary by command/version.
 - Prefer `-F json` for `glab repo view`, `glab issue view`, `glab mr view`, and `glab mr list`; use `-O json` for `glab issue list`.
+- Treat `glab mr list` output as candidate-discovery data only; use `glab mr view <id> -F json` for decision-grade MR SHA, pipeline, and merge status.
+- Create temp/artifact directories in the same shell command before redirecting into them. Do not rely on another parallel tool call to create shared temp paths.
 - Never paste secrets/tokens into issues, MRs, comments, CI logs, screenshots, or command output summaries.
 - Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated product/runtime/operator mutations.
 
@@ -67,14 +70,20 @@ glab mr update <id> --ready
 ```bash
 # Pickup
 glab mr view                                                 # MR for the current branch (no id)
-glab mr list --not-draft -F json --per-page 50               # open non-draft MRs (filter with -a/-r/-l/-t)
+glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-r/-l/-t)
 
-# Metadata: one canonical projection + one decision-time projection
+# Store review artifacts safely (create the directory in this command)
+mr_id="<id>"
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/glab-mr-${mr_id}.XXXXXX")"
+glab mr view "$mr_id" --comments > "$run_dir/mr-comments.txt"
+glab mr view "$mr_id" -F json > "$run_dir/mr.json"
+glab mr diff "$mr_id" --color=never > "$run_dir/diff.patch"
+
+# Metadata: descriptive projection
 glab mr view <id> --comments
 glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,author:.author.username,web_url}'
-glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'
 
-# CI: read the MR's pipeline field above, or query by branch
+# Branch CI snapshot (decision-time SHA/pipeline/merge lives below under "Decision-time CI check")
 glab ci status --branch "$source_branch" -F json
 
 # Diffs
@@ -91,7 +100,7 @@ glab mr note create <id> --message "$(cat /tmp/report.md)"
 glab issue note create <id> --message "$(cat /tmp/comment.md)"
 ```
 
-Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read.
+Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Posting the report comment doesn't depend on SHA — re-run the SHA guard below immediately before approve/merge.
 
 ```bash
 reviewed_sha="<sha-you-reviewed>"
@@ -101,6 +110,14 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
   exit 1
 }
 ```
+
+Decision-time CI check:
+
+```bash
+glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'
+```
+
+If `pipeline.sha` is exposed, it must equal `reviewed_sha` before green CI counts. If the builder-reported pipeline was superseded by a newer pipeline on the same SHA, use the current MR pipeline in the Review Report and note the supersession.
 
 Request changes: post the Review Report, then apply the repo's revision label (example: `needs-revision`; use the project's actual label vocabulary).
 
@@ -115,25 +132,26 @@ After a revision is verified, remove the revision label if the project uses one.
 glab mr update <id> --unlabel needs-revision --yes
 ```
 
-Approve the exact reviewed SHA.
+Approve the exact reviewed SHA. Merge or queue auto-merge only when project policy / MR `Merge authority` allows it, and always bind to the reviewed SHA.
 
 ```bash
 glab mr approve <id> --sha "$reviewed_sha"
-```
 
-Merge or queue auto-merge only when project policy / MR `Merge authority` allows it, and always bind to the reviewed SHA.
-
-```bash
+# If not merging immediately after approval, re-run the SHA guard first.
 glab mr merge <id> --yes --sha "$reviewed_sha"
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
+
+# Verify merge result:
+glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,detailed_merge_status,web_url}'
 ```
 
 ## Known glab pitfalls
 
 - `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`.
 - `glab mr diff` has **no** `--stat` flag. Use `glab mr diff <id> --raw --color=never | git apply --numstat` for a path-level changeset.
-- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via `glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'`.
-- Before treating green CI as evidence: the pipeline's commit SHA (when GitLab exposes it) must equal the MR head SHA — stale green CI is a real risk after a post-ready push.
+- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via the canonical projection in the "Decision-time CI check" subsection above.
+- `glab mr list -F json` can return sparse or stale fields (for example `pipeline: null`) even when `glab mr view <id> -F json` has the current pipeline. Use list output for pickup triage only.
+- Before treating green CI as evidence: the current MR pipeline's commit SHA (when GitLab exposes it) must equal the MR head SHA — stale green CI is a real risk after a post-ready push. Builder-reported pipeline IDs can be superseded; verify the current MR pipeline immediately before approval/merge.
 
 ## Troubleshooting
 
