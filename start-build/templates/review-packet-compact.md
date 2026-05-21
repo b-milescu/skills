@@ -1,11 +1,5 @@
 # Review Packet (compact)
 
-<!--
-Compact variant for simple tasks: docs-only, typo, formatting, tests-only
-with no runtime safety impact, or dependency bump with no API/runtime impact.
-Paste as the MR description. Delete HTML comments before submitting.
--->
-
 ## Metadata
 
 | Field | Value |
@@ -37,17 +31,11 @@ Paste as the MR description. Delete HTML comments before submitting.
 
 ## Summary
 
-<!-- One paragraph: what changed and why. -->
-
 ## Scope
 
 ### In scope
 
-<!-- Bullet list. -->
-
 ### Out of scope
-
-<!-- Usually: "No runtime behavior, external paths, state schema, gates, or domain rules changed." -->
 
 ## Acceptance Criteria Evidence
 
@@ -64,8 +52,4 @@ Paste as the MR description. Delete HTML comments before submitting.
 
 ## Test Evidence
 
-<!-- Commands run and result, or CI link. State TDD: N/A for compact-eligible non-behavior changes. For docs-only, a targeted markdown/read check may be enough. -->
-
 ## Follow-ups
-
-<!-- "None" or linked follow-up issues. -->
