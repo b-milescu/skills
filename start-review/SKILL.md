@@ -1,6 +1,10 @@
 ---
 name: start-review
-description: Reviews one or more GitLab Merge Requests against project rules, issue scope, diff, CI, TDD-style behavior-test evidence, safety invariants, credentials, locks, gates, and migrations. It can pick up multiple decoupled MRs using isolated git worktrees, then posts structured Review Reports, approves/request-changes/rejects, and merges or auto-merges approved MRs when merge authority allows. Use when the user asks to start a review, pick up/review MR(s), review this branch, review the next MR(s), or evaluate Review Packets.
+description: >-
+  Review GitLab MRs against project rules, safety invariants, CI, and TDD test
+  evidence. Post Review Reports, approve/request-changes/reject, merge when
+  authority allows. Trigger: start a review, pick up/review MR(s), review this
+  branch, evaluate Review Packets.
 ---
 
 # Start Review

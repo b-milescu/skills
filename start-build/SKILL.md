@@ -1,6 +1,9 @@
 ---
 name: start-build
-description: Starts build tasks by picking up and implementing one or more scoped GitLab issues for the current project, using test-driven development for behavior-touching changes. It can discover/select open issues via glab, use isolated git worktrees for multiple decoupled issues, branch from main/default, implement with red-green-refactor slices, run the project's check gate, open Draft GitLab MRs with Review Packets, and handle review revisions. Use when the user asks to start a build, pick up/build/implement issue(s), address GitLab issue(s), fix bugs, add features, or open Merge Requests.
+description: >-
+  Implement GitLab issues: pick up scoped issues, TDD red-green-refactor slices,
+  open Draft MRs with Review Packets, handle review revisions. Trigger: start a
+  build, pick up/implement issue(s), fix bugs, add features, open MRs.
 ---
 
 # Start Build
@@ -26,7 +29,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 7. Open a Draft MR early per issue once the source branch exists remotely (push the first commit or use `glab mr create --push`) with `Closes #<id>` and the appropriate Review Packet template. Fill the **Reviewer Lift** block using the stable handoff schema so the reviewer can copy structured values directly into their report: Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, and Delta since last ready push.
 8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it.
-10. Update the MR description (including the full Reviewer Lift schema), mark ready, and request review (`start-review` or human) via the project-approved protocol. **Don't wait for CI when the local gate is green** — see [BUILD-FLOW.md](BUILD-FLOW.md) §Implementation flow step 9 for the narrow exceptions and the CI-pending review policy. **If you push commits after marking ready**, post a delta comment with old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive; update the relevant Reviewer Lift fields (see `templates/review-packet.md`). Use the Revision Packet for substantive post-ready changes. Same GitLab username/PAT for builder and reviewer is allowed.
+10. Update the MR description (including the full Reviewer Lift schema), mark ready, and request review (`start-review` or human) via the project-approved protocol. Mark ready when the local gate is green — see [BUILD-FLOW.md](BUILD-FLOW.md) §Implementation flow step 9. Post-ready pushes require a delta comment and updated Reviewer Lift (see [BUILD-FLOW.md](BUILD-FLOW.md) §Post-ready push protocol). Same GitLab username/PAT for builder and reviewer is allowed.
 
 ## Essential tooling
 
@@ -67,4 +70,4 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 
 ## Done
 
-Every selected issue has its own MR approved; TDD/test evidence recorded or explicitly N/A; CI/check gate green, pending under protected auto-merge, or explicitly waived per MR; docs/runbooks updated; no secrets exposed; no live unintended PRO external side effects; MRs merged only when merge authority allows; issues closed via `Closes #<id>` or project workflow.
+See [SAFETY.md](SAFETY.md) §Done criteria for the canonical completion checklist.

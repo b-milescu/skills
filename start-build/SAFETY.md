@@ -17,7 +17,7 @@ Violations must be fixed or explicitly accepted/waived in the MR before approval
 - **State changes go through typed/atomic paths.** Use the project's repository/transaction abstractions, not ad-hoc writes. Required state fields fail loud; never coerce missing critical values to defaults.
 - **Migrations are append-only.** Never edit a migration that may have run outside a throwaway DB. Add a new numbered migration and test it.
 - **Behavior-touching refactors require regression evidence.** See below.
-- **Project's full check gate green before requesting review.** Run the gate locally (lint, format, typecheck, full test suite, shellcheck/etc as the project defines) before pushing. Once the local gate is green and the branch is pushed, mark the MR ready immediately — do not block ready-marking on CI; CI is the reviewer's clean-checkout safety net, not a builder-side wait. Wait for CI before ready only when the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or when the change touches CI infrastructure itself; in those cases, say so in the MR. Record CI pipeline URL/ID/status/SHA when available so reviewers can detect stale green CI.
+- **Project's full check gate green before requesting review.** Run the gate locally before pushing. See [BUILD-FLOW.md](BUILD-FLOW.md) §Implementation flow step 9 for the full CI-ready policy (when to mark ready, when to wait, and pipeline SHA tracking).
 
 ## Behavior-touching refactors
 
