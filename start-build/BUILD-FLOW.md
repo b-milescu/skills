@@ -120,6 +120,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 ### review-packet.md
 
 - **Reviewer Lift** — Structured handoff so the Reviewer can copy these values directly into the Review Report. Keep current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
+- **Review gate** — Records whether the MR went through the mandatory subagent review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
 - **In scope** — Bullet list of intended and actual changes.
 - **Out of scope** — Explicitly name adjacent work not done. Open separate issues for follow-ups.
@@ -139,6 +140,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 ### review-packet-compact.md
 
 - Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact.
+- **Review gate** — Records whether the MR went through the mandatory subagent review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed and why.
 - **In scope** — Bullet list.
 - **Out of scope** — Usually: "No runtime behavior, external paths, state schema, gates, or domain rules changed."
