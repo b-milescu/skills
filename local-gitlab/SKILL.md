@@ -19,7 +19,7 @@ Run from the GitLab-backed git worktree:
 command -v glab >/dev/null || { echo "glab missing"; exit 1; }
 git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
 branch="$(git branch --show-current)"
-remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
+remote="$(git config --get "branch.${branch}.remote" 2>/dev/null)"
 repo_url="$(git remote get-url "${remote:-origin}" 2>/dev/null || git remote get-url origin)"
 glab repo view "$repo_url" >/dev/null || { echo "glab cannot access repo"; exit 1; }
 default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')" \
@@ -70,7 +70,7 @@ glab mr update <id> --ready
 ```bash
 # Pickup
 glab mr view                                                 # MR for the current branch (no id)
-glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-r/-l/-t)
+glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-l/-t, --reviewer)
 
 # Store review artifacts safely (create the directory in this command)
 mr_id="<id>"
@@ -79,13 +79,11 @@ glab mr view "$mr_id" --comments > "$run_dir/mr-comments.txt"
 glab mr view "$mr_id" -F json > "$run_dir/mr.json"
 glab mr diff "$mr_id" --color=never > "$run_dir/diff.patch"
 
-# Metadata: one canonical projection + one decision-time projection
+# Metadata: descriptive projection
 glab mr view <id> --comments
 glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,author:.author.username,web_url}'
-glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'
 
-# CI: use decision-time mr view as authoritative; builder reports and mr list can be stale/sparse
-glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'
+# Branch CI snapshot (decision-time SHA/pipeline/merge lives below under "Decision-time CI check")
 glab ci status --branch "$source_branch" -F json
 
 # Diffs
@@ -102,7 +100,7 @@ glab mr note create <id> --message "$(cat /tmp/report.md)"
 glab issue note create <id> --message "$(cat /tmp/comment.md)"
 ```
 
-Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Post the report first if desired, then re-read SHA before approval.
+Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Posting the report comment doesn't depend on SHA — re-run the SHA guard below immediately before approve/merge.
 
 ```bash
 reviewed_sha="<sha-you-reviewed>"
@@ -143,6 +141,7 @@ glab mr approve <id> --sha "$reviewed_sha"
 glab mr merge <id> --yes --sha "$reviewed_sha"
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
 
+# Verify merge result:
 glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,detailed_merge_status,web_url}'
 ```
 
