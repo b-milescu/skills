@@ -17,13 +17,14 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
-3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs in the current project (or a decoupled set).
-4. For multiple MRs, keep only a clearly decoupled set; use one isolated worktree per MR when local checkout/tests are needed.
-5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` values (Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, Delta since last ready push) into the corresponding Review Report fields rather than re-deriving them.
-6. Confirm branch/commits match the lifted `Reviewed SHA`. Skim `Reviewer Focus` first to seed your read, then walk the diff with the description as a map; evaluate behavior tests via `tdd` principles; run targeted code only when needed.
-7. Answer each `OQ-N` from the MR description in your report — answer, escalate, or downgrade to evidence request. Unanswered OQs are not allowed.
-8. **SHA discipline.** Re-read MR metadata immediately before approving. If the head `sha` differs from the SHA you reviewed, re-diff the new commits before approving — never approve a SHA you haven't read. Same GitLab username/PAT as the builder is not a blocker; review independence comes from session/context separation.
-9. Post one Review Report per MR via `templates/review-report.md` and decide approve / request-changes / reject independently. If approving, run `glab mr approve <id> --sha <reviewed-sha>`. Merge or queue auto-merge for that reviewed SHA only when the MR's `Merge authority` and project rules allow it.
+3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see REVIEW-FLOW.md §MR pickup).
+4. For multiple MRs, keep only a clearly decoupled set; use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode].
+5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` block into the matching Review Report fields [see §Handoff integrity check].
+6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
+7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure].
+8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
+9. Post one Review Report per MR via `templates/review-report.md` and decide independently.
+10. **SHA discipline:** approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
 
 ## Essential tooling
 
@@ -31,26 +32,25 @@ Load `local-gitlab` for `glab` preflight, command syntax, flag pitfalls, and min
 
 ## MR pickup summary
 
-When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick from the **current GitLab project**:
+When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled ready-for-review or assigned to `@me`. For multiple MRs, keep only a clearly decoupled set — no stacked branches, no file/schema/lock overlap, independently testable. Deprioritize drafts, blocked, needs-revision, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
 
-- Prefer the current-branch MR when the user says "this branch".
-- Prefer open non-draft MRs labeled ready-for-review, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
-- For multiple, select only a clearly decoupled set: no stacked branches, no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.
-- Deprioritize drafts, blocked MRs, needs-revision/needs-unblock/WIP MRs, and red-CI MRs unless failure triage was requested.
-- Inspect candidates and summarize ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
-- If one MR/set is clearly best, announce and proceed. If several are plausible or coupled, ask the user to choose.
+## Multiple MR worktree mode
 
-See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full pickup and review workflow.
+One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEAD`. Review independently with separate LLM context. See [REVIEW-FLOW.md §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode) for the full procedure.
 
 ## Essential review summary
 
-- Read linked issue + MR description before the diff.
-- Block on scope creep, live product/runtime/operator external mutation evidence, credential leakage, weakened gates, broken sequencing/locks, missing/weak behavior tests, red/stale CI, or omitted CI/local gate evidence without explanation.
-- Apply `tdd` principles to test quality (see intro for the missing-red-first rule).
-- Treat style as non-blocking unless it creates concrete hazard or waste.
-- Multiple MR review requires separate Review Reports, decisions, and reviewed SHAs; never batch approvals into one report.
-- Approval is allowed when no Must Fix remains, all `OQ-N` are answered/escalated, the head SHA equals the reviewed SHA, and CI/checks are green, explicitly waived, or pending under the CI-pending auto-merge policy (builder local gate PASS, pipeline belongs to the reviewed SHA when exposed, and GitLab merge checks enforce green CI before merge).
-- If approving, approve with `--sha <reviewed-sha>`. Merge immediately or queue auto-merge only when `Merge authority` allows it; otherwise stop after approval and report that merge is approval-only/human-release. Report the exact GitLab blocker if approval or merge fails.
+- Block on scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
+- Multiple MRs require separate Review Reports, decisions, and reviewed SHAs — never batch.
+- Approval requires: no Must Fix, all `OQ-N` answered, head SHA = reviewed SHA, CI green/waived/pending under protected auto-merge.
+- Approve with `--sha <reviewed-sha>`. Merge only when `Merge authority` allows.
+- See [REVIEW-FLOW.md §Procedure](REVIEW-FLOW.md#procedure) for the step-by-step and [§Review Report expectations](REVIEW-FLOW.md#review-report-expectations) for report structure.
+
+## Decision outcomes
+
+- **Approve** — scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived. Approve with `--sha`; merge or auto-merge when authority allows.
+- **Request changes** — fixable Must Fix items; apply `needs-revision`, keep MR open.
+- **Reject** — premise/scope wrong or safety boundary weakened beyond acceptance.
 
 ## Templates
 
@@ -60,6 +60,4 @@ See [REVIEW-FLOW.md](REVIEW-FLOW.md) for the full pickup and review workflow.
 
 ## Decisions
 
-- **Approve** — no Must Fix remains, evidence adequate, CI green/waived or safely pending under protected auto-merge policy, deployable. Approve with `glab mr approve <id> --sha <reviewed-sha>`; merge or queue auto-merge only when `Merge authority` allows it.
-- **Request changes** — fixable Must Fix items; apply `needs-revision` and keep MR open.
-- **Reject** — premise/architecture/scope is wrong or a safety boundary is weakened beyond what the user/project accepts.
+See [REVIEW-FLOW.md §Decisions](REVIEW-FLOW.md#decisions) for the full approve / request-changes / reject criteria and post-review actions.
