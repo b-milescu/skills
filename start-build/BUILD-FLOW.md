@@ -79,14 +79,13 @@ Before marking ready or requesting review, validate the MR handoff:
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live PRO external systems as regression evidence.
 8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/review-packet.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
-9. `glab mr update <id> --ready` and request review (human or `start-review` in a fresh session).
-   - **Review request protocol.** Request a named reviewer with `--reviewer`/project-approved mechanism when known; apply existing ready-for-review labels only when the project convention is clear; otherwise hand off the MR URL plus `Reviewed SHA` to the reviewer session. Do not invent labels casually.
+9. `glab mr update <id> --ready` and mark ready. Then proceed to the [Mandatory review gate](#mandatory-review-gate) below.
    - **Don't block ready-marking on CI when the full local check gate is green.** The local gate (lint, format, typecheck, full test suite, etc.) is the same check CI runs; once green and pushed, mark ready immediately. CI is the reviewer's clean-checkout safety net, not a builder-side wait.
    - Wait for CI before ready only when (a) the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or (b) the change touches CI infrastructure itself. Say so explicitly in the MR.
    - **CI-pending review policy.** A reviewer may approve and queue auto-merge while CI is pending only when the local gate is PASS, the pending pipeline is for the reviewed SHA when GitLab exposes the SHA, and GitLab merge checks enforce green CI before merge. Red CI or stale green CI remains a blocker unless explicitly waived.
    - **Post-ready push protocol.** If you push any commits after marking ready (CI fix, review revision, rebase, anything), post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive. Update `Reviewer Lift > Reviewed SHA`, `CI pipeline`, and `Delta since last ready push`. Use `templates/revision-packet.md` for substantive post-ready changes, not only formal request-changes responses. The reviewer is told to refuse approval of a SHA they haven't read; silently pushing after ready risks merging unreviewed commits.
    - If CI later goes red, treat it like other review feedback: fetch logs, diagnose, fix, push a commit (with the post-ready delta comment). Don't unilaterally re-Draft.
-10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment.
+10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. Then spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol.
 11. After approval, the reviewer merges or queues auto-merge only when `Merge authority` allows it. If authority is approval-only/human release, stop after approval and report the reviewed SHA. If GitLab blocks reviewer-side merge, merge per repo workflow using the reviewed SHA. For safety-critical tasks, link the MR from any durable decision log the project keeps.
 
 ## Compact packet eligibility
@@ -104,9 +103,70 @@ If blocked for more than 2 hours:
 5. List ranked hypotheses.
 6. Park the branch/worktree or switch to a non-blocked issue on a fresh branch/worktree.
 
-## Review handoff
+## Mandatory review gate
 
-Use `start-review` in a fresh LLM session when an agentic reviewer is desired. Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity. If the reviewer approves, they should run `glab mr approve <id> --sha <reviewed-sha>`; they merge or queue auto-merge for the reviewed SHA only when `Merge authority` allows it.
+The builder must always spawn a subagent reviewer — this gate is mandatory, not optional. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
+
+### Subagent spawning protocol
+
+After marking the MR ready, spawn a subagent running `start-review` in a fresh session. The task prompt must include:
+
+1. **MR URL** — the full GitLab MR web URL.
+2. **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
+3. **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
+
+Example task prompt template:
+
+```
+Review MR: <MR web URL>
+Reviewer Lift block is in the MR description — lift structured values into your Review Report.
+Project rulebook: <path to rulebook>
+```
+
+### Review loop
+
+1. **Spawn** a fresh subagent reviewer session.
+2. **Wait** for the Review Report. Timeout: 10 minutes per round.
+3. **Evaluate** the reviewer's decision:
+   - **Approve** — proceed to merge per `Merge authority`. Record the reviewed SHA and decision.
+   - **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift, then spawn a **new** subagent reviewer (fresh session, fresh context — never reuse the same reviewer session).
+   - **Reject** — hard stop. Do not spawn another reviewer on the same MR. Escalate to human immediately.
+4. **3-round limit:** up to 3 rounds total (initial + 2 retries). If all 3 rounds result in request-changes, escalate to human with full context (round count, Review Reports, remaining Must Fix items).
+
+### Timeout handling
+
+If no Review Report comes back within 10 minutes:
+
+1. Do not retry the same reviewer session — it may be hung.
+2. Spawn one fresh reviewer session with the same task prompt.
+3. If the second attempt also times out, escalate to human.
+
+### Iteration summary
+
+After all rounds complete (approve, reject, or 3-round exhaustion), post a brief summary as an MR comment:
+
+```
+## Review Gate Summary
+
+| Round | Reviewer | Decision | Headline |
+|-------|----------|----------|----------|
+| 1     | <agent>  | approve / request-changes / reject / timeout | <one-line summary> |
+| 2     | <agent>  | ...      | ...      |
+| 3     | <agent>  | ...      | ...      |
+
+Final Review Report: <link to MR comment>
+```
+
+### Human bypass protocol
+
+The human can bypass the mandatory review gate with explicit syntax. Bypass conditions:
+
+- The human says **"skip gate"**, **"merge unreviewed"**, or equivalent explicit override.
+- The override reason is documented in the MR description.
+- The MR description `Review gate` field is set to `bypassed (human override)`.
+- The override reason is recorded in an MR comment for audit trail.
+
+A bypass does **not** waive the safety invariant against builder self-approval — even with a bypass, the builder still must not approve or merge its own MR. The human performs the merge directly or authorizes a named agent to do so.
 
 ## Template filling guide
 
