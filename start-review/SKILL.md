@@ -7,9 +7,11 @@ description: Reviews one or more GitLab Merge Requests against project rules, is
 
 ## Purpose
 
-Review GitLab Merge Requests against project rules and safety invariants. Single-MR is the default. Multiple MRs are allowed only when clearly decoupled; each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended product/runtime/operator external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
+Review GitLab Merge Requests against project rules and safety invariants. Single-MR is the default. Multiple MRs are allowed only when clearly decoupled; each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended PRO external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
 
 This skill is language- and domain-agnostic; domain-specific safety terms below are examples to map onto the host project's equivalent surfaces. **Load the host project's rulebook first** (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, architecture docs, ADRs). Project rules override this skill where stricter. Reviews live in **GitLab**: read description and diff, leave inline comments where useful, post one structured Review Report comment per MR, and use GitLab's approve/request-changes/merge controls.
+
+> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
 
 For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak.
 

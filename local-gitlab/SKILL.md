@@ -36,7 +36,7 @@ Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/h
 - Treat `glab mr list` output as candidate-discovery data only; use `glab mr view <id> -F json` for decision-grade MR SHA, pipeline, and merge status.
 - Create temp/artifact directories in the same shell command before redirecting into them. Do not rely on another parallel tool call to create shared temp paths.
 - Never paste secrets/tokens into issues, MRs, comments, CI logs, screenshots, or command output summaries.
-- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated product/runtime/operator mutations.
+- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated PRO mutations.
 
 ## Common commands
 

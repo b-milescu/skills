@@ -11,6 +11,8 @@ Implement scoped GitLab issues and produce reviewable changes: code, tests, docs
 
 This skill is language- and domain-agnostic; domain-specific safety terms below are examples to map onto the host project's equivalent surfaces. **Load the host project's rulebook first** (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, architecture docs, ADRs). Project rules override this skill where stricter. Handoff lives in **GitLab**: tasks are issues, proposals are MRs, review happens in MR discussions. Fill templates into MR descriptions/comments; never commit `.reviews/` artifacts.
 
+> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
+
 For runtime/operator/safety behavior changes, load and follow the `tdd` skill. If TDD is not applicable (docs-only, mechanical rename, generated update, urgent hotfix), say why in the MR.
 
 ## Quick start
@@ -45,7 +47,7 @@ See [BUILD-FLOW.md](BUILD-FLOW.md) for the full pickup and GitLab workflow.
 
 ## Essential safety summary
 
-- No live product/runtime/operator external mutations during development/review unless the human explicitly requested an operator action. GitLab issue/MR actions prescribed by this workflow are allowed.
+- No live PRO external mutations during development/review unless the human explicitly requested an operator action. GitLab issue/MR actions prescribed by this workflow are allowed.
 - Never touch, print, summarize, commit, or paste credentials or sensitive payloads.
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, migrations, or deploy topology casually.
 - Use project adapters for external APIs; new raw HTTP/SDK/CLI calls require ADR-level justification.
@@ -65,4 +67,4 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 
 ## Done
 
-Every selected issue has its own MR approved; TDD/test evidence recorded or explicitly N/A; CI/check gate green, pending under protected auto-merge, or explicitly waived per MR; docs/runbooks updated; no secrets exposed; no live unintended product/runtime/operator external side effects; MRs merged only when merge authority allows; issues closed via `Closes #<id>` or project workflow.
+Every selected issue has its own MR approved; TDD/test evidence recorded or explicitly N/A; CI/check gate green, pending under protected auto-merge, or explicitly waived per MR; docs/runbooks updated; no secrets exposed; no live unintended PRO external side effects; MRs merged only when merge authority allows; issues closed via `Closes #<id>` or project workflow.

@@ -57,7 +57,7 @@ Paste as the MR description. Delete HTML comments before submitting.
 
 ## Safety Confirmation
 
-- [ ] No product/runtime/operator external-system mutation path changed.
+- [ ] No PRO external-system mutation path changed.
 - [ ] No credential / secret-store handling changed.
 - [ ] No domain rule or strategy behavior changed.
 - [ ] No state schema, migration, deploy topology, or enforce-mode behavior changed.

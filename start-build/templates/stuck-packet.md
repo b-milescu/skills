@@ -42,7 +42,7 @@ Delete HTML comments before submitting; keep section headers stable.
 
 ## Safety status
 
-<!-- Confirm no live product/runtime/operator external mutation, no credential exposure, and whether the branch is safe to park. -->
+<!-- Confirm no live PRO external mutation, no credential exposure, and whether the branch is safe to park. -->
 
 ## Artifacts
 

@@ -107,7 +107,7 @@ Write N/A if none.
 ## External-System and Credential Safety
 
 <!--
-State whether any live product/runtime/operator external mutations were made
+State whether any live PRO external mutations were made
 (default: no). For changes touching external integrations, explain adapter use,
 fake/recorded HTTP tests, redaction, and idempotency keys. Confirm secret stores
 were not read/printed/committed.

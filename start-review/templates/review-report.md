@@ -62,7 +62,7 @@ suggested direction if not obvious. Prefix credential/security findings with
 <!--
 Pass/fail/N/A for applicable invariants:
 - domain envelope preserved
-- product/runtime/operator external-system mutations only via approved adapters
+- PRO external-system mutations only via approved adapters
 - observe/enforce or dry-run/production gates intact
 - protective sequencing intact
 - coordination primitive (lease/lock) acquired and not force-stolen
@@ -97,7 +97,7 @@ Pass/fail/N/A for applicable invariants:
 
 ## Code I Ran
 
-<!-- Exact read-only commands and concise result, or "None". Never paste secrets or run mutating product/runtime/operator commands. -->
+<!-- Exact read-only commands and concise result, or "None". Never paste secrets or run mutating PRO commands. -->
 
 ## Reviewer Focus Sweep
 
