@@ -5,7 +5,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 ## Layout
 
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`).
-- `templates/` — shared template files (ADR, filling guides). Referenced via symlinks from skill-specific `templates/` dirs.
+- `templates/` — shared template files (ADR, filling guides). Shared via symlinks (e.g. `adr.md`) or relative-path cross-references from skill-specific docs.
 
 ## Skills
 
