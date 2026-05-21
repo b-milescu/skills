@@ -20,6 +20,7 @@
 | Field | Value |
 |---|---|
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
+| Review gate | `<mandatory / bypassed (human override)>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
 | Local gate | `<PASS / FAIL / N/A> — <exact command, e.g. make check>` |
 | RED | `<exact failing test command + expected failure reason, or N/A — why>` |
