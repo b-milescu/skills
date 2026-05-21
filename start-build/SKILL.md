@@ -28,9 +28,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Essential tooling
 
-Use the host project's issue-tracker guide as the single source of truth for `glab` command snippets and flag pitfalls. If the project has none, load `local-gitlab`. Keep this skill focused on workflow and handoff policy.
-
-Minimum invariants still apply everywhere: `glab` must be installed/authenticated, direct preflight from `local-gitlab` must pass before GitLab operations, file-backed MR descriptions/comments should use direct `glab ... --description "$(cat file)"` / `glab ... --message "$(cat file)"`, and secrets must never be pasted into MR descriptions, comments, CI logs, or screenshots. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
+Load `local-gitlab` for `glab` preflight, command syntax, flag pitfalls, and minimum invariants. Keep this skill focused on workflow and handoff policy.
 
 ## Issue pickup summary
 

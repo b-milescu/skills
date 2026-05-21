@@ -27,9 +27,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## Essential tooling
 
-Use the host project's issue-tracker guide as the single source of truth for `glab` command snippets and flag pitfalls. If the project has none, load `local-gitlab`. Keep this skill focused on workflow, review evidence, and decision policy.
-
-Minimum invariants still apply everywhere: `glab` must be installed/authenticated, direct preflight from `local-gitlab` must pass before GitLab operations, file-backed report comments should use direct `glab mr note create <id> --message "$(cat file)"`, and secrets must never be pasted into report comments, screenshots, or `Code I Ran` output. If a project has no issue-tracker guide, verify syntax with `glab <subcommand> --help` and stop on auth/repo ambiguity.
+Load `local-gitlab` for `glab` preflight, command syntax, flag pitfalls, and minimum invariants. Keep this skill focused on workflow, review evidence, and decision policy.
 
 ## MR pickup summary
 
