@@ -100,7 +100,7 @@ Every Must Fix names path + line/range + concrete problem + suggested direction 
 
 ## Decisions
 
-- **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, and CI is green/waived or safely pending under the CI-pending auto-merge policy (local gate PASS, pipeline belongs to the reviewed SHA when exposed, and GitLab merge checks enforce green CI before merge). Run `glab mr approve <id> --sha <reviewed-sha>`. If `Merge authority` allows reviewer-side merge, run `glab mr merge <id> --yes --sha <reviewed-sha>`; if checks are pending and authority allows, run `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`. If authority is approval-only/human release, stop after approval and report that. If GitLab blocks approval or merge, report the exact blocker.
+- **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, and CI is green/waived or safely pending (see [BUILD-FLOW.md](../start-build/BUILD-FLOW.md) §Implementation flow step 9 for the CI-pending auto-merge policy). Run `glab mr approve <id> --sha <reviewed-sha>`. If `Merge authority` allows reviewer-side merge, run `glab mr merge <id> --yes --sha <reviewed-sha>`; if checks are pending and authority allows, run `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`. If authority is approval-only/human release, stop after approval and report that. If GitLab blocks approval or merge, report the exact blocker.
 - **Request changes** — fixable Must Fix items and the approach is sound. Apply `needs-revision`; keep the MR open.
 - **Reject** — premise/architecture/scope is wrong, or a safety boundary is weakened beyond what the user/project accepts. Close the MR with a comment explaining why and what would need to change to reopen. Reject requires human follow-up; don't auto-spawn a revision.
 
@@ -147,12 +147,4 @@ This section holds the instructional prose that was previously embedded as HTML 
 
 ### adr.md
 
-- Architecture Decision Records capture hard-to-reverse decisions affecting future contributors, safety boundaries, or multiple subsystems.
-- Commit ADRs under `docs/adr/NNN-kebab-title.md` (create `docs/adr/` if needed) via their own MR.
-- **Context** — Problem, forces, current constraints, why now.
-- **Decision** — One clear sentence if possible.
-- **Rationale** — Why this shape wins.
-- **Alternatives Considered** — One subsection per alternative, with pros / cons / rejection reason.
-- **Compliance / Enforcement** — Tests, reviewer checks, lints, runbooks, startup guards, migrations.
-- **Revisit When** — Concrete signal.
-- **References** — Docs, prior reviews, source, external references.
+See [templates/filling-guide.md](../templates/filling-guide.md) for ADR template filling instructions.
