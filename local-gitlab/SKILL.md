@@ -19,7 +19,7 @@ Run from the GitLab-backed git worktree:
 command -v glab >/dev/null || { echo "glab missing"; exit 1; }
 git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
 branch="$(git branch --show-current)"
-remote="$(git config --get "branch.${branch}.remote" 2>/dev/null)"
+remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
 repo_url="$(git remote get-url "${remote:-origin}" 2>/dev/null || git remote get-url origin)"
 glab repo view "$repo_url" >/dev/null || { echo "glab cannot access repo"; exit 1; }
 default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')" \
@@ -70,7 +70,7 @@ glab mr update <id> --ready
 ```bash
 # Pickup
 glab mr view                                                 # MR for the current branch (no id)
-glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-l/-t, --reviewer)
+glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-r/-l/-t)
 
 # Store review artifacts safely (create the directory in this command)
 mr_id="<id>"
@@ -149,7 +149,7 @@ glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,
 
 - `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`.
 - `glab mr diff` has **no** `--stat` flag. Use `glab mr diff <id> --raw --color=never | git apply --numstat` for a path-level changeset.
-- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via `glab mr view <id> -F json | jq '{sha,pipeline,merge:.detailed_merge_status}'`.
+- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via the canonical projection in the "Decision-time CI check" subsection above.
 - `glab mr list -F json` can return sparse or stale fields (for example `pipeline: null`) even when `glab mr view <id> -F json` has the current pipeline. Use list output for pickup triage only.
 - Before treating green CI as evidence: the current MR pipeline's commit SHA (when GitLab exposes it) must equal the MR head SHA — stale green CI is a real risk after a post-ready push. Builder-reported pipeline IDs can be superseded; verify the current MR pipeline immediately before approval/merge.
 
