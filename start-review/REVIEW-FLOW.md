@@ -6,6 +6,9 @@ Detailed workflow for `start-review`. Read before selecting MR(s), commenting, a
 
 1. **Separate-agent reviewer** — fresh agentic session loaded only with the MR URL, linked issue, and project rulebook. Preferred solo-maintainer mode.
 2. **Human reviewer** — when the user wants human judgment or project rules require it.
+3. **Mandatory gate reviewer** — spawned by the builder as a fresh subagent session with structured handoff (MR URL + pointer to Reviewer Lift block in the MR description + project rulebook path). This is the default invocation when the builder running `start-build` completes implementation and spawns the reviewer per the mandatory review gate protocol. The reviewer operates identically to the separate-agent reviewer; the only difference is who triggered it.
+
+The reviewer's behavior does not change based on invocation method. In all modes, the reviewer reads the diff fresh, runs its own tests, and makes its own judgment.
 
 Builder and reviewer may share the same GitLab account/PAT — review independence comes from session/context separation, not GitLab identity. Approval is reviewer-driven. If the reviewer approves, approve in GitLab with the reviewed SHA. Merge immediately or queue auto-merge only when the builder/project-declared `Merge authority` allows it; otherwise stop after approval and report the reviewed SHA. For multiple MRs, approval and merge/auto-merge happen independently per MR.
 
