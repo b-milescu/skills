@@ -23,7 +23,7 @@ default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')
   || { echo "no default_branch"; exit 1; }
 ```
 
-Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/host. `glab auth status` is useful, but successful `glab repo view "$repo_url"` is the real local-project auth check.
+Use `glab repo view "$repo_url"` for repo lookup; use `-R "$repo_url"` on issue/MR/CI commands when `glab` might infer the wrong repo/host. `glab auth status` is useful, but successful `glab repo view "$repo_url"` is the real local-project auth check.
 
 ## Rules
 
@@ -149,6 +149,8 @@ glab mr approve <id> --sha "$reviewed_sha"
 
 # If not merging immediately after approval, re-run the SHA guard first.
 glab mr merge <id> --yes --sha "$reviewed_sha"
+# If a running pipeline makes glab queue auto-merge by default, force immediate merge only when policy allows:
+glab mr merge <id> --yes --sha "$reviewed_sha" --auto-merge=false
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
 
 # Verify merge result:
