@@ -60,7 +60,7 @@ Delete HTML comments before submitting; keep section headers stable.
 
 ## Updated State / Migration / External-System Evidence
 
-<!-- If applicable. Confirm no live product/runtime/operator external mutation and no credential exposure. -->
+<!-- If applicable. Confirm no live PRO external mutation and no credential exposure. -->
 
 ## Updated Test Evidence
 

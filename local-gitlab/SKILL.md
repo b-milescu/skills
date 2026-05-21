@@ -30,13 +30,15 @@ Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/h
 
 ## Rules
 
+> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
+
 - Use direct `glab`, `git`, and `jq` commands.
 - Verify uncertain syntax with `glab <subcommand> --help`; `glab` flags vary by command/version.
 - Prefer `-F json` for `glab repo view`, `glab issue view`, `glab mr view`, and `glab mr list`; use `-O json` for `glab issue list`.
 - Treat `glab mr list` output as candidate-discovery data only; use `glab mr view <id> -F json` for decision-grade MR SHA, pipeline, and merge status.
 - Create temp/artifact directories in the same shell command before redirecting into them. Do not rely on another parallel tool call to create shared temp paths.
 - Never paste secrets/tokens into issues, MRs, comments, CI logs, screenshots, or command output summaries.
-- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated product/runtime/operator mutations.
+- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated PRO mutations.
 
 ## Common commands
 

@@ -34,7 +34,7 @@ Delete HTML comments before submitting; keep section headers stable.
 
 ## Safety notes
 
-<!-- Any product/runtime/operator external-system / credential / state precautions before continuing. -->
+<!-- Any PRO external-system / credential / state precautions before continuing. -->
 
 ## What I did not check
 

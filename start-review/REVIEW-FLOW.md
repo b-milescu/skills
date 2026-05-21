@@ -47,7 +47,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
    - linked issues/MR descriptions have no dependency, ordering, or shared blocker;
    - changed paths and behavior-critical surfaces do not overlap;
    - no shared migrations, schemas, locks, sequencing, deploy topology, generated artifacts, version bumps, or dependency lockfiles;
-   - local review/test commands run independently without shared ports, databases, product/runtime/operator external systems, or mutable global state.
+   - local review/test commands run independently without shared ports, databases, PRO external systems, or mutable global state.
 3. If coupling is unclear, review serially in the safest order or ask the user to choose. Never parallelize or batch-approve coupled MRs to save time.
 4. Use the original checkout as a coordinator for GitLab queries only. Create one review worktree per MR when local checkout/tests are needed. Do not use shared `FETCH_HEAD` in parallel review mode; fetch each MR into its own temp ref:
    - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
