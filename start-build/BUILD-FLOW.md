@@ -108,6 +108,82 @@ If blocked for more than 2 hours:
 
 Use `start-review` in a fresh LLM session when an agentic reviewer is desired. Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity. If the reviewer approves, they should run `glab mr approve <id> --sha <reviewed-sha>`; they merge or queue auto-merge for the reviewed SHA only when `Merge authority` allows it.
 
+## Template filling guide
+
+This section holds the instructional prose that was previously embedded as HTML comments in the template files. Read once per session; the templates themselves are now bare skeletons.
+
+### General rules for all builder templates
+
+- Paste the template as the MR description (review-packet, compact) or as an MR comment (revision-packet, stuck-packet).
+- Keep it in sync with the diff as you push. Keep section headers stable so the Reviewer can scan quickly.
+
+### review-packet.md
+
+- **Reviewer Lift** — Structured handoff so the Reviewer can copy these values directly into the Review Report. Keep current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
+- **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
+- **In scope** — Bullet list of intended and actual changes.
+- **Out of scope** — Explicitly name adjacent work not done. Open separate issues for follow-ups.
+- **Acceptance Criteria Evidence** — Map issue acceptance criteria to proof so the reviewer can validate scope quickly.
+- **Safety Impact** — Address every applicable invariant; write N/A with reason for non-applicable items: approved domain envelope (no new venues, scopes, capabilities, or rules); observe vs enforce / dry-run vs production semantics; protective sequencing (e.g. cancel-before-replace, classify-before-continue); coordination primitives (lease/lock acquired and verified; no force-steal); immutable baselines and monotonic invariants; exact-decimal numeric type for money/quantity/domain math; pure engines remain side-effect free.
+- **Architecture / Design Decisions** — Decision, alternatives considered, why this shape won, trade-offs to review. Link to ADR if one is required.
+- **State, Persistence, and Migration Impact** — State stores, typed models, DB migrations, event/intent stores, CLI stdout contracts, cross-language interop. Include migration numbers and smoke-test plan. Write N/A if none.
+- **External-System and Credential Safety** — State whether any live PRO external mutations were made (default: no). For changes touching external integrations, explain adapter use, fake/recorded HTTP tests, redaction, and idempotency keys. Confirm secret stores were not read/printed/committed.
+- **Diff Summary** — High-level diffstat and map by file.
+- **Test Evidence** — Expand on the RED/GREEN one-liners in the Reviewer Lift. Include targeted tests, full check gate output (or CI link), coverage where the project requires it. For behavior-touching refactors, provide regression evidence. If red-first evidence is unavailable, explain why and provide equivalent behavior evidence.
+- **Manual / Operational Evidence** — Optional. Dry-run output, runbook check, read-only operator command. Never paste secrets.
+- **Concerns / Reviewer Focus** — What could go wrong and where the Reviewer should look hardest. Mirror the headline in Reviewer Lift > Reviewer Focus.
+- **Open Questions** — If reviewer/human input can change direction, replace "None." with stable OQ-N IDs so the reviewer can answer/escalate each one in their report.
+- **Follow-ups** — Linked issues for deferred items, or "None".
+- **Reviewer Hints** — Suggested files/tests to inspect first. Courtesy, not instruction.
+
+### review-packet-compact.md
+
+- Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact.
+- **Summary** — One paragraph: what changed and why.
+- **In scope** — Bullet list.
+- **Out of scope** — Usually: "No runtime behavior, external paths, state schema, gates, or domain rules changed."
+- **Test Evidence** — Commands run and result, or CI link. State TDD: N/A for compact-eligible non-behavior changes. For docs-only, a targeted markdown/read check may be enough.
+- **Follow-ups** — "None" or linked follow-up issues.
+
+### revision-packet.md
+
+- Submit in response to a Review Report requesting changes, or for any substantive post-ready push after review has started. Post as a single MR comment summarising the response/delta, with the actual fixes pushed as new commits on the MR branch (each commit subject naming the item ID when applicable, e.g. "MF-1: ..."). Update the MR description and Reviewer Lift with the revision summary so reviewers see it first.
+- **Summary** — One paragraph: what changed in response to review/post-ready delta and what stayed the same.
+- **Response to Must Fix** — One subsection per MF item. Quote the headline/snippet, then response and commit SHA.
+- **Response to Should Fix** — Same shape; use SF IDs.
+- **Response to Consider** — Same shape; valid to decline with reasoning.
+- **What I did not change** — Reviewer comments not acted on, and why.
+- **Updated Safety Impact** — New/changed safety evidence since prior packet, or "No change."
+- **Updated State / Migration / External-System Evidence** — If applicable. Confirm no live PRO external mutation and no credential exposure.
+- **Updated Test Evidence** — Re-run gates and targeted tests; CI link or concise output.
+- **Diff Since Previous Review** — High-level diffstat for revision-only changes.
+- **Open Questions (Unresolved)** — Anything still needing reviewer/human decision.
+- **Reviewer Hints for This Round** — Where to inspect first.
+
+### stuck-packet.md
+
+- Submit when blocked for >2 hours on one issue. Post as an MR comment, keep the MR in Draft, and apply the `needs-unblock` label.
+- **What I'm trying to do** — One paragraph.
+- **What I've tried** — Chronological list with files, tests, errors, logs, or traces. No secrets.
+- **What's in front of me** — Hypotheses, most likely first.
+- **What would unblock me** — Hint, design decision, pair session, source pointer, or escalation.
+- **Safety status** — Confirm no live PRO external mutation, no credential exposure, and whether the branch is safe to park.
+- **Artifacts** — Failing tests, branch HEAD, fixture names, logs with secrets redacted.
+- **What I'm doing while stuck** — Park / switch plan.
+- **Escalation** — Who/what asked and when.
+
+### adr.md
+
+- Architecture Decision Records capture hard-to-reverse decisions affecting future contributors, safety boundaries, or multiple subsystems.
+- Commit ADRs under `docs/adr/NNN-kebab-title.md` (create `docs/adr/` if needed) via their own MR.
+- **Context** — Problem, forces, current constraints, why now.
+- **Decision** — One clear sentence if possible.
+- **Rationale** — Why this shape wins.
+- **Alternatives Considered** — One subsection per alternative, with pros / cons / rejection reason.
+- **Compliance / Enforcement** — Tests, reviewer checks, lints, runbooks, startup guards, migrations.
+- **Revisit When** — Concrete signal.
+- **References** — Docs, prior reviews, source, external references.
+
 ## Success metric
 
 Reviewable changes that preserve the project rulebook, remain testable, and don't create hidden operational surprises.
