@@ -29,7 +29,7 @@ When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise 
 
 Before reading the full diff, validate the builder handoff:
 
-- Reviewer Lift exists. Full and compact packets must use the same required rows: Reviewed SHA, CI pipeline, Local gate, RED, GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, Delta since last ready push.
+- Reviewer Lift exists with all required rows (see `start-build/templates/review-packet.md` for the canonical field list). Full and compact packets use the same rows.
 - MR head SHA equals `Reviewed SHA`. If not, read the delta note/revision packet and re-diff the new commits before approval.
 - CI pipeline evidence includes URL/ID, status, and commit SHA when available. Treat green CI for an older SHA as stale, not green.
 - Local gate is PASS, N/A with rationale, or a clear blocker.
@@ -66,7 +66,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 
 1. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pickup. If multiple, enter **Multiple MR worktree mode** and run the rest independently per MR.
 2. Read the linked issue and MR description before the diff (`glab issue view`, `glab mr view`).
-3. **Lift the builder's `Reviewer Lift` block.** Copy `Reviewed SHA`, `CI pipeline`, `Local gate`, `RED`/`GREEN`, `Changed paths`, `Touched safety surfaces`, `Decoupling proof`, `Reviewer Focus`, `Open Questions`, `Merge authority`, and `Delta since last ready push` into the matching Review Report fields. If the block is missing or empty (older MRs), record that and re-derive the values yourself; default missing `Merge authority` to approval-only unless project rules say otherwise.
+3. **Lift the builder's `Reviewer Lift` block.** Copy each field (see `start-build/templates/review-packet.md` for the canonical list) into the matching Review Report fields. If the block is missing or empty (older MRs), record that and re-derive the values yourself; default missing `Merge authority` to approval-only unless project rules say otherwise.
 4. Confirm the MR `sha` from `glab mr view <id> -F json` equals the lifted `Reviewed SHA`. If they differ, the builder pushed after marking ready; read the delta note / `Delta since last ready push`, treat the new commits as part of this review, and either re-diff them or request a Revision Packet referencing them before approval.
 5. Check labels/status, changed paths, and declared safety-critical surfaces without changing approval eligibility solely due to label absence/mismatch.
 6. **Sweep `Reviewer Focus` first** — read those areas hardest before walking the full diff (`glab mr diff <id>`) with the description as a map. Note your findings in the Review Report's `Reviewer Focus Sweep` section even when nothing is wrong.
@@ -83,7 +83,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 
 The report should separate:
 
-- Lifted metadata (Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, Delta since last ready push) — copied from builder's `Reviewer Lift`, with `verified` annotations
+- Lifted metadata — all Reviewer Lift fields (see `start-build/templates/review-packet.md`) copied from builder's block, with `verified` annotations
 - Reviewer Focus Sweep — what the builder flagged + what you found in those areas
 - Open Questions Addressed — one entry per `OQ-N` from the MR description (answer / escalate / evidence request)
 - Must Fix (`MF-1`, `MF-2`, ...)
