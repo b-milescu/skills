@@ -45,8 +45,12 @@ Use `"$repo_url"` (or `-R "$repo_url"`) when `glab` might infer the wrong repo/h
 ```bash
 glab issue list --per-page 50
 glab issue list -O json --per-page 50 | jq '.[] | {iid,title,labels,assignees,web_url}'
+glab issue list --closed                                     # only closed
+glab issue list --all                                        # open + closed
 glab issue view <id> --comments
 glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
+glab issue close <id>
+glab issue update <id> --label foo,bar --unlabel baz         # add and remove in one call
 ```
 
 ### Merge Request creation and updates
@@ -71,6 +75,11 @@ glab mr update <id> --ready
 # Pickup
 glab mr view                                                 # MR for the current branch (no id)
 glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-r/-l/-t)
+
+# State filters (glab uses dedicated flags — there is no --state flag)
+glab mr list --merged                                        # only merged MRs
+glab mr list --closed                                        # only closed-without-merge MRs
+glab mr list --all                                           # all states (open + closed + merged)
 
 # Store review artifacts safely (create the directory in this command)
 mr_id="<id>"
@@ -97,8 +106,10 @@ Use file-backed messages for long reports/comments — avoids shell escaping pro
 
 ```bash
 glab mr note create <id> --message "$(cat /tmp/report.md)"
-glab issue note create <id> --message "$(cat /tmp/comment.md)"
+glab issue note <id> --message "$(cat /tmp/comment.md)"
 ```
+
+`glab mr note` has subcommands (`create`, `list`, `reopen`, `resolve`) — `create` is the verb. `glab issue note` takes the id directly and creates a comment by default; **there is no `glab issue note create` subcommand**. Passing `create` makes glab try to parse it as the issue id (`Accepts 1 arg(s), received 2.`).
 
 Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Posting the report comment doesn't depend on SHA — re-run the SHA guard below immediately before approve/merge.
 
@@ -147,7 +158,8 @@ glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,
 
 ## Known glab pitfalls
 
-- `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`.
+- `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`. Watch out: `glab issue list` *also* accepts `-F` — bound to `--output-format` (values: `details`, `ids`, `urls`), not JSON. `glab issue list -F json` silently returns text. Use `-O json` for issue-list JSON; `-F json` for everything else.
+- `labels` on `glab issue view -F json` / `glab issue list -O json` is a **flat list of strings**, not objects. Project via `jq '.labels'` or `jq '.labels[]'` directly; `.labels[].name` raises `Cannot index string with string "name"`.
 - `glab mr diff` has **no** `--stat` flag. Use `glab mr diff <id> --raw --color=never | git apply --numstat` for a path-level changeset.
 - `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via the canonical projection in the "Decision-time CI check" subsection above.
 - `glab mr list -F json` can return sparse or stale fields (for example `pipeline: null`) even when `glab mr view <id> -F json` has the current pipeline. Use list output for pickup triage only.
