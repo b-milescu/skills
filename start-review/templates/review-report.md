@@ -6,7 +6,7 @@
 |---|---|
 | MR | `<gitlab MR URL>` |
 | Issue | `<gitlab issue URL>` |
-| Reviewer | `<gitlab actor>` — `<exact model id if exposed, e.g. claude-opus-4-7>` |
+| Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | |
 | Decision | `<approve / request-changes / reject>` |
 | Reviewed SHA | `<copy from builder's Reviewer Lift; must equal MR head sha at approve-time>` |

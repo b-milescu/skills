@@ -7,7 +7,7 @@
 | MR | `<gitlab MR URL>` |
 | Issue | `<gitlab issue URL>` |
 | Title | |
-| Builder | `<gitlab actor>` — `<exact model id if exposed, e.g. claude-opus-4-7>` |
+| Builder | `@builder — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Branch | |
 | Status | `stuck` |
 | Stuck duration | |
