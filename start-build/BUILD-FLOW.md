@@ -92,7 +92,6 @@ Before marking ready or requesting review, validate the MR handoff:
    - **Post-ready push protocol.** If you push any commits after marking ready (CI fix, review revision, rebase, anything), post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive. Update `Reviewer Lift > Reviewed SHA`, `CI pipeline`, and `Delta since last ready push`. Use `templates/revision-packet.md` for substantive post-ready changes, not only formal request-changes responses. The reviewer is told to refuse approval of a SHA they haven't read; silently pushing after ready risks merging unreviewed commits.
    - If CI later goes red, treat it like other review feedback: fetch logs, diagnose, fix, push a commit (with the post-ready delta comment). Don't unilaterally re-Draft.
 10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. Then spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol.
-11. After approval, the reviewer merges or queues auto-merge only when `Merge authority` allows it. If authority is approval-only/human release, stop after approval and report the reviewed SHA. If GitLab blocks reviewer-side merge, merge per repo workflow using the reviewed SHA. For safety-critical tasks, link the MR from any durable decision log the project keeps.
 
 ## Compact packet eligibility
 
@@ -134,7 +133,7 @@ Project rulebook: <path to rulebook>
 1. **Spawn** a fresh subagent reviewer session.
 2. **Wait** for the Review Report. Timeout: 10 minutes per round.
 3. **Evaluate** the reviewer's decision:
-   - **Approve** — proceed to merge per `Merge authority`. Record the reviewed SHA and decision.
+   - **Approve** — proceed to merge per `Merge authority`. If authority is approval-only/human release, stop after approval and report the reviewed SHA. If GitLab blocks reviewer-side merge, merge per repo workflow using the reviewed SHA. For safety-critical tasks, link the MR from any durable decision log the project keeps. Record the reviewed SHA and decision.
    - **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift, then spawn a **new** subagent reviewer (fresh session, fresh context — never reuse the same reviewer session).
    - **Reject** — hard stop. Do not spawn another reviewer on the same MR. Escalate to human immediately.
 4. **3-round limit:** up to 3 rounds total (initial + 2 retries). If all 3 rounds result in request-changes, escalate to human with full context (round count, Review Reports, remaining Must Fix items).
