@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# install.sh — idempotently surface skills via symlinks.
+# install.sh — idempotently surface skills and agents via symlinks.
 #
-#   Skills:  <repo>/<skill>/ → ~/.claude/skills/<skill>     (Claude Code)
-#                           → ~/.pi/agent/skills/<skill>   (pi agent)
+#   Skills:  <repo>/<skill>/  → ~/.claude/skills/<skill>   (Claude Code)
+#                            → ~/.pi/agent/skills/<skill> (pi agent)
 #
-# Each skill destination is skipped if its parent directory (e.g. ~/.claude/,
+#   Agents:  <repo>/agents/<name>.md → ~/.claude/agents/<name>.md   (Claude Code)
+#                                  → ~/.pi/agent/agents/<name>.md (pi agent)
+#
+# Each destination is skipped if its parent directory (e.g. ~/.claude/,
 # ~/.pi/agent/) doesn't exist — that agent simply isn't installed on this host.
-# Safe to re-run after adding/removing skills. Refuses to overwrite non-symlink
-# targets — fix those by hand. Stale repo-owned symlinks are pruned so skill
-# renames propagate cleanly.
+# Safe to re-run after adding/removing skills or agents. Refuses to overwrite
+# non-symlink targets — fix those by hand. Stale repo-owned symlinks are pruned
+# so renames propagate cleanly.
 
 set -euo pipefail
 shopt -s nullglob
@@ -34,9 +37,25 @@ for dir in "$REPO_ROOT"/*/; do
   SKILL_NAMES+=("$(basename "$dir")")
 done
 
+AGENT_NAMES=()
+if [[ -d "$REPO_ROOT/agents" ]]; then
+  for f in "$REPO_ROOT/agents"/*.md; do
+    [[ -f "$f" ]] || continue
+    AGENT_NAMES+=("$(basename "$f" .md)")
+  done
+fi
+
 is_skill_name() {
   local name="$1" known
   for known in "${SKILL_NAMES[@]}"; do
+    [[ "$known" == "$name" ]] && return 0
+  done
+  return 1
+}
+
+is_agent_name() {
+  local name="$1" known
+  for known in "${AGENT_NAMES[@]}"; do
     [[ "$known" == "$name" ]] && return 0
   done
   return 1
@@ -55,14 +74,14 @@ link() {
 }
 
 prune_stale_repo_links() {
-  local skill_dir="$1"
+  local dir="$1" validator="$2"
   local link_path name target target_abs
 
-  for link_path in "$skill_dir"/*; do
+  for link_path in "$dir"/*; do
     [[ -L "$link_path" ]] || continue
 
     name=$(basename "$link_path")
-    is_skill_name "$name" && continue
+    "$validator" "$name" && continue
 
     target=$(readlink "$link_path") || continue
     if [[ "$target" == /* ]]; then
@@ -80,6 +99,7 @@ prune_stale_repo_links() {
   done
 }
 
+# --- Skills ---
 for skill_dir in "${SKILL_DESTS[@]}"; do
   parent=$(dirname "$skill_dir")
   if [[ ! -d "$parent" ]]; then
@@ -88,9 +108,29 @@ for skill_dir in "${SKILL_DESTS[@]}"; do
   fi
   mkdir -p "$skill_dir"
   echo "Skills → $skill_dir"
-  prune_stale_repo_links "$skill_dir"
+  prune_stale_repo_links "$skill_dir" is_skill_name
   for name in "${SKILL_NAMES[@]}"; do
     link "$REPO_ROOT/$name" "$skill_dir/$name"
+  done
+done
+
+# --- Agents ---
+AGENT_DESTS=(
+  "$HOME/.claude/agents"
+  "$HOME/.pi/agent/agents"
+)
+
+for agent_dir in "${AGENT_DESTS[@]}"; do
+  parent=$(dirname "$agent_dir")
+  if [[ ! -d "$parent" ]]; then
+    printf 'skip: %s (parent %s not present — agent not installed)\n' "$agent_dir" "$parent"
+    continue
+  fi
+  mkdir -p "$agent_dir"
+  echo "Agents → $agent_dir"
+  prune_stale_repo_links "$agent_dir" is_agent_name
+  for name in "${AGENT_NAMES[@]}"; do
+    link "$REPO_ROOT/agents/$name.md" "$agent_dir/$name.md"
   done
 done
 
