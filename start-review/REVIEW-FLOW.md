@@ -81,22 +81,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 
 ## Review Report expectations
 
-The report should separate:
-
-- Lifted metadata — all Reviewer Lift fields (see `start-build/templates/review-packet.md`) copied from builder's block, with `verified` annotations
-- Reviewer Focus Sweep — what the builder flagged + what you found in those areas
-- Open Questions Addressed — one entry per `OQ-N` from the MR description (answer / escalate / evidence request)
-- Must Fix (`MF-1`, `MF-2`, ...)
-- Should Fix
-- Consider
-- Praise
-- Architectural Observations
-- Acceptance Criteria Evidence checked
-- Code I Ran / Evidence checked
-- TDD / behavior-test evidence checked or marked N/A
-- Decision
-
-Every Must Fix names path + line/range + concrete problem + suggested direction if not obvious. Use inline comments for line-anchored findings and reference Must Fix IDs so revision commits can cite them.
+See the [Template filling guide §review-report.md](#review-reportmd) below for the canonical list of report sections and per-section guidance. Every Must Fix names path + line/range + concrete problem + suggested direction if not obvious. Use inline comments for line-anchored findings and reference Must Fix IDs so revision commits can cite them.
 
 ## Decisions
 
