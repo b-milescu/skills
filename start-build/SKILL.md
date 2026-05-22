@@ -31,10 +31,6 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including the full Reviewer Lift schema) and mark ready when the local gate is green.
 10. **Mandatory review gate** — after marking ready, spawn a subagent reviewer in a fresh session per the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) protocol.
 
-## Essential tooling
-
-Load `local-gitlab` for `glab` preflight, command syntax, flag pitfalls, and minimum invariants. Keep this skill focused on workflow and handoff policy.
-
 ## Issue pickup summary
 
 When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**:

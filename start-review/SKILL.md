@@ -32,10 +32,6 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 9. Post one Review Report per MR via `templates/review-report.md` and decide independently.
 10. **SHA discipline:** approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
 
-## Essential tooling
-
-Load `local-gitlab` for `glab` preflight, command syntax, flag pitfalls, and minimum invariants. Keep this skill focused on workflow, review evidence, and decision policy.
-
 ## MR pickup summary
 
 When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled ready-for-review or assigned to `@me`. For multiple MRs, keep only a clearly decoupled set — no stacked branches, no file/schema/lock overlap, independently testable. Deprioritize drafts, blocked, needs-revision, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
