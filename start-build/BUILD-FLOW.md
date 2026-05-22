@@ -85,7 +85,7 @@ Before marking ready or requesting review, validate the MR handoff:
    - **CI-pending review policy.** A reviewer may approve and queue auto-merge while CI is pending only when the local gate is PASS, the pending pipeline is for the reviewed SHA when GitLab exposes the SHA, and GitLab merge checks enforce green CI before merge. Red CI or stale green CI remains a blocker unless explicitly waived.
    - **Post-ready push protocol.** If you push any commits after marking ready (CI fix, review revision, rebase, anything), post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive. Update `Reviewer Lift > Reviewed SHA`, `CI pipeline`, and `Delta since last ready push`. Use `templates/revision-packet.md` for substantive post-ready changes, not only formal request-changes responses. The reviewer is told to refuse approval of a SHA they haven't read; silently pushing after ready risks merging unreviewed commits.
    - If CI later goes red, treat it like other review feedback: fetch logs, diagnose, fix, push a commit (with the post-ready delta comment). Don't unilaterally re-Draft.
-10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. Then stop and tell the human to invoke a **new** reviewer agent (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol. The builder must never spawn the reviewer itself.
+10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. Then spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol.
 11. After approval, the reviewer merges or queues auto-merge only when `Merge authority` allows it. If authority is approval-only/human release, stop after approval and report the reviewed SHA. If GitLab blocks reviewer-side merge, merge per repo workflow using the reviewed SHA. For safety-critical tasks, link the MR from any durable decision log the project keeps.
 
 ## Compact packet eligibility
@@ -105,35 +105,57 @@ If blocked for more than 2 hours:
 
 ## Mandatory review gate
 
-Every MR must pass through a fresh, human-invoked reviewer before merge — this gate is mandatory, not optional. **The builder must never spawn, drive, or impersonate the reviewer.** The builder stops at the handoff line; the human invokes `start-review` as a separate agent in a fresh session. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
+The builder must always spawn a subagent reviewer — this gate is mandatory, not optional. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
 
-### Handoff protocol
+### Subagent spawning protocol
 
-After marking the MR ready, the builder posts the handoff info and stops. The handoff must include:
+After marking the MR ready, spawn a subagent running `start-review` in a fresh session. The task prompt must include:
 
 1. **MR URL** — the full GitLab MR web URL.
-2. **Reviewer Lift pointer** — note that the Reviewer Lift block in the MR description is the canonical handoff; the human pastes these values into the reviewer's session prompt or the reviewer reads them directly.
+2. **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
 3. **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
 
-Suggested handoff message to the human:
+Example task prompt template:
 
 ```
-MR ready for review: <MR web URL>
-Reviewer Lift block is in the MR description.
+Review MR: <MR web URL>
+Reviewer Lift block is in the MR description — lift structured values into your Review Report.
 Project rulebook: <path to rulebook>
-
-Please invoke a fresh `start-review` agent (separate session) and paste the above.
 ```
 
-The builder then stops and waits for the human. Do not poll, do not summarize the diff for the human as a substitute for review, do not auto-approve, and do not call `glab mr approve` or `glab mr merge` under any circumstance.
+### Review loop
 
-### After the reviewer returns
+1. **Spawn** a fresh subagent reviewer session.
+2. **Wait** for the Review Report. Timeout: 10 minutes per round.
+3. **Evaluate** the reviewer's decision:
+   - **Approve** — proceed to merge per `Merge authority`. Record the reviewed SHA and decision.
+   - **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift, then spawn a **new** subagent reviewer (fresh session, fresh context — never reuse the same reviewer session).
+   - **Reject** — hard stop. Do not spawn another reviewer on the same MR. Escalate to human immediately.
+4. **3-round limit:** up to 3 rounds total (initial + 2 retries). If all 3 rounds result in request-changes, escalate to human with full context (round count, Review Reports, remaining Must Fix items).
 
-The human relays the reviewer's decision (or the builder reads the Review Report comment on the MR):
+### Timeout handling
 
-- **Approve** — proceed to merge per `Merge authority`. Record the reviewed SHA and decision.
-- **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift with the new SHA and delta, then stop again and tell the human to invoke a **new** reviewer agent (fresh session, fresh context — never reuse the prior reviewer session).
-- **Reject** — hard stop. Do not push fixes or solicit a new reviewer on the same MR. Escalate to human immediately.
+If no Review Report comes back within 10 minutes:
+
+1. Do not retry the same reviewer session — it may be hung.
+2. Spawn one fresh reviewer session with the same task prompt.
+3. If the second attempt also times out, escalate to human.
+
+### Iteration summary
+
+After all rounds complete (approve, reject, or 3-round exhaustion), post a brief summary as an MR comment:
+
+```
+## Review Gate Summary
+
+| Round | Reviewer | Decision | Headline |
+|-------|----------|----------|----------|
+| 1     | <agent>  | approve / request-changes / reject / timeout | <one-line summary> |
+| 2     | <agent>  | ...      | ...      |
+| 3     | <agent>  | ...      | ...      |
+
+Final Review Report: <link to MR comment>
+```
 
 ### Human bypass protocol
 
@@ -158,7 +180,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 ### review-packet.md
 
 - **Reviewer Lift** — Structured handoff so the Reviewer can copy these values directly into the Review Report. Keep current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
-- **Review gate** — Records whether the MR went through the mandatory human-invoked review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
+- **Review gate** — Records whether the MR went through the mandatory subagent review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
 - **In scope** — Bullet list of intended and actual changes.
 - **Out of scope** — Explicitly name adjacent work not done. Open separate issues for follow-ups.
@@ -178,7 +200,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 ### review-packet-compact.md
 
 - Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact.
-- **Review gate** — Records whether the MR went through the mandatory human-invoked review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
+- **Review gate** — Records whether the MR went through the mandatory subagent review gate (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed and why.
 - **In scope** — Bullet list.
 - **Out of scope** — Usually: "No runtime behavior, external paths, state schema, gates, or domain rules changed."

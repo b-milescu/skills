@@ -29,9 +29,10 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 7. Open a Draft MR early per issue once the source branch exists remotely (push the first commit or use `glab mr create --push`) with `Closes #<id>` and the appropriate Review Packet template. Fill the **Reviewer Lift** block using the stable handoff schema so the reviewer can copy structured values directly into their report: Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, and Delta since last ready push.
 8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including the full Reviewer Lift schema) and mark ready when the local gate is green.
-10. **Hand off to a human-invoked reviewer** — after marking ready, the builder stops and tells the human to invoke `start-review` as a separate agent. The builder must never spawn or drive the reviewer itself. See [BUILD-FLOW.md §Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) for the handoff protocol:
-    - Post the handoff info (MR URL, pointer to the Reviewer Lift block, project rulebook path) so the human can paste it into the reviewer's session.
-    - If the reviewer requests changes, push fix commits and post a revision packet, then stop again and tell the human to invoke a **new** reviewer agent (fresh session, fresh context — never reuse the prior reviewer session).
+10. **Spawn the mandatory subagent reviewer** — the builder must always spawn a subagent running `start-review` in a fresh session. See [BUILD-FLOW.md §Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) for the full protocol:
+    - If the reviewer requests changes, push fix commits, then spawn a **new** subagent reviewer (fresh session, fresh context — never reuse the same reviewer session).
+    - Up to 3 rounds total (initial + 2 retries). If all 3 rounds result in request-changes, escalate to human with full context.
+    - If any round results in **reject**, hard stop — escalate to human immediately. Do not spawn another reviewer on the same MR.
     - Post-ready pushes require a delta comment and updated Reviewer Lift (see [BUILD-FLOW.md](BUILD-FLOW.md) §Post-ready push protocol). Same GitLab username/PAT for builder and reviewer is allowed.
 
 ## Essential tooling

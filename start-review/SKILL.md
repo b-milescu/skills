@@ -19,7 +19,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## Quick start
 
-> **Invocation.** The reviewer is always invoked by a human in a fresh session — never spawned automatically by the builder. When the human is following the `start-build` mandatory review gate, the session prompt usually carries a structured handoff from the builder: MR URL, pointer to the Reviewer Lift block in the MR description, and the project rulebook path. The reviewer reads the diff fresh, runs its own tests, and makes its own judgment regardless of who pasted the handoff.
+> **Invocation modes.** The reviewer may be spawned by a human, by a separate builder session, or as a mandatory gate subagent by the builder running `start-build`. When invoked as a mandatory gate subagent, the task prompt contains a structured handoff: MR URL, pointer to the Reviewer Lift block in the MR description, and the project rulebook path. The review procedure is identical regardless of invocation method — the reviewer reads the diff fresh, runs its own tests, and makes its own judgment.
 
 1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
