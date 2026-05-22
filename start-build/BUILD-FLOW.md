@@ -114,11 +114,13 @@ The builder must always spawn a subagent reviewer — this gate is mandatory, no
 
 ### Subagent spawning protocol
 
-After marking the MR ready, spawn a subagent running `start-review` in a fresh session. The task prompt must include:
+After marking the MR ready:
 
-1. **MR URL** — the full GitLab MR web URL.
-2. **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
-3. **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
+1. **Discover available reviewers.** Call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization (e.g. `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override). Prefer project-scope agents over user-scope over builtin. If a specialized MR reviewer is found, use it; otherwise fall back to the builtin `reviewer`.
+2. **Spawn** the selected agent running `start-review` in a fresh session. The task prompt must include:
+   - **MR URL** — the full GitLab MR web URL.
+   - **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
+   - **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
 
 Example task prompt template:
 
