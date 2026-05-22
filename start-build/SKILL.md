@@ -20,7 +20,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Quick start
 
-1. Load `local-gitlab` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Load `gitlab-local` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [SAFETY.md](SAFETY.md) before changing files.
 3. Read [BUILD-FLOW.md](BUILD-FLOW.md) before selecting issue(s), creating/updating MR(s), commenting, or marking ready.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.

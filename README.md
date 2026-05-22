@@ -11,9 +11,10 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 
 | Skill | Purpose |
 |---|---|
-| `local-gitlab` | `glab` CLI command reference for local/self-hosted GitLab work. |
+| `gitlab-local` | `glab` CLI command reference for local/self-hosted GitLab work. |
 | `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
 | `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |
+| `gitlab-to-issues` | Break approved plans/specs into GitLab issues using local tracker docs and triage labels. |
 
 ## External dependencies
 
@@ -26,6 +27,6 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 ~/.agent-skills/install.sh
 ```
 
-`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`), installs skills into each agent dir that exists on this host (skipping the rest with a clear `skip:` line), and refuses to overwrite a non-symlink target. For GitLab work, load `local-gitlab` and use direct `glab` commands from inside the target repo.
+`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`), installs skills into each agent dir that exists on this host (skipping the rest with a clear `skip:` line), and refuses to overwrite a non-symlink target. For GitLab work, load `gitlab-local` and use direct `glab` commands from inside the target repo.
 
 Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).
