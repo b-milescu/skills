@@ -18,7 +18,7 @@ Violations must be fixed or explicitly accepted/waived in the MR before approval
 - **Migrations are append-only.** Never edit a migration that may have run outside a throwaway DB. Add a new numbered migration and test it.
 - **Behavior-touching refactors require regression evidence.** See below.
 - **Project's full check gate green before requesting review.** Run the gate locally before pushing. See [BUILD-FLOW.md §Implementation flow](BUILD-FLOW.md#implementation-flow) step 9 for the full CI-ready policy (when to mark ready, when to wait, and pipeline SHA tracking).
-- **No builder self-approval or self-merge.** The builder must not approve or merge its own MRs. All MRs must pass through the mandatory subagent review gate (a fresh reviewer session spawned by the builder) before merge, unless the human explicitly bypasses the gate with recorded override syntax (e.g. "skip gate" or "merge unreviewed") and the reason is documented in the MR description as `Review gate: bypassed (human override)`.
+- **No builder self-approval or self-merge.** The builder must not approve or merge its own MRs. All MRs must pass through the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) (a fresh reviewer session spawned by the builder) before merge, unless the human explicitly bypasses the gate with recorded override syntax (e.g. "skip gate" or "merge unreviewed") and the reason is documented in the MR description as `Review gate: bypassed (human override)`.
 
 ## Behavior-touching refactors
 
