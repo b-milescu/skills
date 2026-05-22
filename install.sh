@@ -80,7 +80,7 @@ prune_stale_repo_links() {
   for link_path in "$dir"/*; do
     [[ -L "$link_path" ]] || continue
 
-    name=$(basename "$link_path")
+    name=$(basename "$link_path" .md)
     "$validator" "$name" && continue
 
     target=$(readlink "$link_path") || continue
