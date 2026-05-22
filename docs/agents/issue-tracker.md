@@ -1,25 +1,21 @@
 # Issue tracker: GitLab
 
-Issues and PRDs for this repo live as GitLab issues on the self-hosted instance at `gitlab.example.com` (project: `agents/skills`). Use the [`glab`](https://gitlab.com/gitlab-org/cli) CLI for all operations.
+Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills`.
 
-Before running any `glab` command, load the `/local-gitlab` skill — it centralises the preflight check, canonical command snippets (file-backed `--description`/`--message`, `-F json` projections, `--sha` pinning), and known flag pitfalls. Don't hand-roll flags; defer to the skill's snippets.
+Use the `glab` CLI from inside this repository clone so commands resolve against the project remote. Before running issue, MR, CI, note, approval, or merge commands, load the `/local-gitlab` skill and follow its command reference for syntax, flags, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate command snippets in this guide.
 
-## Conventions
+## Repo conventions
 
-- **Create an issue**: `glab issue create --title "..." --description "..."`. Use a heredoc or `--description -` for multi-line bodies. Never paste secrets or tokens.
-- **Read an issue**: `glab issue view <number> --comments`. Use `-F json` for machine-readable output.
-- **List issues**: `glab issue list -F json` with appropriate `--label` filters.
-- **Comment on an issue**: `glab issue note <number> --message "..."`. GitLab calls comments "notes".
-- **Apply / remove labels**: `glab issue update <number> --label "..."` / `--unlabel "..."`. Multiple labels can be comma-separated or by repeating the flag.
-- **Close**: `glab issue close <number>`. `glab issue close` does not accept a closing comment, so post the explanation first with `glab issue note <number> --message "..."`, then close.
-- **Merge requests**: GitLab calls PRs "merge requests". Use `glab mr create`, `glab mr view`, `glab mr note`, etc. — the same shape as `gh pr ...` with `mr` in place of `pr` and `note`/`--message` in place of `comment`/`--body`. Pin approvals and merges with `--sha`.
-
-Infer the repo from `git remote -v` — `glab` does this automatically when run inside a clone of this repo.
+- GitLab issues are the tracker items for tasks and PRDs.
+- GitLab merge requests are the review vehicle for code, docs, and workflow changes.
+- Comments are GitLab notes; use the `/local-gitlab` skill for the exact note command shape.
+- Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
+- Infer the project from `git remote -v`; pass an explicit repo target only when `/local-gitlab` says it is needed to avoid host/project ambiguity.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitLab issue on `gitlab.example.com/agents/skills`.
+Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and command syntax from `/local-gitlab`.
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `glab issue view <number> --comments`.
+Read the referenced GitLab issue, including comments/notes, using `/local-gitlab` for the exact command syntax.
