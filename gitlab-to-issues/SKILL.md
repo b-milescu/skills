@@ -1,11 +1,11 @@
 ---
-name: to-issues
-description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for this repo using tracer-bullet vertical slices and local triage labels. Use when the user asks to convert a plan into issues, create implementation tickets, or break down work for AFK/HITL agents.
+name: gitlab-to-issues
+description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for this repo using tracer-bullet vertical slices and local triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues separate.
 ---
 
-# To Issues
+# GitLab To Issues
 
-Turn an approved plan into GitLab issues for `agents/skills` using local tracker docs and triage labels.
+Turn an approved plan into GitLab issues for `agents/skills` using local tracker docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name so it does not shadow a generic `/to-issues` skill.
 
 ## Quick start
 
@@ -13,7 +13,7 @@ Turn an approved plan into GitLab issues for `agents/skills` using local tracker
 2. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 3. Explore only enough context to name slices accurately: glossary terms from `CONTEXT.md` when present, relevant ADRs under `docs/adr/`, current seams, and coupling risk.
 4. Draft tracer-bullet slices; ask the user to approve the breakdown before publishing.
-5. Publish approved slices to GitLab using `/local-gitlab` command syntax.
+5. Publish approved slices to GitLab using `/gitlab-local` command syntax.
 
 ## Slice rules
 
@@ -46,7 +46,7 @@ Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/
 
 Publish approved issues in dependency order so later issues can reference real blockers. Do not close or modify parent issues unless the user explicitly asks.
 
-Use `/local-gitlab` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply the mapped triage label when creating each issue.
+Use `/gitlab-local` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply the mapped triage label when creating each issue.
 
 ## Issue body template
 

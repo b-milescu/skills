@@ -1,10 +1,10 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and the Issue pickup summary (Quick start step 1 covers `local-gitlab` preflight), plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and the Issue pickup summary (Quick start step 1 covers `gitlab-local` preflight), plus the host project's issue-tracker guide or `gitlab-local` for direct `glab` command syntax and flag pitfalls.
 
 ## Issue pickup
 
-1. Run the direct preflight from `local-gitlab` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
+1. Run the direct preflight from `gitlab-local` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
 2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `--output json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
 4. For multiple, select only a clearly decoupled set: no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.

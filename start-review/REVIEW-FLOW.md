@@ -1,6 +1,6 @@
 # Start Review Flow
 
-Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `gitlab-local` for direct `glab` command syntax and flag pitfalls.
 
 ## Review modes
 
@@ -11,13 +11,13 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 
 ## GitLab tooling reference
 
-The command reference intentionally lives in the host project's issue-tracker guide, or in the `local-gitlab` skill when a project has no guide. Use it for preflight/auth, issue/MR/CI syntax, worktree snippets, file-backed comments/descriptions, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
+The command reference intentionally lives in the host project's issue-tracker guide, or in the `gitlab-local` skill when a project has no guide. Use it for preflight/auth, issue/MR/CI syntax, worktree snippets, file-backed comments/descriptions, and known `glab` flag pitfalls. This flow names commands only where sequencing matters.
 
 ## MR pickup
 
 When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick one MR or a decoupled set from the **current GitLab project**:
 
-1. Run the direct preflight from `local-gitlab` to confirm `glab` resolves to the cwd repo. If preflight fails, stop and ask.
+1. Run the direct preflight from `gitlab-local` to confirm `glab` resolves to the cwd repo. If preflight fails, stop and ask.
 2. If the current branch has an MR (`glab mr view`), prefer it when the user says "this branch" or the branch is clearly under review.
 3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled ready-for-review, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
 4. Deprioritize drafts, blocked MRs, MRs labeled needs-revision/needs-unblock/WIP, and obviously red-CI MRs unless the user asked for failure triage.

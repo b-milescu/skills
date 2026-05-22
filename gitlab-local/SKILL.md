@@ -1,5 +1,5 @@
 ---
-name: local-gitlab
+name: gitlab-local
 description: >-
   glab CLI command reference for local/self-hosted GitLab: preflight, issue/MR
   pickup, CI, diffs, comments, approvals, merges, and known flag pitfalls.

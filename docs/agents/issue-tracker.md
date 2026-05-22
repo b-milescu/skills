@@ -2,20 +2,20 @@
 
 Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills`.
 
-Use the `glab` CLI from inside this repository clone so commands resolve against the project remote. Before running issue, MR, CI, note, approval, or merge commands, load the `/local-gitlab` skill and follow its command reference for syntax, flags, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate command snippets in this guide.
+Use the `glab` CLI from inside this repository clone so commands resolve against the project remote. Before running issue, MR, CI, note, approval, or merge commands, load the `/gitlab-local` skill and follow its command reference for syntax, flags, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate command snippets in this guide.
 
 ## Repo conventions
 
 - GitLab issues are the tracker items for tasks and PRDs.
 - GitLab merge requests are the review vehicle for code, docs, and workflow changes.
-- Comments are GitLab notes; use the `/local-gitlab` skill for the exact note command shape.
+- Comments are GitLab notes; use the `/gitlab-local` skill for the exact note command shape.
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
-- Infer the project from `git remote -v`; pass an explicit repo target only when `/local-gitlab` says it is needed to avoid host/project ambiguity.
+- Infer the project from `git remote -v`; pass an explicit repo target only when `/gitlab-local` says it is needed to avoid host/project ambiguity.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and command syntax from `/local-gitlab`.
+Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and command syntax from `/gitlab-local`.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the referenced GitLab issue, including comments/notes, using `/local-gitlab` for the exact command syntax.
+Read the referenced GitLab issue, including comments/notes, using `/gitlab-local` for the exact command syntax.
