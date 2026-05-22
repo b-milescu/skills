@@ -33,16 +33,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Issue pickup summary
 
-When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**:
-
-- Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, fit one MR.
-- For multiple, select only a clearly decoupled set: no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.
-- Deprioritize blocked, needs-info, needs-human, in-progress/WIP, confidential/security-sensitive issues unless explicitly requested.
-- Inspect candidates with `glab issue view <id>`; summarize ID, title, labels, assignee, suitability, coupling risk.
-- If one issue/set is clearly best, announce and proceed. If several are plausible or coupled, ask the user to choose.
-- Claim issues only when project convention is clear; do not create/mutate labels casually.
-
-See [BUILD-FLOW.md](BUILD-FLOW.md) for the full pickup and GitLab workflow.
+When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**: prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, and fit one MR. For multiple issues, keep only a clearly decoupled set — no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable. Deprioritize blocked, needs-info, needs-human, in-progress/WIP, confidential/security-sensitive issues unless explicitly requested. See [BUILD-FLOW.md §Issue pickup](BUILD-FLOW.md#issue-pickup) for the full procedure with commands.
 
 ## Essential safety summary
 
