@@ -11,6 +11,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 
 | Skill | Purpose |
 |---|---|
+| `setup-dev-skills` | Scaffold per-repo agent setup docs for issue tracker, triage labels, domain docs, check gates, and dev workflows. |
 | `gitlab-local` | `glab` CLI command reference for local/self-hosted GitLab work. |
 | `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
 | `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |

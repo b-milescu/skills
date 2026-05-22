@@ -15,7 +15,7 @@ Use the `glab` CLI from inside this repository clone so commands resolve against
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and command syntax from `/gitlab-local`.
+Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and command syntax from `/gitlab-local`. If publishing an approved plan, spec, PRD, or conversation as multiple vertical slices, use `/gitlab-to-issues`.
 
 ## When a skill says "fetch the relevant ticket"
 
