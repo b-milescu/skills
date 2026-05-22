@@ -5,7 +5,7 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 ## Issue pickup
 
 1. Run the direct preflight from `gitlab-local` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
-2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `--output json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
+2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `-O json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
 4. For multiple, select only a clearly decoupled set: no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.
 5. Deprioritize blocked, needs-info, needs-human, in-progress/WIP, confidential/security-sensitive issues unless explicitly requested.
