@@ -1,6 +1,6 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, the Issue pickup summary, and the Essential tooling pointer, plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and the Issue pickup summary (Quick start step 1 covers `local-gitlab` preflight), plus the host project's issue-tracker guide or `local-gitlab` for direct `glab` command syntax and flag pitfalls.
 
 ## Issue pickup (operational extras to SKILL.md summary)
 
