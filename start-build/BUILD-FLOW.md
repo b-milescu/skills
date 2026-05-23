@@ -57,7 +57,7 @@ Before you claim the full local gate is green, discover it in this order:
 
 Before marking ready or requesting review, validate the MR handoff:
 
-- Reviewer Lift exists with all required rows (see `templates/review-packet.md` for the canonical field list). Full and compact packets use the same rows.
+- Reviewer Lift exists and its rows match `templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
@@ -76,11 +76,11 @@ Before marking ready or requesting review, validate the MR handoff:
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
 3. Load narrow context, not the whole repo or conversation: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue. Expand outward only from concrete evidence such as imports/callers, failing tests, changed paths, or safety invariants.
-4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block (see `templates/review-packet.md` for the canonical field list) — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
+4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block from `templates/reviewer-lift-schema.md` — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
 5. For behavior-touching changes, implement vertical slices per the `tdd` skill. Commit coherent green slices, referencing issue/slice; revision commits cite review-thread items (e.g. `MF-1: <fix>`). For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live PRO external systems as regression evidence.
-8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/review-packet.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
+8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/reviewer-lift-schema.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
 9. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**. Then proceed to the [Mandatory review gate](#mandatory-review-gate) below.
    - **Don't block ready-marking on CI when the full local check gate is green.** The local gate (lint, format, typecheck, full test suite, etc.) is the same check CI runs; once green and pushed, mark ready immediately. CI is the reviewer's clean-checkout safety net, not a builder-side wait.
    - Wait for CI before ready only when (a) the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or (b) the change touches CI infrastructure itself. Say so explicitly in the MR.
@@ -91,7 +91,7 @@ Before marking ready or requesting review, validate the MR handoff:
 
 ## Compact packet eligibility
 
-Use `templates/review-packet-compact.md` when the diff is simple enough that a short MR description suffices: docs-only, tests-only with no runtime impact, typo/lint, or dependency bump with no API impact. The compact packet still carries the same Reviewer Lift rows as the full packet, using explicit `N/A`/`none` values. Default to the full template when a broader map helps the reviewer.
+Use `templates/review-packet-compact.md` when the diff is simple enough that a short MR description suffices: docs-only, tests-only with no runtime impact, typo/lint, or dependency bump with no API impact. The compact packet carries the same approved generated-copy Reviewer Lift rows from `templates/reviewer-lift-schema.md` as the full packet, using explicit `N/A`/`none` values. Default to the full template when a broader map helps the reviewer.
 
 ## Stuck protocol
 
@@ -180,7 +180,7 @@ Detailed section-by-section instructions live next to the templates:
 
 Safety-critical filling rules remain in this flow:
 
-- Keep the **Reviewer Lift** block current with every push, including `Reviewed SHA`, `CI pipeline`, local gate, changed paths, safety surfaces, open questions, merge authority, and post-ready delta.
+- Keep every field in the **Reviewer Lift** block current with every push according to `templates/reviewer-lift-schema.md`.
 - Treat CI evidence as valid only when the pipeline commit SHA (when GitLab exposes it) matches `Reviewed SHA`; red or stale CI is a blocker unless explicitly waived.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
 - Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.

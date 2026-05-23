@@ -9,22 +9,33 @@
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | |
 | Decision | `<approve / request-changes / reject>` |
-| Reviewed SHA | `<copy from builder's Reviewer Lift; must equal MR head sha at approve-time>` |
-| CI pipeline (builder reported) | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
 | CI decision | `<green / pending-auto-merge / waived / blocked-stale-or-red>` |
-| Local gate (builder reported) | `<copy from Reviewer Lift>` |
-| Builder RED | `<copy from Reviewer Lift>` |
-| Builder GREEN | `<copy from Reviewer Lift>` |
-| Changed paths | `<copy from Reviewer Lift; verify against diff>` |
-| Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
-| Decoupling proof verified | `<N/A / accepted as-stated / re-checked: result>` |
-| Builder Reviewer Focus | `<copy from Reviewer Lift>` |
-| Builder Open Questions | `<copy from Reviewer Lift>` |
-| Merge authority | `<copy from Reviewer Lift; default approval-only if absent>` |
-| Delta since last ready push | `<copy from Reviewer Lift / N/A; verified against comments>` |
+| Decoupling proof verification | `<N/A / accepted as-stated / re-checked: result>` |
 | Merge action | `<merged / auto-merge queued / approval-only / not approved / blocked: reason>` |
 | Time spent | |
 | Ran code? | `<no / yes: commands>` |
+
+## Reviewer Lift (builder handoff)
+
+Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`.
+
+<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
+| Field | Builder value / reviewer check |
+|---|---|
+| Reviewed SHA | `<copy from Reviewer Lift; must equal MR head sha at approve-time>` |
+| Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
+| CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
+| Local gate | `<copy from Reviewer Lift; PASS, N/A with rationale, or blocker>` |
+| RED | `<copy from Reviewer Lift; evaluate TDD applicability>` |
+| GREEN | `<copy from Reviewer Lift; evaluate passing evidence>` |
+| Changed paths | `<copy from Reviewer Lift; verify against diff>` |
+| Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
+| Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
+| Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
+| Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
+| Merge authority | `<copy from Reviewer Lift; default approval-only if absent>` |
+| Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
+<!-- REVIEWER-LIFT-SCHEMA:END -->
 
 ## Summary
 

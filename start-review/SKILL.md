@@ -25,7 +25,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
 3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup)).
 4. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md); use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
-5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` block into the matching Review Report fields [see §Handoff integrity check](REVIEW-FLOW.md#handoff-integrity-check).
+5. Read linked issue + MR description before the diff. Lift every field from the builder's `Reviewer Lift` block, using `../start-build/templates/reviewer-lift-schema.md` as the canonical schema [see §Handoff integrity check](REVIEW-FLOW.md#handoff-integrity-check).
 6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
 7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
 8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
@@ -56,6 +56,7 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 
 ## Templates
 
+- `../start-build/templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics copied into Review Reports.
 - `templates/review-report.md` — single top-level MR comment.
 - `templates/unblock-response.md` — response to a Stuck Packet.
 - `templates/filling-guide.md` — section-by-section filling instructions for reviewer templates.

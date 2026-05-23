@@ -17,6 +17,9 @@
 
 ## Reviewer Lift
 
+Field names, order, and required semantics are canonical in `reviewer-lift-schema.md`.
+
+<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
@@ -27,11 +30,12 @@
 | GREEN | `<exact passing test command + brief result, or N/A — why>` |
 | Changed paths | `<high-level path list / diffstat>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / other>` |
-| Decoupling proof | `<N/A for single-issue; otherwise: co-running MR IIDs/branches + Decoupling Contract proof summary>` |
+| Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
 | Merge authority | `<approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
 | Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |
+<!-- REVIEWER-LIFT-SCHEMA:END -->
 
 ## Summary
 

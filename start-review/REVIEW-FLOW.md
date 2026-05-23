@@ -29,7 +29,7 @@ When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise 
 
 Before reading the full diff, validate the builder handoff:
 
-- Reviewer Lift exists with all required rows (see `start-build/templates/review-packet.md` for the canonical field list). Full and compact packets use the same rows.
+- Reviewer Lift exists and its rows match `start-build/templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema, and the Review Report derives the same rows.
 - MR head SHA equals `Reviewed SHA`. If not, read the delta note/revision packet and re-diff the new commits before approval.
 - CI pipeline evidence includes URL/ID, status, and commit SHA when available. Treat green CI for an older SHA as stale, not green.
 - Local gate is PASS, N/A with rationale, or a clear blocker.
@@ -61,7 +61,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 
 1. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pickup. If multiple, enter **Multiple MR worktree mode** and run the rest independently per MR.
 2. Read the linked issue and MR description before the diff using `gitlab-local` **Snippet: issue-pickup** and **Snippet: mr-pickup**. Keep context narrow: start with the MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests; expand only from concrete evidence such as imports/callers, failing tests, safety invariants, or surprising diff behavior.
-3. **Lift the builder's `Reviewer Lift` block.** Copy each field (see `start-build/templates/review-packet.md` for the canonical list) into the matching Review Report fields. If the block is missing or empty (older MRs), record that and re-derive the values yourself; default missing `Merge authority` to approval-only unless project rules say otherwise.
+3. **Lift the builder's `Reviewer Lift` block.** Copy each field from `start-build/templates/reviewer-lift-schema.md` into the matching Review Report fields. If the block is missing or empty (older MRs), record that and re-derive the values yourself; default missing `Merge authority` to approval-only unless project rules say otherwise.
 4. Confirm the MR `sha` from `gitlab-local` **Snippet: mr-pickup** equals the lifted `Reviewed SHA`. If they differ, the builder pushed after marking ready; read the delta note / `Delta since last ready push`, treat the new commits as part of this review, and either re-diff them or request a Revision Packet referencing them before approval.
 5. Check labels/status, changed paths, and declared safety-critical surfaces without changing approval eligibility solely due to label absence/mismatch.
 6. **Sweep `Reviewer Focus` first** — read those areas hardest before walking the full diff with `gitlab-local` **Snippet: artifact-capture** as needed. Note your findings in the Review Report's `Reviewer Focus Sweep` section even when nothing is wrong.
@@ -99,7 +99,7 @@ Detailed section-by-section instructions live next to the templates:
 
 Safety-critical filling rules remain in this flow:
 
-- Copy Reviewer Lift fields before reading the full diff, and verify MR head SHA equals `Reviewed SHA` immediately before any decision.
+- Copy every field from the canonical Reviewer Lift schema before reading the full diff, and verify MR head SHA equals `Reviewed SHA` immediately before any decision.
 - Treat CI evidence as valid only when the pipeline commit SHA (when GitLab exposes it) matches the reviewed SHA; red or stale CI blocks approval unless explicitly waived.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into Review Reports, inline comments, templates, or CI output.
 - Address every stable `OQ-N` from the MR description; unresolved open questions require escalation or request-changes.
