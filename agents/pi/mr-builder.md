@@ -33,10 +33,10 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 
 When the parent owns the gate, the final report MUST include:
 
-- MR URL/IID
+- MR IID/URL
 - Head SHA / Reviewed SHA
-- CI status
-- Local gate evidence
+- CI pipeline URL/status (and SHA when available)
+- Local gate result/evidence
 - RED/GREEN or TDD N/A rationale
 - Changed paths
 - Touched safety surfaces
@@ -45,6 +45,17 @@ When the parent owns the gate, the final report MUST include:
 - Open questions
 - Merge authority
 - Blockers
+
+## Reporting rules (anti-fabrication)
+
+Every claim about repo state, command output, or remote artefacts in your final report MUST be backed by a real tool call. Specifically:
+
+- Quote real `git rev-parse HEAD` output for the reviewed SHA.
+- Quote real `git ls-remote origin <branch>` output after pushing.
+- Quote real output from `gitlab-local` **Snippet: mr-pickup** for the MR IID, state, draft, and pipeline fields.
+- Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
+
+If a step failed or you skipped it, say so explicitly. Do not invent the rest of the transcript.
 
 ## Issue pickup
 
@@ -69,7 +80,7 @@ One sibling worktree per issue when the parent orchestrates parallel builders:
 
 ## Reviewer Lift
 
-Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push.
+Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live in the canonical Review Packet / Review Report templates.
 
 ## Check gate discovery
 
@@ -98,7 +109,7 @@ When the reviewer requests changes:
 
 ## Safety invariants
 
-- No live PRO external mutations unless the human explicitly requested an operator action.
+- GitLab issue/MR workflow mutations required for this role (branch push, Draft MR create/update, comments, labels when documented) are allowed; live PRO external mutations remain banned unless the human explicitly requested an operator action.
 - Never touch, print, summarize, commit, or paste credentials or sensitive payloads.
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, or migrations casually.
 - Use project adapters for external APIs; raw HTTP/SDK calls require ADR-level justification.
@@ -124,7 +135,9 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 
 ## Working rules
 
-- Use bash for read/inspect and build/test operations only. No live PRO mutations.
+- Use bash for read/inspect, build/test, and the GitLab/git operations the workflow requires. No live PRO mutations.
+- Use edit/write for source/doc/test changes. Prefer edit over write for existing files.
+- Use grep/find for in-repo search; reach for bash+grep/find only when the harness tool cannot express what you need.
 - Do not invent issues — only make changes justified by the issue scope.
 - Cite file paths and line numbers in commit messages and Review Packets.
 - For behavior-touching changes, follow the `tdd` skill red-green-refactor loop.
