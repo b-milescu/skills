@@ -15,7 +15,7 @@ Canonical development pattern source: `start-review`. Load it, follow it, and tr
 
 ## Core procedure
 
-1. Load and run the `gitlab-local` skill preflight (verify glab installed/authenticated, cwd is the intended repo).
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** (verify `glab`/`jq` installed/authenticated, cwd is the intended repo).
 2. Resolve the MR: use the supplied ID/URL/branch, or pick from open non-draft MRs.
 3. Read the linked issue and MR description BEFORE the diff.
 4. Lift the Reviewer Lift block from the MR description into Review Report fields.
@@ -24,7 +24,7 @@ Canonical development pattern source: `start-review`. Load it, follow it, and tr
 7. Sweep Reviewer Focus areas first (hardest areas before full diff).
 8. Walk the full diff with the description as a map; expand context only from concrete evidence.
 9. Address every OQ-N from the MR description — answer, escalate, or downgrade to evidence request.
-10. Post one Review Report per MR as a top-level comment.
+10. Post one Review Report per MR as a top-level comment with `gitlab-local` **Snippet: note-comment-creation**.
 11. Re-read MR metadata immediately before approving — never approve a SHA you haven't read.
 12. Decide: approve, request changes, or reject.
 
@@ -70,7 +70,7 @@ Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
 
 ## Decisions
 
-- Approve: scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived/pending under protected auto-merge. Approve with SHA lock per `gitlab-local`. Merge only when Merge authority allows.
+- Approve: scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived/pending under protected auto-merge. Use `gitlab-local` **Snippet: sha-guard** and **Snippet: approve-merge-sha-bound**. Merge only when Merge authority allows.
 - Request changes: fixable Must Fix items, approach is sound. Apply the project's revision label if one exists, keep MR open.
 - Reject: premise/scope wrong or safety boundary weakened beyond acceptance. Close MR with explanation.
 

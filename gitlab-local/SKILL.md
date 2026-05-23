@@ -10,10 +10,30 @@ description: >-
 
 ## Quick start
 
-Run from the GitLab-backed git worktree:
+Run **Snippet: local-repo-preflight** from the GitLab-backed git worktree. Use `glab repo view "$repo_url"` for repo lookup; use `-R "$repo_url"` on issue/MR/CI commands when `glab` might infer the wrong repo/host. `glab auth status` is useful, but successful `glab repo view "$repo_url"` is the real local-project auth check.
+
+## Rules
+
+> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
+
+- Use direct `glab`, `git`, and `jq` commands.
+- Workflow docs should reference the snippet names below instead of copying generic command syntax. Exception: approval/merge decision points should keep the SHA guard and `--sha` approve/merge commands visible.
+- Verify uncertain syntax with `glab <subcommand> --help`; `glab` flags vary by command/version.
+- Prefer `-F json` for `glab repo view`, `glab issue view`, `glab mr view`, and `glab mr list`; use `-O json` for `glab issue list`.
+- Treat `glab mr list` output as candidate-discovery data only; use `glab mr view <id> -F json` for decision-grade MR SHA, pipeline, and merge status.
+- Create temp/artifact directories in the same shell command before redirecting into them. Do not rely on another parallel tool call to create shared temp paths.
+- Never paste secrets/tokens into issues, MRs, comments, CI logs, screenshots, or command output summaries.
+- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated PRO mutations.
+
+## Canonical snippets
+
+### Snippet: local-repo-preflight
+
+Verifies `glab`, `jq`, git worktree, project auth, and default branch. This is the canonical `jq` dependency check; if it fails, install/fix `jq` before using JSON-dependent issue/MR/CI snippets.
 
 ```bash
 command -v glab >/dev/null || { echo "glab missing"; exit 1; }
+command -v jq >/dev/null || { echo "jq missing"; exit 1; }
 git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
 branch="$(git branch --show-current)"
 remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
@@ -23,40 +43,29 @@ default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')
   || { echo "no default_branch"; exit 1; }
 ```
 
-Use `glab repo view "$repo_url"` for repo lookup; use `-R "$repo_url"` on issue/MR/CI commands when `glab` might infer the wrong repo/host. `glab auth status` is useful, but successful `glab repo view "$repo_url"` is the real local-project auth check.
+### Snippet: issue-pickup
 
-## Rules
-
-> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
-
-- Use direct `glab`, `git`, and `jq` commands.
-- Verify uncertain syntax with `glab <subcommand> --help`; `glab` flags vary by command/version.
-- Prefer `-F json` for `glab repo view`, `glab issue view`, `glab mr view`, and `glab mr list`; use `-O json` for `glab issue list`.
-- Treat `glab mr list` output as candidate-discovery data only; use `glab mr view <id> -F json` for decision-grade MR SHA, pipeline, and merge status.
-- Create temp/artifact directories in the same shell command before redirecting into them. Do not rely on another parallel tool call to create shared temp paths.
-- Never paste secrets/tokens into issues, MRs, comments, CI logs, screenshots, or command output summaries.
-- Treat GitLab issue/MR mutations as allowed workflow actions; do not perform unrelated PRO mutations.
-
-## Common commands
-
-### Issues
+Use for issue candidate discovery and decision-grade issue reads. `glab issue list` JSON uses `-O json`.
 
 ```bash
 glab issue list --per-page 50
 glab issue list -O json --per-page 50 | jq '.[] | {iid,title,labels,assignees,web_url}'
-glab issue list --closed                                     # only closed
-glab issue list --all                                        # open + closed
 glab issue view <id> --comments
 glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
-glab issue close <id>
-glab issue update <id> --label foo,bar --unlabel baz         # add and remove in one call
 ```
 
-### Merge Request creation and updates
+Issue maintenance commands, when the workflow explicitly calls for them:
 
 ```bash
-# Create with a file-backed description. Add --push when the source branch
-# is not yet on the remote (first-commit MR open); omit if already pushed.
+glab issue close <id>
+glab issue update <id> --label foo,bar --unlabel baz
+```
+
+### Snippet: draft-mr-create-update
+
+Create a Draft MR with a file-backed Review Packet, then update description/readiness as evidence changes. Add `--push` when the source branch is not yet on the remote.
+
+```bash
 glab mr create --draft --push \
   --target-branch "$default_branch" \
   --source-branch "$source_branch" \
@@ -68,40 +77,47 @@ glab mr update <id> --description "$(cat /tmp/review-packet.md)"
 glab mr update <id> --ready
 ```
 
-### MR pickup, metadata, CI, and diffs
+### Snippet: mr-pickup
+
+Use for MR candidate discovery, current-branch MR lookup, and decision-grade MR metadata.
 
 ```bash
-# Pickup
 glab mr view                                                 # MR for the current branch (no id)
 glab mr list --not-draft -F json --per-page 50               # candidate list only (filter with -a/-r/-l/-t)
 
-# State filters (glab uses dedicated flags — there is no --state flag)
 glab mr list --merged                                        # only merged MRs
 glab mr list --closed                                        # only closed-without-merge MRs
 glab mr list --all                                           # all states (open + closed + merged)
 
-# Store review artifacts safely (create the directory in this command)
+glab mr view <id> --comments
+glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,author:.author.username,web_url,sha,pipeline,detailed_merge_status}'
+```
+
+### Snippet: artifact-capture
+
+Store MR review artifacts safely and compute diff stats. Create the temp directory in the same shell command before redirecting into it.
+
+```bash
 mr_id="<id>"
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/glab-mr-${mr_id}.XXXXXX")"
 glab mr view "$mr_id" --comments > "$run_dir/mr-comments.txt"
 glab mr view "$mr_id" -F json > "$run_dir/mr.json"
 glab mr diff "$mr_id" --color=never > "$run_dir/diff.patch"
-
-# Metadata: descriptive projection
-glab mr view <id> --comments
-glab mr view <id> -F json | jq '{iid,title,state,source_branch,target_branch,author:.author.username,web_url}'
-
-# Branch CI snapshot (decision-time SHA/pipeline/merge lives below under "Decision-time CI check")
-glab ci status --branch "$source_branch" -F json
-
-# Diffs
-glab mr diff <id> --raw --color=never | git apply --numstat
-glab mr diff <id> --color=never
+glab mr diff "$mr_id" --raw --color=never | git apply --numstat
 ```
 
-### Comments, review decisions, approval, and merge
+### Snippet: ci-decision-snapshot
 
-Use file-backed messages for long reports/comments — avoids shell escaping problems.
+Use immediately before decisions that depend on CI or mergeability. If `pipeline.sha` is exposed, it must equal `reviewed_sha` before green CI counts.
+
+```bash
+glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'
+glab ci status --branch "$source_branch" -F json
+```
+
+### Snippet: note-comment-creation
+
+Use file-backed messages for long reports/comments; this avoids shell escaping problems.
 
 ```bash
 glab mr note create <id> --message "$(cat /tmp/report.md)"
@@ -110,7 +126,17 @@ glab issue note <id> --message "$(cat /tmp/comment.md)"
 
 `glab mr note` has subcommands (`create`, `list`, `reopen`, `resolve`) — `create` is the verb. `glab issue note` takes the id directly and creates a comment by default; **there is no `glab issue note create` subcommand**. Passing `create` makes glab try to parse it as the issue id (`Accepts 1 arg(s), received 2.`).
 
-Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Posting the report comment doesn't depend on SHA — re-run the SHA guard below immediately before approve/merge.
+For request-change/revision labels, only mutate labels that exist in the project's triage vocabulary:
+
+```bash
+revision_label="<project revision label from docs/agents/triage-labels.md, or empty>"
+[ -z "$revision_label" ] || glab mr update <id> --label "$revision_label" --yes
+[ -z "$revision_label" ] || glab mr update <id> --unlabel "$revision_label" --yes
+```
+
+### Snippet: sha-guard
+
+Guard the reviewed SHA immediately before any review decision that depends on the MR head. Never approve or merge a SHA you have not read. Posting the report comment doesn't depend on SHA — re-run this guard immediately before approve/merge.
 
 ```bash
 reviewed_sha="<sha-you-reviewed>"
@@ -121,38 +147,21 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 }
 ```
 
-Decision-time CI check:
-
-```bash
-glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_merge_status}'
-```
-
-If `pipeline.sha` is exposed, it must equal `reviewed_sha` before green CI counts. If the builder-reported pipeline was superseded by a newer pipeline on the same SHA, use the current MR pipeline in the Review Report and note the supersession.
-
-Request changes: post the Review Report, then apply the repo's revision label only if the project vocabulary defines one.
-
-```bash
-glab mr note create <id> --message "$(cat /tmp/report.md)"
-revision_label="<project revision label from docs/agents/triage-labels.md, or empty>"
-[ -z "$revision_label" ] || glab mr update <id> --label "$revision_label" --yes
-```
-
-After a revision is verified, remove the revision label if the project uses one.
-
-```bash
-[ -z "$revision_label" ] || glab mr update <id> --unlabel "$revision_label" --yes
-```
+### Snippet: approve-merge-sha-bound
 
 Approve the exact reviewed SHA. Merge or queue auto-merge only when project policy / MR `Merge authority` allows it, and always bind to the reviewed SHA.
 
 ```bash
 glab mr approve <id> --sha "$reviewed_sha"
 
-# If not merging immediately after approval, re-run the SHA guard first.
+# If not merging immediately after approval, re-run Snippet: sha-guard first.
 glab mr merge <id> --yes --sha "$reviewed_sha"
 # If a running pipeline makes glab queue auto-merge by default, force immediate merge only when policy allows:
 glab mr merge <id> --yes --sha "$reviewed_sha" --auto-merge=false
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
+
+# When approval evidence is required, verify the approval endpoint (URL-encode group/project as %2F):
+glab api "projects/<group%2Fproject>/merge_requests/<id>/approvals"
 
 # Verify merge result:
 glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,detailed_merge_status,web_url}'
@@ -163,7 +172,7 @@ glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,
 - `glab repo view` uses `-F json`, **not** `--json`. `glab issue view` and `glab mr view` also use `-F json`; `glab issue list` uses `-O json`. Watch out: `glab issue list` *also* accepts `-F` — bound to `--output-format` (values: `details`, `ids`, `urls`), not JSON. `glab issue list -F json` silently returns text. Use `-O json` for issue-list JSON; `-F json` for everything else.
 - `labels` on `glab issue view -F json` / `glab issue list -O json` is a **flat list of strings**, not objects. Project via `jq '.labels'` or `jq '.labels[]'` directly; `.labels[].name` raises `Cannot index string with string "name"`.
 - `glab mr diff` has **no** `--stat` flag. Use `glab mr diff <id> --raw --color=never | git apply --numstat` for a path-level changeset.
-- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via the canonical projection in the "Decision-time CI check" subsection above.
+- `glab ci status --mr` is unreliable. Prefer `glab ci status --branch <source-branch> -F json`, or read the MR's `pipeline` field via Snippet: ci-decision-snapshot.
 - `glab mr list -F json` can return sparse or stale fields (for example `pipeline: null`) even when `glab mr view <id> -F json` has the current pipeline. Use list output for pickup triage only.
 - Before treating green CI as evidence: the current MR pipeline's commit SHA (when GitLab exposes it) must equal the MR head SHA — stale green CI is a real risk after a post-ready push. Builder-reported pipeline IDs can be superseded; verify the current MR pipeline immediately before approval/merge.
 

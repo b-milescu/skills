@@ -21,7 +21,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 > **Invocation modes.** The reviewer may be spawned by a human, by a separate builder session, or via the [Mandatory review gate](../start-build/BUILD-FLOW.md#mandatory-review-gate) by the builder running `start-build`. When invoked via the Mandatory review gate, the task prompt contains a structured handoff: MR URL, pointer to the Reviewer Lift block in the MR description, and the project rulebook path. The review procedure is identical regardless of invocation method — the reviewer reads the diff fresh, runs its own tests, and makes its own judgment.
 
-1. Load `gitlab-local` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** to verify `glab`/`jq` are installed, authenticated, and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
 3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup)).
 4. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md); use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
@@ -30,11 +30,11 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
 8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
 9. Post one Review Report per MR via `templates/review-report.md` and decide independently.
-10. **SHA discipline:** approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
+10. **SHA discipline:** use `gitlab-local` **Snippet: sha-guard** before `gitlab-local` **Snippet: approve-merge-sha-bound**; approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
 
 ## MR pickup summary
 
-When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
+When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure using `gitlab-local` snippet names.
 
 ## Multiple MR worktree mode
 
@@ -45,12 +45,12 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 - Block on scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
 - Multiple MRs require separate Review Reports, decisions, and reviewed SHAs — never batch.
 - Approval requires: no Must Fix, all `OQ-N` answered, head SHA = reviewed SHA, CI green/waived/pending under protected auto-merge.
-- Approve with `--sha <reviewed-sha>`. Merge only when `Merge authority` allows.
+- Approve with `gitlab-local` **Snippet: approve-merge-sha-bound** and `--sha <reviewed-sha>`. Merge only when `Merge authority` allows.
 - See [REVIEW-FLOW.md §Procedure](REVIEW-FLOW.md#procedure) for the step-by-step and [§Review Report expectations](REVIEW-FLOW.md#review-report-expectations) for report structure.
 
 ## Decision outcomes
 
-- **Approve** — scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived. Approve with `--sha`; merge or auto-merge when authority allows.
+- **Approve** — scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived. Use `gitlab-local` **Snippet: approve-merge-sha-bound**; merge or auto-merge when authority allows.
 - **Request changes** — fixable Must Fix items; apply the project's revision label if one exists, keep MR open.
 - **Reject** — premise/scope wrong or safety boundary weakened beyond acceptance.
 

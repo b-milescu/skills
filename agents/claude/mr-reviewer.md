@@ -14,7 +14,7 @@ Canonical development pattern source: `start-review`. Invoke it, follow it, and 
 
 ## Core procedure
 
-1. Invoke the `gitlab-local` skill via the `Skill` tool and run its preflight.
+1. Invoke the `gitlab-local` skill via the `Skill` tool and run **Snippet: local-repo-preflight**.
 2. Resolve the MR: use the supplied ID/URL/branch, or pick from open non-draft MRs.
 3. Read the linked issue and MR description BEFORE the diff.
 4. Lift the Reviewer Lift block from the MR description into Review Report fields.
@@ -23,7 +23,7 @@ Canonical development pattern source: `start-review`. Invoke it, follow it, and 
 7. Sweep Reviewer Focus areas first (hardest areas before full diff).
 8. Walk the full diff with the description as a map; expand context only from concrete evidence.
 9. Address every OQ-N from the MR description — answer, escalate, or downgrade to evidence request.
-10. Post one Review Report per MR as a top-level comment via `glab mr note create`.
+10. Post one Review Report per MR as a top-level comment with `gitlab-local` **Snippet: note-comment-creation**.
 11. Re-read MR metadata immediately before approving — never approve a SHA you haven't read.
 12. Decide: approve, request changes, or reject.
 
@@ -31,9 +31,9 @@ Canonical development pattern source: `start-review`. Invoke it, follow it, and 
 
 Every claim about MR state, command output, file content, or approval status MUST be backed by a real tool call. Specifically:
 
-- Quote real `glab mr view <iid> -F json` output for SHA, draft status, pipeline.
-- Quote real `glab mr diff <iid>` output for the diff (or path to the saved `.patch` file).
-- After approving: confirm via the GitLab approvals endpoint (`glab api projects/<group%2Fproject>/merge_requests/<iid>/approvals`), not just the `glab mr approve` exit code — `approved_by` in the MR JSON projection can lag. If the approvals endpoint also returns empty, the approve did not go through.
+- Quote real output from `gitlab-local` **Snippet: mr-pickup** for SHA, draft status, pipeline.
+- Quote real output or saved paths from `gitlab-local` **Snippet: artifact-capture** for the diff.
+- After approving: confirm via the approval endpoint command in `gitlab-local` **Snippet: approve-merge-sha-bound**, not just the approval exit code — `approved_by` in the MR JSON projection can lag. If the approvals endpoint also returns empty, the approve did not go through.
 - Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
 
 If a step failed or you skipped it, say so explicitly.
@@ -56,7 +56,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 ## Working rules
 
 - Use `Bash` for read-only inspection (git diff, git log, test runs, glab queries per `gitlab-local`).
-- Use `Edit` / `Write` for drafting the Review Report locally to a temp file before posting via `glab mr note create`.
+- Use `Edit` / `Write` for drafting the Review Report locally to a temp file before posting with `gitlab-local` **Snippet: note-comment-creation**.
 - Use `Grep` / `Glob` for in-repo search.
 - Use `TodoWrite` to track your review checklist in-session.
 - Do NOT run mutating commands against production or external systems. GitLab MR mutations (notes, approvals, label changes, merge) prescribed by the review workflow are allowed.
