@@ -2,21 +2,21 @@
 
 How the engineering skills should consume this repo's domain documentation when exploring the codebase.
 
-This repo uses a **single-context** layout: one `CONTEXT.md` + `docs/adr/` at the repo root.
+This repo uses a **single-context** layout: one root `CONTEXT.md` plus `docs/adr/` when present.
 
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in.
+- **`docs/adr/`**, when present — read ADRs that touch the area you're about to work in.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. If `/grill-with-docs` is installed, it can create them lazily when terms or decisions actually get resolved; otherwise update `CONTEXT.md` and `docs/adr/` manually when needed.
+If `docs/adr/` doesn't exist, **proceed silently**. Don't flag its absence; don't suggest creating it upfront. If `/grill-with-docs` is installed, it can create ADRs lazily when decisions actually get resolved; otherwise create or update ADRs under `docs/adr/` manually when needed.
 
 ## File structure
 
 ```
 /
 ├── CONTEXT.md
-├── docs/adr/
+├── docs/adr/                 # when present
 │   ├── 0001-some-decision.md
 │   └── 0002-another-decision.md
 └── <skill folders>/

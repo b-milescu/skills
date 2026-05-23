@@ -1,25 +1,26 @@
 # agents/skills
 
-Repository of agent skills for the AI-trading GitLab group. Each top-level directory is a self-contained skill installed by `install.sh` into `~/.claude/skills/`.
+Repository of agent skills for the AI-trading GitLab group. Each top-level directory is a self-contained skill installed by `install.sh` into agent runtime skill directories.
 
 ## Agent skills
 
-### Issue tracker
+This rulebook is a pointer-first entry point. Keep live tracker, label, check-gate, and workflow details in their owner docs under `docs/agents/`; do not copy those inventories here.
 
-Issues live in this repo's GitLab Issues at `gitlab.example.com/agents/skills`, accessed via the `glab` CLI. See `docs/agents/issue-tracker.md`.
+### Routing
 
-### Triage labels
+- Issue tracker: see `docs/agents/issue-tracker.md`.
+- Triage labels: see `docs/agents/triage-labels.md`.
+- Domain docs: see `docs/agents/domain.md`.
+- Check gate: see `docs/agents/check-gate.md`.
+- Dev workflows: see `docs/agents/dev-workflows.md`.
 
-Live GitLab label vocabulary (`docs`, `ready`, `ready-for-agent`, `refactor`); no lazy canonical-label creation. See `docs/agents/triage-labels.md`.
+### Doc ownership map
 
-### Domain docs
-
-Single-context layout: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
-
-### Check gate
-
-No full local gate is defined; use targeted docs/shell checks for this skills repo. See `docs/agents/check-gate.md`.
-
-### Dev workflows
-
-Use `/gitlab-local`, `/gitlab-to-issues`, `/start-build`, and `/start-review` for GitLab-backed planning, build, and review workflows. See `docs/agents/dev-workflows.md`.
+| File / path | Owns | Does not own |
+| --- | --- | --- |
+| `README.md` | Human-facing repo overview, layout, install instructions, and broad skill catalogue. | Live tracker labels, gate commands, workflow command syntax, or domain decisions. |
+| `CLAUDE.md` | Agent entry-point routing plus this ownership map. | Repeated live inventories from `docs/agents/` or detailed workflow procedures. |
+| `docs/agents/` | Canonical repo-local operating docs for tracker location, label vocabulary, domain-doc loading, check gates, and dev workflow skill references. | Skill implementation internals or broad README-style onboarding. |
+| `setup-dev-skills/` | Setup Skill that creates or reconciles repo-local Agent Setup Docs in target repos. | This repo's live operating inventory after setup output has been written. |
+| `CONTEXT.md` | Project language, glossary, relationships, and rejected synonyms. | Operational tracker/gate/workflow details or durable design decisions. |
+| `docs/adr/` | Durable design decisions when present. | Glossary ownership or live operational inventories. |

@@ -15,6 +15,7 @@ Use the targeted checks below and state `Local gate: PASS — targeted docs/shel
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.pi/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
+| Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.pi/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near the skill guideline of under 100 lines when practical. |
 | Stale naming check | `rg -n "<old-name>|<rejected-term>" .` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print | sort` | Confirms expected seed docs exist. |
@@ -24,7 +25,7 @@ Use the targeted checks below and state `Local gate: PASS — targeted docs/shel
 Commands were derived from:
 
 - `README.md` install instructions.
-- `install.sh` symlink and external dependency warning behavior.
+- `install.sh` skill/agent symlink and external dependency warning behavior.
 - Skill authoring guideline that `SKILL.md` should stay under 100 lines where practical.
 - No `Makefile`, package manifest, language project file, or CI config exists at time of writing.
 
