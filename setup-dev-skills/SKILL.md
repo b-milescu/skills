@@ -51,7 +51,7 @@ Explain build/review skills need exact local commands before claiming ready. Rec
 
 ### E — Dev workflows
 
-Explain generated docs should tell future agents which workflow skill to load. If tracker is GitLab, reference `/gitlab-local`, `/gitlab-to-issues`, `/start-build`, and `/start-review`. Otherwise list them as GitLab-only and direct agents to generic `/to-issues` or tracker-specific workflow.
+Explain generated docs should tell future agents which workflow skill to load. If tracker is GitLab, reference `/gitlab-local`, `/gitlab-to-issues`, `/start-build`, and `/start-review`. Otherwise list them as GitLab-only and direct agents to `/to-issues` if installed, or to the tracker-specific workflow manually.
 
 ## 3. Confirm draft
 

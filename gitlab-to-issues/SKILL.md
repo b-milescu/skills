@@ -1,11 +1,11 @@
 ---
 name: gitlab-to-issues
-description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for this repo using tracer-bullet vertical slices and local triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues separate.
+description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for this repo using tracer-bullet vertical slices and local triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues (if installed) separate.
 ---
 
 # GitLab To Issues
 
-Turn an approved plan into GitLab issues for `agents/skills` using local tracker docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name so it does not shadow a generic `/to-issues` skill.
+Turn an approved plan into GitLab issues for `agents/skills` using local tracker docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name so it does not shadow a generic `/to-issues` skill if installed.
 
 ## Quick start
 
