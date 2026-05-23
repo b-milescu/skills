@@ -16,6 +16,11 @@ This skill is language- and domain-agnostic; domain-specific safety terms below 
 
 > **Abbreviation:** `PRO` = product / runtime / operator (external systems).
 
+## Invocation modes
+
+- **Standalone `/start-build` mode** — the builder owns the mandatory review gate: after marking the MR ready, spawn a fresh reviewer, drive the review loop, post the Review Gate Summary, and never self-approve or self-merge.
+- **Child `mr-builder` mode** — the child builder builds, opens/updates the MR, marks it ready, and stops at final handoff. The parent orchestrator owns the mandatory review gate and merge; the child builder does not spawn a reviewer unless the parent explicitly instructs it to.
+
 For runtime/operator/safety behavior changes, load and follow the `tdd` skill. If TDD is not applicable (docs-only, mechanical rename, generated update, urgent hotfix), say why in the MR. Keep context as narrow as possible: issue, rulebook, affected docs/source/tests, and evidence-linked references first; expand only when a concrete dependency, test, or safety invariant requires it.
 
 ## Quick start
@@ -29,7 +34,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 7. Open a Draft MR early per issue once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create-update**, `Closes #<id>`, and the appropriate Review Packet template. Fill the **Reviewer Lift** block using `templates/reviewer-lift-schema.md` so the reviewer can copy structured values directly into their report.
 8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including every field from the Reviewer Lift schema) and mark ready when the local gate is green.
-10. **Mandatory review gate** — after marking ready, spawn a subagent reviewer in a fresh session per the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) protocol.
+10. **Review-gate handoff** — after marking ready, follow the invocation mode above: standalone builders spawn a fresh reviewer per the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) protocol; child `mr-builder` agents stop at final handoff for the parent orchestrator.
 
 ## Issue pickup summary
 

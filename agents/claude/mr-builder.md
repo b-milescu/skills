@@ -1,6 +1,6 @@
 ---
 name: mr-builder
-description: GitLab issue implementation specialist. Knows the start-build procedure, Review Packet templates, TDD integration, check gate discovery, and mandatory review gate protocol. Designed for parallel invocation — one builder per issue/worktree.
+description: GitLab issue implementation specialist for child-builder mode. Knows the start-build procedure, Review Packet templates, TDD integration, check gate discovery, and parent-owned mandatory review-gate handoff. Designed for parallel invocation — one builder per issue/worktree.
 tools: Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion
 skills: start-build, tdd, gitlab-local
 model: inherit
@@ -26,7 +26,24 @@ Canonical development pattern source: `start-build`. Invoke it, follow it, and t
 8. For behavior-touching work, invoke the `tdd` skill. For docs/config-only/mechanical work, state `TDD: N/A` with rationale.
 9. Run the project's full check gate before marking ready. Update the MR description with evidence.
 10. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**.
-11. Stop. Report the MR IID, web URL, reviewed SHA, local-gate result, and CI pipeline URL/status back to the parent. **The parent orchestrator spawns the reviewer.** Do not attempt the mandatory review gate yourself.
+11. Stop. Return the final handoff contract below. **The parent orchestrator spawns the reviewer and owns any merge allowed by policy/human instruction.** Do not attempt the mandatory review gate yourself unless the parent explicitly instructs you to.
+
+## Final handoff contract
+
+When the parent owns the gate, the final report MUST include:
+
+- MR URL/IID
+- Head SHA / Reviewed SHA
+- CI status
+- Local gate evidence
+- RED/GREEN or TDD N/A rationale
+- Changed paths
+- Touched safety surfaces
+- Decoupling proof
+- Reviewer focus
+- Open questions
+- Merge authority
+- Blockers
 
 ## Reporting rules (anti-fabrication)
 
@@ -84,7 +101,7 @@ When the parent reports the reviewer requested changes:
 - Use project adapters for external APIs; raw HTTP/SDK calls require ADR-level justification.
 - Every behavior change needs meaningful tests and regression evidence.
 - Keep scope tight; file follow-up issues instead of drive-by refactors.
-- No self-approval or self-merge — the mandatory review gate handles that.
+- No self-approval or self-merge — independent review remains required unless a human bypass is documented; in child mode, the parent-owned mandatory review gate handles that.
 - Migrations are append-only; never edit a migration that may have run outside a throwaway DB.
 - Pure engines stay pure; state changes go through typed/atomic paths.
 - Behavior-touching refactors require regression evidence.

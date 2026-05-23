@@ -44,6 +44,39 @@ Every non-trivial task needs a GitLab issue describing the user/operator-visible
 6. If refactoring, is any surface behavior-touching? See [SAFETY.md](SAFETY.md).
 7. What is the merge authority for this MR: approval-only, reviewer may merge, queue auto-merge, human release, or project default?
 
+## Builder invocation modes
+
+Use the mode supplied by the caller or agent prompt; when no parent orchestrator is delegating work, default to standalone `/start-build` mode.
+
+### Standalone `/start-build` mode
+
+- The builder owns the mandatory review gate after marking the MR ready.
+- The builder spawns a fresh reviewer, waits for the Review Report, drives any revision rounds, and posts the Review Gate Summary.
+- The builder never self-approves or self-merges.
+
+### Child `mr-builder` mode
+
+- The child builder implements the issue, opens/updates the Draft MR, marks it ready, and stops at final handoff.
+- The parent orchestrator owns the mandatory review gate and any merge allowed by policy or human instruction.
+- The child builder does not spawn a reviewer unless the parent explicitly instructs it to.
+
+Minimum final handoff when the parent owns the gate:
+
+- MR URL/IID
+- Head SHA / Reviewed SHA
+- CI status
+- Local gate evidence
+- RED/GREEN or TDD N/A rationale
+- Changed paths
+- Touched safety surfaces
+- Decoupling proof
+- Reviewer focus
+- Open questions
+- Merge authority
+- Blockers
+
+Mandatory independent review remains required in both modes unless a human explicitly documents a bypass. Builder self-approval and self-merge remain forbidden.
+
 ## Check gate discovery
 
 Before you claim the full local gate is green, discover it in this order:
@@ -81,13 +114,13 @@ Before marking ready or requesting review, validate the MR handoff:
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live PRO external systems as regression evidence.
 8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/reviewer-lift-schema.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
-9. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**. Then proceed to the [Mandatory review gate](#mandatory-review-gate) below.
+9. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**. Then follow the active [Builder invocation mode](#builder-invocation-modes): standalone `/start-build` proceeds to the [Mandatory review gate](#mandatory-review-gate) below; child `mr-builder` stops at the documented final handoff for the parent orchestrator.
    - **Don't block ready-marking on CI when the full local check gate is green.** The local gate (lint, format, typecheck, full test suite, etc.) is the same check CI runs; once green and pushed, mark ready immediately. CI is the reviewer's clean-checkout safety net, not a builder-side wait.
    - Wait for CI before ready only when (a) the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or (b) the change touches CI infrastructure itself. Say so explicitly in the MR.
    - **CI-pending review policy.** A reviewer may approve and queue auto-merge while CI is pending only when the local gate is PASS, the pending pipeline is for the reviewed SHA when GitLab exposes the SHA, and GitLab merge checks enforce green CI before merge. Red CI or stale green CI remains a blocker unless explicitly waived.
    - **Post-ready push protocol.** If you push any commits after marking ready (CI fix, review revision, rebase, anything), post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive. Update `Reviewer Lift > Reviewed SHA`, `CI pipeline`, and `Delta since last ready push`. Use `templates/revision-packet.md` for substantive post-ready changes, not only formal request-changes responses. The reviewer is told to refuse approval of a SHA they haven't read; silently pushing after ready risks merging unreviewed commits.
    - If CI later goes red, treat it like other review feedback: fetch logs, diagnose, fix, push a commit (with the post-ready delta comment). Don't unilaterally re-Draft.
-10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. Then spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol.
+10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. In standalone `/start-build` mode, spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol. In child `mr-builder` mode, return the revision handoff; the parent orchestrator spawns the fresh reviewer.
 
 ## Compact packet eligibility
 
@@ -106,11 +139,11 @@ If blocked for more than 2 hours:
 
 ## Mandatory review gate
 
-The builder must always spawn a subagent reviewer — this gate is mandatory, not optional. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
+In standalone `/start-build` mode, the builder must spawn a subagent reviewer — this gate is mandatory, not optional. In child `mr-builder` mode, the parent orchestrator owns this gate after the child returns its final handoff; the child builder must not spawn a reviewer unless explicitly instructed. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
 
 ### Subagent spawning protocol
 
-After marking the MR ready:
+When you own this gate after the MR is ready:
 
 1. **Discover available reviewers.** Call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization (e.g. `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override). Prefer project-scope agents over user-scope over builtin. If a specialized MR reviewer is found, use it; otherwise fall back to the builtin `reviewer`.
 2. **Spawn** the selected agent running `start-review` in a fresh session. The task prompt must include:
