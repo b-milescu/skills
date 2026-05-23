@@ -37,9 +37,12 @@ for dir in "$REPO_ROOT"/*/; do
   SKILL_NAMES+=("$(basename "$dir")")
 done
 
+# Agents are organised per target dialect under agents/<target>/.
+# AGENT_NAMES enumerates from agents/claude/ because every agent must have a
+# Claude Code variant; the pi variant is optional.
 AGENT_NAMES=()
-if [[ -d "$REPO_ROOT/agents" ]]; then
-  for f in "$REPO_ROOT/agents"/*.md; do
+if [[ -d "$REPO_ROOT/agents/claude" ]]; then
+  for f in "$REPO_ROOT/agents/claude"/*.md; do
     [[ -f "$f" ]] || continue
     AGENT_NAMES+=("$(basename "$f" .md)")
   done
@@ -114,23 +117,38 @@ for skill_dir in "${SKILL_DESTS[@]}"; do
   done
 done
 
-# --- Agents ---
-AGENT_DESTS=(
-  "$HOME/.claude/agents"
-  "$HOME/.pi/agent/agents"
+# --- Agents (per-target dialect) ---
+# Each agent has a per-target source under agents/<dialect>/<name>.md so the
+# frontmatter can match the target runtime's schema (Claude Code uses
+# PascalCase tools and its own field set; pi uses lowercase tools and its own
+# intercom-bridge fields). Symlink the right variant to each destination.
+AGENT_TARGETS=(
+  "$HOME/.claude/agents|claude"
+  "$HOME/.pi/agent/agents|pi"
 )
 
-for agent_dir in "${AGENT_DESTS[@]}"; do
+for entry in "${AGENT_TARGETS[@]}"; do
+  agent_dir="${entry%|*}"
+  source_subdir="${entry#*|}"
+  source_root="$REPO_ROOT/agents/$source_subdir"
   parent=$(dirname "$agent_dir")
   if [[ ! -d "$parent" ]]; then
     printf 'skip: %s (parent %s not present — agent not installed)\n' "$agent_dir" "$parent"
     continue
   fi
+  if [[ ! -d "$source_root" ]]; then
+    printf 'skip: %s (no %s/ source dir)\n' "$agent_dir" "$source_root"
+    continue
+  fi
   mkdir -p "$agent_dir"
-  echo "Agents → $agent_dir"
+  echo "Agents (${source_subdir} dialect) → $agent_dir"
   prune_stale_repo_links "$agent_dir" is_agent_name
   for name in "${AGENT_NAMES[@]}"; do
-    link "$REPO_ROOT/agents/$name.md" "$agent_dir/$name.md"
+    if [[ ! -f "$source_root/$name.md" ]]; then
+      printf '  skip:    %s (no source in %s/)\n' "$agent_dir/$name.md" "$source_root"
+      continue
+    fi
+    link "$source_root/$name.md" "$agent_dir/$name.md"
   done
 done
 
