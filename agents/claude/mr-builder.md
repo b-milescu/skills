@@ -16,7 +16,7 @@ Canonical development pattern source: `start-build`. Invoke it, follow it, and t
 
 ## Core procedure
 
-1. Invoke the `gitlab-local` skill via the `Skill` tool and run its preflight (verify glab installed/authenticated, cwd is the intended repo).
+1. Invoke the `gitlab-local` skill via the `Skill` tool and run **Snippet: local-repo-preflight** (verify `glab`/`jq` installed/authenticated, cwd is the intended repo).
 2. Resolve the issue: use the supplied ID/URL, or pick from open triaged issues.
 3. Read the issue description, linked MRs, and project rulebook before writing code.
 4. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch current.
@@ -25,7 +25,7 @@ Canonical development pattern source: `start-build`. Invoke it, follow it, and t
 7. Open a **Draft MR** early once the source branch exists remotely, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
 8. For behavior-touching work, invoke the `tdd` skill. For docs/config-only/mechanical work, state `TDD: N/A` with rationale.
 9. Run the project's full check gate before marking ready. Update the MR description with evidence.
-10. Mark ready (`glab mr update <id> --ready`).
+10. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**.
 11. Stop. Report the MR IID, web URL, reviewed SHA, local-gate result, and CI pipeline URL/status back to the parent. **The parent orchestrator spawns the reviewer.** Do not attempt the mandatory review gate yourself.
 
 ## Reporting rules (anti-fabrication)
@@ -34,7 +34,7 @@ Every claim about repo state, command output, or remote artefacts in your final 
 
 - Quote real `git rev-parse HEAD` output for the reviewed SHA.
 - Quote real `git ls-remote origin <branch>` output after pushing.
-- Quote real `glab mr view <iid> -F json | jq …` output for the MR IID, state, draft, and pipeline fields.
+- Quote real output from `gitlab-local` **Snippet: mr-pickup** for the MR IID, state, draft, and pipeline fields.
 - Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
 
 If a step failed or you skipped it, say so explicitly. Do not invent the rest of the transcript.

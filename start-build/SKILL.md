@@ -20,20 +20,20 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Quick start
 
-1. Load `gitlab-local` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** to verify `glab`/`jq` are installed, authenticated, and the cwd is the intended GitLab repo.
 2. Read [SAFETY.md](SAFETY.md) before changing files.
 3. Read [BUILD-FLOW.md](BUILD-FLOW.md) before selecting issue(s), creating/updating MR(s), commenting, or marking ready.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.
 5. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch detected, `origin/<default>` current. If dirty/stale, stop and ask.
 6. Single issue → branch from latest default in cwd. Multiple issues → one sibling worktree per issue from `origin/<default>`; never share a checkout.
-7. Open a Draft MR early per issue once the source branch exists remotely (push the first commit or use `glab mr create --push`) with `Closes #<id>` and the appropriate Review Packet template. Fill the **Reviewer Lift** block using the stable handoff schema so the reviewer can copy structured values directly into their report: Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, and Delta since last ready push.
+7. Open a Draft MR early per issue once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create-update**, `Closes #<id>`, and the appropriate Review Packet template. Fill the **Reviewer Lift** block using the stable handoff schema so the reviewer can copy structured values directly into their report: Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, and Delta since last ready push.
 8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including the full Reviewer Lift schema) and mark ready when the local gate is green.
 10. **Mandatory review gate** — after marking ready, spawn a subagent reviewer in a fresh session per the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) protocol.
 
 ## Issue pickup summary
 
-When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**: prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, and fit one MR. For multiple issues, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested. See [BUILD-FLOW.md §Issue pickup](BUILD-FLOW.md#issue-pickup) for the full procedure with commands.
+When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**: prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, and fit one MR. For multiple issues, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested. See [BUILD-FLOW.md §Issue pickup](BUILD-FLOW.md#issue-pickup) for the full procedure using `gitlab-local` snippet names.
 
 ## Essential safety summary
 

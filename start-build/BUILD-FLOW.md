@@ -1,15 +1,15 @@
 # Start Build Flow
 
-Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and the Issue pickup summary (Quick start step 1 covers `gitlab-local` preflight), plus the host project's issue-tracker guide or `gitlab-local` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-build`. Read before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Assumes you've already read [SKILL.md](SKILL.md) for purpose, GitLab handoff, and the Issue pickup summary (Quick start step 1 covers `gitlab-local` preflight), plus the host project's issue-tracker guide or `gitlab-local` for canonical snippet names and flag pitfalls.
 
 ## Issue pickup
 
-1. Run the direct preflight from `gitlab-local` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
-2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `-O json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
+1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
+2. Use `gitlab-local` **Snippet: issue-pickup** to list candidates (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate). Inspect 3-5 candidates — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
 4. For multiple, select only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md).
 5. Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested.
-6. Inspect candidates with `glab issue view <id>`; summarize ID, title, labels, assignee, suitability, coupling risk.
+6. Inspect candidates with `gitlab-local` **Snippet: issue-pickup**; summarize ID, title, labels, assignee, suitability, coupling risk.
 7. If one issue/set is clearly best, announce and proceed. If several are plausible or coupled, ask the user to choose.
 8. Claim issues only when project convention is clear; do not create/mutate labels casually.
 
@@ -23,7 +23,7 @@ Use when the user supplies multiple issues, asks for multiple tasks, or requests
 4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
    - `git status --porcelain` empty;
    - `git fetch origin`;
-   - detect default branch (`glab repo view "$repo_url" -F json | jq -er '.default_branch'`, or project docs if jq isn't available);
+   - detect default branch with `gitlab-local` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
    - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
 5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
 6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
@@ -71,17 +71,17 @@ Before marking ready or requesting review, validate the MR handoff:
 2. For a single issue, start clean from latest default branch:
    - `git status --porcelain` empty. If dirty, stop and ask — never auto-stash, reset, or clean.
    - `git fetch origin`.
-   - `git checkout <default>` (check via `glab repo view "$repo_url" -F json | jq -er '.default_branch'` if not `main`).
+   - `git checkout <default>` (use `default_branch` from `gitlab-local` **Snippet: local-repo-preflight** if not `main`).
    - `git pull --ff-only origin <default>`. If FF fails, stop and ask; do not force.
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
 3. Load narrow context, not the whole repo or conversation: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue. Expand outward only from concrete evidence such as imports/callers, failing tests, changed paths, or safety invariants.
-4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely (push the first commit or use `glab mr create --push` after committing). Use `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block (see `templates/review-packet.md` for the canonical field list) — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
+4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block (see `templates/review-packet.md` for the canonical field list) — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
 5. For behavior-touching changes, implement vertical slices per the `tdd` skill. Commit coherent green slices, referencing issue/slice; revision commits cite review-thread items (e.g. `MF-1: <fix>`). For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live PRO external systems as regression evidence.
 8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/review-packet.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
-9. `glab mr update <id> --ready` and mark ready. Then proceed to the [Mandatory review gate](#mandatory-review-gate) below.
+9. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**. Then proceed to the [Mandatory review gate](#mandatory-review-gate) below.
    - **Don't block ready-marking on CI when the full local check gate is green.** The local gate (lint, format, typecheck, full test suite, etc.) is the same check CI runs; once green and pushed, mark ready immediately. CI is the reviewer's clean-checkout safety net, not a builder-side wait.
    - Wait for CI before ready only when (a) the local gate could not be run (missing tooling, OS-specific job, unreachable integration suite) or (b) the change touches CI infrastructure itself. Say so explicitly in the MR.
    - **CI-pending review policy.** A reviewer may approve and queue auto-merge while CI is pending only when the local gate is PASS, the pending pipeline is for the reviewed SHA when GitLab exposes the SHA, and GitLab merge checks enforce green CI before merge. Red CI or stale green CI remains a blocker unless explicitly waived.
@@ -98,7 +98,7 @@ Use `templates/review-packet-compact.md` when the diff is simple enough that a s
 If blocked for more than 2 hours:
 
 1. Keep the MR in Draft.
-2. Post `templates/stuck-packet.md` as an MR comment after filling it: `glab mr note create <id> --message "$(cat templates/stuck-packet.md)"`.
+2. Post `templates/stuck-packet.md` as an MR comment after filling it with `gitlab-local` **Snippet: note-comment-creation**.
 3. Apply the project's unblock label if one exists.
 4. Request review explicitly for unblocking.
 5. List ranked hypotheses.

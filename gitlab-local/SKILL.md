@@ -160,6 +160,9 @@ glab mr merge <id> --yes --sha "$reviewed_sha"
 glab mr merge <id> --yes --sha "$reviewed_sha" --auto-merge=false
 glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
 
+# When approval evidence is required, verify the approval endpoint (URL-encode group/project as %2F):
+glab api "projects/<group%2Fproject>/merge_requests/<id>/approvals"
+
 # Verify merge result:
 glab mr view <id> -F json | jq '{iid,title,state,sha,merged_at,merge_commit_sha,detailed_merge_status,web_url}'
 ```

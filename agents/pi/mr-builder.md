@@ -15,7 +15,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 
 ## Core procedure
 
-1. Load and run the `gitlab-local` skill preflight (verify glab installed/authenticated, cwd is the intended repo).
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** (verify `glab`/`jq` installed/authenticated, cwd is the intended repo).
 2. Resolve the issue: use the supplied ID/URL, or pick from open triaged issues.
 3. Read the issue description, linked MRs, and project rulebook before writing code.
 4. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch current.
@@ -24,7 +24,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 7. Open a **Draft MR** early once the source branch exists remotely, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
 8. For behavior-touching work, follow the `tdd` skill. For docs/config-only/mechanical work, state `TDD: N/A` with rationale.
 9. Run the project's full check gate before marking ready. Update the MR description with evidence.
-10. Mark ready (`glab mr update <id> --ready`).
+10. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**.
 11. The parent orchestrator handles the review gate. If changes are requested, respond per the revision protocol below.
 
 ## Issue pickup
