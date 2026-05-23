@@ -76,6 +76,8 @@ Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
 
 ## Multiple MR mode
 
+Follow the shared Decoupling Contract (`docs/decoupling-contract.md`) reviewer consumer guidance before parallel review. If coupling is unclear, review serially; never parallelize coupled work to save time, and never batch-approve coupled MRs.
+
 One worktree per MR when local checkout/tests needed. Fetch into temp refs:
 - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
 - `git worktree add --detach <path> refs/tmp/review/mr-<iid>`

@@ -27,7 +27,7 @@
 | GREEN | `<exact passing test command + brief result, or N/A — why>` |
 | Changed paths | `<high-level path list / diffstat>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / other>` |
-| Decoupling proof | `<N/A for single-issue; otherwise: list co-running MR IIDs and why decoupled — file/module overlap none, no shared migrations/locks/lockfiles, tests independent>` |
+| Decoupling proof | `<N/A for single-issue; otherwise: co-running MR IIDs/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
 | Merge authority | `<approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |

@@ -10,7 +10,7 @@ description: >-
 
 ## Purpose
 
-Implement scoped GitLab issues and produce reviewable changes: code, tests, docs, migrations, MRs. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-issue is the default. Multiple issues are allowed only when clearly decoupled; each gets its own branch, worktree, MR, check evidence, and Review Packet. Treat every project as safety-critical unless its rulebook says otherwise.
+Implement scoped GitLab issues and produce reviewable changes: code, tests, docs, migrations, MRs. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-issue is the default. Multiple issues are allowed only when they satisfy the shared [Decoupling Contract](../docs/decoupling-contract.md); each gets its own branch, worktree, MR, check evidence, and Review Packet. Treat every project as safety-critical unless its rulebook says otherwise.
 
 This skill is language- and domain-agnostic; domain-specific safety terms below are examples to map onto the host project's equivalent surfaces. **Load the host project's rulebook first** (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, architecture docs, ADRs). Project rules override this skill where stricter. Handoff lives in **GitLab**: tasks are issues, proposals are MRs, review happens in MR discussions. Fill templates into MR descriptions/comments; never commit `.reviews/` artifacts.
 
@@ -33,7 +33,7 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 
 ## Issue pickup summary
 
-When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**: prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, and fit one MR. For multiple issues, keep only a clearly decoupled set — no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable. Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested. See [BUILD-FLOW.md §Issue pickup](BUILD-FLOW.md#issue-pickup) for the full procedure with commands.
+When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from the **current GitLab project**: prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, and fit one MR. For multiple issues, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested. See [BUILD-FLOW.md §Issue pickup](BUILD-FLOW.md#issue-pickup) for the full procedure with commands.
 
 ## Essential safety summary
 
