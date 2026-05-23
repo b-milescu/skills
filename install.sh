@@ -10,8 +10,9 @@
 # Each destination is skipped if its parent directory (e.g. ~/.claude/,
 # ~/.pi/agent/) doesn't exist — that agent simply isn't installed on this host.
 # Safe to re-run after adding/removing skills or agents. Refuses to overwrite
-# non-symlink targets — fix those by hand. Stale repo-owned symlinks are pruned
-# so renames propagate cleanly.
+# non-symlink targets or user-managed symlinks pointing outside this repo — fix
+# those by hand. Stale repo-owned symlinks are pruned so renames propagate
+# cleanly.
 
 set -euo pipefail
 shopt -s nullglob
@@ -112,12 +113,47 @@ warn_missing_external_skills() {
   done
 }
 
+resolve_symlink_target() {
+  local link_path="$1" target
+
+  target=$(readlink "$link_path") || return 1
+  if [[ "$target" == /* ]]; then
+    "$REALPATH" -m "$target"
+  else
+    "$REALPATH" -m "$(dirname "$link_path")/$target"
+  fi
+}
+
+is_repo_owned_path() {
+  local path="$1"
+  case "$path" in
+    "$REPO_ROOT"|"$REPO_ROOT"/*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 link() {
-  local src="$1" dest="$2"
-  if [[ -e "$dest" && ! -L "$dest" ]]; then
+  local src="$1" dest="$2" existing_abs src_abs
+
+  if [[ -L "$dest" ]]; then
+    existing_abs=$(resolve_symlink_target "$dest") || {
+      printf '  skip:    %s (cannot read symlink target — resolve by hand)\n' "$dest" >&2
+      return
+    }
+    src_abs=$("$REALPATH" -m "$src")
+    if [[ "$existing_abs" != "$src_abs" ]] && ! is_repo_owned_path "$existing_abs"; then
+      printf '  skip:    %s (existing symlink points outside repo: %s)\n' "$dest" "$existing_abs" >&2
+      return
+    fi
+  elif [[ -e "$dest" ]]; then
     printf '  skip:    %s (exists, not a symlink — resolve by hand)\n' "$dest" >&2
     return
   fi
+
   local rel
   rel=$("$REALPATH" --relative-to="$(dirname "$dest")" "$src")
   ln -sfn "$rel" "$dest"
