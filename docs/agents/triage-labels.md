@@ -1,15 +1,20 @@
 # Triage Labels
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's GitLab issue tracker.
+This repo treats GitLab's live label set as the source of truth. `/setup-dev-skills` owns regenerating this file when tracker labels change.
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+Verified on 2026-05-23 with `glab label list`:
 
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
+| Label | Category | Meaning / use |
+| --- | --- | --- |
+| `docs` | kind | Documentation-only or documentation-focused work. |
+| `ready` | status | Existing generic readiness label. Meaning is not yet specialised; ask before using when `ready-for-agent` would also fit. |
+| `ready-for-agent` | triage role | Fully specified and safe for AFK agent implementation without new human decisions. |
+| `refactor` | kind | Refactoring or structure-improvement work. |
 
-These labels are created lazily on GitLab the first time a skill applies one (via `glab issue update --label ...`). Edit the right-hand column to remap any role to an existing label your project already uses.
+## Agent rules
+
+- Apply only labels listed above. Do not rely on GitLab lazy label creation.
+- Use `ready-for-agent` for AFK-ready issues.
+- Use `docs` or `refactor` as optional kind labels when the slice fits.
+- Do not apply `needs-triage`, `needs-info`, `ready-for-human`, `wontfix`, `needs-revision`, or `needs-unblock`; those labels do not exist in this project.
+- If work needs more information, a human decision, revision, or unblock, state that in the issue/MR body or comment and ask a maintainer whether the live vocabulary should expand.

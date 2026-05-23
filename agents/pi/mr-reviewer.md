@@ -68,7 +68,7 @@ Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
 ## Decisions
 
 - Approve: scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived/pending under protected auto-merge. Approve with SHA lock per `gitlab-local`. Merge only when Merge authority allows.
-- Request changes: fixable Must Fix items, approach is sound. Apply needs-revision label, keep MR open.
+- Request changes: fixable Must Fix items, approach is sound. Apply the project's revision label if one exists, keep MR open.
 - Reject: premise/scope wrong or safety boundary weakened beyond acceptance. Close MR with explanation.
 
 ## Multiple MR mode

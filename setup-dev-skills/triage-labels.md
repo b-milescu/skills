@@ -1,15 +1,26 @@
 # Triage Labels
 
-Skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker.
+This file records the target repo's tracker labels. `/setup-dev-skills` should keep it aligned with the live tracker label set whenever it is run.
 
-| Canonical role | Label in this tracker | Meaning |
+## Live label inventory
+
+| Label | Category | Meaning / use |
 | --- | --- | --- |
-| `needs-triage` | `needs-triage` | Maintainer needs to evaluate this issue |
-| `needs-info` | `needs-info` | Waiting on reporter for more information |
-| `ready-for-agent` | `ready-for-agent` | Fully specified, ready for an AFK agent |
-| `ready-for-human` | `ready-for-human` | Requires human implementation or decision |
-| `wontfix` | `wontfix` | Will not be actioned |
+| `<tracker-label>` | `<triage role / kind / status>` | `<when agents should apply it>` |
 
-When a skill mentions a role, use the corresponding label string from this table.
+## Agent rules
 
-Edit the right-hand column to match existing tracker labels. If using GitLab, apply labels with `/gitlab-local` command syntax.
+- Apply only labels listed in the inventory above.
+- Do not rely on lazy label creation. Creating, deleting, or renaming tracker labels is a tracker mutation and needs an explicit user decision.
+- If a workflow needs a state that has no live label, describe the state in the issue/MR body or a comment instead of inventing a label.
+
+## Setup notes
+
+When running `/setup-dev-skills`:
+
+1. Read the live labels first (`glab label list`, `gh label list`, or the local tracker's label source).
+2. Compare them with any existing `docs/agents/triage-labels.md`.
+3. Ask whether to document the live labels as-is, create/migrate labels to a canonical role vocabulary, or use a hybrid of triage-role and kind labels.
+4. Write this file from the confirmed decision.
+
+If the tracker has no labels yet and the user wants triage-role labels, common starting roles are: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`.

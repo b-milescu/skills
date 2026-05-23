@@ -19,8 +19,8 @@ When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise 
 
 1. Run the direct preflight from `gitlab-local` to confirm `glab` resolves to the cwd repo. If preflight fails, stop and ask.
 2. If the current branch has an MR (`glab mr view`), prefer it when the user says "this branch" or the branch is clearly under review.
-3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled ready-for-review, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
-4. Deprioritize drafts, blocked MRs, MRs labeled needs-revision/needs-unblock/WIP, and obviously red-CI MRs unless the user asked for failure triage.
+3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled with the project's ready-for-review equivalent, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
+4. Deprioritize drafts, blocked MRs, MRs labeled with the project's revision/unblock/WIP equivalent, and obviously red-CI MRs unless the user asked for failure triage.
 5. Inspect 3-5 candidates with `glab mr view <id> --comments` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 6. If one MR or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
 7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never | git apply --numstat` (or the GitLab changes API) before declaring the set decoupled.
@@ -86,14 +86,14 @@ See the [Template filling guide §review-report.md](#review-reportmd) below for 
 ## Decisions
 
 - **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, and CI is green/waived or safely pending (see [BUILD-FLOW.md §Implementation flow](../start-build/BUILD-FLOW.md#implementation-flow) step 9 for the CI-pending auto-merge policy). Run `glab mr approve <id> --sha <reviewed-sha>`. If `Merge authority` allows reviewer-side merge, run `glab mr merge <id> --yes --sha <reviewed-sha>`; if checks are pending and authority allows, run `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`. If authority is approval-only/human release, stop after approval and report that. If GitLab blocks approval or merge, report the exact blocker.
-- **Request changes** — fixable Must Fix items and the approach is sound. Apply `needs-revision`; keep the MR open.
+- **Request changes** — fixable Must Fix items and the approach is sound. Apply the project's revision label if one exists; keep the MR open.
 - **Reject** — premise/architecture/scope is wrong, or a safety boundary is weakened beyond what the user/project accepts. Close the MR with a comment explaining why and what would need to change to reopen. Reject requires human follow-up; don't auto-spawn a revision.
 
 ## After review
 
 - **Request changes:** Build agent pushes commits and replies to threads; reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution.
 - **Approve:** Reviewer has approved and, when merge authority allowed it, merged or queued auto-merge. Each approved MR has its own reviewed SHA and merge/auto-merge/approval-only result. If a durable summary is required, ensure the MR links are recorded there.
-- **Stuck Packet:** post `templates/unblock-response.md` as an MR comment, give short direction, and remove `needs-unblock` when work resumes.
+- **Stuck Packet:** post `templates/unblock-response.md` as an MR comment, give short direction, and remove the project's unblock label when one exists and work resumes.
 
 ## Template filling guide
 
@@ -123,7 +123,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 
 ### unblock-response.md
 
-- Use when responding to a Stuck Packet. Post as an MR comment. When Builder resumes, remove the `needs-unblock` label.
+- Use when responding to a Stuck Packet. Post as an MR comment. When Builder resumes, remove the project's unblock label if one exists.
 - **Summary** — One paragraph: your read and the recommended direction.
 - **Direction** — Pointer / correction / pair / escalation. Cite files, tests, docs, or commands.
 - **Safety notes** — Any PRO external-system / credential / state precautions before continuing.

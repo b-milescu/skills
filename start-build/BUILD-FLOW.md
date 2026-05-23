@@ -8,7 +8,7 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `-O json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
 4. For multiple, select only a clearly decoupled set: no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.
-5. Deprioritize blocked, needs-info, needs-human, in-progress/WIP, confidential/security-sensitive issues unless explicitly requested.
+5. Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested.
 6. Inspect candidates with `glab issue view <id>`; summarize ID, title, labels, assignee, suitability, coupling risk.
 7. If one issue/set is clearly best, announce and proceed. If several are plausible or coupled, ask the user to choose.
 8. Claim issues only when project convention is clear; do not create/mutate labels casually.
@@ -103,7 +103,7 @@ If blocked for more than 2 hours:
 
 1. Keep the MR in Draft.
 2. Post `templates/stuck-packet.md` as an MR comment after filling it: `glab mr note create <id> --message "$(cat templates/stuck-packet.md)"`.
-3. Apply a `needs-unblock` label.
+3. Apply the project's unblock label if one exists.
 4. Request review explicitly for unblocking.
 5. List ranked hypotheses.
 6. Park the branch/worktree or switch to a non-blocked issue on a fresh branch/worktree.
@@ -231,7 +231,7 @@ This section holds the instructional prose that was previously embedded as HTML 
 
 ### stuck-packet.md
 
-- Submit when blocked for >2 hours on one issue. Post as an MR comment, keep the MR in Draft, and apply the `needs-unblock` label.
+- Submit when blocked for >2 hours on one issue. Post as an MR comment, keep the MR in Draft, and apply the project's unblock label when one exists.
 - **What I'm trying to do** — One paragraph.
 - **What I've tried** — Chronological list with files, tests, errors, logs, or traces. No secrets.
 - **What's in front of me** — Hypotheses, most likely first.
