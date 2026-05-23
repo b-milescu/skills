@@ -117,6 +117,12 @@ assert_contains "$output_file" "skip:    $home_dir/.pi/agent/agents/mr-builder.m
 
 assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
 assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-reviewer.md"
+for runtime in \
+  "$home_dir/.claude/skills" \
+  "$home_dir/.pi/agent/skills"; do
+  assert_symlink_resolves_to "$runtime/docs" "$REPO_ROOT/docs"
+  assert_symlink_resolves_to "$runtime/templates" "$REPO_ROOT/templates"
+done
 assert_not_exists "$home_dir/.claude/skills/old-repo-skill"
 assert_not_exists "$home_dir/.claude/agents/old-repo-agent.md"
 
