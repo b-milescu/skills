@@ -53,7 +53,8 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 - `templates/review-packet-compact.md` — compact MR description for simple changes.
 - `templates/revision-packet.md` — comment for responding to review.
 - `templates/stuck-packet.md` — comment when blocked >2h.
-- `templates/adr.md` — committed under `docs/adr/NNN-kebab-title.md` via its own MR.
+- `templates/filling-guide.md` — section-by-section filling instructions for builder templates.
+- `templates/adr.md` — committed under `docs/adr/NNN-kebab-title.md` via its own MR; see shared `../templates/filling-guide.md`.
 
 ## Done
 

@@ -58,7 +58,8 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 
 - `templates/review-report.md` — single top-level MR comment.
 - `templates/unblock-response.md` — response to a Stuck Packet.
-- `templates/adr.md` — architectural recommendation requiring its own MR.
+- `templates/filling-guide.md` — section-by-section filling instructions for reviewer templates.
+- `templates/adr.md` — architectural recommendation requiring its own MR; see shared `../templates/filling-guide.md`.
 
 ## Decisions
 
