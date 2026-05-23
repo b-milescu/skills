@@ -19,8 +19,8 @@ This file records the target repo's tracker labels. `/setup-dev-skills` should k
 When running `/setup-dev-skills`:
 
 1. Read the live labels first (`glab label list`, `gh label list`, or the local tracker's label source).
-2. Compare them with any existing `docs/agents/triage-labels.md`.
+2. Compare them with any existing `docs/agents/triage-labels.md`. Treat canonical-five tables, `Label in mattpocock/skills`, or lazy-label-creation prose as older setup output that needs reconciliation.
 3. Ask whether to document the live labels as-is, create/migrate labels to a canonical role vocabulary, or use a hybrid of triage-role and kind labels.
-4. Write this file from the confirmed decision.
+4. Write this file from the confirmed decision, preserving any user-added project notes that do not conflict with live labels.
 
 If the tracker has no labels yet and the user wants triage-role labels, common starting roles are: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`.
