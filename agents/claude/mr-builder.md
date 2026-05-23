@@ -44,12 +44,12 @@ If a step failed or you skipped it, say so explicitly. Do not invent the rest of
 These are owned by the `start-build` skill. Invoke it via the `Skill` tool at session start (`Skill skill=start-build`) and follow its procedure. The bullets below are pointers, not duplicates:
 
 - Issue pickup → `start-build` §"Issue pickup".
-- Decoupling proof → `start-build` §"Multiple issue worktree mode" + `templates/review-packet.md` § Reviewer Lift > Decoupling proof.
+- Decoupling proof → `start-build` §"Multiple issue worktree mode" + `templates/reviewer-lift-schema.md` § Decoupling proof.
 - Multi-issue worktree mode → `start-build` §"Multiple issue worktree mode" (operate in one sibling worktree per issue; never share a checkout).
 
 ## Reviewer Lift
 
-Canonical source is `templates/review-packet.md` from the `start-build` skill. Keep current with each push.
+Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push.
 
 ## Check gate discovery
 

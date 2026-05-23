@@ -9,7 +9,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## review-packet.md
 
-- **Reviewer Lift** — Structured handoff so the Reviewer can copy these values directly into the Review Report. Keep current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
+- **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
 - **In scope** — Bullet list of intended and actual changes.
@@ -20,7 +20,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - **State, Persistence, and Migration Impact** — State stores, typed models, DB migrations, event/intent stores, CLI stdout contracts, cross-language interop. Include migration numbers and smoke-test plan. Write N/A if none.
 - **External-System and Credential Safety** — State whether any live PRO external mutations were made (default: no). For changes touching external integrations, explain adapter use, fake/recorded HTTP tests, redaction, and idempotency keys. Confirm secret stores were not read/printed/committed.
 - **Diff Summary** — High-level diffstat and map by file.
-- **Test Evidence** — Expand on the RED/GREEN one-liners in the Reviewer Lift. Include targeted tests, full check gate output (or CI link), coverage where the project requires it. For behavior-touching refactors, provide regression evidence. If red-first evidence is unavailable, explain why and provide equivalent behavior evidence.
+- **Test Evidence** — Expand on the `RED`/`GREEN` fields from the Reviewer Lift schema. Include targeted tests, full check gate output (or CI link), coverage where the project requires it. For behavior-touching refactors, provide regression evidence. If red-first evidence is unavailable, explain why and provide equivalent behavior evidence.
 - **Manual / Operational Evidence** — Optional. Dry-run output, runbook check, read-only operator command. Never paste secrets.
 - **Concerns / Reviewer Focus** — What could go wrong and where the Reviewer should look hardest. Mirror the headline in Reviewer Lift > Reviewer Focus.
 - **Open Questions** — If reviewer/human input can change direction, replace "None." with stable OQ-N IDs so the reviewer can answer/escalate each one in their report.
@@ -30,6 +30,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 ## review-packet-compact.md
 
 - Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact.
+- Its Reviewer Lift table is an approved generated copy of `reviewer-lift-schema.md`; keep field names/order identical and use explicit `N/A`/`none` values where compact evidence applies.
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed and why.
 - **In scope** — Bullet list.

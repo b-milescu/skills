@@ -18,7 +18,7 @@ Canonical development pattern source: `start-review`. Load it, follow it, and tr
 1. Load `gitlab-local` and run **Snippet: local-repo-preflight** (verify `glab`/`jq` installed/authenticated, cwd is the intended repo).
 2. Resolve the MR: use the supplied ID/URL/branch, or pick from open non-draft MRs.
 3. Read the linked issue and MR description BEFORE the diff.
-4. Lift the Reviewer Lift block from the MR description into Review Report fields.
+4. Lift every field from the Reviewer Lift block into Review Report fields using `start-build/templates/reviewer-lift-schema.md` as canonical schema.
 5. Confirm MR head SHA = lifted Reviewed SHA. If mismatch, re-diff deltas before approval.
 6. Keep context narrow: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first.
 7. Sweep Reviewer Focus areas first (hardest areas before full diff).
@@ -101,7 +101,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 ## Handoff integrity check
 
 Before reading the diff, validate:
-- Reviewer Lift exists with all required rows
+- Reviewer Lift exists and matches `start-build/templates/reviewer-lift-schema.md`
 - MR head SHA = Reviewed SHA (if not, re-diff new commits)
 - CI pipeline evidence includes URL/ID, status, and commit SHA
 - Local gate is PASS, N/A with rationale, or a clear blocker

@@ -50,19 +50,7 @@ One sibling worktree per issue when the parent orchestrates parallel builders:
 
 ## Reviewer Lift
 
-Keep current with each push. Required fields:
-
-| Field | Value |
-|---|---|
-| **Reviewed SHA** | MR head SHA at time of marking ready |
-| **CI pipeline** | Pipeline URL/ID, status, commit SHA |
-| **Local gate** | Command run + result, or N/A with rationale |
-| **Open Questions** | `none` or stable OQ-N IDs |
-| **Merge authority** | approval-only / reviewer may merge / auto-merge / human release |
-| **Reviewer Focus** | Areas the reviewer should look hardest |
-| **Decoupling proof** | Co-running MR IIDs + why decoupled (or "single MR") |
-| **Changed paths** | File-level diffstat |
-| **Touched safety surfaces** | Safety invariants affected (or "none") |
+Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push.
 
 ## Check gate discovery
 

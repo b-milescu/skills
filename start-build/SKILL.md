@@ -26,9 +26,9 @@ For runtime/operator/safety behavior changes, load and follow the `tdd` skill. I
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.
 5. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch detected, `origin/<default>` current. If dirty/stale, stop and ask.
 6. Single issue → branch from latest default in cwd. Multiple issues → one sibling worktree per issue from `origin/<default>`; never share a checkout.
-7. Open a Draft MR early per issue once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create-update**, `Closes #<id>`, and the appropriate Review Packet template. Fill the **Reviewer Lift** block using the stable handoff schema so the reviewer can copy structured values directly into their report: Reviewed SHA, CI pipeline, Local gate, RED/GREEN, Changed paths, Touched safety surfaces, Decoupling proof, Reviewer Focus, Open Questions, Merge authority, and Delta since last ready push.
+7. Open a Draft MR early per issue once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create-update**, `Closes #<id>`, and the appropriate Review Packet template. Fill the **Reviewer Lift** block using `templates/reviewer-lift-schema.md` so the reviewer can copy structured values directly into their report.
 8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
-9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including the full Reviewer Lift schema) and mark ready when the local gate is green.
+9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description (including every field from the Reviewer Lift schema) and mark ready when the local gate is green.
 10. **Mandatory review gate** — after marking ready, spawn a subagent reviewer in a fresh session per the [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate) protocol.
 
 ## Issue pickup summary
@@ -49,6 +49,7 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 
 ## Templates
 
+- `templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics.
 - `templates/review-packet.md` — full MR description.
 - `templates/review-packet-compact.md` — compact MR description for simple changes.
 - `templates/revision-packet.md` — comment for responding to review.
