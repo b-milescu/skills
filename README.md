@@ -37,6 +37,6 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 ~/.agent-skills/install.sh
 ```
 
-`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`), installs skills into each agent dir that exists on this host (skipping the rest with a clear `skip:` line), warns for missing declared external skill dependencies, and refuses to overwrite a non-symlink target. For GitLab work, load `gitlab-local` and use direct `glab` commands from inside the target repo.
+`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`), installs skills into each agent dir that exists on this host (skipping the rest with a clear `skip:` line), warns for missing declared external skill dependencies, and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, load `gitlab-local` and use direct `glab` commands from inside the target repo.
 
 Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).
