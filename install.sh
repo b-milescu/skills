@@ -18,6 +18,31 @@ set -euo pipefail
 shopt -s nullglob
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
+usage() {
+  cat <<'USAGE'
+Usage: install.sh [--check]
+
+  --check  Run read-only agent/install consistency checks and exit.
+USAGE
+}
+
+case "${1:-}" in
+  --check)
+    exec "$REPO_ROOT/agents/check.sh"
+    ;;
+  -h|--help)
+    usage
+    exit 0
+    ;;
+  "")
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+
 SKILL_DESTS=(
   "$HOME/.claude/skills"
   "$HOME/.pi/agent/skills"
