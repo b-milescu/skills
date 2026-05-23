@@ -22,6 +22,16 @@ SKILL_DESTS=(
   "$HOME/.pi/agent/skills"
 )
 
+# External skills referenced by this repo but not vendored here. They should be
+# installed into each runtime skill directory by their owning skill pack.
+REQUIRED_EXTERNAL_SKILLS=(
+  tdd
+)
+OPTIONAL_EXTERNAL_SKILLS=(
+  grill-with-docs
+  to-issues
+)
+
 if realpath --relative-to=/ / >/dev/null 2>&1; then
   REALPATH=realpath
 elif command -v grealpath >/dev/null 2>&1; then
@@ -62,6 +72,44 @@ is_agent_name() {
     [[ "$known" == "$name" ]] && return 0
   done
   return 1
+}
+
+external_skill_note() {
+  case "$1" in
+    tdd)
+      printf 'start-build/start-review behavior-touching work depends on it'
+      ;;
+    grill-with-docs)
+      printf 'domain-doc guidance can use it if installed; otherwise edit CONTEXT.md/docs/adr manually'
+      ;;
+    to-issues)
+      printf 'generic non-GitLab issue breakdowns can use it if installed; otherwise follow tracker docs manually'
+      ;;
+    *)
+      printf 'declared external skill dependency'
+      ;;
+  esac
+}
+
+external_skill_present() {
+  local skill_dir="$1" name="$2"
+  [[ -f "$skill_dir/$name/SKILL.md" ]]
+}
+
+warn_missing_external_skills() {
+  local skill_dir="$1" name note
+
+  for name in "${REQUIRED_EXTERNAL_SKILLS[@]}"; do
+    external_skill_present "$skill_dir" "$name" && continue
+    note=$(external_skill_note "$name")
+    printf 'warn: missing required external skill %s in %s (%s)\n' "$name" "$skill_dir" "$note" >&2
+  done
+
+  for name in "${OPTIONAL_EXTERNAL_SKILLS[@]}"; do
+    external_skill_present "$skill_dir" "$name" && continue
+    note=$(external_skill_note "$name")
+    printf 'warn: missing optional external skill %s in %s (%s)\n' "$name" "$skill_dir" "$note" >&2
+  done
 }
 
 link() {
@@ -115,6 +163,7 @@ for skill_dir in "${SKILL_DESTS[@]}"; do
   for name in "${SKILL_NAMES[@]}"; do
     link "$REPO_ROOT/$name" "$skill_dir/$name"
   done
+  warn_missing_external_skills "$skill_dir"
 done
 
 # --- Agents (per-target dialect) ---
