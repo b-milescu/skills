@@ -30,10 +30,21 @@ This repo does not vendor every skill referenced by docs or prompts. Install ext
 
 `install.sh` warns for missing declared external skills in each target runtime skill directory; warnings do not vendor or install those external skills.
 
+## Check before install or review
+
+```bash
+./install.sh --check
+```
+
+The check is read-only. It verifies Claude/pi agent variant parity (including pi-only files that install discovery would otherwise skip), flags stale inlined Reviewer Lift field lists or Review Report structures, and reports missing required external skills such as `tdd` for installed agent runtimes with install guidance. To inspect a disposable HOME instead of the real one, set `AGENT_SKILLS_CHECK_HOME=/path/to/temp-home`.
+
+Equivalent direct command: `bash agents/check.sh`.
+
 ## Install on a new machine
 
 ```bash
 git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
+~/.agent-skills/install.sh --check
 ~/.agent-skills/install.sh
 ```
 

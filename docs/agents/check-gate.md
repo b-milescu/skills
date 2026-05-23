@@ -12,7 +12,9 @@ Use the targeted checks below and state `Local gate: PASS — targeted docs/shel
 
 | Area | Command | Notes |
 | --- | --- | --- |
+| Agent/install consistency | `./install.sh --check` | Read-only check for Claude/pi agent variant parity (including pi-only drift), Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
+| Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` drift/dependency failures and the no-mutation `install.sh --check` path under temporary homes. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
@@ -27,7 +29,8 @@ Use the targeted checks below and state `Local gate: PASS — targeted docs/shel
 Commands were derived from:
 
 - `README.md` install instructions.
-- `install.sh` skill/agent symlink and external dependency warning behavior.
+- `install.sh` skill/agent symlink, read-only `--check`, and external dependency warning behavior.
+- `agents/check.sh` source parity, prompt drift, and installed external skill dependency checks.
 - Skill authoring guideline that `SKILL.md` should stay under 100 lines where practical.
 - No `Makefile`, package manifest, language project file, or CI config exists at time of writing.
 
