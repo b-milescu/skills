@@ -65,7 +65,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 ## Procedure
 
 1. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pickup. If multiple, enter **Multiple MR worktree mode** and run the rest independently per MR.
-2. Read the linked issue and MR description before the diff (`glab issue view`, `glab mr view`).
+2. Read the linked issue and MR description before the diff (`glab issue view`, `glab mr view`). Keep context narrow: start with the MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests; expand only from concrete evidence such as imports/callers, failing tests, safety invariants, or surprising diff behavior.
 3. **Lift the builder's `Reviewer Lift` block.** Copy each field (see `start-build/templates/review-packet.md` for the canonical list) into the matching Review Report fields. If the block is missing or empty (older MRs), record that and re-derive the values yourself; default missing `Merge authority` to approval-only unless project rules say otherwise.
 4. Confirm the MR `sha` from `glab mr view <id> -F json` equals the lifted `Reviewed SHA`. If they differ, the builder pushed after marking ready; read the delta note / `Delta since last ready push`, treat the new commits as part of this review, and either re-diff them or request a Revision Packet referencing them before approval.
 5. Check labels/status, changed paths, and declared safety-critical surfaces without changing approval eligibility solely due to label absence/mismatch.
