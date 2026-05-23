@@ -129,17 +129,18 @@ glab mr view <id> -F json | jq '{mr_sha:.sha,pipeline:.pipeline,merge:.detailed_
 
 If `pipeline.sha` is exposed, it must equal `reviewed_sha` before green CI counts. If the builder-reported pipeline was superseded by a newer pipeline on the same SHA, use the current MR pipeline in the Review Report and note the supersession.
 
-Request changes: post the Review Report, then apply the repo's revision label (example: `needs-revision`; use the project's actual label vocabulary).
+Request changes: post the Review Report, then apply the repo's revision label only if the project vocabulary defines one.
 
 ```bash
 glab mr note create <id> --message "$(cat /tmp/report.md)"
-glab mr update <id> --label needs-revision --yes
+revision_label="<project revision label from docs/agents/triage-labels.md, or empty>"
+[ -z "$revision_label" ] || glab mr update <id> --label "$revision_label" --yes
 ```
 
 After a revision is verified, remove the revision label if the project uses one.
 
 ```bash
-glab mr update <id> --unlabel needs-revision --yes
+[ -z "$revision_label" ] || glab mr update <id> --unlabel "$revision_label" --yes
 ```
 
 Approve the exact reviewed SHA. Merge or queue auto-merge only when project policy / MR `Merge authority` allows it, and always bind to the reviewed SHA.

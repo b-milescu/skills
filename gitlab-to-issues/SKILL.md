@@ -21,13 +21,17 @@ Each issue is a thin vertical slice through all affected user-visible layers: do
 
 ## Slice types and labels
 
-Use labels from `docs/agents/triage-labels.md`:
+Use only labels listed in `docs/agents/triage-labels.md`; never invent or rely on lazy label creation.
+
+Current repo mapping:
 
 - **AFK** → `ready-for-agent`: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass.
-- **HITL** → `ready-for-human`: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent.
-- **Needs info** → `needs-info`: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet.
+- **Docs** → `docs`: documentation-only or documentation-focused slice.
+- **Refactor** → `refactor`: structure-improvement slice.
+- **HITL** → no live label by default: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. State `Type: HITL` in the issue body.
+- **Needs info** → no live label by default: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet. State `Type: Needs info` and the blocker in the issue body.
 
-If the triage mapping changes, follow `docs/agents/triage-labels.md`, not hard-coded assumptions.
+If the label vocabulary changes, follow `docs/agents/triage-labels.md`, not these examples.
 
 ## Draft workflow
 
@@ -46,7 +50,7 @@ Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/
 
 Publish approved issues in dependency order so later issues can reference real blockers. Do not close or modify parent issues unless the user explicitly asks.
 
-Use `/gitlab-local` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply the mapped triage label when creating each issue.
+Use `/gitlab-local` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
 
 ## Issue body template
 

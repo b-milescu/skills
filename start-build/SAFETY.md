@@ -57,7 +57,7 @@ Valid regression evidence includes:
 
 ## Escalation
 
-Stop and escalate by assigning/commenting/applying `needs-human` when there is external-system safety uncertainty, rule ambiguity, credential exposure, review disagreement after two rounds, or legal/ethical concern.
+Stop and escalate by assigning/commenting/applying the project's human-decision label when one exists; otherwise comment clearly. Escalate on external-system safety uncertainty, rule ambiguity, credential exposure, review disagreement after two rounds, or legal/ethical concern.
 
 ## Done criteria
 

@@ -34,7 +34,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## MR pickup summary
 
-When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled ready-for-review or assigned to `@me`. For multiple MRs, keep only a clearly decoupled set — no stacked branches, no file/schema/lock overlap, independently testable. Deprioritize drafts, blocked, needs-revision, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
+When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple MRs, keep only a clearly decoupled set — no stacked branches, no file/schema/lock overlap, independently testable. Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
 
 ## Multiple MR worktree mode
 
@@ -51,7 +51,7 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 ## Decision outcomes
 
 - **Approve** — scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived. Approve with `--sha`; merge or auto-merge when authority allows.
-- **Request changes** — fixable Must Fix items; apply `needs-revision`, keep MR open.
+- **Request changes** — fixable Must Fix items; apply the project's revision label if one exists, keep MR open.
 - **Reject** — premise/scope wrong or safety boundary weakened beyond acceptance.
 
 ## Templates

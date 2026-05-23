@@ -30,7 +30,13 @@ Explain where issues/PRDs live and which CLI/files to use. Recommend by remote: 
 
 ### B — Triage label vocabulary
 
-Explain five canonical roles need actual tracker strings. Default mapping: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Ask if any map to existing labels.
+Explain that `/setup-dev-skills` reconciles repo-local label docs with the tracker's live labels. Show both the live label list and any existing `docs/agents/triage-labels.md`, then ask which outcome to use:
+
+1. **Document live labels as-is** — safest when a repo already has an established label workflow.
+2. **Create/migrate triage-role labels** — add or rename tracker labels to match a chosen role vocabulary.
+3. **Hybrid** — keep existing kind/status labels and add explicit triage-role labels only where useful.
+
+Default recommendation: if live labels exist, document the live labels as-is and map only roles that already have a live label. If the tracker has no labels, offer the common starting role vocabulary from the seed `triage-labels.md`. Never rely on lazy label creation; creating, deleting, or renaming labels requires an explicit user decision.
 
 ### C — Domain docs
 
@@ -46,7 +52,7 @@ Explain generated docs should tell future agents which workflow skill to load. I
 
 ## 3. Confirm draft
 
-Show draft contents before writing: `## Agent skills` block plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, and `dev-workflows.md`. Let user edit.
+Show draft contents before writing: `## Agent skills` block plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, and `dev-workflows.md`. If existing docs disagree with live tracker labels, include the chosen reconciliation outcome and rationale. Let user edit.
 
 ## 4. Write
 
@@ -78,7 +84,7 @@ Block shape:
 [summary]. See `docs/agents/dev-workflows.md`.
 ```
 
-Use seed files in this skill folder for docs. Adapt host/project names and local gate commands from repo inspection. Use `dev-workflows-gitlab.md` for GitLab and `dev-workflows-generic.md` otherwise.
+Use seed files in this skill folder for docs. Adapt host/project names, live tracker labels, and local gate commands from repo inspection. Do not leave default or placeholder labels in `triage-labels.md` unless the user explicitly chose to create/migrate to them. Use `dev-workflows-gitlab.md` for GitLab and `dev-workflows-generic.md` otherwise.
 
 ## 5. Done
 

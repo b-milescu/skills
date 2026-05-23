@@ -13,7 +13,7 @@ An **Agent Skill** that scaffolds repo-local guidance for other skills before th
 _Avoid_: installer, bootstrap script
 
 **Agent Setup Docs**:
-Repo-local guidance that tells skills where project work lives, which labels and terms to use, and which workflows are valid.
+Repo-local guidance that tells skills where project work lives, which live tracker labels and terms to use, and which workflows are valid.
 _Avoid_: generated config, settings
 
 **Dev Workflow**:
@@ -25,13 +25,13 @@ A documented set of local commands that provides readiness evidence before revie
 _Avoid_: test script, CI
 
 **Triage Role**:
-A canonical issue state that can be mapped to the target tracker's actual label string.
+An issue state that may be mapped to the target tracker's actual label string when that live label exists.
 _Avoid_: label, status
 
 ## Relationships
 
 - A **Setup Skill** creates **Agent Setup Docs** for a target repo.
-- **Agent Setup Docs** map **Triage Roles** to tracker-specific labels.
+- **Agent Setup Docs** inventory live tracker labels and map **Triage Roles** only where the project has confirmed labels for them.
 - A **Dev Workflow** depends on the selected issue tracker.
 - GitLab-backed **Dev Workflows** use GitLab issues and merge requests.
 - A **Check Gate** records the repo-specific commands builders and reviewers use as local evidence.

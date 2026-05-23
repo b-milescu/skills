@@ -10,7 +10,7 @@ Issues live in this repo's GitLab Issues at `gitlab.example.com/agents/skills`, 
 
 ### Triage labels
 
-Canonical five-label vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+Live GitLab label vocabulary (`docs`, `ready`, `ready-for-agent`, `refactor`); no lazy canonical-label creation. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
