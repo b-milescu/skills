@@ -13,7 +13,7 @@ description: >-
 
 > **Abbreviation:** `PRO` = product / runtime / operator (external systems).
 
-Review GitLab Merge Requests against project rules and safety invariants. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-MR is the default. Multiple MRs are allowed only when clearly decoupled; each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended PRO external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
+Review GitLab Merge Requests against project rules and safety invariants. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-MR is the default. Multiple MRs are allowed only when they satisfy the shared [Decoupling Contract](../docs/decoupling-contract.md); each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended PRO external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
 
 For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak. Keep review context as narrow as possible: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first; expand only when concrete evidence requires it.
 
@@ -24,7 +24,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 1. Load `gitlab-local` and run its direct-`glab` preflight to verify `glab` is installed/authenticated and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting.
 3. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pick from open non-draft MRs (see [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup)).
-4. For multiple MRs, keep only a clearly decoupled set; use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
+4. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md); use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
 5. Read linked issue + MR description before the diff. Lift the builder's `Reviewer Lift` block into the matching Review Report fields [see §Handoff integrity check](REVIEW-FLOW.md#handoff-integrity-check).
 6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
 7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
@@ -34,7 +34,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 
 ## MR pickup summary
 
-When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple MRs, keep only a clearly decoupled set — no stacked branches, no file/schema/lock overlap, independently testable. Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
+When the user supplies MR IDs/URLs/branches, review them. Otherwise pick from the **current GitLab project**: prefer the current-branch MR, then open non-draft MRs labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure with commands.
 
 ## Multiple MR worktree mode
 

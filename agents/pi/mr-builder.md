@@ -36,13 +36,7 @@ When the user supplies issue IDs/URLs, use them. Otherwise pick from the current
 
 ## Decoupling (for multiple issues)
 
-Before parallelizing, prove issues are decoupled:
-- No dependency/order relation, stacked branches, or release-order relation.
-- No overlapping edits to the same files/modules or behavior-critical surfaces.
-- No shared migrations, schemas, locks, sequencing, deploy topology, or lockfiles.
-- Tests run independently without shared ports, databases, or mutable global state.
-
-If unclear, stop and ask. Never parallelize coupled issues to save time.
+Before parallelizing, prove issues satisfy the shared Decoupling Contract (`docs/decoupling-contract.md`) via `start-build` §"Multiple issue worktree mode". If any contract item is false, unknown, or contradicted by evidence, stop and ask. Never parallelize coupled work to save time.
 
 ## Multiple issue worktree mode
 
@@ -50,7 +44,7 @@ One sibling worktree per issue when the parent orchestrates parallel builders:
 1. Original checkout is coordinator only — do not code in it.
 2. `git fetch origin`, detect default branch, create worktree: `git worktree add -b <branch> <path> origin/<default>`.
 3. Run the full implementation flow in each worktree independently.
-4. Write decoupling proof in `Reviewer Lift > Decoupling proof` listing co-running MR IIDs.
+4. Write decoupling proof in `Reviewer Lift > Decoupling proof` listing co-running MR IIDs/branches and summarizing the Decoupling Contract check.
 5. Keep artifacts local to that worktree/MR. Never combine Review Packets.
 6. Remove worktree only after branch is pushed and `git -C <path> status --porcelain` is empty.
 

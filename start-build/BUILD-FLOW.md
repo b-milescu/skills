@@ -7,7 +7,7 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 1. Run the direct preflight from `gitlab-local` to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
 2. List with `glab issue list --per-page 50` (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate; add `-O json` only when you need `jq`). Inspect 3-5 candidates with `glab issue view <id>` — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
-4. For multiple, select only a clearly decoupled set: no dependency/order relation, no expected file/schema/lock/deploy/lockfile overlap, independently testable.
+4. For multiple, select only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md).
 5. Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential/security-sensitive issues unless explicitly requested.
 6. Inspect candidates with `glab issue view <id>`; summarize ID, title, labels, assignee, suitability, coupling risk.
 7. If one issue/set is clearly best, announce and proceed. If several are plausible or coupled, ask the user to choose.
@@ -17,20 +17,16 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 
 Use when the user supplies multiple issues, asks for multiple tasks, or requests more than one issue at once.
 
-1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and has no dependency/order relation with another candidate.
-2. Prove decoupling before parallelizing:
-   - no `depends on`, `after #...`, shared blocker, stacked branch, or release-order relation;
-   - no expected overlapping edits to the same files/modules or behavior-critical surfaces;
-   - no shared migrations, schemas, locks, sequencing, deploy topology, generated artifacts, version bumps, or dependency lockfiles;
-   - tests run independently without shared ports, databases, PRO external systems, or mutable global state.
-3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled issues to save time.
+1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md).
+2. Prove decoupling before parallelizing using the contract's builder producer guidance. If any contract item is false, unknown, or contradicted by evidence, treat the work as coupled.
+3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled work to save time.
 4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
    - `git status --porcelain` empty;
    - `git fetch origin`;
    - detect default branch (`glab repo view "$repo_url" -F json | jq -er '.default_branch'`, or project docs if jq isn't available);
    - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
 5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
-6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** List the co-running MR IIDs and why decoupled (no file/module overlap, no shared migrations/locks/lockfiles, tests independent). Also keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this rather than re-deriving it from each MR's metadata.
+6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
 7. **Discover and spawn builders.** Call `subagent({ action: "list" })` and look for agents whose name or description indicates issue-implementation specialization (e.g. `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker` override). Prefer project-scope agents over user-scope over builtin `worker`. Spawn one builder per worktree with the issue ID/URL, worktree path, and project rulebook path in the task prompt. Never let two agents share a checkout, branch, temp DB, port, or uncommitted artifact directory.
 8. Keep artifacts/evidence local to that worktree/MR. Do not combine Review Packets, close multiple issues from one MR, or stack branches unless the user explicitly switches to a serial plan.
 9. Before revision/merge follow-up, re-check target branch and merge status. If another worktree's MR creates a conflict or stale branch, pause and report the coupling.

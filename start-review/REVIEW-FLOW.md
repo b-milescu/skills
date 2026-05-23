@@ -15,15 +15,15 @@ The command reference intentionally lives in the host project's issue-tracker gu
 
 ## MR pickup
 
-When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick one MR or a decoupled set from the **current GitLab project**:
+When the user supplies MR IDs/URLs/branches, review them if suitable. Otherwise pick one MR or a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md) from the **current GitLab project**:
 
 1. Run the direct preflight from `gitlab-local` to confirm `glab` resolves to the cwd repo. If preflight fails, stop and ask.
 2. If the current branch has an MR (`glab mr view`), prefer it when the user says "this branch" or the branch is clearly under review.
 3. Otherwise list open non-draft MRs (`glab mr list --not-draft -F json --per-page 50`). Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled with the project's ready-for-review equivalent, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
 4. Deprioritize drafts, blocked MRs, MRs labeled with the project's revision/unblock/WIP equivalent, and obviously red-CI MRs unless the user asked for failure triage.
 5. Inspect 3-5 candidates with `glab mr view <id> --comments` (or enough to validate coupling for multiple). Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
-6. If one MR or one decoupled set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
-7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description as input. If absent or insufficient, collect changed paths with `glab mr diff <id> --raw --color=never | git apply --numstat` (or the GitLab changes API) before declaring the set decoupled.
+6. If one MR or one contract-satisfying set is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user to choose.
+7. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description and apply the [Decoupling Contract's reviewer consumer guidance](../docs/decoupling-contract.md#reviewer-consumer-guidance). If proof is absent, insufficient, inconsistent, or contradicted by evidence, collect changed paths with `glab mr diff <id> --raw --color=never | git apply --numstat` (or the GitLab changes API) before declaring the set decoupled.
 
 ## Handoff integrity check
 
@@ -42,13 +42,8 @@ Before reading the full diff, validate the builder handoff:
 Use when the user supplies multiple MRs, asks for multiple reviews, or asks to review the next N ready MRs.
 
 1. Resolve candidates first. Collect at least IID, title, source branch, target branch, head SHA, author, labels, CI state, linked issue, and changed paths.
-2. **Read the builder's `Reviewer Lift > Decoupling proof` from each MR description first.** If every MR in the set has a proof and the proofs are mutually consistent (each lists the others' IIDs and the no-overlap claims align with the changed paths you sampled via raw diff + `git apply --numstat`), accept the proof and skip to the integrity-check below. Only re-derive the proof when (a) one or more MRs have no Decoupling proof, (b) the proofs disagree about co-running IIDs, or (c) sampled changed paths contradict the claimed no-overlap. A set is decoupled only when:
-   - MRs target the same default branch and are not stacked on each other;
-   - linked issues/MR descriptions have no dependency, ordering, or shared blocker;
-   - changed paths and behavior-critical surfaces do not overlap;
-   - no shared migrations, schemas, locks, sequencing, deploy topology, generated artifacts, version bumps, or dependency lockfiles;
-   - local review/test commands run independently without shared ports, databases, PRO external systems, or mutable global state.
-3. If coupling is unclear, review serially in the safest order or ask the user to choose. Never parallelize or batch-approve coupled MRs to save time.
+2. **Read the builder's `Reviewer Lift > Decoupling proof` from each MR description first.** Apply the [Decoupling Contract's reviewer consumer guidance](../docs/decoupling-contract.md#reviewer-consumer-guidance): accept mutually consistent proofs that align with sampled paths and metadata; re-derive when proofs are missing, insufficient, inconsistent, or contradicted by evidence.
+3. If coupling is unclear after the contract check, review serially in the safest order or ask the user to choose. Never parallelize coupled work to save time, and never batch-approve coupled MRs.
 4. Use the original checkout as a coordinator for GitLab queries only. Create one review worktree per MR when local checkout/tests are needed. Do not use shared `FETCH_HEAD` in parallel review mode; fetch each MR into its own temp ref:
    - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
    - `git worktree add --detach <path> refs/tmp/review/mr-<iid>`
