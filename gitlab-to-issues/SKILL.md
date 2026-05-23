@@ -11,7 +11,7 @@ Turn an approved plan into GitLab issues for `agents/skills` using local tracker
 
 1. Read `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` before publishing.
 2. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
-3. Explore only enough context to name slices accurately: glossary terms from `CONTEXT.md` when present, relevant ADRs under `docs/adr/`, current seams, and coupling risk.
+3. Explore only enough context to name slices accurately: glossary terms from `CONTEXT.md` when present, relevant ADRs under `docs/adr/` when present, current seams, and coupling risk.
 4. Draft tracer-bullet slices; ask the user to approve the breakdown before publishing.
 5. Publish approved slices to GitLab using `/gitlab-local` command syntax.
 
@@ -21,17 +21,13 @@ Each issue is a thin vertical slice through all affected user-visible layers: do
 
 ## Slice types and labels
 
-Use only labels listed in `docs/agents/triage-labels.md`; never invent or rely on lazy label creation.
+Use only labels listed in `docs/agents/triage-labels.md`; never invent or rely on lazy label creation. That file owns the live vocabulary; this section only describes when to look there.
 
-Current repo mapping:
-
-- **AFK** → `ready-for-agent`: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass.
-- **Docs** → `docs`: documentation-only or documentation-focused slice.
-- **Refactor** → `refactor`: structure-improvement slice.
-- **HITL** → no live label by default: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. State `Type: HITL` in the issue body.
-- **Needs info** → no live label by default: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet. State `Type: Needs info` and the blocker in the issue body.
-
-If the label vocabulary changes, follow `docs/agents/triage-labels.md`, not these examples.
+- **AFK**: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass. Apply the repo's AFK-ready label only if `docs/agents/triage-labels.md` defines one.
+- **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `docs/agents/triage-labels.md` defines one.
+- **Refactor**: structure-improvement slice. Apply a refactor kind label only if `docs/agents/triage-labels.md` defines one.
+- **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
+- **Needs info**: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet. If no live label exists, state `Type: Needs info` and the blocker in the issue body.
 
 ## Draft workflow
 
