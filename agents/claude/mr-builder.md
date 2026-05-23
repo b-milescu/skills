@@ -4,6 +4,7 @@ description: GitLab issue implementation specialist. Knows the start-build proce
 tools: Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion
 skills: start-build, tdd, gitlab-local
 model: inherit
+effort: high
 color: blue
 ---
 
