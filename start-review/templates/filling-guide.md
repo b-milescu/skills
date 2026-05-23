@@ -1,0 +1,38 @@
+# Template Filling Guide — Start Review
+
+This guide holds instructional prose for reviewer templates. Read once per session; the templates themselves are bare skeletons.
+
+## review-report.md
+
+- Post as a single top-level comment on the MR. Use inline review comments for line-anchored findings, and reference each Must Fix item ID (MF-1, MF-2, ...) so revision commits can cite them.
+- **Summary** — Overall assessment. If requesting changes, state the headline.
+- **Decision** — Approve / Request Changes / Reject. Repeat unambiguously.
+- **Must Fix** — Blocking items. Each item: stable ID, path + line/range, problem, and suggested direction if not obvious. Prefix credential/security findings with `[SECURITY]`.
+- **Should Fix** — Non-blocking but should be addressed. SF-1, SF-2, ...
+- **Consider** — Optional suggestions / preferences / future work. C-1, C-2, ...
+- **Safety Checklist** — Pass/fail/N/A for applicable invariants: domain envelope preserved; PRO external-system mutations only via approved adapters; observe/enforce or dry-run/production gates intact; protective sequencing intact; coordination primitive (lease/lock) acquired and not force-stolen; immutable baselines and monotonic invariants preserved; exact-decimal numeric type for money/quantity/domain math; pure engines side-effect free.
+- **State / Migration / Persistence Checklist** — Typed models, atomic writes, append-only migrations, transactional events, CLI/interop contracts.
+- **External-System and Credential Checklist** — No live mutation, adapter-only calls, fake/recorded HTTP tests, redaction, secrets untouched.
+- **Tests and Evidence Reviewed** — Builder evidence accepted/rejected; tests you ran; CI status. Note whether CI pipeline SHA matches Reviewed SHA when GitLab exposes it.
+- **Acceptance Criteria Evidence Checked** — For each acceptance criterion from the MR/issue, state accepted evidence or gap.
+- **TDD / Behavior-Test Evidence** — Behavior-touching MR: public interface tested? RED/GREEN trace present or reasonably N/A? Tests avoid implementation coupling? Non-behavior MR: "N/A".
+- **Code I Ran** — Exact read-only commands and concise result, or "None". Never paste secrets or run mutating PRO commands.
+- **Reviewer Focus Sweep** — What the builder flagged in Reviewer Lift > Reviewer Focus, and what you found when you read those areas first. "None flagged" if the builder did not name any.
+- **Open Questions Addressed** — One subsection per OQ-N from the MR description. Either answer it, defer to human (and say so), or downgrade to an evidence request. Unanswered OQs cannot sit silently.
+- **Praise** — Required. Call out good work / patterns to reinforce.
+- **Architectural Observations** — Broader patterns, ADR suggestions, or rejection rationale.
+- **Follow-ups for Other Tasks** — Items not blocking this MR. Open separate issues and link them.
+- **Final Notes** — Short.
+
+## unblock-response.md
+
+- Use when responding to a Stuck Packet. Post as an MR comment. When Builder resumes, remove the project's unblock label if one exists.
+- **Summary** — One paragraph: your read and the recommended direction.
+- **Direction** — Pointer / correction / pair / escalation. Cite files, tests, docs, or commands.
+- **Safety notes** — Any PRO external-system / credential / state precautions before continuing.
+- **What I did not check** — Honest scope.
+- **Confidence** — High / medium / low and why.
+
+## adr.md
+
+See the [shared ADR filling guide](../../templates/filling-guide.md) for ADR template filling instructions.
