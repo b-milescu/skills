@@ -28,60 +28,27 @@ Canonical development pattern source: `start-review`. Load it, follow it, and tr
 11. Re-read MR metadata immediately before approving — never approve a SHA you haven't read.
 12. Decide: approve, request changes, or reject.
 
-## Review categories
+## Reporting rules (anti-fabrication)
 
-Walk these in order:
-- Scope match (does diff match issue/description?)
-- Strategy and safety invariants
-- Architecture boundaries
-- Correctness (edges, recovery, exact-decimal math, concurrency, timestamps)
-- Tests and evidence (apply TDD test-quality principles for behavior-touching MRs)
-- External-API safety (adapters, quirks, redaction)
-- State, DB, migrations (typed models, atomic writes, append-only migrations)
-- Observability and ops (metrics, health, runbooks)
-- Security and credentials
-- Engineering quality
+Every claim about MR state, command output, file content, or approval status MUST be backed by a real tool call. Specifically:
 
-## Review Report structure
+- Quote real output from `gitlab-local` **Snippet: mr-pickup** for SHA, draft status, pipeline.
+- Quote real output or saved paths from `gitlab-local` **Snippet: artifact-capture** for the diff.
+- After approving: confirm via the approval endpoint command in `gitlab-local` **Snippet: approve-merge-sha-bound**, not just the approval exit code — `approved_by` in the MR JSON projection can lag. If the approvals endpoint also returns empty, the approve did not go through.
+- Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
 
-Post as a single top-level MR comment. Use inline comments for line-anchored findings, referencing Must Fix IDs (MF-1, MF-2, ...).
+If a step failed or you skipped it, say so explicitly.
 
-Required sections:
-- Summary
-- Decision (Approve / Request Changes / Reject)
-- Must Fix (MF-N: path + line/range + problem + suggested direction)
-- Should Fix (SF-N)
-- Consider (C-N)
-- Safety Checklist (pass/fail/N/A per invariant)
-- State / Migration / Persistence Checklist
-- External-System and Credential Checklist
-- Tests and Evidence Reviewed
-- Acceptance Criteria Evidence Checked
-- TDD / Behavior-Test Evidence
-- Code I Ran (exact read-only commands + result, or None)
-- Reviewer Focus Sweep
-- Open Questions Addressed (one subsection per OQ-N)
-- Praise (required)
-- Architectural Observations
-- Follow-ups for Other Tasks
-- Final Notes
+## Review categories, structure, decisions, multi-MR mode
+
+Owned by the `start-review` skill. Load it at session start and follow its procedure. The bullets below are pointers, not duplicate templates:
+
+- Review categories → `start-review` §"Review categories".
+- Review Report structure → `start-review/templates/review-report.md` and its filling guide.
+- Decisions (approve / request-changes / reject) → `start-review` §"Decisions".
+- Multiple MR mode → `start-review` §"Multiple MR worktree mode" (one isolated worktree per MR for local checkout/tests).
 
 Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
-
-## Decisions
-
-- Approve: scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived/pending under protected auto-merge. Use `gitlab-local` **Snippet: sha-guard** and **Snippet: approve-merge-sha-bound**. Merge only when Merge authority allows.
-- Request changes: fixable Must Fix items, approach is sound. Apply the project's revision label if one exists, keep MR open.
-- Reject: premise/scope wrong or safety boundary weakened beyond acceptance. Close MR with explanation.
-
-## Multiple MR mode
-
-Follow the shared Decoupling Contract (`docs/decoupling-contract.md`) reviewer consumer guidance before parallel review. If coupling is unclear, review serially; never parallelize coupled work to save time, and never batch-approve coupled MRs.
-
-One worktree per MR when local checkout/tests needed. Fetch into temp refs:
-- `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
-- `git worktree add --detach <path> refs/tmp/review/mr-<iid>`
-Produce one Review Report and one decision per MR. Never batch.
 
 ## glab CLI
 
@@ -90,13 +57,16 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 
 ## Working rules
 
-- Use bash for read-only inspection only (git diff, git log, test runs, glab queries per `gitlab-local`).
-- Do NOT run mutating commands against production or external systems.
+- Use bash for read-only inspection/test commands and for GitLab MR mutations prescribed by the review workflow (posting reports, approvals, label changes, merge/auto-merge when authority allows). Do not use bash for live PRO mutations.
+- Use edit/write for drafting the Review Report locally to a temp file before posting with `gitlab-local` **Snippet: note-comment-creation**.
+- Use grep/find for in-repo search.
+- Do NOT run mutating commands against production or external systems. GitLab MR mutations prescribed by the review workflow are allowed.
 - Do not invent issues — only report problems justified by evidence.
 - Cite file paths and line numbers for every finding.
 - If everything looks good, say so plainly.
 - For behavior-touching MRs, evaluate test evidence using TDD principles.
 - Block on: scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
+- Verify the project's label vocabulary (`docs/agents/triage-labels.md` or equivalent) before applying any revision/unblock label — vocab varies per project.
 
 ## Handoff integrity check
 
