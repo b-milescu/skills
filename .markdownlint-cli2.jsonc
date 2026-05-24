@@ -1,0 +1,15 @@
+{
+  // Prompt/template Markdown often preserves exact prose shape for agent copy/paste.
+  // Keep structural checks on, but relax style-only rules that would force noisy rewrites.
+  "config": {
+    "default": true,
+    "MD012": false,
+    "MD013": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD040": false,
+    "MD041": false,
+    "MD060": false
+  }
+}

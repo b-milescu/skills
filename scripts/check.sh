@@ -25,6 +25,8 @@ run() {
 
 run "install.sh syntax" bash -n install.sh
 run "agent consistency" bash agents/check.sh
+run "Markdown lint" npm run check:md
+run "Markdown links" npm run check:links
 
 for test_script in tests/*.sh; do
   run "$test_script" bash "$test_script"
