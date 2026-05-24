@@ -7,6 +7,7 @@ Local commands agents should run before claiming a change is ready in this repo.
 `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which runs:
 
 - `bash -n install.sh`
+- `npm run check:agents-schema`
 - `bash agents/check.sh`
 - `npm run check:md`
 - `npm run check:links`
@@ -19,6 +20,7 @@ Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only check for Claude/pi agent variant parity (including pi-only drift), Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
+| Agent schema validation | `npm run check:agents-schema` | Validates Claude/pi agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, pi bridge wording in Claude bodies, and dialect-specific tool casing. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
@@ -39,6 +41,7 @@ Commands were derived from:
 - `README.md` install instructions.
 - `install.sh` skill/agent symlink, read-only `--check`, and external dependency warning behavior.
 - `agents/check.sh` source parity, prompt drift, and installed external skill dependency checks.
+- Issue #53 agent schema validation requirements for Claude/pi dialect-specific frontmatter and tool casing.
 - `scripts/check.sh` canonical wrapper wiring those checks, Markdown checks, and regression scripts behind one stable command.
 - Skill authoring guideline that `SKILL.md` should stay under 100 lines where practical.
 - No `Makefile` exists at time of writing.
