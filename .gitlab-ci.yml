@@ -5,5 +5,5 @@ variables:
 
 check:
   script:
-    # No npm ci yet: no lockfile/dependencies. Full CI parity remains #54 scope.
+    - npm ci
     - npm run check

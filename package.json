@@ -4,6 +4,11 @@
   "private": true,
   "description": "Agent Skill repository for the AI-trading GitLab group.",
   "scripts": {
-    "check": "scripts/check.sh"
+    "check": "scripts/check.sh",
+    "check:md": "git ls-files -z '*.md' | xargs -0 markdownlint-cli2",
+    "check:links": "node scripts/check-md-links.mjs"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "0.22.1"
   }
 }
