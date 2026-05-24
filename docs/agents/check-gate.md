@@ -41,7 +41,9 @@ Commands were derived from:
 
 ## CI parity
 
-No CI config was discovered. `npm run check` is the current local evidence source and is intended to be reused by CI when pipeline configuration is added.
+`.gitlab-ci.yml` runs `npm run check` in a minimal Node 22 job so GitLab CI and local readiness evidence use the same gate. It intentionally skips `npm ci` because this repo has no lockfile or package dependencies yet.
+
+Full npm install/cache behavior plus MR/default/tag pipeline parity remains separate #54 scope.
 
 ## When the gate cannot be run
 
