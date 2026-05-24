@@ -2,7 +2,7 @@
 
 This repo treats GitLab's live label set as the source of truth. `/setup-dev-skills` owns regenerating this file when tracker labels change.
 
-Verified on 2026-05-23 with `glab label list`:
+Verified on 2026-05-24 with `glab label list`:
 
 | Label | Category | Meaning / use |
 | --- | --- | --- |
