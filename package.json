@@ -1,0 +1,9 @@
+{
+  "name": "@agents/skills",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent Skill repository for the AI-trading GitLab group.",
+  "scripts": {
+    "check": "scripts/check.sh"
+  }
+}
