@@ -32,13 +32,22 @@ This repo does not vendor every skill referenced by docs or prompts. Install ext
 
 ## Check before install or review
 
+GitLab CI mirrors the repo-local Check Gate documented in `docs/agents/check-gate.md`: install pinned Node dependencies with `npm ci`, then run the canonical `npm run check`. Run the same commands locally before asking for review so MR evidence matches CI evidence.
+
+```bash
+npm ci
+npm run check
+```
+
+For the agent/install consistency subset only, use the read-only check directly:
+
 ```bash
 ./install.sh --check
 ```
 
-The check is read-only. It verifies Claude/pi agent variant parity (including pi-only files that install discovery would otherwise skip), flags stale inlined Reviewer Lift field lists or Review Report structures, and reports missing required external skills such as `tdd` for installed agent runtimes with install guidance. To inspect a disposable HOME instead of the real one, set `AGENT_SKILLS_CHECK_HOME=/path/to/temp-home`.
+That subset verifies Claude/pi agent variant parity (including pi-only files that install discovery would otherwise skip), flags stale inlined Reviewer Lift field lists or Review Report structures, and reports missing required external skills such as `tdd` for installed agent runtimes with install guidance. To inspect a disposable HOME instead of the real one, set `AGENT_SKILLS_CHECK_HOME=/path/to/temp-home`.
 
-Equivalent direct command: `bash agents/check.sh`.
+Equivalent direct command for that subset: `bash agents/check.sh`.
 
 ## Install on a new machine
 
