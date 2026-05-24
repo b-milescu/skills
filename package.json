@@ -5,10 +5,12 @@
   "description": "Agent Skill repository for the AI-trading GitLab group.",
   "scripts": {
     "check": "scripts/check.sh",
+    "check:agents-schema": "node scripts/check-agent-schemas.mjs",
     "check:md": "git ls-files -z '*.md' | xargs -0 markdownlint-cli2",
     "check:links": "node scripts/check-md-links.mjs"
   },
   "devDependencies": {
+    "js-yaml": "4.1.1",
     "markdownlint-cli2": "0.22.1"
   }
 }

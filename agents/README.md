@@ -34,8 +34,10 @@ here, not in Claude Code variants.
 2. Write `agents/pi/<name>.md` with pi schema.
 3. Keep body content shared in spirit, but keep runtime-specific coordination and
    frontmatter in the matching dialect file.
-4. Run `./install.sh` to surface the agent in installed runtimes.
-5. Expect `install.sh` to print a clear `skip:` line when a target runtime or
+4. Run `npm run check:agents-schema` to catch frontmatter/schema/tool-casing
+   drift before install or review.
+5. Run `./install.sh` to surface the agent in installed runtimes.
+6. Expect `install.sh` to print a clear `skip:` line when a target runtime or
    variant is missing.
 
 ## References
