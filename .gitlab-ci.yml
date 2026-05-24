@@ -1,0 +1,9 @@
+image: node:22
+
+variables:
+  AUTO_DEVOPS_DISABLED: "true"
+
+check:
+  script:
+    # No npm ci yet: no lockfile/dependencies. Full CI parity remains #54 scope.
+    - npm run check
