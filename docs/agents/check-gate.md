@@ -48,9 +48,15 @@ Commands were derived from:
 
 ## CI parity
 
-`.gitlab-ci.yml` runs `npm ci` and `npm run check` in a minimal Node 22 job so GitLab CI installs pinned Markdown tooling from `package-lock.json` before running the same gate used locally.
+`.gitlab-ci.yml` mirrors the local Check Gate instead of re-encoding individual checks in CI:
 
-Full npm cache behavior, install optimization, broader job structure, and MR/default/tag pipeline parity remain separate #54 scope.
+- GitLab CI uses the Node 22 image.
+- The validation job runs `npm ci` so dependencies come from `package-lock.json`.
+- The validation job then runs `npm run check`, the same canonical command used locally.
+- Pipeline workflow rules create pipelines for merge requests, the default branch, and tags.
+- CI caches npm's download cache under `.npm/`, keyed by `package-lock.json`; `npm ci` remains the correctness boundary, so cache misses only make installs slower.
+
+Do not add CI-only validation here unless it is first added to `npm run check` and documented as part of the local Check Gate.
 
 ## When the gate cannot be run
 
