@@ -24,7 +24,7 @@ cat > "$TMPDIR/good/agents/pi/mr-worker.md" <<'MD'
 ---
 name: mr-worker
 description: pi worker fixture
-tools: read, bash, edit, write, intercom, mcp:chrome-devtools
+tools: read, bash, edit, write, intercom, mcp:chrome-devtools, mcp:github/search_repositories
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
@@ -60,7 +60,7 @@ cat > "$TMPDIR/bad/agents/pi/wrong-tools.md" <<'MD'
 ---
 name: wrong-tools
 description: pi bad fixture
-tools: Bash, Read
+tools: "Bash, Read, mcp:"
 effort: high
 color: green
 ---
@@ -100,6 +100,7 @@ for expected in \
   "Claude-only frontmatter field \"color\" is not allowed in pi agent" \
   "pi tool \"Bash\" must use lowercase pi casing \"bash\"" \
   "pi tool \"Read\" must use lowercase pi casing \"read\"" \
+  "pi tool \"mcp:\" is not a pi tool" \
   "frontmatter YAML does not parse"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2

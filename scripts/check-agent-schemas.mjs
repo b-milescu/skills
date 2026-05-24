@@ -376,7 +376,7 @@ function validateClaudeTool(file, fieldLines, tool) {
 }
 
 function validatePiTool(file, fieldLines, tool) {
-  if (PI_TOOLS.has(tool) || /^mcp:[A-Za-z0-9_.-]+$/u.test(tool)) {
+  if (PI_TOOLS.has(tool) || isPiMcpDirectSelection(tool)) {
     return;
   }
 
@@ -387,6 +387,16 @@ function validatePiTool(file, fieldLines, tool) {
   }
 
   addDiagnostic(file, lineFor(fieldLines, 'tools'), `pi tool "${tool}" is not a pi tool`);
+}
+
+function isPiMcpDirectSelection(tool) {
+  if (!tool.startsWith('mcp:')) {
+    return false;
+  }
+
+  const selection = tool.slice(4);
+  const normalized = selection.replace(/\/+$/u, '');
+  return normalized.length > 0 && !selection.startsWith('/') && !/[\s,]/u.test(selection);
 }
 
 function validateBody(file, lines, frontmatterEndLine) {
