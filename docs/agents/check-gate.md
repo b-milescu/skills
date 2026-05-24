@@ -4,15 +4,19 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 ## Full local gate
 
-No full local gate is currently defined. This repo contains markdown skills and shell install wiring, but no Makefile, package manifest, language project file, or CI config was discovered.
+`npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which runs:
 
-Use the targeted checks below and state `Local gate: PASS — targeted docs/shell checks` in MR Review Packets when they pass.
+- `bash -n install.sh`
+- `bash agents/check.sh`
+- each `tests/*.sh` regression script
+
+Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 
 ## Targeted checks
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` | Read-only check for Claude/pi agent variant parity (including pi-only drift), Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only check for Claude/pi agent variant parity (including pi-only drift), Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` drift/dependency failures and the no-mutation `install.sh --check` path under temporary homes. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
@@ -31,12 +35,15 @@ Commands were derived from:
 - `README.md` install instructions.
 - `install.sh` skill/agent symlink, read-only `--check`, and external dependency warning behavior.
 - `agents/check.sh` source parity, prompt drift, and installed external skill dependency checks.
+- `scripts/check.sh` canonical wrapper wiring those checks plus regression scripts behind one stable command.
 - Skill authoring guideline that `SKILL.md` should stay under 100 lines where practical.
-- No `Makefile`, package manifest, language project file, or CI config exists at time of writing.
+- No `Makefile`, language project file, or CI config exists at time of writing.
 
 ## CI parity
 
-No CI config was discovered. The targeted checks are the current local evidence source.
+`.gitlab-ci.yml` runs `npm run check` in a minimal Node 22 job so GitLab CI and local readiness evidence use the same gate. It intentionally skips `npm ci` because this repo has no lockfile or package dependencies yet.
+
+Full npm install/cache behavior plus MR/default/tag pipeline parity remains separate #54 scope.
 
 ## When the gate cannot be run
 
