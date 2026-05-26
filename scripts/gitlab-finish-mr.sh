@@ -90,8 +90,32 @@ esac
 case "$output_format" in human|yaml) ;; *) echo "FINISH_MR result=blocked reason=bad_format" >&2; exit 64 ;; esac
 
 command -v glab >/dev/null || { echo "FINISH_MR result=blocked reason=dependency_missing name=glab" >&2; exit 127; }
-command -v jq >/dev/null || { echo "FINISH_MR result=blocked reason=dependency_missing name=jq" >&2; exit 127; }
 command -v git >/dev/null || { echo "FINISH_MR result=blocked reason=dependency_missing name=git" >&2; exit 127; }
+command -v node >/dev/null || { echo "FINISH_MR result=blocked reason=dependency_missing name=node" >&2; exit 127; }
+
+json_value() {
+  local json="$1" path="$2" default_value="$3"
+  JSON_PAYLOAD="$json" node - "$path" "$default_value" <<'NODE'
+const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
+const path = process.argv[2].split('.').filter(Boolean);
+const defaultValue = process.argv[3];
+let value = data;
+for (const key of path) {
+  if (value === null || typeof value !== 'object' || !(key in value)) {
+    value = undefined;
+    break;
+  }
+  value = value[key];
+}
+if (value === undefined || value === null || value === '') {
+  console.log(defaultValue);
+} else if (typeof value === 'object') {
+  console.log(JSON.stringify(value));
+} else {
+  console.log(String(value));
+}
+NODE
+}
 
 yaml_escape() {
   local value="$1"
@@ -135,11 +159,11 @@ finish_exit() {
 }
 
 mr_json="$(glab mr view "$mr_iid" -F json)"
-mr_state="$(jq -r '.state // ""' <<<"$mr_json")"
-current_sha="$(jq -r '.sha // ""' <<<"$mr_json")"
-pipeline_status="$(jq -r '.pipeline.status // "none"' <<<"$mr_json")"
-pipeline_sha="$(jq -r '.pipeline.sha // "none"' <<<"$mr_json")"
-pipeline_url="$(jq -r '.pipeline.web_url // "none"' <<<"$mr_json")"
+mr_state="$(json_value "$mr_json" state "")"
+current_sha="$(json_value "$mr_json" sha "")"
+pipeline_status="$(json_value "$mr_json" pipeline.status "none")"
+pipeline_sha="$(json_value "$mr_json" pipeline.sha "none")"
+pipeline_url="$(json_value "$mr_json" pipeline.web_url "none")"
 ci_guard="blocked"
 issue_state="not_checked"
 worktree_cleanup="not_requested"
@@ -209,7 +233,8 @@ else
 fi
 
 if [[ -n "$issue_iid" ]]; then
-  issue_state="$(glab issue view "$issue_iid" -F json | jq -r '.state // "unknown"')"
+  issue_json="$(glab issue view "$issue_iid" -F json)"
+  issue_state="$(json_value "$issue_json" state "unknown")"
 fi
 
 if [[ -n "$worktree_path" ]]; then

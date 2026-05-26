@@ -54,7 +54,43 @@ done
 case "$output_format" in human|yaml) ;; *) echo "CI_WATCH result=usage_error reason=bad_format" >&2; exit 64 ;; esac
 
 command -v glab >/dev/null || { echo "CI_WATCH result=dependency_missing name=glab" >&2; exit 127; }
-command -v jq >/dev/null || { echo "CI_WATCH result=dependency_missing name=jq" >&2; exit 127; }
+command -v node >/dev/null || { echo "CI_WATCH result=dependency_missing name=node" >&2; exit 127; }
+
+json_value() {
+  local json="$1" path="$2" default_value="$3"
+  JSON_PAYLOAD="$json" node - "$path" "$default_value" <<'NODE'
+const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
+const path = process.argv[2].split('.').filter(Boolean);
+const defaultValue = process.argv[3];
+let value = data;
+for (const key of path) {
+  if (value === null || typeof value !== 'object' || !(key in value)) {
+    value = undefined;
+    break;
+  }
+  value = value[key];
+}
+if (value === undefined || value === null || value === '') {
+  console.log(defaultValue);
+} else if (typeof value === 'object') {
+  console.log(JSON.stringify(value));
+} else {
+  console.log(String(value));
+}
+NODE
+}
+
+json_failed_jobs() {
+  local json="$1"
+  JSON_PAYLOAD="$json" node - <<'NODE'
+const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
+const failed = (Array.isArray(data.jobs) ? data.jobs : [])
+  .filter((job) => job.allow_failure !== true && ['failed', 'canceled', 'skipped'].includes(job.status))
+  .map((job) => job.name)
+  .filter(Boolean);
+process.stdout.write(failed.join(','));
+NODE
+}
 
 yaml_escape() {
   local value="$1"
@@ -101,8 +137,8 @@ deadline=$((SECONDS + timeout_seconds))
 
 while :; do
   mr_json="$(glab mr view "$mr_iid" -F json)"
-  mr_state="$(jq -r '.state // ""' <<<"$mr_json")"
-  current_sha="$(jq -r '.sha // ""' <<<"$mr_json")"
+  mr_state="$(json_value "$mr_json" state "")"
+  current_sha="$(json_value "$mr_json" sha "")"
 
   if [[ "$mr_state" != "opened" ]]; then
     emit_result "unknown_mr_state" "${current_sha:-none}" "$pipeline_id" "$pipeline_status" "$pipeline_url" "$failed_jobs" \
@@ -114,19 +150,18 @@ while :; do
       "CI_WATCH result=head_changed current=${current_sha:-none} reviewed=$reviewed_sha" 2 "head_changed"
   fi
 
-  pipeline_json="$(jq -c '.pipeline // {}' <<<"$mr_json")"
-  pipeline_id="$(jq -r '.id // "none"' <<<"$pipeline_json")"
-  pipeline_status="$(jq -r '.status // "none"' <<<"$pipeline_json")"
-  pipeline_sha="$(jq -r '.sha // "none"' <<<"$pipeline_json")"
-  pipeline_url="$(jq -r '.web_url // "none"' <<<"$pipeline_json")"
+  pipeline_id="$(json_value "$mr_json" pipeline.id "none")"
+  pipeline_status="$(json_value "$mr_json" pipeline.status "none")"
+  pipeline_sha="$(json_value "$mr_json" pipeline.sha "none")"
+  pipeline_url="$(json_value "$mr_json" pipeline.web_url "none")"
 
   branch_json="$(glab ci status --branch "$source_branch" -F json 2>/dev/null || true)"
   branch_input="$branch_json"
   [[ -n "$branch_input" ]] || branch_input='{}'
-  branch_id="$(jq -r '.pipeline.id // "none"' <<<"$branch_input" 2>/dev/null || echo none)"
-  branch_status="$(jq -r '.pipeline.status // "none"' <<<"$branch_input" 2>/dev/null || echo none)"
-  branch_sha="$(jq -r '.pipeline.sha // "none"' <<<"$branch_input" 2>/dev/null || echo none)"
-  failed_jobs="$(jq -r '.jobs[]? | select((.allow_failure != true) and (.status == "failed" or .status == "canceled" or .status == "skipped")) | .name' <<<"$branch_input" 2>/dev/null | paste -sd, -)"
+  branch_id="$(json_value "$branch_input" pipeline.id "none" 2>/dev/null || echo none)"
+  branch_status="$(json_value "$branch_input" pipeline.status "none" 2>/dev/null || echo none)"
+  branch_sha="$(json_value "$branch_input" pipeline.sha "none" 2>/dev/null || echo none)"
+  failed_jobs="$(json_failed_jobs "$branch_input" 2>/dev/null || true)"
   failed_jobs="${failed_jobs:-none}"
   last_summary="mr_pipeline=$pipeline_id:$pipeline_status:$pipeline_sha branch_pipeline=$branch_id:$branch_status:$branch_sha failed_jobs=$failed_jobs"
   [[ "$output_format" != "human" ]] || echo "CI_WATCH elapsed=${SECONDS}s $last_summary"

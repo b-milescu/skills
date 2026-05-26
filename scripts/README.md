@@ -1,8 +1,9 @@
 # GitLab Workflow Helpers
 
 Optional shell helpers wrap the accepted `/gitlab-local` snippets for repeatable
-parent-orchestrator or finisher flows. They do not replace `glab`, the mandatory
-review gate, or project policy.
+parent-orchestrator or finisher flows. They use `glab`, `git`, and Node.js for
+local JSON parsing. They do not replace `glab`, the mandatory review gate, or
+project policy.
 
 ## Helpers
 
