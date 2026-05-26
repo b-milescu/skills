@@ -46,7 +46,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
 | Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
 | Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
-| Merge authority | `<copy from Reviewer Lift; default approval-only if absent>` |
+| Merge authority | `<copy from Reviewer Lift; explicit value required; missing/ambiguous = blocker/no approval>` |
 | Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
