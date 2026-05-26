@@ -9,9 +9,13 @@ This repo uses GitLab-backed dev workflows.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
 
+## Active recipes
+
+- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for issue resolution, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification. Use `/gitlab-local` for command syntax instead of copying snippets here.
+
 ## Design briefs
 
-- `docs/agents/mr-build-review-orchestration.md` — issue #55 design brief for a project-agnostic parent-orchestrator loop. It is recommendation material, not active workflow policy, until follow-up implementation issues are approved.
+- `docs/agents/mr-build-review-orchestration.md` — issue #55 background design brief for the parent-orchestrator loop. It records rationale and future slices; active workflow policy now lives in the recipe above.
 
 ## Usage rules
 
