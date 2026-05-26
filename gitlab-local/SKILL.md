@@ -37,6 +37,72 @@ Do not invent flags from memory or other CLIs. If help conflicts with this skill
 - Use `-R "$repo_url"` when repo/host inference might be wrong.
 - Use file-backed long descriptions/messages. Never paste secrets into issues, MRs, comments, logs, or summaries.
 
+## Safe multiline GitLab text
+
+Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
+and MR descriptions. Quoted heredocs (`<<'EOF'`) keep Markdown backticks,
+`$VARS`, and command substitutions literal while writing the local file.
+
+MR note pattern:
+
+```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
+message_file="$run_dir/mr-note.md"
+cat > "$message_file" <<'EOF'
+## Review Gate Summary
+
+- Reviewed SHA: `abc123`
+- Result: approved
+- Literal example: `echo "$EXAMPLE_VAR"` is not executed.
+EOF
+
+glab mr note create "$mr_iid" --message "$(cat "$message_file")"
+```
+
+Issue note pattern:
+
+```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
+message_file="$run_dir/issue-note.md"
+cat > "$message_file" <<'EOF'
+## Build Handoff
+
+- MR: !123
+- Status: ready for review
+EOF
+
+glab issue note "$issue_iid" --message "$(cat "$message_file")"
+```
+
+MR description pattern:
+
+```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr.XXXXXX")"
+description_file="$run_dir/review-packet.md"
+cat > "$description_file" <<'EOF'
+# Review Packet
+
+Generated from a local file so Markdown is not interpreted by the shell.
+EOF
+
+glab mr create --draft --target-branch "$default_branch" --source-branch "$source_branch" \
+  --title "$title" --description "$(cat "$description_file")" --yes
+glab mr update "$mr_iid" --description "$(cat "$description_file")"
+```
+
+Avoid inline heredoc command substitution such as:
+
+```bash
+# Do not use: backticks and $() in the body can execute before glab sees them.
+glab mr note create "$mr_iid" --message "$(cat <<EOF
+Danger: `date` and $(whoami) may run in the parent shell.
+EOF
+)"
+```
+
+Keep generated text files under temp/run directories, never commit review
+artifacts, and redact secrets before writing text that may be pasted to GitLab.
+
 ## Canonical snippets
 
 Names below are stable API for workflow skills. Verify flags with `--help` before use.
