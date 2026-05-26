@@ -444,6 +444,15 @@ Machine output should use the same facts as the human line, for example
 `result: merged | auto_merge_queued | handoff | blocked`, plus `blocker` when
 non-success output requires parent/human action.
 
+## Optional helper scripts
+
+This repo also ships optional wrappers in `scripts/` for the accepted
+`ci-watch-sha-pinned` and `finish-mr-authority-aware` behaviors. Use them when
+that exact behavior fits and you want repeatable guardrails. Prefer the raw
+snippets in this skill when `glab` flag/JSON drift appears, a project-specific
+policy or human waiver is involved, you need a step-by-step troubleshooting
+transcript, or you are changing the accepted workflow behavior itself.
+
 ## Troubleshooting
 
 Repo wrong: inspect branch remote, `git remote -v`, and `glab repo view "$repo_url"`. JSON shape wrong: inspect keys and adapt projection only. Flag fails: rerun exact `glab <area> <verb> --help` and remove unsupported flag.
