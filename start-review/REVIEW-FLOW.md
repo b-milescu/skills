@@ -11,7 +11,7 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 
 ## GitLab tooling reference
 
-The command reference intentionally lives in the host project's issue-tracker guide, or in the `gitlab-local` skill when a project has no guide. Use its canonical snippet names for preflight/auth, issue/MR/CI syntax, artifact capture, file-backed comments/descriptions, and known `glab` flag pitfalls. This flow names commands only where sequencing matters, and keeps SHA-bound approve/merge commands visible at decision points.
+The command reference intentionally lives in the host project's issue-tracker guide, or in the `gitlab-local` skill when a project has no guide. Use its canonical snippet names for preflight/auth, issue/MR/CI syntax, artifact capture, file-backed comments/descriptions, known `glab` flag pitfalls, and separated SHA-bound action snippets. This flow names commands only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at decision points.
 
 ## MR pickup
 
@@ -51,9 +51,12 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 5. If the harness provides parallel subagents/worktree orchestration, run one reviewer session per MR/worktree. Review independence requires separate LLM/session context plus separate checkout for local execution.
 6. Produce one Review Report and one decision per MR. Do not batch multiple MRs into one GitLab comment, approval, request-changes, or reject action.
 7. Approval/merge sequence per MR:
-   - re-run `gitlab-local` **Snippet: sha-guard** immediately before approving; the decision point must visibly bind the reviewed head: `current_sha="$(glab mr view <id> -F json | jq -r '.sha')"` then compare it to `reviewed_sha`;
-   - approve with `gitlab-local` **Snippet: approve-merge-sha-bound**: `glab mr approve <id> --sha <reviewed-sha>`;
-   - merge or queue auto-merge only when `Merge authority` allows it, always with `--sha <reviewed-sha>` (for example `glab mr merge <id> --yes --sha <reviewed-sha>` or `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`);
+   - re-run `gitlab-local` **Snippet: sha-guard** immediately before any approval, merge, or auto-merge action; the decision point must visibly bind the reviewed head: `current_sha="$(glab mr view <id> -F json | jq -r '.sha')"` then compare it to `reviewed_sha`;
+   - approve with `gitlab-local` **Snippet: sha-bound-approval** only when approval is authorized;
+   - confirm approval with `gitlab-local` **Snippet: approval-confirmation** when approval status must be verified;
+   - direct merge with `gitlab-local` **Snippet: sha-bound-merge** only when direct merge is authorized;
+   - queue protected auto-merge with `gitlab-local` **Snippet: sha-bound-auto-merge-queue** only when queueing auto-merge is authorized;
+   - choose one action at each authorization point; never run a combined approval/merge block or paste multiple action snippets as one executable sequence;
    - after merging one MR, re-check remaining MRs' CI and `detailed_merge_status`; if one becomes conflicted/stale, stop that MR and report the blocker instead of forcing.
 8. Remove a review worktree only when no local evidence/artifacts are needed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Then delete the temp ref if no other review uses it: `git update-ref -d refs/tmp/review/mr-<iid>`.
 
@@ -72,7 +75,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 11. Post inline comments for specific lines where useful.
 12. Post one top-level **Review Report** comment per MR with `gitlab-local` **Snippet: note-comment-creation** using `templates/review-report.md`. Fill **Reviewer** metadata as `@reviewer — <model-id>` (e.g. `@reviewer — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing.
 13. **Re-run `gitlab-local` Snippet: sha-guard immediately before approving.** The decision point must visibly compare `current_sha="$(glab mr view <id> -F json | jq -r '.sha')"` with `reviewed_sha`. If `sha` no longer matches the SHA you reviewed (builder pushed during your review), re-diff the new commits before approving — never approve a SHA you haven't read.
-14. Decide per MR by the posted Review Report: approve, request changes, or reject. Approval uses `gitlab-local` **Snippet: approve-merge-sha-bound** and remains visibly SHA-bound: `glab mr approve <id> --sha <reviewed-sha>`. Merge or queue auto-merge for that MR's reviewed SHA only when `Merge authority` allows it. Request changes keeps the MR open. Reject is non-mutating by default: do not close the MR unless explicit human/project close authority says to close it.
+14. Decide per MR by the posted Review Report: approve, request changes, or reject. Approval uses `gitlab-local` **Snippet: sha-bound-approval** and remains visibly SHA-bound. Merge uses `gitlab-local` **Snippet: sha-bound-merge** and auto-merge queueing uses **Snippet: sha-bound-auto-merge-queue** only when `Merge authority` allows that exact action. Request changes keeps the MR open. Reject is non-mutating by default: do not close the MR unless explicit human/project close authority says to close it.
 
 ## Review Report expectations
 
@@ -80,7 +83,7 @@ See [templates/filling-guide.md §review-report.md](templates/filling-guide.md#r
 
 ## Decisions
 
-- **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, `Merge authority` is explicit, and CI is green/waived or safely pending (see [BUILD-FLOW.md §Implementation flow](../start-build/BUILD-FLOW.md#implementation-flow) step 9 for the CI-pending auto-merge policy). Re-run `gitlab-local` **Snippet: sha-guard**, then run `gitlab-local` **Snippet: approve-merge-sha-bound**. Keep the decision commands visible and SHA-bound: `glab mr approve <id> --sha <reviewed-sha>`; if `Merge authority` allows reviewer-side merge, `glab mr merge <id> --yes --sha <reviewed-sha>`; if checks are pending and authority allows, `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`. If authority is approval-only/human release, stop after approval and report that. If authority is missing, contradictory, or ambiguous, do not approve; report the exact blocker.
+- **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, `Merge authority` is explicit, and CI is green/waived or safely pending (see [BUILD-FLOW.md §Implementation flow](../start-build/BUILD-FLOW.md#implementation-flow) step 9 for the CI-pending auto-merge policy). Re-run `gitlab-local` **Snippet: sha-guard**, then choose the authorized action: `gitlab-local` **Snippet: sha-bound-approval** for approval, **Snippet: approval-confirmation** to verify approval when needed, **Snippet: sha-bound-merge** for direct merge, or **Snippet: sha-bound-auto-merge-queue** for protected auto-merge queueing. If authority is approval-only/human release, stop after approval and report that. If authority is missing, contradictory, or ambiguous, do not approve; report the exact blocker.
 - **Request changes** — fixable Must Fix items and the approach is sound. Apply the project's revision label if one exists; keep the MR open.
 - **Reject** — premise/architecture/scope is wrong, or a safety boundary is weakened beyond what the user/project accepts. Post the Review Report with the reject decision, explain why and what would need to change before a new or continued MR can proceed, then stop and escalate to the parent/human. Leave the MR open by default; closing an MR requires explicit human/project close authority. Reject requires human follow-up; don't auto-spawn a revision.
 

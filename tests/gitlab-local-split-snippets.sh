@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$REPO_ROOT"
+
+fail() {
+  printf 'gitlab-local-split-snippets: FAIL: %s\n' "$*" >&2
+  exit 1
+}
+
+require_text() {
+  local file="$1" pattern="$2" label="$3"
+  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
+}
+
+extract_snippet() {
+  local file="$1" name="$2"
+  awk -v heading="### Snippet: $name" '
+    $0 == heading { in_section=1; next }
+    in_section && /^### Snippet:/ { exit }
+    in_section { print }
+  ' "$file"
+}
+
+require_snippet() {
+  local name="$1" body
+  body="$(extract_snippet "gitlab-local/SKILL.md" "$name")"
+  [[ -n "$body" ]] || fail "gitlab-local/SKILL.md missing snippet $name"
+  printf '%s\n' "$body"
+}
+
+assert_contains() {
+  local text="$1" needle="$2" label="$3"
+  [[ "$text" == *"$needle"* ]] || fail "missing $label: $needle"
+}
+
+assert_not_contains() {
+  local text="$1" needle="$2" label="$3"
+  [[ "$text" != *"$needle"* ]] || fail "unexpected $label: $needle"
+}
+
+approval_body="$(require_snippet sha-bound-approval)"
+merge_body="$(require_snippet sha-bound-merge)"
+auto_merge_body="$(require_snippet sha-bound-auto-merge-queue)"
+confirmation_body="$(require_snippet approval-confirmation)"
+
+assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha"' 'SHA-bound approval command'
+assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
+assert_not_contains "$approval_body" 'glab api' 'approval confirmation command in approval snippet'
+
+assert_contains "$merge_body" 'glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"' 'SHA-bound merge command'
+assert_not_contains "$merge_body" 'glab mr approve' 'approval command in merge snippet'
+assert_not_contains "$merge_body" '--auto-merge' 'auto-merge queueing in direct merge snippet'
+assert_not_contains "$merge_body" 'glab api' 'approval confirmation command in merge snippet'
+
+assert_contains "$auto_merge_body" 'glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"' 'SHA-bound auto-merge queue command'
+assert_not_contains "$auto_merge_body" 'glab mr approve' 'approval command in auto-merge snippet'
+assert_not_contains "$auto_merge_body" 'glab api' 'approval confirmation command in auto-merge snippet'
+
+assert_contains "$confirmation_body" '/merge_requests/${mr_iid}/approvals' 'approval confirmation endpoint'
+assert_not_contains "$confirmation_body" 'glab mr approve' 'approval command in confirmation snippet'
+assert_not_contains "$confirmation_body" 'glab mr merge' 'merge command in confirmation snippet'
+
+if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
+  fail 'retired combined approve-merge-sha-bound snippet still present'
+fi
+
+require_text \
+  "gitlab-local/SKILL.md" \
+  'Choose (exactly )?one action' \
+  'choose-one-action warning for approval/merge snippets'
+require_text \
+  "gitlab-local/SKILL.md" \
+  'Never run[^.]*combined[^.]*approval/merge block' \
+  'no combined approval/merge block warning'
+
+for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
+  if grep -Fq 'approve-merge-sha-bound' "$file"; then
+    fail "$file still references retired combined approve-merge-sha-bound snippet"
+  fi
+  require_text "$file" 'Snippet: sha-bound-approval' 'sha-bound approval snippet reference'
+  require_text "$file" 'Snippet: sha-bound-merge' 'sha-bound merge snippet reference'
+  require_text "$file" 'Snippet: sha-bound-auto-merge-queue' 'sha-bound auto-merge queue snippet reference'
+done
+
+# Keep executable action snippets isolated. The authority-aware finish helper is
+# intentionally allowed to contain conditional approve+merge logic; generic
+# snippet sections must not reintroduce a copy-paste block that performs both.
+awk '
+  /^### Snippet:/ {
+    if (snippet != "" && snippet != "finish-mr-authority-aware" && saw_approve && saw_merge) {
+      printf "snippet %s contains both glab mr approve and glab mr merge\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    snippet=$0
+    sub(/^### Snippet: /, "", snippet)
+    saw_approve=0
+    saw_merge=0
+    next
+  }
+  snippet != "" && /^[[:space:]]*glab mr approve[[:space:]]/ { saw_approve=1 }
+  snippet != "" && /^[[:space:]]*glab mr merge[[:space:]]/ { saw_merge=1 }
+  END {
+    if (snippet != "" && snippet != "finish-mr-authority-aware" && saw_approve && saw_merge) {
+      printf "snippet %s contains both glab mr approve and glab mr merge\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    exit bad ? 1 : 0
+  }
+' gitlab-local/SKILL.md || fail 'combined executable approve+merge snippet detected'
+
+printf 'gitlab-local-split-snippets: PASS\n'

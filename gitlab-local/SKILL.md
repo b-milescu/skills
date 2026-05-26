@@ -18,7 +18,7 @@ Before any flagged `glab` command, run exact command help and verify every flag:
 glab issue list --help; glab issue view --help; glab issue create --help
 glab mr list --help; glab mr view --help; glab mr diff --help
 glab mr create --help; glab mr update --help; glab mr approve --help; glab mr merge --help
-glab ci status --help; glab repo view --help
+glab ci status --help; glab repo view --help; glab api --help
 ```
 
 Do not invent flags from memory or other CLIs. If help conflicts with this skill, use help and note skill drift.
@@ -355,13 +355,54 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 [ "$current_sha" = "$reviewed_sha" ] || { echo "MR head changed: current=$current_sha reviewed=$reviewed_sha" >&2; exit 1; }
 ```
 
-### Snippet: approve-merge-sha-bound
+Approval, direct merge, auto-merge queueing, and approval confirmation are
+separate actions. Choose exactly one action snippet for the authority you have.
+Never run a combined approval/merge block or paste multiple action snippets as
+one executable sequence. Stop or continue only when the workflow explicitly
+grants the next action.
+
+### Snippet: sha-bound-approval
+
+Use only when the reviewed SHA is current and explicit authority permits reviewer
+approval. For `approval-only` authority, this is the only approval/merge action.
 
 ```bash
-glab mr approve <id> --sha "$reviewed_sha"
-glab mr merge <id> --yes --sha "$reviewed_sha"
-glab mr merge <id> --auto-merge --yes --sha "$reviewed_sha"
-glab api "projects/<group%2Fproject>/merge_requests/<id>/approvals"
+mr_iid="<id>"
+reviewed_sha="<sha-you-reviewed>"
+glab mr approve "$mr_iid" --sha "$reviewed_sha"
+```
+
+### Snippet: sha-bound-merge
+
+Use only when the reviewed SHA is current, CI/merge guards pass, and explicit
+authority permits direct merge.
+
+```bash
+mr_iid="<id>"
+reviewed_sha="<sha-you-reviewed>"
+glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"
+```
+
+### Snippet: sha-bound-auto-merge-queue
+
+Use only when the reviewed SHA is current, project policy permits protected
+auto-merge, and explicit authority permits queueing auto-merge.
+
+```bash
+mr_iid="<id>"
+reviewed_sha="<sha-you-reviewed>"
+glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"
+```
+
+### Snippet: approval-confirmation
+
+Use after `sha-bound-approval` when approval status must be verified through the
+approvals endpoint. `approved_by` in MR JSON can lag.
+
+```bash
+mr_iid="<id>"
+project_path="<group%2Fproject>"
+glab api "projects/${project_path}/merge_requests/${mr_iid}/approvals"
 ```
 
 ### Snippet: finish-mr-authority-aware

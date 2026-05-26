@@ -36,7 +36,7 @@ Every claim about MR state, command output, file content, or approval status MUS
 
 - Quote real output from `gitlab-local` **Snippet: mr-pickup** for SHA, draft status, pipeline.
 - Quote real output or saved paths from `gitlab-local` **Snippet: artifact-capture** for the diff.
-- After approving: confirm via the approval endpoint command in `gitlab-local` **Snippet: approve-merge-sha-bound**, not just the approval exit code — `approved_by` in the MR JSON projection can lag. If the approvals endpoint also returns empty, the approve did not go through.
+- After approving: confirm via the approval endpoint command in `gitlab-local` **Snippet: approval-confirmation**, not just the approval exit code — `approved_by` in the MR JSON projection can lag. If the approvals endpoint also returns empty, the approve did not go through.
 - Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
 
 If a step failed or you skipped it, say so explicitly.
