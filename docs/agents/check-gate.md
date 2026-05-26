@@ -25,6 +25,7 @@ Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` drift/dependency failures and the no-mutation `install.sh --check` path under temporary homes. |
+| Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
 | Review authority explicitness | `bash tests/review-authority-explicit.sh` | Verifies reviewer docs/templates/prompts do not default missing merge authority to approval-only, while preserving explicit `approval-only` as valid authority. |
