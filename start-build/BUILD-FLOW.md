@@ -27,7 +27,7 @@ Use when the user supplies multiple issues, asks for multiple tasks, or requests
    - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
 5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
 6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
-7. **Discover and spawn builders.** Call `subagent({ action: "list" })` and look for agents whose name or description indicates issue-implementation specialization (e.g. `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker` override). Prefer project-scope agents over user-scope over builtin `worker`. Spawn one builder per worktree with the issue ID/URL, worktree path, and project rulebook path in the task prompt. Never let two agents share a checkout, branch, temp DB, port, or uncommitted artifact directory.
+7. **Delegate isolated work from a coordinator only.** A parent/coordinator with agent-launch authority may start one builder per worktree using its runtime-specific mechanism and the [Parent-orchestrator recipe](#parent-orchestrator-recipe). If you are already running inside a child builder worktree, this step is complete: do not launch builders or reviewers from the child session.
 8. Keep artifacts/evidence local to that worktree/MR. Do not combine Review Packets, close multiple issues from one MR, or stack branches unless the user explicitly switches to a serial plan.
 9. Before revision/merge follow-up, re-check target branch and merge status. If another worktree's MR creates a conflict or stale branch, pause and report the coupling.
 10. Remove a worktree only after its branch is pushed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Use `git worktree prune` only after verifying stale paths.
@@ -98,12 +98,19 @@ product/runtime/operator external systems are not exposed through workflow artif
 2. **Prepare isolated work.** Verify clean status, fetch the target branch, and
    create the source branch or one isolated worktree per decoupled issue. The
    parent checkout remains coordinator-only during multi-issue runs.
-3. **Run child `mr-builder`.** Give the builder one issue URL/IID, one worktree,
-   the target branch, the project rulebook, local Check Gate, merge authority,
-   and any run directory. The builder owns implementation, Draft MR creation,
-   Review Packet and Reviewer Lift updates, local gate evidence, ready-marking,
-   and final handoff. In child mode the builder stops there; it does not spawn a
-   reviewer, approve, merge, or clean up the parent-owned run.
+3. **Discover and run child `mr-builder`.** If the parent runtime exposes the
+   `subagent` API, call `subagent({ action: "list" })` and look for agents whose
+   name or description indicates issue-implementation specialization (for
+   example `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker`
+   override). Prefer project-scope agents over user-scope agents over a builtin
+   `worker`. Start one builder per issue/worktree with one issue URL/IID, one
+   worktree, the target branch, the project rulebook, local Check Gate, merge
+   authority, and any run directory. Never let two agents share a checkout,
+   branch, temp DB, port, or uncommitted artifact directory. The builder owns
+   implementation, Draft MR creation, Review Packet and Reviewer Lift updates,
+   local gate evidence, ready-marking, and final handoff. In child mode the
+   builder stops there; it does not spawn a reviewer, approve, merge, or clean
+   up the parent-owned run.
 4. **Parent spot-check.** Before review, validate the builder handoff and MR via
    `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch,
    pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha`,
@@ -111,11 +118,15 @@ product/runtime/operator external systems are not exposed through workflow artif
    changed paths, touched safety surfaces, decoupling proof, local gate result,
    open questions, and merge authority. Escalate if the handoff is missing,
    stale, out of scope, or contradicts the issue/rulebook.
-5. **Run `mr-reviewer`.** Start a fresh reviewer session with the MR URL,
-   pointer to the MR Reviewer Lift block, project rulebook, and any run
-   directory. The reviewer posts one Review Report for one reviewed SHA. Approval
-   or merge actions remain limited by the explicit merge authority in the Review
-   Packet and project rulebook.
+5. **Discover and run `mr-reviewer`.** If the parent runtime exposes the
+   `subagent` API, call `subagent({ action: "list" })` and look for agents whose
+   name or description indicates MR / code-review specialization (for example
+   `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override).
+   Prefer project-scope agents over user-scope agents over a builtin reviewer.
+   Start a fresh reviewer session with the MR URL, pointer to the MR Reviewer
+   Lift block, project rulebook, and any run directory. The reviewer posts one
+   Review Report for one reviewed SHA. Approval or merge actions remain limited
+   by the explicit merge authority in the Review Packet and project rulebook.
 6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any
    finish action. On `request-changes`, send the finding IDs and reviewed SHA to
    the builder; require fix commits, targeted evidence, a full local gate when
@@ -235,7 +246,7 @@ Before marking ready or requesting review, validate the MR handoff:
    - **CI-pending review policy.** A reviewer may approve and queue auto-merge while CI is pending only when the local gate is PASS, the pending pipeline is for the reviewed SHA when GitLab exposes the SHA, and GitLab merge checks enforce green CI before merge. Red CI or stale green CI remains a blocker unless explicitly waived.
    - **Post-ready push protocol.** If you push any commits after marking ready (CI fix, review revision, rebase, anything), post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the delta is substantive. Update `Reviewer Lift > Reviewed SHA`, `CI pipeline`, and `Delta since last ready push`. Use `templates/revision-packet.md` for substantive post-ready changes, not only formal request-changes responses. The reviewer is told to refuse approval of a SHA they haven't read; silently pushing after ready risks merging unreviewed commits.
    - If CI later goes red, treat it like other review feedback: fetch logs, diagnose, fix, push a commit (with the post-ready delta comment). Don't unilaterally re-Draft.
-10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. In standalone `/start-build` mode, spawn a **new** subagent reviewer (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol. In child `mr-builder` mode, return the revision handoff; the parent orchestrator spawns the fresh reviewer.
+10. If changes are requested, push fixes as new commits and reply to each thread. Builder replies with evidence; the reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution. Update the MR description with a brief revision summary and post `templates/revision-packet.md` as a comment. In standalone `/start-build` mode, run a **new** reviewer session (fresh session, fresh context) per the [Mandatory review gate](#mandatory-review-gate) protocol. In child `mr-builder` mode, return the revision handoff; the parent orchestrator starts the fresh reviewer.
 
 ## Compact packet eligibility
 
@@ -254,14 +265,32 @@ If blocked for more than 2 hours:
 
 ## Mandatory review gate
 
-In standalone `/start-build` mode, the builder must spawn a subagent reviewer — this gate is mandatory, not optional. In child `mr-builder` mode, the parent orchestrator owns this gate after the child returns its final handoff; the child builder must not spawn a reviewer unless explicitly instructed. The builder never self-approves or self-merges (see [SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity.
+In standalone `/start-build` mode, the builder owns reviewer handoff and must
+start a fresh reviewer through whatever orchestration mechanism the runtime
+provides; this gate is mandatory, not optional. If that runtime has no
+reviewer-launch mechanism, stop and report the blocker instead of self-reviewing.
+In child `mr-builder` mode, the parent orchestrator owns this gate after the
+child returns its final handoff; the child builder must not start a reviewer
+unless explicitly instructed. The builder never self-approves or self-merges (see
+[SAFETY.md](SAFETY.md) non-negotiables). Builder and reviewer may share the same
+GitLab username/PAT — review independence comes from session/context separation,
+not GitLab identity. Concrete tool calls for parent-managed discovery live in the
+[Parent-orchestrator recipe](#parent-orchestrator-recipe), not in child builder
+instructions.
 
-### Subagent spawning protocol
+### Reviewer launch protocol
 
 When you own this gate after the MR is ready:
 
-1. **Discover available reviewers.** Call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization (e.g. `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override). Prefer project-scope agents over user-scope over builtin. If a specialized MR reviewer is found, use it; otherwise fall back to the builtin `reviewer`.
-2. **Spawn** the selected agent running `start-review` in a fresh session. The task prompt must include:
+1. **Discover available reviewers** using the runtime-specific agent discovery
+   mechanism available to the owner of the gate. Look for agents whose name or
+   description indicates MR / code-review specialization (for example
+   `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override).
+   Prefer project-scope agents over user-scope agents over builtin reviewers. If
+   a specialized MR reviewer is found, use it; otherwise fall back to the
+   builtin reviewer.
+2. **Start** the selected reviewer running `start-review` in a fresh session. The
+   task prompt must include:
    - **MR URL** — the full GitLab MR web URL.
    - **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
    - **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
@@ -276,11 +305,11 @@ Project rulebook: <path to rulebook>
 
 ### Review loop
 
-1. **Spawn** a fresh subagent reviewer session.
+1. **Start** a fresh reviewer session.
 2. **Wait** for the Review Report. Timeout: 10 minutes per round.
 3. **Evaluate** the reviewer's decision:
    - **Approve** — reviewer records approval for the reviewed SHA, then finish per `Merge authority`. If authority is `approval-only` or `human release`, stop after approval and report the reviewed SHA. If authority is `reviewer may merge` or `queue auto-merge`, only the reviewer, an authorized parent, or a human may merge or queue with the reviewed SHA. If GitLab blocks reviewer-side merge or queue, report the blocker and route finish to an authorized parent or human; the builder must not merge as a fallback. For safety-critical tasks, link the MR from any durable decision log the project keeps. Record the reviewed SHA and decision.
-   - **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift, then spawn a **new** subagent reviewer (fresh session, fresh context — never reuse the same reviewer session).
+   - **Request changes** — push fix commits (each commit subject naming the item ID, e.g. `MF-1: <fix>`), post a revision-packet comment, update the MR description and Reviewer Lift, then start a **new** reviewer session (fresh session, fresh context — never reuse the same reviewer session).
    - **Reject** — hard stop. Do not spawn another reviewer on the same MR. Escalate to human immediately.
 4. **3-round limit:** up to 3 rounds total (initial + 2 retries). If all 3 rounds result in request-changes, escalate to human with full context (round count, Review Reports, remaining Must Fix items).
 
@@ -289,7 +318,7 @@ Project rulebook: <path to rulebook>
 If no Review Report comes back within 10 minutes:
 
 1. Do not retry the same reviewer session — it may be hung.
-2. Spawn one fresh reviewer session with the same task prompt.
+2. Start one fresh reviewer session with the same task prompt.
 3. If the second attempt also times out, escalate to human.
 
 ### Iteration summary

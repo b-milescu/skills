@@ -48,7 +48,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
    - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
    - `git worktree add --detach <path> refs/tmp/review/mr-<iid>`
    - `git -C <path> rev-parse HEAD` must equal MR metadata `sha`; if not, refresh metadata and stop if still mismatched.
-5. If the harness provides parallel subagents/worktree orchestration, run one reviewer session per MR/worktree. Review independence requires separate LLM/session context plus separate checkout for local execution.
+5. If a parent/harness has already provided parallel reviewer sessions and worktrees, keep one reviewer session per MR/worktree. If you are running inside a reviewer child session, review only the assigned MR/worktree and do not launch sibling reviewers. Review independence requires separate LLM/session context plus separate checkout for local execution.
 6. Produce one Review Report and one decision per MR. Do not batch multiple MRs into one GitLab comment, approval, request-changes, or reject action.
 7. Approval/merge sequence per MR:
    - re-run `gitlab-local` **Snippet: sha-guard** immediately before any approval, merge, or auto-merge action; the decision point must visibly bind the reviewed head: `current_sha="$(glab mr view <id> -F json | jq -r '.sha')"` then compare it to `reviewed_sha`;
