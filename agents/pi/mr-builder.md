@@ -34,7 +34,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 When the parent owns the gate, the final report MUST start with the approved machine-readable builder handoff schema from `start-build/templates/builder-final-handoff.md` when that template is available. Keep its values synchronized with the MR description's Reviewer Lift block and then include concise command evidence for:
 
 - MR IID/URL
-- Head SHA / Reviewed SHA
+- `head_sha` and `reviewed_sha` (same MR head commit; `reviewed_sha` is the SHA the reviewer must read)
 - CI pipeline URL/status (and SHA when available)
 - Local gate result/evidence
 - RED/GREEN or TDD N/A rationale
@@ -52,7 +52,7 @@ If the template is unavailable, say so and still return the evidence contract ab
 
 Every claim about repo state, command output, or remote artefacts in your final report MUST be backed by a real tool call. Specifically:
 
-- Quote real `git rev-parse HEAD` output for the reviewed SHA.
+- Quote real `git rev-parse HEAD` output for `head_sha` / `reviewed_sha`.
 - Quote real `git ls-remote origin <branch>` output after pushing.
 - Quote real output from `gitlab-local` **Snippet: mr-pickup** for the MR IID, state, draft, and pipeline fields.
 - Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.

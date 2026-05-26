@@ -63,7 +63,7 @@ Use the mode supplied by the caller or agent prompt; when no parent orchestrator
 Minimum final handoff when the parent owns the gate:
 
 - MR URL/IID
-- Head SHA / Reviewed SHA
+- `head_sha` and `reviewed_sha` (same MR head commit; `reviewed_sha` is the SHA the reviewer must read)
 - CI status
 - Local gate evidence
 - RED/GREEN or TDD N/A rationale
@@ -106,7 +106,8 @@ product/runtime/operator external systems are not exposed through workflow artif
    reviewer, approve, merge, or clean up the parent-owned run.
 4. **Parent spot-check.** Before review, validate the builder handoff and MR via
    `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch,
-   pushed branch, current MR head SHA, Reviewed SHA, pipeline SHA when exposed,
+   pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha`,
+   Reviewer Lift `Reviewed SHA`, pipeline SHA when exposed,
    changed paths, touched safety surfaces, decoupling proof, local gate result,
    open questions, and merge authority. Escalate if the handoff is missing,
    stale, out of scope, or contradicts the issue/rulebook.

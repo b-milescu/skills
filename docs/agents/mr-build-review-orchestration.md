@@ -81,7 +81,9 @@ prose. Values must not contain secrets, raw private payloads, or unredacted logs
 
 ### Builder final handoff schema
 
-Required fields:
+Required fields. For ready builder handoffs, `head_sha` is the MR head when the
+handoff is emitted and `reviewed_sha` is the same commit: the exact SHA the
+parent passes to the reviewer.
 
 ```yaml
 agent_handoff:
@@ -98,7 +100,6 @@ agent_handoff:
     draft: false
     source_branch: "issue-55-example"
     target_branch: "main"
-  base_sha: "40-hex-sha"
   head_sha: "40-hex-sha"
   reviewed_sha: "40-hex-sha"
   pipeline:
@@ -149,7 +150,6 @@ agent_handoff:
     draft: false
     source_branch: "issue-55-mr-orchestration-design"
     target_branch: "main"
-  base_sha: "1111111111111111111111111111111111111111"
   head_sha: "2222222222222222222222222222222222222222"
   reviewed_sha: "2222222222222222222222222222222222222222"
   pipeline:

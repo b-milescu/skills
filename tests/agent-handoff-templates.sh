@@ -15,6 +15,7 @@ builder_expected=(
   issue
   mr
   head_sha
+  reviewed_sha
   pipeline
   local_gate
   tdd
@@ -114,6 +115,19 @@ for (const file of process.argv.slice(2)) {
   const parsed = yaml.load(matches[0][1]);
   if (!parsed?.agent_handoff || typeof parsed.agent_handoff !== 'object') {
     throw new Error(`${file}: missing agent_handoff object`);
+  }
+
+  if (file.endsWith('builder-final-handoff.md')) {
+    const handoff = parsed.agent_handoff;
+    if (!('head_sha' in handoff) || !('reviewed_sha' in handoff)) {
+      throw new Error(`${file}: builder handoff must expose both head_sha and reviewed_sha`);
+    }
+    if (handoff.head_sha !== handoff.reviewed_sha) {
+      throw new Error(`${file}: builder example head_sha and reviewed_sha must match`);
+    }
+    if (!content.includes('`reviewed_sha` is the same commit as `head_sha`')) {
+      throw new Error(`${file}: missing explicit reviewed_sha/head_sha equality semantics`);
+    }
   }
 }
 NODE
