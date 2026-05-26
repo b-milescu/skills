@@ -2,6 +2,16 @@
 
 This guide holds instructional prose for reviewer templates. Read once per session; the templates themselves are bare skeletons.
 
+## reviewer-final-handoff.md
+
+- Emit this machine-readable block in `mr-reviewer` final responses after posting the GitLab Review Report.
+- Keep the GitLab Review Report comment as the durable review record; this block complements it for parent parsing.
+- Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
+- Make the first fields summary-first for parent orchestration: decision, MR, reviewed SHA, pipeline, local checks, findings, merge action, next action, and report URL.
+- If usage limits or tooling failures stop completion before a decision, return prose explaining the blocker; a completed machine block should only claim verified values.
+- Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
+- Consumers must tolerate absent blocks and fall back to the Review Report / human prose / Reviewer Lift.
+
 ## review-report.md
 
 - Post as a single top-level comment on the MR. Use inline review comments for line-anchored findings, and reference each Must Fix item ID (MF-1, MF-2, ...) so revision commits can cite them.

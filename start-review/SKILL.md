@@ -57,6 +57,7 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 ## Templates
 
 - `../start-build/templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics copied into Review Reports.
+- `templates/reviewer-final-handoff.md` — machine-readable reviewer final response block for parent-orchestrator parsing.
 - `templates/review-report.md` — single top-level MR comment.
 - `templates/unblock-response.md` — response to a Stuck Packet.
 - `templates/filling-guide.md` — section-by-section filling instructions for reviewer templates.
