@@ -15,6 +15,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 ## review-report.md
 
 - Post as a single top-level comment on the MR. Use inline review comments for line-anchored findings, and reference each Must Fix item ID (MF-1, MF-2, ...) so revision commits can cite them.
+- **Decision Summary** — First section and first screen. Fill before metadata, Reviewer Lift detail, and evidence detail. Use the same summary-first structure as the reviewer prompts: decision, reviewed SHA, CI status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), local checks, and Report link placeholder (`this comment; final handoff contains URL when available` until GitLab exposes the comment URL).
 - **Summary** — Overall assessment. If requesting changes, state the headline.
 - **Decision** — Approve / Request Changes / Reject. Repeat unambiguously.
 - **Reviewer Lift (builder handoff)** — Copy every field from the builder's Reviewer Lift before reading the diff. `../../start-build/templates/reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this report is an approved generated copy. Verify each copied value against MR metadata, diff, comments, and CI before deciding.

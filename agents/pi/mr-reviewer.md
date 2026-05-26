@@ -43,7 +43,7 @@ If a step failed or you skipped it, say so explicitly.
 
 ## Summary-first Review Report and final handoff
 
-Review Reports must put the decision-critical summary before evidence detail. The first screen of the posted report must include, in this order: decision, reviewed SHA, CI pipeline status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), tests/local checks run, and report link. Use `start-review/templates/review-report.md` for the detailed evidence sections, but do not bury these summary fields below long Reviewer Lift, safety, or diff evidence. If GitLab only reveals the note URL after posting, write `Report link: this comment; final handoff contains URL when available` in the report and put the actual URL in the final handoff when you can verify it.
+Review Reports must put the decision-critical summary before evidence detail. `start-review/templates/review-report.md` starts with `## Decision Summary`; fill that first section before metadata, Reviewer Lift, safety, or diff evidence. The section must include, in order: decision, reviewed SHA, CI status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), local checks, and Report link. If GitLab only reveals the note URL after posting, write `Report link: this comment; final handoff contains URL when available` in the report and put the actual URL in the final handoff when you can verify it.
 
 After posting the Review Report, the final response MUST include the approved machine-readable reviewer handoff schema from `start-review/templates/reviewer-final-handoff.md` when that template is available, including `report_url`. If the template is unavailable, say so and still include decision, reviewed SHA, CI, findings, tests, authority/action, next action, and blockers.
 

@@ -27,7 +27,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
 7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
 8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
-9. Post one Review Report per MR via `templates/review-report.md` and decide independently.
+9. Post one summary-first Review Report per MR via `templates/review-report.md` and decide independently. The first section is `## Decision Summary` with decision, reviewed SHA, CI status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), local checks, and Report link.
 10. **SHA discipline:** use `gitlab-local` **Snippet: sha-guard** before `gitlab-local` **Snippet: approve-merge-sha-bound**; approve with `glab mr approve <id> --sha <reviewed-sha>`. Merge or auto-merge only when `Merge authority` allows.
 
 ## MR pickup summary
