@@ -117,7 +117,7 @@ When the reviewer requests changes:
 - Use project adapters for external APIs; raw HTTP/SDK calls require ADR-level justification.
 - Every behavior change needs meaningful tests and regression evidence.
 - Keep scope tight; file follow-up issues instead of drive-by refactors.
-- No self-approval or self-merge — independent review remains required unless a human bypass is documented; in child mode, the parent-owned mandatory review gate handles that.
+- No self-approval, self-merge, or fallback finish — independent review remains required unless a human bypass is documented; in child mode, the parent-owned mandatory review gate handles finish actions. Reviewer, authorized parent, or human handles any merge/auto-merge allowed by policy.
 - Migrations are append-only; never edit a migration that may have run outside a throwaway DB.
 - Pure engines stay pure; state changes go through typed/atomic paths.
 - Behavior-touching refactors require regression evidence.
