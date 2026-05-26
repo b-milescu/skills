@@ -86,7 +86,7 @@ post-merge checks, but they must not weaken the safety invariants in this flow:
 child builders do not spawn reviewers, approve, or merge; independent review
 stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI
 results stay bound to the MR head before approval or merge; and credentials or
-PRO external systems are not exposed through workflow artifacts.
+product/runtime/operator external systems are not exposed through workflow artifacts.
 
 ### Parent loop
 
@@ -226,7 +226,7 @@ Before marking ready or requesting review, validate the MR handoff:
 4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block from `templates/reviewer-lift-schema.md` — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
 5. For behavior-touching changes, implement vertical slices per the `tdd` skill. Commit coherent green slices, referencing issue/slice; revision commits cite review-thread items (e.g. `MF-1: <fix>`). For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
-7. Run targeted tests during the red-green loop. Never use live PRO external systems as regression evidence.
+7. Run targeted tests during the red-green loop. Never use live product/runtime/operator external systems as regression evidence.
 8. Update the MR description: diff summary, acceptance-criteria evidence, safety evidence, TDD trace (or `TDD: N/A` rationale), full test/check-gate output or CI link. **Keep the Reviewer Lift block current** — fill each field per `templates/reviewer-lift-schema.md` as values become available. Use stable `OQ-N` IDs in the body so the reviewer can answer each one.
 9. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**. Then follow the active [Builder invocation mode](#builder-invocation-modes): standalone `/start-build` proceeds to the [Mandatory review gate](#mandatory-review-gate) below; child `mr-builder` stops at the documented final handoff for the parent orchestrator.
    - **Don't block ready-marking on CI when the full local check gate is green.** The local gate (lint, format, typecheck, full test suite, etc.) is the same check CI runs; once green and pushed, mark ready immediately. CI is the reviewer's clean-checkout safety net, not a builder-side wait.

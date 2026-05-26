@@ -14,8 +14,6 @@ Implement scoped GitLab issues and produce reviewable changes: code, tests, docs
 
 This skill is language- and domain-agnostic; domain-specific safety terms below are examples to map onto the host project's equivalent surfaces. **Load the host project's rulebook first** (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, architecture docs, ADRs). Project rules override this skill where stricter. Handoff lives in **GitLab**: tasks are issues, proposals are MRs, review happens in MR discussions. Fill templates into MR descriptions/comments; never commit `.reviews/` artifacts.
 
-> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
-
 ## Invocation modes
 
 - **Standalone `/start-build` mode** — the builder owns the mandatory review gate: after marking the MR ready, spawn a fresh reviewer, drive the review loop, post the Review Gate Summary, and never self-approve or self-merge.
@@ -42,7 +40,7 @@ When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from
 
 ## Essential safety summary
 
-- No live PRO external mutations during development/review unless the human explicitly requested an operator action. GitLab issue/MR actions prescribed by this workflow are allowed.
+- No live product/runtime/operator external mutations during development/review unless the human explicitly requested an operator action. GitLab issue/MR actions prescribed by this workflow are allowed.
 - Never touch, print, summarize, commit, or paste credentials or sensitive payloads.
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, migrations, or deploy topology casually.
 - Use project adapters for external APIs; new raw HTTP/SDK/CLI calls require ADR-level justification.

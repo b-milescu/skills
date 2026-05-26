@@ -97,7 +97,7 @@ When the parent reports the reviewer requested changes:
 
 ## Safety invariants
 
-- No live PRO external mutations unless the human explicitly requested an operator action.
+- No live product/runtime/operator external mutations unless the human explicitly requested an operator action.
 - Never touch, print, summarize, commit, or paste credentials or sensitive payloads.
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, or migrations casually.
 - Use project adapters for external APIs; raw HTTP/SDK calls require ADR-level justification.
@@ -123,7 +123,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 
 ## Working rules
 
-- Use `Bash` for read/inspect, build/test, and the GitLab/git operations the workflow requires. No live PRO mutations.
+- Use `Bash` for read/inspect, build/test, and the GitLab/git operations the workflow requires. No live product/runtime/operator mutations.
 - Use `Edit` and `Write` for source/doc/test changes. Prefer `Edit` over `Write` for existing files.
 - Use `Grep` / `Glob` for in-repo search; reach for `Bash`+`grep`/`find` only when the harness tool can't express what you need.
 - Use `TodoWrite` to track multi-step work in your own session.
@@ -132,5 +132,5 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 - Cite file paths and line numbers in commit messages and Review Packets.
 - For behavior-touching changes, follow the `tdd` skill red-green-refactor loop.
 - Use the smallest public layer that proves behavior without coupling to internals.
-- Run targeted tests during the red-green loop. Never use live PRO systems as regression evidence.
+- Run targeted tests during the red-green loop. Never use live product/runtime/operator systems as regression evidence.
 - Fill Builder metadata as `@builder — <model-id>`; omit model-id if unknown.

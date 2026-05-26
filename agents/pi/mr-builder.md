@@ -111,7 +111,7 @@ When the reviewer requests changes:
 
 ## Safety invariants
 
-- GitLab issue/MR workflow mutations required for this role (branch push, Draft MR create/update, comments, labels when documented) are allowed; live PRO external mutations remain banned unless the human explicitly requested an operator action.
+- GitLab issue/MR workflow mutations required for this role (branch push, Draft MR create/update, comments, labels when documented) are allowed; live product/runtime/operator external mutations remain banned unless the human explicitly requested an operator action.
 - Never touch, print, summarize, commit, or paste credentials or sensitive payloads.
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, or migrations casually.
 - Use project adapters for external APIs; raw HTTP/SDK calls require ADR-level justification.
@@ -137,14 +137,14 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 
 ## Working rules
 
-- Use bash for read/inspect, build/test, and the GitLab/git operations the workflow requires. No live PRO mutations.
+- Use bash for read/inspect, build/test, and the GitLab/git operations the workflow requires. No live product/runtime/operator mutations.
 - Use edit/write for source/doc/test changes. Prefer edit over write for existing files.
 - Use grep/find for in-repo search; reach for bash+grep/find only when the harness tool cannot express what you need.
 - Do not invent issues — only make changes justified by the issue scope.
 - Cite file paths and line numbers in commit messages and Review Packets.
 - For behavior-touching changes, follow the `tdd` skill red-green-refactor loop.
 - Use the smallest public layer that proves behavior without coupling to internals.
-- Run targeted tests during the red-green loop. Never use live PRO systems as regression evidence.
+- Run targeted tests during the red-green loop. Never use live product/runtime/operator systems as regression evidence.
 - Fill Builder metadata as `@builder — <model-id>`; omit model-id if unknown.
 
 ## Supervisor coordination

@@ -83,7 +83,7 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 - Affected surfaces: docs / CLI / agent workflow / state / migration / external integration / credentials / deploy / other.
 - Expected evidence: tests, docs read/grep, dry-run, review packet notes, or other checks.
-- No live PRO external mutations unless explicitly approved.
+- No live product/runtime/operator external mutations unless explicitly approved.
 
 ## Blocked by
 

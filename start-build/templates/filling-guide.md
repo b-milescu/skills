@@ -18,7 +18,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - **Safety Impact** — Address every applicable invariant; write N/A with reason for non-applicable items: approved domain envelope (no new venues, scopes, capabilities, or rules); observe vs enforce / dry-run vs production semantics; protective sequencing (e.g. cancel-before-replace, classify-before-continue); coordination primitives (lease/lock acquired and verified; no force-steal); immutable baselines and monotonic invariants; exact-decimal numeric type for money/quantity/domain math; pure engines remain side-effect free.
 - **Architecture / Design Decisions** — Decision, alternatives considered, why this shape won, trade-offs to review. Link to ADR if one is required.
 - **State, Persistence, and Migration Impact** — State stores, typed models, DB migrations, event/intent stores, CLI stdout contracts, cross-language interop. Include migration numbers and smoke-test plan. Write N/A if none.
-- **External-System and Credential Safety** — State whether any live PRO external mutations were made (default: no). For changes touching external integrations, explain adapter use, fake/recorded HTTP tests, redaction, and idempotency keys. Confirm secret stores were not read/printed/committed.
+- **External-System and Credential Safety** — State whether any live product/runtime/operator external mutations were made (default: no). For changes touching external integrations, explain adapter use, fake/recorded HTTP tests, redaction, and idempotency keys. Confirm secret stores were not read/printed/committed.
 - **Diff Summary** — High-level diffstat and map by file.
 - **Test Evidence** — Expand on the `RED`/`GREEN` fields from the Reviewer Lift schema. Include targeted tests, full check gate output (or CI link), coverage where the project requires it. For behavior-touching refactors, provide regression evidence. If red-first evidence is unavailable, explain why and provide equivalent behavior evidence.
 - **Manual / Operational Evidence** — Optional. Dry-run output, runbook check, read-only operator command. Never paste secrets.
@@ -56,7 +56,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - **Response to Consider** — Same shape; valid to decline with reasoning.
 - **What I did not change** — Reviewer comments not acted on, and why.
 - **Updated Safety Impact** — New/changed safety evidence since prior packet, or "No change."
-- **Updated State / Migration / External-System Evidence** — If applicable. Confirm no live PRO external mutation and no credential exposure.
+- **Updated State / Migration / External-System Evidence** — If applicable. Confirm no live product/runtime/operator external mutation and no credential exposure.
 - **Updated Test Evidence** — Re-run gates and targeted tests; CI link or concise output.
 - **Diff Since Previous Review** — High-level diffstat for revision-only changes.
 - **Open Questions (Unresolved)** — Anything still needing reviewer/human decision.
@@ -69,7 +69,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - **What I've tried** — Chronological list with files, tests, errors, logs, or traces. No secrets.
 - **What's in front of me** — Hypotheses, most likely first.
 - **What would unblock me** — Hint, design decision, pair session, source pointer, or escalation.
-- **Safety status** — Confirm no live PRO external mutation, no credential exposure, and whether the branch is safe to park.
+- **Safety status** — Confirm no live product/runtime/operator external mutation, no credential exposure, and whether the branch is safe to park.
 - **Artifacts** — Failing tests, branch HEAD, fixture names, logs with secrets redacted.
 - **What I'm doing while stuck** — Park / switch plan.
 - **Escalation** — Who/what asked and when.
