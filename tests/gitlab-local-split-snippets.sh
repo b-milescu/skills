@@ -44,6 +44,8 @@ approval_body="$(require_snippet sha-bound-approval)"
 merge_body="$(require_snippet sha-bound-merge)"
 auto_merge_body="$(require_snippet sha-bound-auto-merge-queue)"
 confirmation_body="$(require_snippet approval-confirmation)"
+ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
+finish_body="$(require_snippet finish-mr-authority-aware)"
 
 assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha"' 'SHA-bound approval command'
 assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
@@ -61,6 +63,19 @@ assert_not_contains "$auto_merge_body" 'glab api' 'approval confirmation command
 assert_contains "$confirmation_body" '/merge_requests/${mr_iid}/approvals' 'approval confirmation endpoint'
 assert_not_contains "$confirmation_body" 'glab mr approve' 'approval command in confirmation snippet'
 assert_not_contains "$confirmation_body" 'glab mr merge' 'merge command in confirmation snippet'
+
+assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'CI watcher helper script pointer'
+assert_contains "$ci_watch_body" 'scripts/README.md' 'CI watcher helper docs pointer'
+assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper script pointer'
+assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
+assert_not_contains "$ci_watch_body" 'while [ "$SECONDS" -le "$deadline" ]; do' 'long CI watcher shell body'
+assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$source_branch" -F json 2>/dev/null || true)"' 'inline branch CI status body'
+assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
+assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
+
+require_text "scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
+require_text "scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
+require_text "scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
 if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
   fail 'retired combined approve-merge-sha-bound snippet still present'

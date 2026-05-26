@@ -164,6 +164,8 @@ artifacts, and redact secrets before writing text that may be pasted to GitLab.
 ## Canonical snippets
 
 Names below are stable API for workflow skills. Verify flags with `--help` before use.
+Long helper bodies live in `scripts/` with tests; this skill keeps contracts,
+safety rules, and pointers authoritative.
 
 ### Snippet: local-repo-preflight
 
@@ -272,67 +274,29 @@ Polling and SHA rules:
 7. Timeout output is non-zero and includes last MR pipeline and branch/job
    summary so the caller can distinguish "no pipeline yet" from stale CI.
 
-Shell shape:
+Implementation body lives outside this skill:
+
+- Source: [`scripts/gitlab-ci-watch.sh`](../scripts/gitlab-ci-watch.sh)
+- Helper docs: [`scripts/README.md`](../scripts/README.md#gitlab-workflow-helpers)
+- Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
+
+Use the helper when the accepted behavior fits:
 
 ```bash
-mr_iid="<id>"
-source_branch="<source-branch>"
-reviewed_sha="<sha-you-reviewed>"
-timeout_seconds="${timeout_seconds:-900}"
-poll_seconds="${poll_seconds:-15}"
-deadline=$((SECONDS + timeout_seconds))
-last_summary="none"
-pipeline_status="none"
-pipeline_sha="none"
-
-while [ "$SECONDS" -le "$deadline" ]; do
-  mr_json="$(glab mr view "$mr_iid" -F json)"
-  current_sha="$(jq -r '.sha // ""' <<<"$mr_json")"
-  [ "$current_sha" = "$reviewed_sha" ] || {
-    echo "CI_WATCH result=head_changed current=$current_sha reviewed=$reviewed_sha" >&2
-    exit 2
-  }
-
-  pipeline_json="$(jq -c '.pipeline // {}' <<<"$mr_json")"
-  pipeline_id="$(jq -r '.id // "none"' <<<"$pipeline_json")"
-  pipeline_status="$(jq -r '.status // "none"' <<<"$pipeline_json")"
-  pipeline_sha="$(jq -r '.sha // "none"' <<<"$pipeline_json")"
-  pipeline_url="$(jq -r '.web_url // "none"' <<<"$pipeline_json")"
-
-  branch_json="$(glab ci status --branch "$source_branch" -F json 2>/dev/null || true)"
-  branch_id="$(jq -r '.pipeline.id // "none"' <<<"${branch_json:-{}}" 2>/dev/null || echo none)"
-  branch_status="$(jq -r '.pipeline.status // "none"' <<<"${branch_json:-{}}" 2>/dev/null || echo none)"
-  branch_sha="$(jq -r '.pipeline.sha // "none"' <<<"${branch_json:-{}}" 2>/dev/null || echo none)"
-  failed_jobs="$(jq -r '.jobs[]? | select((.allow_failure != true) and (.status == "failed" or .status == "canceled" or .status == "skipped")) | .name' <<<"${branch_json:-{}}" 2>/dev/null | paste -sd, -)"
-  last_summary="mr_pipeline=$pipeline_id:$pipeline_status:$pipeline_sha branch_pipeline=$branch_id:$branch_status:$branch_sha failed_jobs=${failed_jobs:-none}"
-  echo "CI_WATCH elapsed=${SECONDS}s $last_summary"
-
-  if [ "$pipeline_sha" = "$reviewed_sha" ]; then
-    case "$pipeline_status" in
-      success)
-        echo "CI_WATCH result=pass pipeline=$pipeline_id sha=$pipeline_sha url=$pipeline_url"
-        exit 0
-        ;;
-      failed|canceled|skipped)
-        echo "CI_WATCH result=fail pipeline=$pipeline_id status=$pipeline_status sha=$pipeline_sha failed_jobs=${failed_jobs:-unknown}" >&2
-        exit 1
-        ;;
-    esac
-  fi
-
-  sleep "$poll_seconds"
-done
-
-final_result="timeout"
-if [ "$pipeline_sha" != "none" ] && [ "$pipeline_sha" != "$reviewed_sha" ]; then
-  final_result="stale_ci"
-fi
-echo "CI_WATCH result=$final_result reviewed=$reviewed_sha last=$last_summary" >&2
-exit 3
+scripts/gitlab-ci-watch.sh \
+  --mr-iid "$mr_iid" \
+  --source-branch "$source_branch" \
+  --reviewed-sha "$reviewed_sha" \
+  --timeout-seconds "${timeout_seconds:-900}" \
+  --poll-seconds "${poll_seconds:-15}" \
+  --format human
 ```
 
-Machine output fields should include `mr`, `expected_sha`, `observed_sha`,
-`pipeline_id`, `status`, `url`, failed/running job names when available, and
+If adapting raw commands instead of the helper, keep every polling/SHA rule
+above, run help-first for `glab mr view` and `glab ci status`, and fail closed
+on missing, stale, red, or SHA-mismatched CI. Machine output fields should
+include `mr`, `expected_sha`, `observed_sha`, `pipeline_id`, `status`, `url`,
+failed/running job names when available, and
 `result: pass | fail | head_changed | stale_ci | timeout`.
 
 ### Snippet: note-comment-creation
@@ -455,103 +419,31 @@ Guard and authority order:
 8. Emit final status: MR IID/URL, reviewed SHA, CI status/SHA, action taken,
    issue state, cleanup result, and blocker reason if any.
 
-Authorized-caller shell shape:
+Implementation body lives outside this skill:
+
+- Source: [`scripts/gitlab-finish-mr.sh`](../scripts/gitlab-finish-mr.sh)
+- Helper docs: [`scripts/README.md`](../scripts/README.md#gitlab-workflow-helpers)
+- Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
+
+Use the helper only when the exact accepted authority model fits:
 
 ```bash
-mr_iid="<id>"
-reviewed_sha="<sha-you-reviewed>"
-merge_authority="<approval-only|reviewer may merge|queue auto-merge|human release>"
-caller_role="<reviewer|authorized-parent|human|builder>"
-source_branch="<source-branch>"
-default_branch="<default-branch>"
-
-mr_json="$(glab mr view "$mr_iid" -F json)"
-current_sha="$(jq -r '.sha // ""' <<<"$mr_json")"
-[ "$current_sha" = "$reviewed_sha" ] || {
-  echo "FINISH_MR result=blocked reason=head_changed current=$current_sha reviewed=$reviewed_sha" >&2
-  exit 2
-}
-
-pipeline_status="$(jq -r '.pipeline.status // "none"' <<<"$mr_json")"
-pipeline_sha="$(jq -r '.pipeline.sha // "none"' <<<"$mr_json")"
-pipeline_url="$(jq -r '.pipeline.web_url // "none"' <<<"$mr_json")"
-ci_guard="blocked"
-if [ "$pipeline_sha" = "$reviewed_sha" ] && [ "$pipeline_status" = "success" ]; then
-  ci_guard="green"
-elif [ "$pipeline_sha" = "$reviewed_sha" ] && [ "$merge_authority" = "queue auto-merge" ]; then
-  case "$pipeline_status" in
-    pending|running|created) ci_guard="pending_for_protected_auto_merge" ;;
-  esac
-fi
-[ "$ci_guard" != "blocked" ] || {
-  echo "FINISH_MR result=blocked reason=ci_not_green status=$pipeline_status pipeline_sha=$pipeline_sha reviewed=$reviewed_sha" >&2
-  exit 3
-}
-
-case "$caller_role:$merge_authority" in
-  builder:*)
-    echo "FINISH_MR result=handoff reason=builder_no_approve_or_merge sha=$reviewed_sha ci=$ci_guard"
-    exit 0
-    ;;
-  *:approval-only|*:human\ release)
-    echo "FINISH_MR result=handoff authority=$merge_authority sha=$reviewed_sha ci=$ci_guard"
-    exit 0
-    ;;
-  reviewer:reviewer\ may\ merge|authorized-parent:reviewer\ may\ merge|human:reviewer\ may\ merge)
-    if [ "${approve_as_reviewer:-false}" = "true" ]; then
-      glab mr approve "$mr_iid" --sha "$reviewed_sha"
-    fi
-    glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"
-    finish_action="merged"
-    ;;
-  reviewer:queue\ auto-merge|authorized-parent:queue\ auto-merge|human:queue\ auto-merge)
-    glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"
-    finish_action="auto_merge_queued"
-    ;;
-  *)
-    echo "FINISH_MR result=blocked reason=authority caller=$caller_role authority=$merge_authority" >&2
-    exit 4
-    ;;
-esac
-
-git fetch origin
-if [ -z "$(git status --porcelain)" ] && git checkout "$default_branch"; then
-  git pull --ff-only origin "$default_branch"
-else
-  echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
-fi
-
-issue_state="not_checked"
-if [ -n "${issue_iid:-}" ]; then
-  issue_state="$(glab issue view "$issue_iid" -F json | jq -r '.state // "unknown"')"
-fi
-
-worktree_cleanup="not_requested"
-if [ -n "${worktree_path:-}" ]; then
-  if [ -z "$(git -C "$worktree_path" status --porcelain)" ]; then
-    git worktree remove "$worktree_path"
-    worktree_cleanup="removed"
-  else
-    worktree_cleanup="blocked_dirty_worktree"
-  fi
-fi
-
-branch_cleanup="not_requested"
-if [ "$finish_action" = "merged" ] && [ "${delete_local_source_branch:-false}" = "true" ]; then
-  if git branch -d "$source_branch"; then
-    branch_cleanup="local_deleted"
-  else
-    branch_cleanup="local_delete_blocked"
-  fi
-fi
-if [ "$finish_action" = "merged" ] && [ "${delete_remote_source_branch:-false}" = "true" ]; then
-  git push origin --delete "$source_branch"
-  branch_cleanup="$branch_cleanup,remote_deleted"
-fi
-
-echo "FINISH_MR result=$finish_action sha=$reviewed_sha ci=$ci_guard pipeline_sha=$pipeline_sha pipeline_url=$pipeline_url issue_state=$issue_state worktree=$worktree_cleanup branch=$branch_cleanup"
+scripts/gitlab-finish-mr.sh \
+  --mr-iid "$mr_iid" \
+  --reviewed-sha "$reviewed_sha" \
+  --merge-authority "$merge_authority" \
+  --caller-role "$caller_role" \
+  --source-branch "$source_branch" \
+  --default-branch "$default_branch" \
+  --format human
 ```
 
+Add `--issue-iid`, `--worktree-path`, `--approve-as-reviewer`, or source-branch
+cleanup flags only when the workflow and authority explicitly allow them.
+
+If adapting raw commands instead of the helper, keep the guard order above,
+run help-first for every flagged `glab` command, perform exactly one finish
+action, keep approval/merge SHA-bound, and preserve builder handoff semantics.
 Machine output should use the same facts as the human line, for example
 `result: merged | auto_merge_queued | handoff | blocked`, plus `blocker` when
 non-success output requires parent/human action.
