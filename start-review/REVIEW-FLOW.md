@@ -72,7 +72,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 11. Post inline comments for specific lines where useful.
 12. Post one top-level **Review Report** comment per MR with `gitlab-local` **Snippet: note-comment-creation** using `templates/review-report.md`. Fill **Reviewer** metadata as `@reviewer — <model-id>` (e.g. `@reviewer — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing.
 13. **Re-run `gitlab-local` Snippet: sha-guard immediately before approving.** The decision point must visibly compare `current_sha="$(glab mr view <id> -F json | jq -r '.sha')"` with `reviewed_sha`. If `sha` no longer matches the SHA you reviewed (builder pushed during your review), re-diff the new commits before approving — never approve a SHA you haven't read.
-14. Decide per MR via GitLab controls: approve, request changes, or reject. Approval uses `gitlab-local` **Snippet: approve-merge-sha-bound** and remains visibly SHA-bound: `glab mr approve <id> --sha <reviewed-sha>`. Merge or queue auto-merge for that MR's reviewed SHA only when `Merge authority` allows it.
+14. Decide per MR by the posted Review Report: approve, request changes, or reject. Approval uses `gitlab-local` **Snippet: approve-merge-sha-bound** and remains visibly SHA-bound: `glab mr approve <id> --sha <reviewed-sha>`. Merge or queue auto-merge for that MR's reviewed SHA only when `Merge authority` allows it. Request changes keeps the MR open. Reject is non-mutating by default: do not close the MR unless explicit human/project close authority says to close it.
 
 ## Review Report expectations
 
@@ -82,12 +82,13 @@ See [templates/filling-guide.md §review-report.md](templates/filling-guide.md#r
 
 - **Approve** — scope matches, no Must Fix remains, all `OQ-N` answered/escalated, tests/evidence adequate, head SHA equals the SHA you reviewed, and CI is green/waived or safely pending (see [BUILD-FLOW.md §Implementation flow](../start-build/BUILD-FLOW.md#implementation-flow) step 9 for the CI-pending auto-merge policy). Re-run `gitlab-local` **Snippet: sha-guard**, then run `gitlab-local` **Snippet: approve-merge-sha-bound**. Keep the decision commands visible and SHA-bound: `glab mr approve <id> --sha <reviewed-sha>`; if `Merge authority` allows reviewer-side merge, `glab mr merge <id> --yes --sha <reviewed-sha>`; if checks are pending and authority allows, `glab mr merge <id> --auto-merge --yes --sha <reviewed-sha>`. If authority is approval-only/human release, stop after approval and report that. If GitLab blocks approval or merge, report the exact blocker.
 - **Request changes** — fixable Must Fix items and the approach is sound. Apply the project's revision label if one exists; keep the MR open.
-- **Reject** — premise/architecture/scope is wrong, or a safety boundary is weakened beyond what the user/project accepts. Close the MR with a comment explaining why and what would need to change to reopen. Reject requires human follow-up; don't auto-spawn a revision.
+- **Reject** — premise/architecture/scope is wrong, or a safety boundary is weakened beyond what the user/project accepts. Post the Review Report with the reject decision, explain why and what would need to change before a new or continued MR can proceed, then stop and escalate to the parent/human. Leave the MR open by default; closing an MR requires explicit human/project close authority. Reject requires human follow-up; don't auto-spawn a revision.
 
 ## After review
 
 - **Request changes:** Build agent pushes commits and replies to threads; reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution.
 - **Approve:** Reviewer has approved and, when merge authority allowed it, merged or queued auto-merge. Each approved MR has its own reviewed SHA and merge/auto-merge/approval-only result. If a durable summary is required, ensure the MR links are recorded there.
+- **Reject:** Review Report is posted and the reviewer stops/escalates to the parent/human. Do not close the MR unless explicit human/project close authority says to close it.
 - **Stuck Packet:** post `templates/unblock-response.md` as an MR comment, give short direction, and remove the project's unblock label when one exists and work resumes.
 
 ## Template filling guides

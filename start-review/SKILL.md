@@ -50,7 +50,7 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 
 - **Approve** — scope matches, no Must Fix, all OQs answered, tests adequate, SHA verified, CI green/waived. Use `gitlab-local` **Snippet: approve-merge-sha-bound**; merge or auto-merge when authority allows.
 - **Request changes** — fixable Must Fix items; apply the project's revision label if one exists, keep MR open.
-- **Reject** — premise/scope wrong or safety boundary weakened beyond acceptance.
+- **Reject** — premise/scope wrong or safety boundary weakened beyond acceptance. Post the Review Report, then stop/escalate; leave the MR open unless explicit human/project close authority says to close it.
 
 ## Templates
 
