@@ -16,7 +16,7 @@ This repo uses GitLab-backed dev workflows.
 
 ## Design briefs
 
-- `docs/agents/mr-build-review-orchestration.md` — issue #55 background design brief for the parent-orchestrator loop. It records rationale and future slices; active workflow policy now lives in the recipe above.
+- `docs/agents/mr-build-review-orchestration.md` — issue #55 historical design brief for the parent-orchestrator loop. It records rationale, provenance, and links to active sources; active workflow policy now lives in the recipe above.
 
 ## Usage rules
 
