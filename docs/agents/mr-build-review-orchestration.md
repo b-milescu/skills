@@ -419,17 +419,11 @@ Deeper checks only when risk warrants:
 
 ## Post-merge verifier recipe
 
-Keep post-merge verification separate from MR review. A verifier may:
-
-1. Fetch default branch after merge.
-2. Confirm default branch contains the reviewed SHA or merge commit.
-3. Confirm MR merged state and source branch cleanup status.
-4. Confirm linked issue closed or explain why closure is pending.
-5. Run a documented post-merge validation command only when non-mutating.
-6. Post an issue note with concise evidence if project workflow asks for it.
-
-A verifier must not approve, request changes, or merge; those remain review/parent
-responsibilities.
+Follow-up issue #62 moved the active verifier contract to
+`start-build/BUILD-FLOW.md` section
+[Post-merge verifier recipe](../../start-build/BUILD-FLOW.md#post-merge-verifier-recipe).
+This design brief keeps the original placement rationale only: post-merge
+verification remains separate from MR review so `mr-reviewer` stays review-only.
 
 ## Run artifact paths
 

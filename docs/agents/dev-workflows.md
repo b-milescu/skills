@@ -11,7 +11,8 @@ This repo uses GitLab-backed dev workflows.
 
 ## Active recipes
 
-- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for issue resolution, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification. Use `/gitlab-local` for command syntax instead of copying snippets here.
+- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for issue resolution, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification.
+- `start-build/BUILD-FLOW.md` section [Post-merge verifier recipe](../../start-build/BUILD-FLOW.md#post-merge-verifier-recipe) — active read-only verifier contract for merged/default-branch state, linked issue closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` for command syntax instead of copying snippets here.
 
 ## Design briefs
 
