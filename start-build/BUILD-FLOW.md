@@ -77,6 +77,72 @@ Minimum final handoff when the parent owns the gate:
 
 Mandatory independent review remains required in both modes unless a human explicitly documents a bypass. Builder self-approval and self-merge remain forbidden.
 
+## Parent-orchestrator recipe
+
+Use this recipe when a parent orchestrator coordinates child `mr-builder` and
+`mr-reviewer` agents for a GitLab issue-to-MR loop. Project rulebooks may
+specialize labels, local gates, merge authority defaults, run artifact paths, and
+post-merge checks, but they must not weaken the safety invariants in this flow:
+child builders do not spawn reviewers, approve, or merge; independent review
+stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI
+results stay bound to the MR head before approval or merge; and credentials or
+PRO external systems are not exposed through workflow artifacts.
+
+### Parent loop
+
+1. **Resolve issue(s).** Read the issue, comments, labels, linked MRs or parent
+   design docs, and project rulebook. Confirm each issue is `ready-for-agent` or
+   otherwise approved for agent work. If multiple issues are in scope, prove the
+   Decoupling Contract before parallel work; otherwise process issues serially in
+   dependency order.
+2. **Prepare isolated work.** Verify clean status, fetch the target branch, and
+   create the source branch or one isolated worktree per decoupled issue. The
+   parent checkout remains coordinator-only during multi-issue runs.
+3. **Run child `mr-builder`.** Give the builder one issue URL/IID, one worktree,
+   the target branch, the project rulebook, local Check Gate, merge authority,
+   and any run directory. The builder owns implementation, Draft MR creation,
+   Review Packet and Reviewer Lift updates, local gate evidence, ready-marking,
+   and final handoff. In child mode the builder stops there; it does not spawn a
+   reviewer, approve, merge, or clean up the parent-owned run.
+4. **Parent spot-check.** Before review, validate the builder handoff and MR via
+   `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch,
+   pushed branch, current MR head SHA, Reviewed SHA, pipeline SHA when exposed,
+   changed paths, touched safety surfaces, decoupling proof, local gate result,
+   open questions, and merge authority. Escalate if the handoff is missing,
+   stale, out of scope, or contradicts the issue/rulebook.
+5. **Run `mr-reviewer`.** Start a fresh reviewer session with the MR URL,
+   pointer to the MR Reviewer Lift block, project rulebook, and any run
+   directory. The reviewer posts one Review Report for one reviewed SHA. Approval
+   or merge actions remain limited by the explicit merge authority in the Review
+   Packet and project rulebook.
+6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any
+   finish action. On `request-changes`, send the finding IDs and reviewed SHA to
+   the builder; require fix commits, targeted evidence, a full local gate when
+   substantive, a file-backed revision note, and updated Reviewer Lift before a
+   fresh reviewer session reads the new SHA. On `reject`, stop and escalate. On
+   reviewer timeout, try one fresh reviewer session, then escalate. Keep the
+   three-round review limit from the mandatory review gate.
+7. **Enforce SHA and CI guards.** Before approval, merge, or auto-merge, re-read
+   MR metadata and require the current MR SHA to equal the reviewed SHA. Treat CI
+   as valid only when it is for that SHA. Red, canceled, skipped, missing, or
+   stale CI blocks merge unless an authorized human records an explicit waiver.
+   Pending CI may only be accepted under the CI-pending review policy in this
+   flow and protected merge checks.
+8. **Finish by authority.** For `approval-only` or `human release`, stop after
+   reporting reviewed SHA, CI, and blockers. For `reviewer may merge` or
+   `queue auto-merge`, only an authorized reviewer or parent may approve, merge,
+   or queue with the reviewed SHA; a child builder still must not approve or
+   merge. After merge or queueing, fetch the target branch, verify issue closure
+   or pending closure, remove clean worktrees, and delete source branches only
+   when project policy allows.
+9. **Verify after merge.** Keep post-merge verification separate from review.
+   The parent or verifier may confirm default-branch state, MR merged state,
+   issue closure, source-branch cleanup, and any documented non-mutating
+   post-merge check. The verifier does not approve, request changes, or merge.
+10. **Archive local artifacts.** Keep local run artifacts redacted and untracked.
+    Durable handoff stays in GitLab MR descriptions and comments, using
+    file-backed comments for multiline updates.
+
 ## Check gate discovery
 
 Before you claim the full local gate is green, discover it in this order:
