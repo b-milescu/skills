@@ -50,7 +50,7 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 ## Safety Confirmation
 
-- [ ] No PRO external-system mutation path changed.
+- [ ] No product/runtime/operator external-system mutation path changed.
 - [ ] No credential / secret-store handling changed.
 - [ ] No domain rule or strategy behavior changed.
 - [ ] No state schema, migration, deploy topology, or enforce-mode behavior changed.

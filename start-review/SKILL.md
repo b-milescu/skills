@@ -11,9 +11,7 @@ description: >-
 
 ## Purpose
 
-> **Abbreviation:** `PRO` = product / runtime / operator (external systems).
-
-Review GitLab Merge Requests against project rules and safety invariants. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-MR is the default. Multiple MRs are allowed only when they satisfy the shared [Decoupling Contract](../docs/decoupling-contract.md); each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended PRO external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
+Review GitLab Merge Requests against project rules and safety invariants. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-MR is the default. Multiple MRs are allowed only when they satisfy the shared [Decoupling Contract](../docs/decoupling-contract.md); each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended product/runtime/operator external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
 
 For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak. Keep review context as narrow as possible: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first; expand only when concrete evidence requires it.
 

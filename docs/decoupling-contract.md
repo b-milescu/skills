@@ -9,7 +9,7 @@ A set of issues or MRs is **decoupled** only when every item below is true:
 1. **No ordering relation** — no dependency, `depends on`, `after #...`, shared blocker, stacked branch, or release-order relation.
 2. **No overlapping work surface** — no expected or observed overlap in changed files, modules, behavior-critical surfaces, or user/operator-visible behavior.
 3. **No shared safety surface** — no shared migrations, schemas, locks, sequencing, deploy topology, generated artifacts, version bumps, dependency lockfiles, or other coordination primitive.
-4. **Independent evidence** — local checks, tests, and review commands run independently without shared ports, databases, PRO external systems, temp refs, artifact directories, or mutable global state.
+4. **Independent evidence** — local checks, tests, and review commands run independently without shared ports, databases, product/runtime/operator external systems, temp refs, artifact directories, or mutable global state.
 5. **Independent delivery** — one item can be paused, rejected, rebased, or merged without making another item stale, conflicted, unsafe, or semantically incomplete.
 
 A set is **coupled** when any item is false, unknown, or contradicted by evidence. Coupled work must run serially in the safest order, or wait for a human decision. Never parallelize coupled work to save time.

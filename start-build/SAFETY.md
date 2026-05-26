@@ -1,6 +1,6 @@
 # Start Build Safety Rules
 
-These rules protect safety boundaries while implementing GitLab issues. Project-specific rulebooks override this file when stricter. Domain-specific terms here (venues, sizing, breakers, post-fill, etc.) are examples; map them to the host project's equivalent safety surfaces. `PRO` below means product/runtime/operator systems, not the GitLab issue/MR actions explicitly prescribed by the build/review workflow.
+These rules protect safety boundaries while implementing GitLab issues. Project-specific rulebooks override this file when stricter. Domain-specific terms here (venues, sizing, breakers, post-fill, etc.) are examples; map them to the host project's equivalent safety surfaces. Product/runtime/operator systems exclude the GitLab issue/MR actions explicitly prescribed by the build/review workflow.
 
 ## Non-negotiables
 
@@ -61,4 +61,4 @@ Stop and escalate by assigning/commenting/applying the project's human-decision 
 
 ## Done criteria
 
-A task is done when the MR has approval; CI/check gate is green, pending under protected auto-merge, or explicitly waived in writing; docs/runbooks are updated; no secrets were exposed; no live unintended PRO side effects occurred; the MR is merged only when merge authority allows; the linked issue is closed by `Closes #<id>` or project workflow; any required durable summary is recorded.
+A task is done when the MR has approval; CI/check gate is green, pending under protected auto-merge, or explicitly waived in writing; docs/runbooks are updated; no secrets were exposed; no live unintended product/runtime/operator side effects occurred; the MR is merged only when merge authority allows; the linked issue is closed by `Closes #<id>` or project workflow; any required durable summary is recorded.

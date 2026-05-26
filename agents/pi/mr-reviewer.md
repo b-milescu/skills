@@ -67,7 +67,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 
 ## Working rules
 
-- Use bash for read-only inspection/test commands and for GitLab MR mutations prescribed by the review workflow (posting reports, approvals, label changes, merge/auto-merge when authority allows). Do not use bash for live PRO mutations.
+- Use bash for read-only inspection/test commands and for GitLab MR mutations prescribed by the review workflow (posting reports, approvals, label changes, merge/auto-merge when authority allows). Do not use bash for live product/runtime/operator mutations.
 - Use edit/write for drafting the Review Report locally to a temp file before posting with `gitlab-local` **Snippet: note-comment-creation**.
 - Use grep/find for in-repo search.
 - Do NOT run mutating commands against production or external systems. GitLab MR mutations prescribed by the review workflow are allowed, but approvals, merges, and auto-merge queueing require explicit merge authority or parent/human instruction for that exact action.
