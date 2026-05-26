@@ -7,18 +7,15 @@ project policy.
 
 ## Helpers
 
-- `gitlab-ci-watch.sh` wraps the SHA-pinned CI watcher behavior from
-  [`gitlab-local` Snippet: ci-watch-sha-pinned](../gitlab-local/SKILL.md#snippet-ci-watch-sha-pinned).
-  It re-reads MR metadata, requires the MR head to match the reviewed SHA, and
-  only passes green CI when the pipeline SHA matches that reviewed SHA.
-- `gitlab-finish-mr.sh` wraps the authority-aware finish behavior from
-  [`gitlab-local` Snippet: finish-mr-authority-aware](../gitlab-local/SKILL.md#snippet-finish-mr-authority-aware).
-  It blocks stale heads, stale/red/missing CI, unknown MR state, missing or
-  unknown merge authority, and dirty worktree cleanup. Builder callers always
-  get a handoff; they cannot approve, merge, or queue auto-merge.
+| Helper | Source contract | Guard summary | Regression coverage |
+| --- | --- | --- | --- |
+| `gitlab-ci-watch.sh` | [`gitlab-local` Snippet: ci-watch-sha-pinned](../gitlab-local/SKILL.md#snippet-ci-watch-sha-pinned) | Re-reads MR metadata, requires the MR head to match the reviewed SHA, and only passes green CI when the pipeline SHA matches that reviewed SHA. | `tests/gitlab-workflow-helpers.sh` |
+| `gitlab-finish-mr.sh` | [`gitlab-local` Snippet: finish-mr-authority-aware](../gitlab-local/SKILL.md#snippet-finish-mr-authority-aware) | Blocks stale heads, stale/red/missing CI, unknown MR state, missing or unknown merge authority, and dirty worktree cleanup. Builder callers always get a handoff; they cannot approve, merge, or queue auto-merge. | `tests/gitlab-workflow-helpers.sh` |
 
 Tests in `tests/gitlab-workflow-helpers.sh` use fake `glab` and `git` binaries,
-so the regression suite performs no live GitLab mutation.
+so the regression suite performs no live GitLab mutation. The alignment test in
+`tests/gitlab-local-split-snippets.sh` verifies `/gitlab-local` keeps stable
+snippet names while pointing long helper bodies here and to the script sources.
 
 ## When to prefer raw `gitlab-local` snippets
 
