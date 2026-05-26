@@ -9,6 +9,10 @@ This repo uses GitLab-backed dev workflows.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
 
+## Design briefs
+
+- `docs/agents/mr-build-review-orchestration.md` — issue #55 design brief for a project-agnostic parent-orchestrator loop. It is recommendation material, not active workflow policy, until follow-up implementation issues are approved.
+
 ## Usage rules
 
 - Before any GitLab CLI command, load `/gitlab-local`.
