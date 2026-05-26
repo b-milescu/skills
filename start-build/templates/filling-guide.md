@@ -32,6 +32,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - Emit this machine-readable block in child `mr-builder` final responses when a parent orchestrator owns the review gate.
 - Keep Reviewer Lift as the durable MR-description handoff; this block complements it for parent parsing.
 - Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
+- For ready handoffs, set both `head_sha` and `reviewed_sha` to the same MR head commit; `reviewed_sha` is the exact SHA the parent passes to the reviewer.
 - Use `status: "ready-for-review"`, `"blocked"`, or `"failed"`. If usage limits or tooling failures stop completion, report `status: "failed"` plus `blockers`; the parent owns retries.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Consumers must tolerate absent blocks and fall back to human prose / Reviewer Lift.

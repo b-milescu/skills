@@ -27,6 +27,7 @@ agent_handoff:
     source_branch: "issue-57-example"
     target_branch: "main"
   head_sha: "1111111111111111111111111111111111111111"
+  reviewed_sha: "1111111111111111111111111111111111111111"
   pipeline:
     id: "456 | N/A"
     url: "https://gitlab.example/group/project/-/pipelines/456 | N/A"
@@ -65,9 +66,12 @@ agent_handoff:
 - `status` is `ready-for-review`, `blocked`, or `failed`. If usage limits or
   tooling failures prevent completion, return `status: "failed"` and list the
   blocker(s) instead of inventing missing GitLab state.
-- `head_sha` is the pushed MR head SHA that the parent should pass to review as
-  the reviewed SHA candidate.
-- `pipeline` is the latest known MR pipeline for `head_sha`, or `N/A` with a
+- `head_sha` is the pushed MR head SHA when this handoff is emitted.
+- `reviewed_sha` is the same commit as `head_sha` for `ready-for-review` handoffs;
+  it is the exact SHA the parent should pass to the reviewer and must match the
+  MR description's Reviewer Lift `Reviewed SHA`. If no reviewable head exists
+  because status is `blocked` or `failed`, use `N/A — <why>` and list the blocker.
+- `pipeline` is the latest known MR pipeline for `reviewed_sha`, or `N/A` with a
   reason when GitLab exposes no pipeline yet.
 - `local_gate` names the exact command and concise result. Use `N/A` only with a
   concrete reason.
