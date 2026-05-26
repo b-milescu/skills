@@ -131,17 +131,25 @@ glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
 Maintenance only when workflow calls for it:
 
 ```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-issue-note.XXXXXX")"
+comment_file="$run_dir/issue-note.md"
+# Write or fill "$comment_file" before posting it.
+
 glab issue close <id>
 glab issue update <id> --label foo,bar --unlabel baz
-glab issue note <id> --message "$(cat /tmp/comment.md)"
+glab issue note <id> --message "$(cat "$comment_file")"
 ```
 
 ### Snippet: draft-mr-create-update
 
 ```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr.XXXXXX")"
+description_file="$run_dir/review-packet.md"
+# Write or fill "$description_file" before creating or updating the MR.
+
 glab mr create --draft --push --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description "$(cat /tmp/review-packet.md)" --yes
-glab mr update <id> --description "$(cat /tmp/review-packet.md)"
+  --title "$title" --description "$(cat "$description_file")" --yes
+glab mr update <id> --description "$(cat "$description_file")"
 glab mr update <id> --ready
 ```
 
@@ -272,8 +280,13 @@ Machine output fields should include `mr`, `expected_sha`, `observed_sha`,
 ### Snippet: note-comment-creation
 
 ```bash
-glab mr note create <id> --message "$(cat /tmp/report.md)"
-glab issue note <id> --message "$(cat /tmp/comment.md)"
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
+report_file="$run_dir/mr-report.md"
+comment_file="$run_dir/issue-note.md"
+# Write or fill "$report_file" / "$comment_file" before posting them.
+
+glab mr note create <id> --message "$(cat "$report_file")"
+glab issue note <id> --message "$(cat "$comment_file")"
 ```
 
 ### Snippet: sha-guard
