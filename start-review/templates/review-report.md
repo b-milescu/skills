@@ -1,5 +1,18 @@
 # Review Report
 
+## Decision Summary
+
+Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report.
+
+| Field | Value |
+|---|---|
+| Decision | `<approve / request-changes / reject>` |
+| Reviewed SHA | `<sha reviewed; must equal MR head at decision time>` |
+| CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red; pipeline SHA or N/A>` |
+| Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
+| Local checks | `<commands run + brief result, or not-run + rationale>` |
+| Report link | `<this comment; final handoff contains URL when available>` |
+
 ## Metadata
 
 | Field | Value |
