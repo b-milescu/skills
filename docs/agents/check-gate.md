@@ -4,7 +4,7 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 ## Full local gate
 
-`npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which runs:
+Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitLab CI `node:22` image. `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which runs:
 
 - `bash -n install.sh`
 - `npm run check:agents-schema`
@@ -92,6 +92,7 @@ Commands were derived from:
 
 `.gitlab-ci.yml` mirrors the local Check Gate instead of re-encoding individual checks in CI:
 
+- The repo-local runtime contract is Node.js 22.x (`.nvmrc` and `package.json` `engines.node`).
 - GitLab CI uses the Node 22 image.
 - The validation job runs `npm ci` so dependencies come from `package-lock.json`.
 - The validation job then runs `npm run check`, the same canonical command used locally.

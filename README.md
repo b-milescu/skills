@@ -35,7 +35,7 @@ This repo does not vendor every skill referenced by docs or prompts. Install ext
 
 ## Check before install or review
 
-GitLab CI mirrors the repo-local Check Gate documented in `docs/agents/check-gate.md`: install pinned Node dependencies with `npm ci`, then run the canonical `npm run check`. Run the same commands locally before asking for review so MR evidence matches CI evidence.
+Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitLab CI all declare the Node 22 major line. GitLab CI mirrors the repo-local Check Gate documented in `docs/agents/check-gate.md`: install pinned Node dependencies with `npm ci`, then run the canonical `npm run check`. Run the same commands locally before asking for review so MR evidence matches CI evidence.
 
 ```bash
 npm ci
