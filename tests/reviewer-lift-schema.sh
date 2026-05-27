@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$REPO_ROOT"
+
 schema="start-build/templates/reviewer-lift-schema.md"
 copies=(
   "start-build/templates/review-packet.md"

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-skill="gitlab-local/SKILL.md"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
+skill="$REPO_ROOT/gitlab-local/SKILL.md"
 
 require_text() {
   local needle="$1"
