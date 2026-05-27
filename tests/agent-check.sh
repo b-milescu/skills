@@ -122,6 +122,15 @@ prepare_installed_agents "$missing_pi_repo" "$missing_pi_home" yes
 run_check_fail "$missing_pi_repo" "$missing_pi_home" "$missing_pi_output"
 assert_contains "$missing_pi_output" "agents/claude/mr-reviewer.md has no agents/pi/mr-reviewer.md"
 
+prompt_strategy_repo="$TMP_ROOT/prompt-strategy-repo"
+prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
+prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
+copy_repo "$prompt_strategy_repo"
+perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/pi/mr-builder.md"
+prepare_installed_agents "$prompt_strategy_repo" "$prompt_strategy_home" yes
+run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
+assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/pi/mr-builder.md must point to canonical workflow skill start-build"
+
 lift_drift_repo="$TMP_ROOT/lift-drift-repo"
 lift_drift_home="$TMP_ROOT/lift-drift-home"
 lift_drift_output="$TMP_ROOT/lift-drift.out"

@@ -110,6 +110,48 @@ check_agent_variant_parity() {
   done < "$shared_names"
 }
 
+workflow_skill_for_agent() {
+  case "$1" in
+    mr-builder)
+      printf '%s' "start-build"
+      ;;
+    mr-reviewer)
+      printf '%s' "start-review"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+check_agent_prompt_strategy() {
+  local file rel name workflow_skill workflow_skill_file gitlab_skill_file
+
+  gitlab_skill_file="$REPO_ROOT/gitlab-local/SKILL.md"
+  if [[ ! -f "$gitlab_skill_file" ]]; then
+    error "agent prompt strategy: canonical GitLab CLI skill missing: $(relpath "$gitlab_skill_file")"
+  fi
+
+  for file in "$REPO_ROOT/agents/claude"/*.md "$REPO_ROOT/agents/pi"/*.md; do
+    [[ -f "$file" ]] || continue
+    name="$(basename "$file" .md)"
+    workflow_skill="$(workflow_skill_for_agent "$name" || true)"
+    [[ -n "$workflow_skill" ]] || continue
+
+    rel="$(relpath "$file")"
+    workflow_skill_file="$REPO_ROOT/$workflow_skill/SKILL.md"
+    if [[ ! -f "$workflow_skill_file" ]]; then
+      error "agent prompt strategy: canonical workflow skill missing for $rel: $(relpath "$workflow_skill_file")"
+    fi
+    if ! grep -Fq 'Canonical development pattern source: `'"$workflow_skill"'`' "$file"; then
+      error "agent prompt strategy: $rel must point to canonical workflow skill $workflow_skill"
+    fi
+    if ! grep -Fq 'gitlab-local' "$file"; then
+      error "agent prompt strategy: $rel must point to gitlab-local for GitLab CLI syntax"
+    fi
+  done
+}
+
 extract_schema_fields() {
   local schema="$1"
   awk -F'|' '
@@ -335,6 +377,7 @@ check_external_skill_dependencies() {
 }
 
 check_agent_variant_parity
+check_agent_prompt_strategy
 check_reviewer_lift_schema
 check_review_report_structure
 check_external_skill_dependencies
