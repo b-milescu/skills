@@ -37,6 +37,7 @@ Scan for cleanup opportunities across any language/toolchain:
 - **Build/test/CI**: redundant scripts, stale workflow jobs, missing local check gate docs, flaky/skipped tests needing decision, unused fixtures.
 - **Dependencies/tooling**: unused or duplicated packages, lockfile drift, unsupported runtime pins, overlapping formatters/linters. Propose upgrades only as separate reviewable slices.
 - **Code health**: dead exports, duplicate helpers, TODO/FIXME clusters, large files with mixed responsibilities, inconsistent error handling. Treat behavior changes as higher risk.
+- **Code simplification**: unnecessary abstractions, single-use wrappers, speculative extension points, deep nesting, duplicated control flow, over-generalized configuration, indirection that hides simple behavior, and complex conditionals that can be made clearer. Prefer behavior-preserving simplifications; require characterization tests for behavior-touching changes. Treat simplification that changes domain boundaries, safety invariants, public APIs, or operator workflows as HITL/high risk.
 - **Config/ops**: stale env examples, duplicate config sources, unsafe defaults, obsolete deploy docs, secret-looking values. Never print secrets.
 - **Tracker/process**: stale issues, missing labels, untriaged cleanup backlog, plans lacking acceptance criteria.
 
