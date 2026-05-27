@@ -29,57 +29,11 @@ Help-first remains mandatory. A run-dir help cache may reduce repeated output
 noise only after the exact help text has been captured for this run and context.
 Keep the cache in a temp/run artifact directory and never commit it.
 
-The run-dir help cache records the exact `glab <command> --help` output in a
-command-specific file, plus a `verified.tsv` line with verification status. A
-cache entry is valid only for the current run, exact command words, `glab`
-version, repo root, and repo URL/project selector. If help fails, record the
-failure status and stop before running the flagged command.
+The run-dir help cache records the exact `glab <command> --help` output with
+verification status. Refresh the cache whenever the command, `glab` version, or repo context changes.
 
-Refresh the cache whenever the command, `glab` version, or repo context changes.
-Repo context includes worktree root, remote/repo URL, `-R` project selector,
-default/target branch assumptions, and any host/project ambiguity. When in doubt,
-rerun help and overwrite the cache entry.
-
-```bash
-run_dir="${run_dir:-}"
-if [ -z "$run_dir" ]; then
-  run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-run.XXXXXX")"
-fi
-help_dir="$run_dir/glab-help"
-mkdir -p "$help_dir"
-
-context_file="$help_dir/context.txt"
-new_context="$(
-  printf 'glab=%s\n' "$(glab --version | head -n 1)"
-  printf 'repo_root=%s\n' "$(git rev-parse --show-toplevel)"
-  printf 'repo_url=%s\n' "$(git remote get-url origin)"
-)"
-if [ ! -f "$context_file" ] || [ "$(cat "$context_file")" != "$new_context" ]; then
-  rm -f "$help_dir"/glab-*--help.txt "$help_dir"/verified.tsv
-  printf '%s\n' "$new_context" > "$context_file"
-fi
-
-cache_glab_help() {
-  local file status
-  file="$help_dir/glab-$*--help.txt"
-  file="${file// /-}"
-  if [ ! -s "$file" ]; then
-    if glab "$@" --help >"$file" 2>&1; then
-      printf '%s\tOK\tglab %s --help\t%s\n' \
-        "$(date -u +%FT%TZ)" "$*" "$file" >> "$help_dir/verified.tsv"
-    else
-      status=$?
-      printf '%s\tFAIL:%s\tglab %s --help\t%s\n' \
-        "$(date -u +%FT%TZ)" "$status" "$*" "$file" >> "$help_dir/verified.tsv"
-      return "$status"
-    fi
-  fi
-  printf 'HELP_CACHE glab %s --help -> %s\n' "$*" "$file"
-}
-
-cache_glab_help mr view
-glab mr view "$mr_iid" -F json
-```
+Detailed cache contract, context invalidation rules, and the executable helper
+pattern live in [reference/help-first.md](reference/help-first.md#per-run-help-cache).
 
 ## Important local pitfalls
 
@@ -98,66 +52,11 @@ glab mr view "$mr_iid" -F json
 ## Safe multiline GitLab text
 
 Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
-and MR descriptions. Quoted heredocs (`<<'EOF'`) keep Markdown backticks,
-`$VARS`, and command substitutions literal while writing the local file.
+and MR descriptions. Quoted heredocs keep Markdown backticks, variables, and
+command substitutions literal while writing the local file.
 
-MR note pattern:
-
-```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
-message_file="$run_dir/mr-note.md"
-cat > "$message_file" <<'EOF'
-## Review Gate Summary
-
-- Reviewed SHA: `abc123`
-- Result: approved
-- Literal example: `echo "$EXAMPLE_VAR"` is not executed.
-EOF
-
-glab mr note create "$mr_iid" --message "$(cat "$message_file")"
-```
-
-Issue note pattern:
-
-```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
-message_file="$run_dir/issue-note.md"
-cat > "$message_file" <<'EOF'
-## Build Handoff
-
-- MR: !123
-- Status: ready for review
-EOF
-
-glab issue note "$issue_iid" --message "$(cat "$message_file")"
-```
-
-MR description pattern:
-
-```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr.XXXXXX")"
-description_file="$run_dir/review-packet.md"
-cat > "$description_file" <<'EOF'
-# Review Packet
-
-Generated from a local file so Markdown is not interpreted by the shell.
-EOF
-
-glab mr create --draft --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description "$(cat "$description_file")" --yes
-glab mr update "$mr_iid" --description "$(cat "$description_file")"
-```
-
-Avoid inline heredoc command substitution such as:
-
-```bash
-# Do not use: backticks and $() in the body can execute before glab sees them.
-glab mr note create "$mr_iid" --message "$(cat <<EOF
-Danger: `date` and $(whoami) may run in the parent shell.
-EOF
-)"
-```
-
+Detailed file-backed note/description patterns and the inline-heredoc hazard live
+in [reference/multiline-text.md](reference/multiline-text.md#safe-multiline-gitlab-text).
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
 
