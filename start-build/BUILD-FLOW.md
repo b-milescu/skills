@@ -4,6 +4,8 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 
 ## Issue pickup
 
+Issue pickup policy stays inline because it controls which work is safe to start.
+
 1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm cwd is the intended git repo and `glab` resolves to it. If it fails, stop and ask.
 2. Use `gitlab-local` **Snippet: issue-pickup** to list candidates (narrow via `--label`, `--assignee=@me`, `--author`, `--milestone` as project conventions dictate). Inspect 3-5 candidates — enough to validate coupling when multiple are in play.
 3. Prefer open issues that are unassigned or `@me`, ready/triaged, clear, unblocked, and fit one MR.
@@ -15,22 +17,15 @@ Detailed workflow for `start-build`. Read before selecting issue(s), creating/up
 
 ## Multiple issue worktree mode
 
-Use when the user supplies multiple issues, asks for multiple tasks, or requests more than one issue at once.
+Use when the user supplies multiple issues, asks for multiple tasks, or requests more than one issue at once. This heading remains in `BUILD-FLOW.md` as the stable anchor; detailed worktree setup, decoupling proof, and cleanup rules live in [reference/multiple-worktrees.md](reference/multiple-worktrees.md).
 
-1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md).
-2. Prove decoupling before parallelizing using the contract's builder producer guidance. If any contract item is false, unknown, or contradicted by evidence, treat the work as coupled.
-3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled work to save time.
-4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
-   - `git status --porcelain` empty;
-   - `git fetch origin`;
-   - detect default branch with `gitlab-local` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
-   - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
-5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
-6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
-7. **Delegate isolated work from a coordinator only.** A parent/coordinator with agent-launch authority may start one builder per worktree using its runtime-specific mechanism and the [Parent-orchestrator recipe](#parent-orchestrator-recipe). If you are already running inside a child builder worktree, this step is complete: do not launch builders or reviewers from the child session.
-8. Keep artifacts/evidence local to that worktree/MR. Do not combine Review Packets, close multiple issues from one MR, or stack branches unless the user explicitly switches to a serial plan.
-9. Before revision/merge follow-up, re-check target branch and merge status. If another worktree's MR creates a conflict or stale branch, pause and report the coupling.
-10. Remove a worktree only after its branch is pushed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Use `git worktree prune` only after verifying stale paths.
+Core policy stays inline:
+
+- Prove every item in the [Decoupling Contract](../docs/decoupling-contract.md) before parallel work; if any item is false, unknown, or contradicted by evidence, treat the work as coupled.
+- Use the original checkout as coordinator-only during multi-issue runs.
+- Run the normal implementation flow independently in each issue worktree: one issue, one branch, one Draft MR, one check gate, one Review Packet.
+- In child `mr-builder` mode, do not launch builders or reviewers; the parent orchestrator owns delegation.
+- Keep artifacts and evidence local to the owning worktree/MR.
 
 ## Before coding questions
 
@@ -156,52 +151,17 @@ product/runtime/operator external systems are not exposed through workflow artif
 
 ### Post-merge verifier recipe
 
-Use this recipe only after the independent review and authority-aware finish
-steps report that merge or protected auto-merge completed. The verifier is a
-read-only confirmation role, not another reviewer and not a finisher.
+This compatibility heading preserves the `#post-merge-verifier-recipe` anchor.
+The detailed read-only verifier contract lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md).
 
-Allowed checks:
-
-1. Fetch the target/default branch and inspect fetched refs. Fast-forward a local
-   default branch only in a clean checkout where the project workflow allows it;
-   otherwise inspect `origin/<default>`.
-2. Confirm the MR is in merged state and record the MR IID/URL, source branch,
-   target branch, reviewed SHA, merge commit when available, and observed target
-   branch SHA.
-3. Confirm the fetched default branch contains the reviewed SHA, squash commit,
-   or merge commit recorded by GitLab. If the project uses squash/rebase merge
-   and the reviewed SHA is not an ancestor, report the merge commit or equivalent
-   commit that GitLab exposes instead of guessing.
-4. Confirm the linked issue state. If closure from `Closes #<id>` is still
-   pending, report `issue_closure_pending` with the observed issue state and do
-   not force-close the issue unless the project workflow explicitly instructs
-   the verifier to do so.
-5. Check source-branch cleanup by reading MR metadata and/or remote refs. If the
-   source branch still exists, report `source_branch_cleanup_pending` or
-   `source_branch_retained_by_policy`; do not delete local or remote branches
-   unless a separate authorized finish/cleanup step grants that authority.
-6. Run documented post-merge validation only when the command is non-mutating
-   and safe for the current environment. If no such command is documented,
-   report `post_merge_validation: N/A — not documented`.
-7. Post a concise issue note only when the repo/project workflow explicitly asks
-   for post-merge notes. Use `/gitlab-local` file-backed note guidance, include
-   only evidence from the checks above, and skip the note otherwise.
-
-Forbidden actions:
-
-- Do not approve, reject, request changes, resolve review authority questions,
-  or claim the mandatory review gate is complete.
-- Do not merge, queue auto-merge, retry merge, delete remote branches, or force
-  close issues.
-- Do not run mutating release/deploy/operator validation unless a human has
-  explicitly authorized that operator action and the project workflow documents
-  how to record it.
-
-Verifier report should include MR state, target/default branch SHA, reviewed SHA
-or merge commit containment result, linked issue state, source-branch cleanup
-state, post-merge validation command/result or N/A rationale, issue-note action
-posted/skipped, and any pending items. Pending issue closure or branch deletion
-is a verification result to report, not an implicit verifier mutation request.
+Core verifier policy stays inline: use this recipe only after independent review
+and authority-aware finish steps report that merge or protected auto-merge
+completed. The verifier confirms merged/default-branch state, linked issue state,
+source-branch cleanup state, and documented non-mutating post-merge validation.
+It must not approve, reject, merge, queue auto-merge, delete remote branches,
+force-close issues, or run mutating release/deploy/operator validation unless a
+human has explicitly authorized that operator action and the project workflow
+documents how to record it.
 
 ## Check gate discovery
 
@@ -254,14 +214,9 @@ Use `templates/review-packet-compact.md` when the diff is simple enough that a s
 
 ## Stuck protocol
 
-If blocked for more than 2 hours:
+This compatibility heading preserves the `#stuck-protocol` anchor. Detailed stuck handling lives in [reference/stuck-protocol.md](reference/stuck-protocol.md).
 
-1. Keep the MR in Draft.
-2. Post `templates/stuck-packet.md` as an MR comment after filling it with `gitlab-local` **Snippet: note-comment-creation**.
-3. Apply the project's unblock label if one exists.
-4. Request review explicitly for unblocking.
-5. List ranked hypotheses.
-6. Park the branch/worktree or switch to a non-blocked issue on a fresh branch/worktree.
+Core policy stays inline: if blocked for more than 2 hours, keep the MR in Draft, post `templates/stuck-packet.md` as an MR comment via `gitlab-local` **Snippet: note-comment-creation**, apply the documented unblock label if one exists, list ranked hypotheses, and park the branch/worktree or switch only on a fresh branch/worktree.
 
 ## Mandatory review gate
 
@@ -297,7 +252,7 @@ When you own this gate after the MR is ready:
 
 Example task prompt template:
 
-```
+```text
 Review MR: <MR web URL>
 Reviewer Lift block is in the MR description — lift structured values into your Review Report.
 Project rulebook: <path to rulebook>
@@ -315,17 +270,15 @@ Project rulebook: <path to rulebook>
 
 ### Timeout handling
 
-If no Review Report comes back within 10 minutes:
+This compatibility heading preserves the `#timeout-handling` anchor. Detailed timeout handling lives in [reference/timeout-handling.md](reference/timeout-handling.md).
 
-1. Do not retry the same reviewer session — it may be hung.
-2. Start one fresh reviewer session with the same task prompt.
-3. If the second attempt also times out, escalate to human.
+Core policy stays inline: if no Review Report comes back within 10 minutes, do not retry the same reviewer session; start one fresh reviewer session with the same task prompt; if the second attempt also times out, escalate to human.
 
-### Iteration summary
+### Review Gate Summary
 
 After all rounds complete (approve, reject, or 3-round exhaustion), post a brief summary as an MR comment:
 
-```
+```markdown
 ## Review Gate Summary
 
 | Round | Reviewer | Decision | Headline |
