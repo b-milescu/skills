@@ -39,8 +39,8 @@ Minimize duplicated operational bodies:
   skill-loading wording, and pi bridge coordination are runtime-specific.
 - `start-build` owns builder workflow, Review Packet templates, TDD handoff,
   and parent-owned review-gate policy.
-- `start-review` owns reviewer workflow, Review Report templates, authority
-  handling, and SHA/CI guard policy.
+- `start-review` owns reviewer flow, Review Report format, authority handling,
+  and SHA/CI guard policy.
 - `gitlab-local` owns GitLab CLI syntax, JSON flag caveats, snippets, and
   SHA-guarding. Agent files should point to it instead of copying commands.
 - Agent bodies may keep launch-critical role boundaries, short core checklists,

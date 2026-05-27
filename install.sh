@@ -82,8 +82,8 @@ for dir in "$REPO_ROOT"/*/; do
 done
 
 # Agents are organised per target dialect under agents/<target>/.
-# AGENT_NAMES enumerates from agents/claude/ because every agent must have a
-# Claude Code variant; the pi variant is optional.
+# AGENT_NAMES enumerates shared agent names from agents/claude/; agents/check.sh
+# enforces strict Claude Code ↔ pi dialect parity before review.
 AGENT_NAMES=()
 if [[ -d "$REPO_ROOT/agents/claude" ]]; then
   for f in "$REPO_ROOT/agents/claude"/*.md; do
@@ -279,6 +279,7 @@ for entry in "${AGENT_TARGETS[@]}"; do
   prune_stale_repo_links "$agent_dir" is_agent_name
   for name in "${AGENT_NAMES[@]}"; do
     if [[ ! -f "$source_root/$name.md" ]]; then
+      # Defensive only: agents/check.sh enforces dialect parity before ready.
       printf '  skip:    %s (no source in %s/)\n' "$agent_dir/$name.md" "$source_root"
       continue
     fi

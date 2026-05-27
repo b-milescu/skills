@@ -82,7 +82,7 @@ One sibling worktree per issue when the parent orchestrates parallel builders:
 
 ## Reviewer Lift
 
-Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live in the canonical Review Packet / Review Report templates.
+Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live in canonical Review Packet / Review Report files.
 
 ## Check gate discovery
 
