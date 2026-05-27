@@ -81,6 +81,78 @@ prepare_installed_agents "$clean_repo" "$clean_home" yes
 run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
 
+git_noise_repo="$TMP_ROOT/git-noise-repo"
+git_noise_home="$TMP_ROOT/git-noise-home"
+git_noise_output="$TMP_ROOT/git-noise.out"
+git_noise_scan="$TMP_ROOT/git-noise-scan.list"
+git_noise_schema_output="$TMP_ROOT/git-noise-schema.out"
+copy_repo "$git_noise_repo"
+git -C "$git_noise_repo" init -q
+git -C "$git_noise_repo" add .
+tracked_markdown_count="$(git -C "$git_noise_repo" ls-files '*.md' | wc -l | tr -d '[:space:]')"
+mkdir -p \
+  "$git_noise_repo/node_modules/noise" \
+  "$git_noise_repo/.npm/cache" \
+  "$git_noise_repo/cleanup-discovery"
+cat > "$git_noise_repo/node_modules/noise/reviewer-lift-drift.md" <<'DRIFT'
+| Field | Value |
+|---|---|
+| Reviewed SHA | stale |
+| Review gate | stale |
+| CI pipeline | stale |
+| Local gate | stale |
+DRIFT
+cat > "$git_noise_repo/.npm/cache/reviewer-lift-drift.md" <<'DRIFT'
+| Field | Value |
+|---|---|
+| Reviewed SHA | stale |
+| Review gate | stale |
+| CI pipeline | stale |
+| Local gate | stale |
+DRIFT
+cat > "$git_noise_repo/cleanup-discovery/report.md" <<'DRIFT'
+## Summary
+
+## Decision
+
+## Must Fix
+
+## Should Fix
+DRIFT
+cat > "$git_noise_repo/progress.md" <<'DRIFT'
+| Field | Value |
+|---|---|
+| Reviewed SHA | local |
+| Review gate | local |
+| CI pipeline | local |
+| Local gate | local |
+DRIFT
+bash "$git_noise_repo/scripts/list-prompt-drift-markdown.sh" "$git_noise_repo" |
+  tr '\0' '\n' |
+  sed '/^$/d' > "$git_noise_scan"
+scan_count="$(wc -l < "$git_noise_scan" | tr -d '[:space:]')"
+if [[ "$scan_count" != "$tracked_markdown_count" ]]; then
+  echo "expected prompt-drift Markdown scan count ($scan_count) to equal tracked Markdown count ($tracked_markdown_count)" >&2
+  echo "--- scan list ---" >&2
+  cat "$git_noise_scan" >&2
+  exit 1
+fi
+if grep -E '/(node_modules|cleanup-discovery|\.npm)/|/progress\.md$' "$git_noise_scan"; then
+  echo "expected prompt-drift Markdown scan to ignore local artifacts" >&2
+  echo "--- scan list ---" >&2
+  cat "$git_noise_scan" >&2
+  exit 1
+fi
+run_check_ok "$git_noise_repo" "$git_noise_home" "$git_noise_output"
+assert_contains "$git_noise_output" "agent-check: PASS"
+if ! (cd "$git_noise_repo" && bash tests/reviewer-lift-schema.sh) >"$git_noise_schema_output" 2>&1; then
+  echo "expected tests/reviewer-lift-schema.sh to ignore local artifact Markdown in a Git worktree" >&2
+  echo "--- output ---" >&2
+  cat "$git_noise_schema_output" >&2
+  exit 1
+fi
+assert_contains "$git_noise_schema_output" "Reviewer Lift schema check passed"
+
 nomutate_home="$TMP_ROOT/nomutate-home"
 nomutate_output="$TMP_ROOT/nomutate.out"
 mkdir -p \

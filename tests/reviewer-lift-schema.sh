@@ -14,6 +14,10 @@ copies=(
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
+list_prompt_drift_markdown_files() {
+  bash "$REPO_ROOT/scripts/list-prompt-drift-markdown.sh" "$REPO_ROOT"
+}
+
 extract_schema_fields() {
   awk -F'|' '
     /^\|/ {
@@ -54,11 +58,11 @@ done
 
 # Detect stale duplicate field-list tables outside approved generated-copy blocks.
 # A run of 4+ canonical fields in a markdown table is treated as an unapproved copy.
-find . -type f -name '*.md' \
-  ! -path './.git/*' \
-  ! -path "./$schema" \
-  -print0 |
+list_prompt_drift_markdown_files |
 while IFS= read -r -d '' file; do
+  case "$file" in
+    "$REPO_ROOT/$schema") continue ;;
+  esac
   awk -v fields_file="$tmpdir/schema.fields" -v file="$file" -F'|' '
     BEGIN {
       while ((getline line < fields_file) > 0) wanted[line]=1
