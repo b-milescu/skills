@@ -37,7 +37,7 @@ needing to restate every builder/reviewer safety boundary.
 | Review Packet templates | [`review-packet.md`](../../start-build/templates/review-packet.md) and [`review-packet-compact.md`](../../start-build/templates/review-packet-compact.md) |
 | Reviewer final handoff | [`reviewer-final-handoff.md`](../../start-review/templates/reviewer-final-handoff.md) |
 | GitLab CLI snippets, CI watch, and finish guards | [`gitlab-local/SKILL.md`](../../gitlab-local/SKILL.md) |
-| Optional helper scripts | [`scripts/README.md`](../../scripts/README.md) |
+| Optional helper scripts | [`gitlab-local/scripts/README.md`](../../gitlab-local/scripts/README.md) |
 
 If any row here conflicts with its canonical source, update or remove this
 pointer in a small docs MR; do not copy active schemas or snippets back into this

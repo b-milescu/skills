@@ -274,16 +274,17 @@ Polling and SHA rules:
 7. Timeout output is non-zero and includes last MR pipeline and branch/job
    summary so the caller can distinguish "no pipeline yet" from stale CI.
 
-Implementation body lives outside this skill:
+Implementation body lives inside this skill:
 
-- Source: [`scripts/gitlab-ci-watch.sh`](../scripts/gitlab-ci-watch.sh)
-- Helper docs: [`scripts/README.md`](../scripts/README.md#gitlab-workflow-helpers)
+- Source: [`scripts/gitlab-ci-watch.sh`](scripts/gitlab-ci-watch.sh)
+- Helper docs: [`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted behavior fits:
+Use the helper when the accepted behavior fits. Resolve the script path against
+this `gitlab-local` skill directory before running it from a target repo:
 
 ```bash
-scripts/gitlab-ci-watch.sh \
+"$gitlab_local_skill_dir/scripts/gitlab-ci-watch.sh" \
   --mr-iid "$mr_iid" \
   --source-branch "$source_branch" \
   --reviewed-sha "$reviewed_sha" \
@@ -419,16 +420,18 @@ Guard and authority order:
 8. Emit final status: MR IID/URL, reviewed SHA, CI status/SHA, action taken,
    issue state, cleanup result, and blocker reason if any.
 
-Implementation body lives outside this skill:
+Implementation body lives inside this skill:
 
-- Source: [`scripts/gitlab-finish-mr.sh`](../scripts/gitlab-finish-mr.sh)
-- Helper docs: [`scripts/README.md`](../scripts/README.md#gitlab-workflow-helpers)
+- Source: [`scripts/gitlab-finish-mr.sh`](scripts/gitlab-finish-mr.sh)
+- Helper docs: [`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper only when the exact accepted authority model fits:
+Use the helper only when the exact accepted authority model fits. Resolve the
+script path against this `gitlab-local` skill directory before running it from a
+target repo:
 
 ```bash
-scripts/gitlab-finish-mr.sh \
+"$gitlab_local_skill_dir/scripts/gitlab-finish-mr.sh" \
   --mr-iid "$mr_iid" \
   --reviewed-sha "$reviewed_sha" \
   --merge-authority "$merge_authority" \
@@ -450,7 +453,7 @@ non-success output requires parent/human action.
 
 ## Optional helper scripts
 
-This repo also ships optional wrappers in `scripts/` for the accepted
+This skill also ships optional wrappers in `scripts/` for the accepted
 `ci-watch-sha-pinned` and `finish-mr-authority-aware` behaviors. Use them when
 that exact behavior fits and you want repeatable guardrails. Prefer the raw
 snippets in this skill when `glab` flag/JSON drift appears, a project-specific

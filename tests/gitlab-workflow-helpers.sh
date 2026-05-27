@@ -147,7 +147,7 @@ run_ci_watch_fixture() {
     FAKE_BRANCH_JSON_FILE="$dir/branch.json" \
     FAKE_GLAB_LOG="$dir/glab.log" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/scripts/gitlab-ci-watch.sh" \
+    "$REPO_ROOT/gitlab-local/scripts/gitlab-ci-watch.sh" \
       --mr-iid 59 \
       --source-branch build/61 \
       --reviewed-sha "$expected_sha" \
@@ -166,7 +166,7 @@ run_finish_fixture() {
     FAKE_GIT_STATUS="${FAKE_GIT_STATUS:-}" \
     FAKE_WORKTREE_STATUS="${FAKE_WORKTREE_STATUS:-}" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/scripts/gitlab-finish-mr.sh" "$@"
+    "$REPO_ROOT/gitlab-local/scripts/gitlab-finish-mr.sh" "$@"
 }
 
 test_ci_watch_passes_for_matching_green_pipeline() {
