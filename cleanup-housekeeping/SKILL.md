@@ -30,6 +30,8 @@ Discover, propose, and plan cleanup work. Default mode is planning-only: do not 
 
 Scan for cleanup opportunities across any language/toolchain:
 
+- **Subagent fan-out (optional, parent-owned)**: For broad scopes, parent/coordinator sessions with launch authority may split read-only discovery by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process). Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return.
+- **Subagent aggregation**: Parent de-duplicates child findings, rejects unsupported claims, records gaps/conflicts, then classifies candidates as AFK/HITL/Needs info. If no launch authority or safe isolation exists, run same checklist serially.
 - **Repo shape**: duplicate directories, abandoned modules, generated artifacts committed unexpectedly, unclear ownership, inconsistent naming, stale examples.
 - **Docs/domain**: README drift, obsolete setup steps, broken doc links, ADR contradictions, glossary mismatch, missing operator/runbook notes.
 - **Build/test/CI**: redundant scripts, stale workflow jobs, missing local check gate docs, flaky/skipped tests needing decision, unused fixtures.
