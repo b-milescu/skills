@@ -17,6 +17,7 @@ This repo uses GitLab-backed dev workflows.
 ## Design briefs
 
 - `docs/agents/mr-build-review-orchestration.md` — issue #55 historical design brief for the parent-orchestrator loop. It records rationale, provenance, and links to active sources; active workflow policy now lives in the recipe above.
+- `docs/agents/workflow-reference-split-plan.md` — issue #90 planning artifact for future anchor-preserving splits of oversized active Dev Workflow reference docs. It does not move active workflow content or change GitLab command/review/build authority semantics.
 
 ## Usage rules
 
