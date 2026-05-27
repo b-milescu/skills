@@ -29,7 +29,7 @@ USAGE
 
 case "${1:-}" in
   --check)
-    exec "$REPO_ROOT/agents/check.sh"
+    exec bash "$REPO_ROOT/agents/check.sh"
     ;;
   -h|--help)
     usage

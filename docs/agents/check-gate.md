@@ -15,6 +15,14 @@ Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines
 
 Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 
+## Executable-bit policy
+
+Only directly invoked entrypoints keep executable bits: `install.sh`,
+`scripts/check.sh` (via `npm run check`), and `gitlab-local/scripts/*.sh`
+helper entrypoints documented for direct use. Shell or Node helpers and
+regression scripts documented with `bash ...` or `node ...` stay non-executable
+(`100644`).
+
 ## Targeted checks
 
 | Area | Command | Notes |
