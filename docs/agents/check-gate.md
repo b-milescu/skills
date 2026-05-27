@@ -42,6 +42,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary and keeps decision, SHA, CI, findings, checks, and report-link fields visible. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
 | Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, and use synthetic example URLs. |
+| Setup Skill guardrails | `bash tests/setup-dev-skills-guardrails.sh` | Verifies `setup-dev-skills` ships and references the coding guardrails seed without vendoring upstream prose. |
 | Setup Skill invocation mode | `bash tests/setup-dev-skills-invocation.sh` | Verifies `setup-dev-skills` stays manual-invocation only and docs preserve the ask-before-running guidance. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.pi/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.pi/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
@@ -69,6 +70,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps decision, reviewed SHA, CI status/SHA, findings, local checks, and report-link fields visible. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
+| `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 
 ## Workflow regression coverage map

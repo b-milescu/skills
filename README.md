@@ -14,7 +14,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 
 | Skill | Purpose |
 |---|---|
-| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) for scaffolding per-repo Agent Setup Docs. Invoke explicitly as `/setup-dev-skills`; agents may recommend it when docs are missing/stale, but must ask before running or writing. |
+| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) for scaffolding per-repo Agent Setup Docs, including coding guardrails. Invoke explicitly as `/setup-dev-skills`; agents may recommend it when docs are missing/stale, but must ask before running or writing. |
 | `gitlab-local` | `glab` CLI command reference for local/self-hosted GitLab work. |
 | `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
 | `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |
