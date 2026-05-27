@@ -1,6 +1,6 @@
 # agents/skills
 
-Repository of agent skills for the AI-trading GitLab group. Each top-level directory is a self-contained skill installed by `install.sh` into agent runtime skill directories.
+Repository of agent skills for the canonical GitLab project `gitlab.example.com/agents/skills`. Each top-level directory is a self-contained skill installed by `install.sh` into agent runtime skill directories.
 
 ## Agent skills
 

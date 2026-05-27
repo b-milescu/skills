@@ -1,6 +1,6 @@
 # Issue tracker: GitLab
 
-Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills`.
+Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills` (`https://gitlab.example.com/agents/skills`).
 
 Use the `glab` CLI from inside this repository clone so commands resolve against the project remote. Before running issue, MR, CI, note, approval, or merge commands, load the `/gitlab-local` skill and follow its command reference for syntax, flags, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate command snippets in this guide.
 

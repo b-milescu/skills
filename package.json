@@ -2,7 +2,7 @@
   "name": "@agents/skills",
   "version": "0.0.0",
   "private": true,
-  "description": "Agent Skill repository for the AI-trading GitLab group.",
+  "description": "Agent Skill repository for the gitlab.example.com/agents/skills project.",
   "scripts": {
     "check": "scripts/check.sh",
     "check:agents-schema": "node scripts/check-agent-schemas.mjs",
