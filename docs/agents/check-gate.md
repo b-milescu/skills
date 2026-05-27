@@ -41,6 +41,28 @@ Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 | Stale naming check | `rg -n "<old-name>\|<rejected-term>" .` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
+## Shipped shell regression inventory
+
+`scripts/check.sh` runs every `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.
+
+| Script | Focus |
+| --- | --- |
+| `tests/agent-check.sh` | `agents/check.sh` parity, canonical-pointer, prompt-drift, external-skill dependency, and no-mutation `install.sh --check` regressions under temporary homes. |
+| `tests/agent-handoff-templates.sh` | Builder/reviewer machine-readable final handoff template field order, YAML parsing, and synthetic example URL safety. |
+| `tests/agents-schema.sh` | Claude/pi agent frontmatter parsing, required fields, name/filename matching, runtime-only field drift, and dialect-specific tool casing. |
+| `tests/gitlab-local-help-cache.sh` | `/gitlab-local` help-first run-dir cache guidance, context invalidation, and verification-status wording. |
+| `tests/gitlab-local-split-snippets.sh` | GitLab workflow snippets remain split into SHA-bound approval, merge, auto-merge, CI watch, and finish helper guidance. |
+| `tests/gitlab-workflow-helpers.sh` | `gitlab-local/scripts/gitlab-ci-watch.sh` and `gitlab-local/scripts/gitlab-finish-mr.sh` SHA/CI/authority guard behavior with fake GitLab/Git helpers. |
+| `tests/install-external-deps.sh` | `install.sh` warnings for missing required/optional external skills and silence when dependencies exist under a temporary `HOME`. |
+| `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks and replaces stale in-repo symlinks under a temporary `HOME`. |
+| `tests/md-links.sh` | Markdown local-link checker diagnostics for broken files, anchors, image targets, and external URL host allowlist behavior. |
+| `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
+| `tests/review-authority-explicit.sh` | Reviewer workflow docs require explicit Merge authority and preserve explicit `approval-only` handling. |
+| `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
+| `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps decision, reviewed SHA, CI status/SHA, findings, local checks, and report-link fields visible. |
+| `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
+| `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
+
 ## Workflow regression coverage map
 
 Issue #79 workflow guardrails are runnable through `npm run check` because
