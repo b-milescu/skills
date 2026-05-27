@@ -38,6 +38,10 @@ info() {
   printf 'info: %s\n' "$*"
 }
 
+list_prompt_drift_markdown_files() {
+  bash "$REPO_ROOT/scripts/list-prompt-drift-markdown.sh" "$REPO_ROOT"
+}
+
 list_agent_names() {
   local dir="$1" file
   [[ -d "$dir" ]] || return 0
@@ -249,7 +253,7 @@ check_reviewer_lift_schema() {
     ' "$file"; then
       errors=$((errors + 1))
     fi
-  done < <(find "$REPO_ROOT" -type f -name '*.md' ! -path "$REPO_ROOT/.git/*" -print0)
+  done < <(list_prompt_drift_markdown_files)
 }
 
 extract_review_report_headings() {
@@ -303,7 +307,7 @@ check_review_report_structure() {
     ' "$file"; then
       errors=$((errors + 1))
     fi
-  done < <(find "$REPO_ROOT" -type f -name '*.md' ! -path "$REPO_ROOT/.git/*" -print0)
+  done < <(list_prompt_drift_markdown_files)
 }
 
 agent_references_skill() {
