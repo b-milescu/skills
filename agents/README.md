@@ -28,16 +28,50 @@ Use pi's agent frontmatter dialect. Use lowercase tool names and pi-specific
 fields such as intercom bridge coordination fields. Keep pi-only bridge wording
 here, not in Claude Code variants.
 
+## Agent definition body strategy
+
+Current strategy: do not add a generator or shared-fragment system now. Keep
+manual Claude/pi files so each runtime's dialect stays explicit and reviewable.
+
+Minimize duplicated operational bodies:
+
+- Runtime dialect stays in the variant file: frontmatter schema, tool names,
+  skill-loading wording, and pi bridge coordination are runtime-specific.
+- `start-build` owns builder workflow, Review Packet templates, TDD handoff,
+  and parent-owned review-gate policy.
+- `start-review` owns reviewer workflow, Review Report templates, authority
+  handling, and SHA/CI guard policy.
+- `gitlab-local` owns GitLab CLI syntax, JSON flag caveats, snippets, and
+  SHA-guarding. Agent files should point to it instead of copying commands.
+- Agent bodies may keep launch-critical role boundaries, short core checklists,
+  reporting contracts, and runtime-specific wording. Move long operational
+  procedure changes to the canonical skills first, then update agent pointers.
+
+Drift checks guard this manual strategy:
+
+- `npm run check:agents-schema` validates dialect frontmatter, tool casing, and
+  Claude/pi body restrictions.
+- `bash agents/check.sh` validates agent name parity, canonical
+  `start-build`/`start-review` and `gitlab-local` pointers, Reviewer Lift and
+  Review Report duplicate structures, and required external skill dependencies.
+
+If generation or shared fragments become worth revisiting, open a dedicated
+issue or ADR with migration and check-gate changes instead of mixing it into a
+routine agent edit.
+
 ## Add a new agent
 
 1. Write `agents/claude/<name>.md` with Claude Code schema.
 2. Write `agents/pi/<name>.md` with pi schema.
 3. Keep body content shared in spirit, but keep runtime-specific coordination and
    frontmatter in the matching dialect file.
-4. Run `npm run check:agents-schema` to catch frontmatter/schema/tool-casing
+4. Point operational procedure back to canonical skills such as `start-build`,
+   `start-review`, and `gitlab-local` rather than copying long bodies.
+5. Run `npm run check:agents-schema` to catch frontmatter/schema/tool-casing
    drift before install or review.
-5. Run `./install.sh` to surface the agent in installed runtimes.
-6. Expect `install.sh` to print a clear `skip:` line when a target runtime or
+6. Run `bash agents/check.sh` to catch parity and canonical-pointer drift.
+7. Run `./install.sh` to surface the agent in installed runtimes.
+8. Expect `install.sh` to print a clear `skip:` line when a target runtime or
    variant is missing.
 
 ## References
