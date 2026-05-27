@@ -73,9 +73,9 @@ assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$s
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
 assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
 
-require_text "scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
-require_text "scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
-require_text "scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
+require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
+require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
+require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
 if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
   fail 'retired combined approve-merge-sha-bound snippet still present'
