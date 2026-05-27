@@ -34,6 +34,7 @@ Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary and keeps decision, SHA, CI, findings, checks, and report-link fields visible. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
 | Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, and use synthetic example URLs. |
+| Setup Skill invocation mode | `bash tests/setup-dev-skills-invocation.sh` | Verifies `setup-dev-skills` stays manual-invocation only and docs preserve the ask-before-running guidance. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.pi/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.pi/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near the skill guideline of under 100 lines when practical. |
