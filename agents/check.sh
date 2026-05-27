@@ -10,7 +10,6 @@ TMPDIR_CHECK="$(mktemp -d "${TMPDIR:-/tmp}/agent-check.XXXXXX")"
 trap 'rm -rf "$TMPDIR_CHECK"' EXIT
 
 errors=0
-warnings=0
 
 relpath() {
   local path="$1"
@@ -27,11 +26,6 @@ relpath() {
 error() {
   printf 'error: %s\n' "$*" >&2
   errors=$((errors + 1))
-}
-
-warn() {
-  printf 'warn: %s\n' "$*" >&2
-  warnings=$((warnings + 1))
 }
 
 info() {
@@ -387,12 +381,8 @@ check_review_report_structure
 check_external_skill_dependencies
 
 if [[ "$errors" -gt 0 ]]; then
-  printf 'agent-check: FAIL (%d error(s), %d warning(s))\n' "$errors" "$warnings" >&2
+  printf 'agent-check: FAIL (%d error(s))\n' "$errors" >&2
   exit 1
 fi
 
-if [[ "$warnings" -gt 0 ]]; then
-  printf 'agent-check: PASS with %d warning(s)\n' "$warnings"
-else
-  printf 'agent-check: PASS\n'
-fi
+printf 'agent-check: PASS\n'

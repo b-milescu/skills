@@ -58,12 +58,6 @@ if (String(actual) !== expected) {
 NODE
 }
 
-write_json() {
-  local file="$1"
-  shift
-  printf '%s\n' "$*" > "$file"
-}
-
 make_fake_glab() {
   local bin_dir="$1"
   cat > "$bin_dir/glab" <<'FAKE_GLAB'
@@ -441,7 +435,7 @@ test_finish_blocks_unsafe_states_before_mutation() {
   assert_log_not_contains "$dir/glab.log" "merge"
 
   dir="$(make_fixture_dir finish-missing-ci)"
-  write_json "$dir/mr.json" '{"iid":59,"state":"opened","sha":"abc123","pipeline":null}'
+  printf '%s\n' '{"iid":59,"state":"opened","sha":"abc123","pipeline":null}' > "$dir/mr.json"
   write_branch_json "$dir/branch.json" success abc123
   run_finish_fixture "$dir" \
     --mr-iid 59 --reviewed-sha abc123 --merge-authority "reviewer may merge" --caller-role reviewer --source-branch build/61 --default-branch main
