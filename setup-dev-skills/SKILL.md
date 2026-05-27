@@ -8,6 +8,12 @@ disable-model-invocation: true
 
 Scaffold or reconcile repo-local configuration for this skill pack: issue tracker, triage labels, domain docs, check gate, and dev workflows. Prompt-driven: explore, present findings, confirm with user, then write.
 
+## Invocation mode
+
+Manual invocation only. `disable-model-invocation: true` is intentional because this Setup Skill explores target repo state, asks setup decisions, and writes Agent Setup Docs. Agents must not run it automatically.
+
+Agents may recommend `/setup-dev-skills` when Agent Setup Docs are missing or stale, or when dev workflow skills lack repo context. Before running it or writing setup docs, ask the user for permission and then follow the decision prompts below.
+
 ## 1. Explore
 
 Read current repo state; don't assume:
