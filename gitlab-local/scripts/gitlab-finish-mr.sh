@@ -169,6 +169,13 @@ issue_state="not_checked"
 worktree_cleanup="not_requested"
 branch_cleanup="not_requested"
 
+check_issue_state_if_requested() {
+  if [[ -n "$issue_iid" && "$issue_state" == "not_checked" ]]; then
+    issue_json="$(glab issue view "$issue_iid" -F json)"
+    issue_state="$(json_value "$issue_json" state "unknown")"
+  fi
+}
+
 if [[ "$mr_state" != "opened" ]]; then
   finish_exit 5 blocked "FINISH_MR result=blocked reason=unknown_mr_state state=${mr_state:-none}" "unknown_mr_state:${mr_state:-none}"
 fi
@@ -204,10 +211,12 @@ fi
 
 case "$caller_role:$merge_authority" in
   builder:*)
-    finish_exit 0 handoff "FINISH_MR result=handoff reason=builder_no_approve_or_merge sha=$reviewed_sha ci=$ci_guard" "" handoff
+    check_issue_state_if_requested
+    finish_exit 0 handoff "FINISH_MR result=handoff reason=builder_no_approve_or_merge sha=$reviewed_sha ci=$ci_guard issue_state=$issue_state worktree=$worktree_cleanup branch=$branch_cleanup" "" handoff
     ;;
   *:approval-only|*:human\ release)
-    finish_exit 0 handoff "FINISH_MR result=handoff authority=$merge_authority sha=$reviewed_sha ci=$ci_guard" "" handoff
+    check_issue_state_if_requested
+    finish_exit 0 handoff "FINISH_MR result=handoff authority=$merge_authority sha=$reviewed_sha ci=$ci_guard issue_state=$issue_state worktree=$worktree_cleanup branch=$branch_cleanup" "" handoff
     ;;
   reviewer:reviewer\ may\ merge|authorized-parent:reviewer\ may\ merge|human:reviewer\ may\ merge)
     if [[ "$approve_as_reviewer" == "true" ]]; then
@@ -232,10 +241,7 @@ else
   echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
 fi
 
-if [[ -n "$issue_iid" ]]; then
-  issue_json="$(glab issue view "$issue_iid" -F json)"
-  issue_state="$(json_value "$issue_json" state "unknown")"
-fi
+check_issue_state_if_requested
 
 if [[ -n "$worktree_path" ]]; then
   git worktree remove "$worktree_path"

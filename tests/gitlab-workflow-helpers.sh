@@ -44,6 +44,20 @@ assert_log_not_contains() {
   [[ ! -f "$file" ]] || ! grep -Fq -- "$needle" "$file" || fail "expected $file not to contain '$needle'; got: $(cat "$file")"
 }
 
+assert_yaml_field() {
+  local field="$1" expected="$2"
+  YAML_PAYLOAD="$CAPTURE_OUTPUT" node - "$field" "$expected" <<'NODE'
+const yaml = require('js-yaml');
+const data = yaml.load(process.env.YAML_PAYLOAD || '');
+const field = process.argv[2];
+const expected = process.argv[3];
+const actual = data?.[field];
+if (String(actual) !== expected) {
+  throw new Error(`expected YAML ${field}=${expected}, got ${actual}`);
+}
+NODE
+}
+
 write_json() {
   local file="$1"
   shift
@@ -55,18 +69,18 @@ make_fake_glab() {
   cat > "$bin_dir/glab" <<'FAKE_GLAB'
 #!/usr/bin/env bash
 set -euo pipefail
+printf 'glab %s\n' "$*" >> "$FAKE_GLAB_LOG"
 case "${1:-} ${2:-}" in
   "mr view")
     cat "$FAKE_MR_JSON_FILE"
     ;;
+  "issue view")
+    cat "$FAKE_ISSUE_JSON_FILE"
+    ;;
   "ci status")
     cat "$FAKE_BRANCH_JSON_FILE"
     ;;
-  "mr approve")
-    printf 'glab %s\n' "$*" >> "$FAKE_GLAB_LOG"
-    ;;
-  "mr merge")
-    printf 'glab %s\n' "$*" >> "$FAKE_GLAB_LOG"
+  "mr approve"|"mr merge")
     ;;
   *)
     echo "unexpected glab command: $*" >&2
@@ -140,6 +154,13 @@ write_branch_json() {
 JSON
 }
 
+write_issue_json() {
+  local file="$1" state="$2"
+  cat > "$file" <<JSON
+{"iid":88,"state":"$state","web_url":"https://gitlab.example/group/project/-/issues/88"}
+JSON
+}
+
 run_ci_watch_fixture() {
   local dir="$1" expected_sha="$2" timeout="${3:-0}"
   run_capture env \
@@ -161,6 +182,7 @@ run_finish_fixture() {
   run_capture env \
     FAKE_MR_JSON_FILE="$dir/mr.json" \
     FAKE_BRANCH_JSON_FILE="$dir/branch.json" \
+    FAKE_ISSUE_JSON_FILE="${FAKE_ISSUE_JSON_FILE:-$dir/issue.json}" \
     FAKE_GLAB_LOG="$dir/glab.log" \
     FAKE_GIT_LOG="$dir/git.log" \
     FAKE_GIT_STATUS="${FAKE_GIT_STATUS:-}" \
@@ -235,6 +257,59 @@ test_finish_builder_handoff_never_approves_or_merges() {
   assert_log_not_contains "$dir/glab.log" "merge"
 }
 
+test_finish_reports_issue_state_on_handoff_when_issue_iid_is_supplied() {
+  local dir
+  dir="$(make_fixture_dir finish-issue-handoff)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  write_issue_json "$dir/issue.json" opened
+
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority approval-only \
+    --caller-role reviewer \
+    --source-branch build/61 \
+    --default-branch main \
+    --issue-iid 88
+
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=handoff"
+  assert_contains "$CAPTURE_OUTPUT" "issue_state=opened"
+  assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"
+  assert_log_not_contains "$dir/glab.log" "approve"
+  assert_log_not_contains "$dir/glab.log" "merge"
+}
+
+test_finish_yaml_format_reports_structured_handoff() {
+  local dir
+  dir="$(make_fixture_dir finish-yaml-handoff)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role builder \
+    --source-branch build/61 \
+    --default-branch main \
+    --format yaml
+
+  assert_status 0
+  assert_yaml_field result handoff
+  assert_yaml_field action handoff
+  assert_yaml_field mr 59
+  assert_yaml_field reviewed_sha abc123
+  assert_yaml_field ci_guard green
+  assert_yaml_field pipeline_status success
+  assert_yaml_field pipeline_sha abc123
+  assert_yaml_field issue_state not_checked
+  assert_yaml_field branch not_requested
+  assert_log_not_contains "$dir/glab.log" "approve"
+  assert_log_not_contains "$dir/glab.log" "merge"
+}
+
 test_finish_authorized_paths_are_sha_bound() {
   local dir
   dir="$(make_fixture_dir finish-reviewer-merge)"
@@ -270,6 +345,71 @@ test_finish_authorized_paths_are_sha_bound() {
   assert_log_contains "$dir/glab.log" "glab mr merge 59 --auto-merge --yes --sha abc123"
 }
 
+test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
+  local dir
+  dir="$(make_fixture_dir finish-merge-cleanup)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  write_issue_json "$dir/issue.json" closed
+
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --issue-iid 88 \
+    --delete-local-source-branch \
+    --delete-remote-source-branch
+
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "issue_state=closed"
+  assert_contains "$CAPTURE_OUTPUT" "branch=local_deleted,remote_deleted"
+  assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"
+  assert_log_contains "$dir/git.log" "git branch -d build/61"
+  assert_log_contains "$dir/git.log" "git push origin --delete build/61"
+}
+
+test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
+  local dir
+
+  dir="$(make_fixture_dir finish-cleanup-handoff)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role builder \
+    --source-branch build/61 \
+    --default-branch main \
+    --delete-local-source-branch \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=handoff"
+  assert_log_not_contains "$dir/git.log" "git branch -d build/61"
+  assert_log_not_contains "$dir/git.log" "git push origin --delete build/61"
+
+  dir="$(make_fixture_dir finish-cleanup-failure)"
+  write_mr_json "$dir/mr.json" opened abc123 success old999
+  write_branch_json "$dir/branch.json" success old999
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --delete-local-source-branch \
+    --delete-remote-source-branch
+  assert_status 3
+  assert_contains "$CAPTURE_OUTPUT" "reason=stale_ci"
+  assert_log_not_contains "$dir/git.log" "git branch -d build/61"
+  assert_log_not_contains "$dir/git.log" "git push origin --delete build/61"
+}
+
 test_finish_blocks_unsafe_states_before_mutation() {
   local dir
 
@@ -300,6 +440,15 @@ test_finish_blocks_unsafe_states_before_mutation() {
   assert_contains "$CAPTURE_OUTPUT" "reason=ci_not_green"
   assert_log_not_contains "$dir/glab.log" "merge"
 
+  dir="$(make_fixture_dir finish-missing-ci)"
+  write_json "$dir/mr.json" '{"iid":59,"state":"opened","sha":"abc123","pipeline":null}'
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 --reviewed-sha abc123 --merge-authority "reviewer may merge" --caller-role reviewer --source-branch build/61 --default-branch main
+  assert_status 3
+  assert_contains "$CAPTURE_OUTPUT" "reason=missing_ci"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
   dir="$(make_fixture_dir finish-missing-authority)"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
   write_branch_json "$dir/branch.json" success abc123
@@ -307,6 +456,15 @@ test_finish_blocks_unsafe_states_before_mutation() {
     --mr-iid 59 --reviewed-sha abc123 --caller-role reviewer --source-branch build/61 --default-branch main
   assert_status 4
   assert_contains "$CAPTURE_OUTPUT" "reason=missing_merge_authority"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+  dir="$(make_fixture_dir finish-unknown-authority)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 --reviewed-sha abc123 --merge-authority "maintainer merges" --caller-role reviewer --source-branch build/61 --default-branch main
+  assert_status 4
+  assert_contains "$CAPTURE_OUTPUT" "reason=unknown_merge_authority"
   assert_log_not_contains "$dir/glab.log" "merge"
 
   dir="$(make_fixture_dir finish-unknown-state)"
@@ -331,7 +489,11 @@ test_finish_blocks_unsafe_states_before_mutation() {
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_finish_builder_handoff_never_approves_or_merges
+test_finish_reports_issue_state_on_handoff_when_issue_iid_is_supplied
+test_finish_yaml_format_reports_structured_handoff
 test_finish_authorized_paths_are_sha_bound
+test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
+test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
 test_finish_blocks_unsafe_states_before_mutation
 
 echo "gitlab-workflow-helpers: PASS"
