@@ -1,6 +1,6 @@
 ---
 name: mr-reviewer
-description: GitLab MR review specialist. Knows the start-review procedure, Review Packet handoff, Review Report template, glab CLI, and mandatory review gate protocol. Preferred over the builtin reviewer for MR reviews.
+description: GitLab MR review specialist. Knows the start-review procedure, Review Packet handoff, Review Report structure, glab CLI, and mandatory review gate protocol. Preferred over the builtin reviewer for MR reviews.
 tools: Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite
 skills: start-review, tdd, gitlab-local
 model: inherit
@@ -48,14 +48,14 @@ After posting the Review Report, the final response MUST include the approved ma
 
 For usage-limit, model-limit, or tool-limit interruption before a complete review decision/report, do not invent MR, CI, approval, or report-link state and do not take approval/merge actions. Return `status: failed` with `blockers` describing what stopped, plus any verified known fields. The parent orchestrator owns retries and any fallback model/session.
 
-## Review categories, structure, decisions, multi-MR mode
+## Review procedure, report, decisions, multi-MR mode
 
-Owned by the `start-review` skill. Invoke it (`Skill skill=start-review`) at session start and follow its procedure. The bullets below are quick pointers:
+Owned by the `start-review` skill. Invoke it (`Skill skill=start-review`) at session start and follow its procedure. The bullets below point to existing `start-review/REVIEW-FLOW.md` headings and templates:
 
-- Review categories → `start-review` §"Review categories".
-- Review Report structure → `start-review` template under §"Review Report template".
-- Decisions (approve / request-changes / reject) → `start-review` §"Decisions".
-- Multiple MR mode → `start-review` §"Multiple MR mode" (one worktree per MR for local checkout/tests).
+- Procedure → `start-review/REVIEW-FLOW.md` §"Procedure".
+- Review Report expectations → `start-review/REVIEW-FLOW.md` §"Review Report expectations" and `start-review/templates/review-report.md`.
+- Decisions (approve / request-changes / reject) → `start-review/REVIEW-FLOW.md` §"Decisions".
+- Multiple MR mode → `start-review/REVIEW-FLOW.md` §"Multiple MR worktree mode" (one isolated worktree per MR for local checkout/tests).
 
 Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
 

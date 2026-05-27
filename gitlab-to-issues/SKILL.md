@@ -21,7 +21,7 @@ Turn an approved plan into GitLab issues for the current target GitLab repositor
 
 ## Slice rules
 
-Each issue is a thin vertical slice through all affected user-visible layers: docs, CLI behavior, agent workflow, state, API, UI, tests, deploy/runbook, or other observable surfaces. Do not assume every project has schema/API/UI. Each slice should be demoable, reviewable, and testable on its own.
+Each issue is a thin vertical slice through all affected user-visible layers: docs, CLI behavior, Dev Workflow guidance, state, API, UI, tests, deploy/runbook, or other observable surfaces. Do not assume every project has schema/API/UI. Each slice should be demoable, reviewable, and testable on its own.
 
 ## Slice types and labels
 
@@ -87,7 +87,7 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 ## Safety / evidence notes
 
-- Affected surfaces: docs / CLI / agent workflow / state / migration / external integration / credentials / deploy / other.
+- Affected surfaces: docs / CLI / Dev Workflow / state / migration / external integration / credentials / deploy / other.
 - Expected evidence: tests, docs read/grep, dry-run, review packet notes, or other checks.
 - No live product/runtime/operator external mutations unless explicitly approved.
 

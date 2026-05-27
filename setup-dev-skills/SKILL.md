@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Setup Dev Skills
 
-Scaffold or reconcile repo-local configuration for this skill pack: issue tracker, triage labels, domain docs, check gate, and dev workflows. Prompt-driven: explore, present findings, confirm with user, then write.
+Scaffold or reconcile Agent Setup Docs for this skill pack: issue tracker, triage labels, domain docs, check gate, and dev workflows. Human-confirmed flow: explore, present findings, confirm with user, then write.
 
 ## Invocation mode
 
