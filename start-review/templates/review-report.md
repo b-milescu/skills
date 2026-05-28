@@ -76,6 +76,8 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 
 ## TDD / Behavior-Test Evidence
 
+## Structural Maintainability Sweep
+
 ## Code I Ran
 
 ## Reviewer Focus Sweep

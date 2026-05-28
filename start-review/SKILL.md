@@ -13,7 +13,7 @@ description: >-
 
 Review GitLab Merge Requests against project rules and safety invariants. Operate as a **very senior software developer**: evidence-first, narrow-context, explicit about tradeoffs, and unwilling to invent facts. Single-MR is the default. Multiple MRs are allowed only when they satisfy the shared [Decoupling Contract](../docs/decoupling-contract.md); each gets its own review context, worktree (when local checkout/tests are needed), Review Report, decision, and reviewed SHA. Protect safety boundaries: no unintended product/runtime/operator external effects, no weakened gates, no credential exposure, no untested behavior changes, no scope creep.
 
-For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak. Keep review context as narrow as possible: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first; expand only when concrete evidence requires it.
+For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak. Keep review context as narrow as possible: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first; expand only when concrete evidence requires it. Run a bounded structural maintainability sweep on the diff; treat serious complexity growth as review substance, not style.
 
 ## Quick start
 
@@ -25,7 +25,7 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 4. For multiple MRs, keep only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md); use one isolated worktree per MR when local checkout/tests are needed [see §Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode).
 5. Read linked issue + MR description before the diff. Lift every field from the builder's `Reviewer Lift` block, using `../start-build/templates/reviewer-lift-schema.md` as the canonical schema [see §Handoff integrity check](REVIEW-FLOW.md#handoff-integrity-check).
 6. Confirm the MR head SHA equals the lifted `Reviewed SHA`; re-diff deltas before approval.
-7. Skim `Reviewer Focus` first, then walk the full diff; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
+7. Skim `Reviewer Focus` first, then walk the full diff, including the bounded structural maintainability sweep; evaluate behavior tests via `tdd` principles [see §Procedure](REVIEW-FLOW.md#procedure).
 8. Answer every `OQ-N` from the MR description — answer, escalate, or downgrade to evidence request.
 9. Post one summary-first Review Report per MR via `templates/review-report.md` and decide independently. The first section is `## Decision Summary` with decision, reviewed SHA, CI status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), local checks, and Report link.
 10. **SHA discipline:** use `gitlab-local` **Snippet: sha-guard** before any action snippet. Use **Snippet: sha-bound-approval** only when approval is authorized; use **Snippet: sha-bound-merge** or **Snippet: sha-bound-auto-merge-queue** only when that exact merge action is authorized; use **Snippet: approval-confirmation** after approval when confirmation is needed. Explicit `approval-only` is valid for approval without merge; missing or ambiguous authority blocks approval/merge actions.
@@ -40,10 +40,10 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 
 ## Essential review summary
 
-- Block on scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
+- Block on scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, omitted gate evidence, or blocker-level structural maintainability regressions. Treat style-only preferences as non-blocking.
 - Non-blocking `C-N` findings that should survive merge belong in linked follow-up issues; weak issue briefs belong in the Review Report follow-ups as brief-quality defects, not as MR scope expansion.
 - Multiple MRs require separate Review Reports, decisions, and reviewed SHAs — never batch.
-- Approval requires: no Must Fix, all `OQ-N` answered, head SHA = reviewed SHA, explicit `Merge authority`, and CI green/waived/pending under protected auto-merge.
+- Approval requires: no Must Fix (including structural maintainability blockers), all `OQ-N` answered, head SHA = reviewed SHA, explicit `Merge authority`, and CI green/waived/pending under protected auto-merge.
 - Approve with `gitlab-local` **Snippet: sha-bound-approval** only when explicit `Merge authority` allows approval. Use `gitlab-local` **Snippet: sha-bound-merge** or **Snippet: sha-bound-auto-merge-queue** only when that exact action is authorized; missing authority is a blocker, not approval-only.
 - See [REVIEW-FLOW.md §Procedure](REVIEW-FLOW.md#procedure) for the step-by-step and [§Review Report expectations](REVIEW-FLOW.md#review-report-expectations) for report structure.
 
