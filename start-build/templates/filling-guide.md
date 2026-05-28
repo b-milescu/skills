@@ -7,6 +7,12 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - Paste the template as the MR description (review-packet, compact) or as an MR comment (revision-packet, stuck-packet).
 - Keep it in sync with the diff as you push. Keep section headers stable so the Reviewer can scan quickly.
 
+## build-plan-packet.md
+
+- Use before first edit, after the Discovery Budget completes.
+- Capture only evidence-backed facts: issue, intended behavior, affected surfaces, test plan, risk, and non-goals.
+- If critical info is still missing, stop and route the issue back to triage instead of filling blanks.
+
 ## review-packet.md
 
 - **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.

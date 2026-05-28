@@ -56,6 +56,7 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 - `templates/builder-final-handoff.md` — machine-readable child-builder final response block for parent-orchestrator parsing.
 - `templates/review-packet.md` — full MR description.
 - `templates/review-packet-compact.md` — compact MR description for simple changes.
+- `templates/build-plan-packet.md` — pre-edit discovery packet for issue, intended behavior, affected surfaces, test plan, risk, and non-goals.
 - `templates/revision-packet.md` — comment for responding to review.
 - `templates/stuck-packet.md` — comment when blocked >2h.
 - `templates/filling-guide.md` — section-by-section filling instructions for builder templates.
