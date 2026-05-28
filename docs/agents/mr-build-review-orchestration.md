@@ -14,8 +14,9 @@ skills and child agents:
   routing, CI/merge decision points, and cleanup.
 - Child `mr-builder` sessions own one issue branch, one Draft MR, one Review
   Packet, local gate evidence, ready-marking, and final handoff.
-- Fresh `mr-reviewer` sessions own independent diff review, one Review Report,
-  and one SHA-bound approval/request-changes/reject decision.
+- Fresh `mr-reviewer` sessions own independent diff review, one durable GitLab
+  Review Report, one parseable final handoff, and one SHA-bound
+  approval/request-changes/reject decision.
 - `/gitlab-local` owns `glab` syntax, flag pitfalls, file-backed GitLab writes,
   SHA guards, CI snapshots/watchers, and authority-aware finish snippets.
 - Repo-local docs point at active skills instead of copying workflow bodies.
@@ -32,10 +33,10 @@ needing to restate every builder/reviewer safety boundary.
 | Full local check gate | [Check Gate](check-gate.md) |
 | Parent issue-to-MR loop | [`start-build/BUILD-FLOW.md` parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) |
 | Child builder responsibilities and final handoff | [`start-build/BUILD-FLOW.md` builder invocation modes](../../start-build/BUILD-FLOW.md#builder-invocation-modes) and [`builder-final-handoff.md`](../../start-build/templates/builder-final-handoff.md) |
-| Reviewer responsibilities and Review Report | [`start-review/REVIEW-FLOW.md`](../../start-review/REVIEW-FLOW.md) and [`review-report.md`](../../start-review/templates/review-report.md) |
+| Reviewer responsibilities and durable GitLab Review Report | [`start-review/REVIEW-FLOW.md`](../../start-review/REVIEW-FLOW.md) and [`review-report.md`](../../start-review/templates/review-report.md) |
 | Reviewer Lift schema | [`reviewer-lift-schema.md`](../../start-build/templates/reviewer-lift-schema.md) |
 | Review Packet templates | [`review-packet.md`](../../start-build/templates/review-packet.md) and [`review-packet-compact.md`](../../start-build/templates/review-packet-compact.md) |
-| Reviewer final handoff | [`reviewer-final-handoff.md`](../../start-review/templates/reviewer-final-handoff.md) |
+| Reviewer parseable final handoff | [`reviewer-final-handoff.md`](../../start-review/templates/reviewer-final-handoff.md) |
 | GitLab CLI snippets, CI watch, and finish guards | [`gitlab-local/SKILL.md`](../../gitlab-local/SKILL.md) |
 | Optional helper scripts | [`gitlab-local/scripts/README.md`](../../gitlab-local/scripts/README.md) |
 

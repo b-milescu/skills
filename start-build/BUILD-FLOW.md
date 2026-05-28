@@ -143,9 +143,13 @@ Safe patterns:
    Prefer project-scope agents over user-scope agents over a builtin reviewer.
    Start a fresh reviewer session with the MR URL, pointer to the MR Reviewer
    Lift block, project rulebook, and any run directory. The reviewer posts one
-   Review Report for one reviewed SHA. Approval or merge actions remain limited
-   by the explicit merge authority and verifiable `Merge authority source` in
-   the Review Packet, parent/human instruction, or project rulebook.
+   Review Report for one reviewed SHA, then returns the parseable reviewer final
+   handoff from `start-review/templates/reviewer-final-handoff.md` after any
+   authorized action attempt. The GitLab Review Report remains the durable
+   review record; the final handoff is a parent-orchestrator parsing aid.
+   Approval or merge actions remain limited by the explicit merge authority and
+   verifiable `Merge authority source` in the Review Packet, parent/human
+   instruction, or project rulebook.
 6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any
    finish action. On `request-changes`, send the finding IDs and reviewed SHA to
    the builder; require fix commits, targeted evidence, a full local gate when
