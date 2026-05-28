@@ -68,6 +68,7 @@ Minimum final handoff when the parent owns the gate:
 - Reviewer focus
 - Open questions
 - Merge authority
+- Merge authority source
 - Blockers
 
 Mandatory independent review remains required in both modes unless a human explicitly documents a bypass. Builder self-approval and self-merge remain forbidden.
@@ -76,8 +77,9 @@ Mandatory independent review remains required in both modes unless a human expli
 
 Use this recipe when a parent orchestrator coordinates child `mr-builder` and
 `mr-reviewer` agents for a GitLab issue-to-MR loop. Project rulebooks may
-specialize labels, local gates, merge authority defaults, run artifact paths, and
-post-merge checks, but they must not weaken the safety invariants in this flow:
+specialize labels, local gates, merge authority defaults, merge authority source
+requirements, run artifact paths, and post-merge checks, but they must not weaken
+the safety invariants in this flow:
 child builders do not spawn reviewers, approve, or merge; independent review
 stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI
 results stay bound to the MR head before approval or merge; and credentials or
@@ -120,8 +122,8 @@ Safe patterns:
    example `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker`
    override). Prefer project-scope agents over user-scope agents over a builtin
    `worker`. Start one builder per issue/worktree with one issue URL/IID, one
-   worktree, the target branch, the project rulebook, local Check Gate, merge
-   authority, and any run directory. Never let two agents share a checkout,
+   worktree, the target branch, the project rulebook, local Check Gate, quoted
+   merge authority plus source, and any run directory. Never let two agents share a checkout,
    branch, temp DB, port, or uncommitted artifact directory. The builder owns
    implementation, Draft MR creation, Review Packet and Reviewer Lift updates,
    local gate evidence, ready-marking, and final handoff. In child mode the
@@ -132,7 +134,7 @@ Safe patterns:
    pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha`,
    Reviewer Lift `Reviewed SHA`, pipeline SHA when exposed,
    changed paths, touched safety surfaces, decoupling proof, local gate result,
-   open questions, and merge authority. Escalate if the handoff is missing,
+   open questions, merge authority, and merge authority source. Escalate if the handoff is missing,
    stale, out of scope, or contradicts the issue/rulebook.
 5. **Discover and run `mr-reviewer`.** If the parent runtime exposes the
    `subagent` API, call `subagent({ action: "list" })` and look for agents whose
@@ -142,7 +144,8 @@ Safe patterns:
    Start a fresh reviewer session with the MR URL, pointer to the MR Reviewer
    Lift block, project rulebook, and any run directory. The reviewer posts one
    Review Report for one reviewed SHA. Approval or merge actions remain limited
-   by the explicit merge authority in the Review Packet and project rulebook.
+   by the explicit merge authority and verifiable `Merge authority source` in
+   the Review Packet, parent/human instruction, or project rulebook.
 6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any
    finish action. On `request-changes`, send the finding IDs and reviewed SHA to
    the builder; require fix commits, targeted evidence, a full local gate when
@@ -205,7 +208,8 @@ Before marking ready or requesting review, validate the MR handoff:
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Local gate command/result is present, or N/A explains why only CI can provide it.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
-- Merge authority is explicit.
+- Merge authority is explicit and treated as a quoted claim, not a builder grant.
+- Merge authority source is present and verifiable; missing or conflicting source information blocks approval/finish actions until a parent/human/rulebook source resolves it.
 
 ## Implementation flow
 
@@ -218,7 +222,7 @@ Before marking ready or requesting review, validate the MR handoff:
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
 3. Load narrow context, not the whole repo or conversation: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue. Expand outward only from concrete evidence such as imports/callers, failing tests, changed paths, or safety invariants.
-4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block from `templates/reviewer-lift-schema.md` — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable.
+4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create-update** with `templates/review-packet.md` (or compact variant when eligible). Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block from `templates/reviewer-lift-schema.md` — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable. Fill `Merge authority` as a quoted claim and `Merge authority source` as verifiable provenance; the builder cannot grant approval, merge, or auto-merge authority.
 5. For behavior-touching changes, implement vertical slices per the `tdd` skill. Commit coherent green slices, referencing issue/slice; revision commits cite review-thread items (e.g. `MF-1: <fix>`). For docs-only/config-only/mechanical work, state `TDD: N/A` and why in the MR — don't fake tests.
 6. Use the smallest public layer that proves behavior without coupling to internals: pure unit tests for deterministic logic; adapter tests with fakes/recorded HTTP; state tests in temp dirs/throwaway DBs; orchestration tests with fake clocks verifying call ordering and calls *not* made; migration smoke tests; the project's full check gate before requesting review; coverage gate where required.
 7. Run targeted tests during the red-green loop. Never use live product/runtime/operator external systems as regression evidence.
@@ -333,7 +337,7 @@ Detailed section-by-section instructions live next to the templates:
 
 Safety-critical filling rules remain in this flow:
 
-- Keep every field in the **Reviewer Lift** block current with every push according to `templates/reviewer-lift-schema.md`.
+- Keep every field in the **Reviewer Lift** block current with every push according to `templates/reviewer-lift-schema.md`, including both quoted `Merge authority` and `Merge authority source` provenance.
 - Treat CI evidence as valid only when the pipeline commit SHA (when GitLab exposes it) matches `Reviewed SHA`; red or stale CI is a blocker unless explicitly waived.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
 - Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.

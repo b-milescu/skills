@@ -39,6 +39,7 @@ agent_handoff:
     consider: []
   open_questions_addressed: []
   merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
+  merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   approval_action: "approved | not-approved | blocked | N/A"
   finish_action: "merged | queued-auto-merge | none | blocked | N/A"
   action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | other"
@@ -65,7 +66,12 @@ agent_handoff:
   parent can route revisions.
 - `open_questions_addressed` lists every `OQ-N` answered, escalated, or
   downgraded in the Review Report.
-- `merge_authority` is copied from the Review Packet or project rulebook.
+- `merge_authority` is copied as the quoted authority claim from the Review
+  Packet, project rulebook, parent, or human instruction.
+- `merge_authority_source` records the source the reviewer verified before any
+  approval/finish action. Missing or unverifiable source maps to
+  `action_blocker: missing-authority`; conflicting sources use the most
+  restrictive/no-action result unless a parent/human resolves them.
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
   safely take approval due to missing authority, SHA/CI/tool/preflight/permission

@@ -51,6 +51,7 @@ agent_handoff:
     - "path/one.md — boundary to inspect"
   open_questions: []
   merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
+  merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   next_action: "spawn-reviewer | human-decision | fix-blocker"
   artifacts:
     run_dir: "/tmp/agent-run-issue-57-mr-123"
@@ -79,8 +80,11 @@ agent_handoff:
   for docs/config/mechanical work.
 - `changed_files`, `safety_surfaces`, `decoupling`, and `reviewer_focus` must
   match the MR description's Reviewer Lift values.
-- `merge_authority` records what the parent/reviewer may do; it never grants the
+- `merge_authority` records the quoted authority claim; it never grants the
   child builder approval or merge authority.
+- `merge_authority_source` records the verifiable provenance for that claim;
+  missing, unverifiable, or conflicting source information is a blocker for
+  reviewer approval/finish actions.
 - `next_action` tells the parent whether to spawn review, make a human decision,
   or fix a blocker.
 - `artifacts` point to local redacted run files only. Do not commit them.

@@ -14,6 +14,8 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Approval action | `<approved / not-approved / blocked: reason / N/A>` |
 | Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Merge authority | `<verified value or blocked: missing-authority>` |
+| Merge authority source | `<verified source or blocked: missing-authority>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Report link | `<this comment; final handoff contains URL when available>` |
 
@@ -31,6 +33,8 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Approval action | `<approved / not-approved / blocked: reason / N/A>` |
 | Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Merge authority | `<verified value or blocked: missing-authority>` |
+| Merge authority source | `<verified source or blocked: missing-authority>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Time spent | |
 | Ran code? | `<no / yes: commands>` |
@@ -53,7 +57,8 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
 | Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
 | Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
-| Merge authority | `<copy from Reviewer Lift; explicit value required; missing/ambiguous = blocker/no approval>` |
+| Merge authority | `<copy quoted claim from Reviewer Lift; explicit value required; missing/ambiguous = blocker/no approval>` |
+| Merge authority source | `<copy from Reviewer Lift; verify source before approval/finish; missing/unverifiable = blocker/no approval>` |
 | Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
@@ -61,7 +66,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 
 ## Decision
 
-State the `Review verdict` and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, or human-decision blockers that prevent safe approval or finish without representing a code defect.
+State the `Review verdict`, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, or human-decision blockers that prevent safe approval or finish without representing a code defect.
 
 ## Must Fix
 

@@ -17,7 +17,8 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 | Decoupling proof | `single MR` for single-issue work; otherwise list co-running MR IIDs/branches and summarize the Decoupling Contract check. |
 | Reviewer Focus | Areas the reviewer should read hardest, or `none`. |
 | Open Questions | `none` or a count/list of stable `OQ-N` IDs. |
-| Merge authority | One of `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or `project default: <policy>`. |
+| Merge authority | Quoted authority claim only; one of `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or `project default: <policy>`. The builder cannot grant authority. |
+| Merge authority source | Verifiable source for the authority claim, such as parent task prompt, human MR comment URL, rulebook path+section, or project default source. Required for every value; builder-provided text alone is not a grant. |
 | Delta since last ready push | `N/A before ready`; after any post-ready push, include old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive. |
 
 ## Generated-copy contract

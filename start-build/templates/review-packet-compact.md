@@ -30,7 +30,8 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<none / changed docs/tests / 1 area to read hardest>` |
 | Open Questions | `<none / count + OQ IDs>` |
-| Merge authority | `<approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
+| Merge authority | `<quoted claim: approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
+| Merge authority source | `<parent task prompt / human MR comment URL / rulebook path+section / project default source>` |
 | Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
