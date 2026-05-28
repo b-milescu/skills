@@ -18,6 +18,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `gitlab-local` | `glab` CLI command reference for local/self-hosted GitLab work. |
 | `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
 | `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |
+| `issue-delivery-loop` | Parent coordinator for bounded ready-issue batches: serial by default, parallel only with Decoupling Contract proof, delegates to child builders/reviewers, tracks delivery metrics, and hands post-merge checks to the verifier. |
 | `post-merge-verifier` | Read-only post-merge verification after merge or protected auto-merge: default-branch state, linked issue closure or pending closure, CI evidence, source-branch cleanup, promised docs/ADR/follow-ups, and blockers. |
 | `memory-retrospective` | Read-only claude-mem retrospective skill for memory audits, workflow bottleneck analysis, aggregate counts by activity type/project/agent role/date range, and candidate skill/template changes without raw dumps. |
 | `gitlab-to-issues` | Break approved plans/specs into GitLab issues using local tracker docs and triage labels. |
