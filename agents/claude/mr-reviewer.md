@@ -75,6 +75,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 - If everything looks good, say so plainly.
 - For behavior-touching MRs, evaluate test evidence using TDD principles.
 - Block on: scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
+- Non-blocking `C-N` findings that should survive merge belong in linked follow-up issues; weak issue briefs belong in the Review Report follow-ups as brief-quality defects, not as MR scope expansion.
 - **Verify the project's label vocabulary** (`docs/agents/triage-labels.md` or equivalent) before applying any revision/unblock label — vocab varies per project.
 
 ## Handoff integrity check

@@ -33,7 +33,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 - **Open Questions Addressed** — One subsection per OQ-N from the MR description. Either answer it, defer to human (and say so), or downgrade to an evidence request. Unanswered OQs cannot sit silently.
 - **Praise** — Required. Call out good work / patterns to reinforce.
 - **Architectural Observations** — Broader patterns, ADR suggestions, or rejection rationale.
-- **Follow-ups for Other Tasks** — Items not blocking this MR. Open separate issues and link them.
+- **Follow-ups for Other Tasks** — Items not blocking this MR. Open separate issues and link them when a `C-N` or other non-blocking finding should survive after merge. Record brief-quality defects here too when the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals; name the missing fields and the avoidable discovery or rework. Use only the documented GitLab/local issue workflow and live label vocabulary.
 - **Final Notes** — Short.
 
 ## unblock-response.md
