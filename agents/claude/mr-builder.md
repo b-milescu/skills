@@ -43,6 +43,7 @@ When the parent owns the gate, the final report MUST start with the approved mac
 - Reviewer focus
 - Open questions
 - Merge authority
+- Merge authority source
 - Blockers
 
 If the template is unavailable, say so and still return the evidence contract above. For usage-limit, model-limit, or tool-limit interruption before completion, do not invent MR/CI/gate state: return `status: failed` with `blockers` describing what stopped, plus any verified known fields. The parent orchestrator owns retries and any fallback model/session.
@@ -134,3 +135,4 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 - Use the smallest public layer that proves behavior without coupling to internals.
 - Run targeted tests during the red-green loop. Never use live product/runtime/operator systems as regression evidence.
 - Fill Builder metadata as `@builder — <model-id>`; omit model-id if unknown.
+- Fill `Merge authority` as a quoted claim and `Merge authority source` as verifiable provenance (parent task prompt, human MR comment URL, rulebook path+section, or project default source); builders cannot grant approval, merge, or auto-merge authority.

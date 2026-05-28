@@ -25,6 +25,7 @@ builder_expected=(
   reviewer_focus
   open_questions
   merge_authority
+  merge_authority_source
   next_action
   artifacts
   blockers
@@ -42,6 +43,7 @@ reviewer_expected=(
   findings
   open_questions_addressed
   merge_authority
+  merge_authority_source
   approval_action
   finish_action
   action_blocker

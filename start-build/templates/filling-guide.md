@@ -15,8 +15,9 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## review-packet.md
 
-- **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
+- **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. Fill `Merge authority` as a quoted claim only and fill `Merge authority source` with verifiable provenance; a builder cannot grant approval, merge, or auto-merge authority. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
+- **Merge authority source** — Record where the authority claim came from, such as a parent task prompt, human MR comment URL, rulebook path+section, or project default source. Do not write builder-local interpretation as authority; quote the source and let the reviewer/parent verify it.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
 - **In scope** — Bullet list of intended and actual changes.
 - **Out of scope** — Explicitly name adjacent work not done. Open separate issues for follow-ups.
@@ -40,6 +41,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
 - For ready handoffs, set both `head_sha` and `reviewed_sha` to the same MR head commit; `reviewed_sha` is the exact SHA the parent passes to the reviewer.
 - Use `status: "ready-for-review"`, `"blocked"`, or `"failed"`. If usage limits or tooling failures stop completion, report `status: "failed"` plus `blockers`; the parent owns retries.
+- Preserve both `merge_authority` and `merge_authority_source` from the MR Reviewer Lift. The source is provenance for verification, not a grant minted by the builder.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Consumers must tolerate absent blocks and fall back to human prose / Reviewer Lift.
 

@@ -38,6 +38,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
 | Review authority explicitness | `bash tests/review-authority-explicit.sh` | Verifies reviewer docs/templates/prompts do not default missing merge authority to approval-only, while preserving explicit `approval-only` as valid authority. |
+| Review authority provenance | `bash tests/review-authority-provenance.sh` | Verifies Reviewer Lift, Review Report, final handoffs, builder prompts, and reviewer prompts require merge authority source provenance and precedence. |
 | Review blocked verdict/action split | `bash tests/review-blocked-verdict.sh` | Verifies reviewer verdict enums include blocked, keep GitLab approval/finish action fields separate, and route authority/SHA/CI/tool/human blockers deterministically. |
 | Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary and keeps review verdict, SHA, CI, findings, checks, action fields, and report-link fields visible. |
@@ -69,6 +70,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/md-links.sh` | Markdown local-link checker diagnostics for broken files, anchors, image targets, and external URL host allowlist behavior. |
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
 | `tests/review-authority-explicit.sh` | Reviewer workflow docs require explicit Merge authority and preserve explicit `approval-only` handling. |
+| `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require merge authority source provenance, precedence, and builder-claim-not-grant semantics. |
 | `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class and routes non-code blockers through explicit action fields. |
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, and report-link fields visible. |
@@ -87,6 +89,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | --- | --- |
 | Combined executable approve+merge snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
 | Missing merge authority blocks approval actions; explicit `approval-only` remains valid. | `bash tests/review-authority-explicit.sh` |
+| Merge authority source provenance and precedence block builder-minted authority. | `bash tests/review-authority-provenance.sh` |
 | Blocked review verdict separates guard/tool/authority blockers from code-review findings. | `bash tests/review-blocked-verdict.sh` |
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
 | Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, and report-link fields. | `bash tests/review-report-summary-first.sh` |
