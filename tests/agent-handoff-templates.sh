@@ -34,14 +34,17 @@ builder_expected=(
 reviewer_expected=(
   kind
   version
-  decision
+  review_verdict
   mr
   reviewed_sha
   pipeline
   local_checks
   findings
   open_questions_addressed
-  merge
+  merge_authority
+  approval_action
+  finish_action
+  action_blocker
   next_action
   report_url
   extra

@@ -31,7 +31,8 @@ require_summary_text() {
   grep -Eiq "$pattern" "$summary" || fail "Decision Summary missing $label"
 }
 
-require_summary_text 'Decision' 'decision field'
+require_summary_text 'Review verdict' 'review verdict field'
+require_summary_text 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum'
 require_summary_text 'Reviewed SHA' 'reviewed SHA field'
 require_summary_text 'CI status[[:space:]]*/[[:space:]]*SHA|CI .*status.*SHA' 'CI status/SHA field'
 require_summary_text 'Findings summary' 'findings summary field'
@@ -39,6 +40,10 @@ require_summary_text 'MF' 'Must Fix (MF) summary'
 require_summary_text 'SF' 'Should Fix (SF) summary'
 require_summary_text 'C' 'Consider (C) summary'
 require_summary_text 'Local checks' 'local checks field'
+require_summary_text 'Approval action' 'approval action field'
+require_summary_text 'Finish action' 'finish action field'
+require_summary_text 'Action blocker' 'action blocker field'
+require_summary_text 'Next action' 'next action field'
 require_summary_text 'Report link' 'report link placeholder'
 
 require_prompt_text() {
@@ -57,11 +62,16 @@ prompt_files=(
 
 for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Decision Summary' 'Decision Summary reference'
-  require_prompt_text "$file" 'decision' 'decision summary field reference'
+  require_prompt_text "$file" 'Review verdict' 'review verdict summary field reference'
+  require_prompt_text "$file" 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum reference'
   require_prompt_text "$file" 'reviewed SHA' 'reviewed SHA summary field reference'
   require_prompt_text "$file" 'CI[^\n]*(status[[:space:]]*/[[:space:]]*SHA|status[^\n]*SHA)' 'CI status/SHA summary field reference'
   require_prompt_text "$file" 'MF-N[^\n]*SF-N[^\n]*C-N|MF[^\n]*SF[^\n]*C' 'MF/SF/C summary field reference'
   require_prompt_text "$file" 'local checks' 'local checks summary field reference'
+  require_prompt_text "$file" 'Approval action' 'approval action summary field reference'
+  require_prompt_text "$file" 'Finish action' 'finish action summary field reference'
+  require_prompt_text "$file" 'Action blocker' 'action blocker summary field reference'
+  require_prompt_text "$file" 'Next action' 'next action summary field reference'
   require_prompt_text "$file" 'Report link|report link' 'report link summary field reference'
 done
 
