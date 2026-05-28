@@ -43,6 +43,9 @@ Minimize duplicated operational bodies:
   and SHA/CI guard policy.
 - `gitlab-local` owns GitLab CLI syntax, JSON flag caveats, snippets, and
   SHA-guarding. Agent files should point to it instead of copying commands.
+- `issue-delivery-loop` owns batch delivery coordination, WIP limits, parent
+  spot-checks, revision routing, and batch metrics. Agent files should point
+  to it instead of copying coordinator-loop bodies.
 - Agent bodies may keep launch-critical role boundaries, short core checklists,
   reporting contracts, and runtime-specific wording. Move long operational
   procedure changes to the canonical skills first, then update agent pointers.
