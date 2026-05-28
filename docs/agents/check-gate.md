@@ -71,6 +71,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps decision, reviewed SHA, CI status/SHA, findings, local checks, and report-link fields visible. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
+| `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 

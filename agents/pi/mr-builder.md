@@ -68,7 +68,7 @@ When the user supplies issue IDs/URLs, use them. Otherwise pick from the current
 
 ## Decoupling (for multiple issues)
 
-Before parallelizing, prove issues satisfy the shared Decoupling Contract (`docs/decoupling-contract.md`) via `start-build` §"Multiple issue worktree mode". If any contract item is false, unknown, or contradicted by evidence, stop and ask. Never parallelize coupled work to save time.
+Before parallelizing, prove issues satisfy the shared Decoupling Contract via `start-build` §"Multiple issue worktree mode". Load the contract through the skill-relative links in that workflow, not from the target project's `docs/` directory. If any contract item is false, unknown, or contradicted by evidence, stop and ask. Never parallelize coupled work to save time.
 
 ## Multiple issue worktree mode
 
