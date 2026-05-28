@@ -74,6 +74,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
+| `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
 
 ## Workflow regression coverage map
 
@@ -87,6 +88,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
 | Review Report keeps summary-first decision, SHA, CI, findings, checks, and report-link fields. | `bash tests/review-report-summary-first.sh` |
 | Builder/reviewer final handoff schemas keep parseable field order and safe example URLs. | `bash tests/agent-handoff-templates.sh` |
+| Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
 
 ## Discovery notes
 

@@ -27,17 +27,17 @@ Core policy stays inline:
 - In child `mr-builder` mode, do not launch builders or reviewers; the parent orchestrator owns delegation.
 - Keep artifacts and evidence local to the owning worktree/MR.
 
-## Before coding questions
+## Discovery Budget
 
-Every non-trivial task needs a GitLab issue describing the user/operator-visible goal. If one doesn't exist, open it before starting. Capture in the issue or Draft MR description:
+Keep discovery bounded before edits. Read the issue, project rulebook, linked docs, and only the concrete callers/tests/ADRs needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
 
-1. What user/operator-visible behavior changes (CLI, daemon, state, metrics, docs)?
-2. Which safety invariant is closest: external mutation, sequencing, locking, immutable baselines, gates, secrets, schemas, deploy?
-3. If TDD is not applicable, why?
-4. What evidence defines correctness (specs, ADRs, prior reviews, vendor quirks)?
-5. What is out of scope?
-6. If refactoring, is any surface behavior-touching? See [SAFETY.md](SAFETY.md).
-7. What is the merge authority for this MR: approval-only, reviewer may merge, queue auto-merge, human release, or project default?
+If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
+
+## Build Plan Packet
+
+Before the first edit, write a concise Build Plan Packet from the discovery result. Capture the issue, intended behavior, affected surfaces, test plan, risk, and non-goals. Keep it short enough that reviewers can compare it against the issue and diff without reading a long workflow body. Use [`templates/build-plan-packet.md`](templates/build-plan-packet.md) as the shape.
+
+This packet is pre-edit planning only; builder and reviewer authority boundaries stay in [Builder invocation modes](#builder-invocation-modes).
 
 ## Builder invocation modes
 
