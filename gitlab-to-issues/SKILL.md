@@ -27,7 +27,7 @@ Each issue is a thin vertical slice through all affected user-visible layers: do
 
 Use only labels listed in `<repo-root>/docs/agents/triage-labels.md`; never invent or rely on lazy label creation. That file owns the live vocabulary; this section only describes when to look there.
 
-- **AFK**: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass. Apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
+- **AFK**: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one and the readiness section passes or has a maintainer waiver.
 - **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
@@ -42,6 +42,7 @@ For each proposed slice, show:
 - **Blocked by**: issue title or dependency, if any
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
+- **Agent Readiness**: acceptance criteria quality, current-state/repro evidence, test strategy, risk surface, dependencies, unknowns, AFK safety, and reviewer focus
 - **Coupling risk**: files/seams/safety surfaces likely to overlap other slices
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
@@ -54,6 +55,8 @@ Before publishing, show the user the detected GitLab target, labels to apply, is
 
 Use `/gitlab-local` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<repo-root>/docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
 
+For generated AFK issues, preserve the `## Agent Readiness` section from the issue body template. If any readiness field lacks durable context and no maintainer waiver exists, publish the slice as HITL or Needs info instead of applying an AFK-ready label.
+
 ## Issue body template
 
-Use [templates/issue-body.md](templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.
+Use [templates/issue-body.md](templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.
