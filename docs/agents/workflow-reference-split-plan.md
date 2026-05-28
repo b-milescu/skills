@@ -50,7 +50,7 @@ Resolved inbound anchors:
 | Anchor | Sources | Current purpose |
 | --- | --- | --- |
 | `#parent-orchestrator-recipe` | `docs/agents/dev-workflows.md:14`; `docs/agents/mr-build-review-orchestration.md:33`; `setup-dev-skills/dev-workflows-gitlab.md:14` | Active parent loop for issue resolution, child builder handoff, reviewer launch, revision rounds, SHA/CI guards, finish, cleanup, and post-merge verification. |
-| `#post-merge-verifier-recipe` | `docs/agents/dev-workflows.md:15`; `setup-dev-skills/dev-workflows-gitlab.md:15` | Active read-only post-merge verification contract. |
+| `#post-merge-verifier-recipe` | `docs/agents/dev-workflows.md:16`; `setup-dev-skills/dev-workflows-gitlab.md:16` | Active read-only post-merge verification contract. |
 | `#builder-invocation-modes` | `docs/agents/mr-build-review-orchestration.md:34` | Child builder vs standalone builder responsibilities and handoff boundary. |
 | `#implementation-flow` | `start-build/SAFETY.md:20`; `start-review/REVIEW-FLOW.md:86` | Local gate / CI-ready policy and build implementation sequence. |
 | `#mandatory-review-gate` | `start-build/SKILL.md:35`; `start-build/SAFETY.md:21`; `start-build/templates/filling-guide.md:13`; `start-build/templates/filling-guide.md:44`; `start-review/SKILL.md:20`; `start-review/REVIEW-FLOW.md:7` | Independent review gate and review launch/decision contract. |
