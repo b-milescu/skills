@@ -152,7 +152,8 @@ product/runtime/operator external systems are not exposed through workflow artif
 ### Post-merge verifier recipe
 
 This compatibility heading preserves the `#post-merge-verifier-recipe` anchor.
-The detailed read-only verifier contract lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md).
+Load the first-class [`/post-merge-verifier`](../post-merge-verifier/SKILL.md) skill for the read-only verifier contract and report shape.
+Use `/gitlab-local` for command syntax; keep this section pointer-first for inbound links.
 
 Core verifier policy stays inline: use this recipe only after independent review
 and authority-aware finish steps report that merge or protected auto-merge

@@ -8,11 +8,12 @@ This repo uses GitLab-backed dev workflows.
 - **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using tracer-bullet vertical slices and this repo's triage labels.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
+- **`/post-merge-verifier`** — read-only post-merge verification after merge or protected auto-merge: default-branch state, linked issue closure or pending closure, CI evidence, source-branch cleanup, promised docs/ADR/follow-ups, and blockers. See [skill doc](../post-merge-verifier/SKILL.md).
 
 ## Active recipes
 
-- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for GitLab issue-to-MR work: issue resolution, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification.
-- `start-build/BUILD-FLOW.md` section [Post-merge verifier recipe](../start-build/BUILD-FLOW.md#post-merge-verifier-recipe) — active read-only verifier contract for merged/default-branch state, linked issue closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` for command syntax instead of copying snippets into generated setup docs.
+- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for GitLab issue-to-MR work: issue resolution, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `/post-merge-verifier`.
+- `post-merge-verifier/SKILL.md` — active read-only verifier skill for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` for command syntax instead of copying snippets into generated setup docs.
 
 When adapting this seed into `docs/agents/dev-workflows.md`, keep these active recipe pointers conceptually aligned with the target repo's workflow docs while leaving project-specific design briefs, labels, gate commands, and merge authority in the target repo's own setup docs.
 
