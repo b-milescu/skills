@@ -2,15 +2,19 @@
 
 ## Decision Summary
 
-Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report.
+Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report. `Review verdict` is the review judgment; GitLab side effects are recorded separately in the action fields.
 
 | Field | Value |
 |---|---|
-| Decision | `<approve / request-changes / reject>` |
+| Review verdict | `<pass / request-changes / reject / blocked>` |
 | Reviewed SHA | `<sha reviewed; must equal MR head at decision time>` |
-| CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red; pipeline SHA or N/A>` |
+| CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing; pipeline SHA or N/A>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
+| Approval action | `<approved / not-approved / blocked: reason / N/A>` |
+| Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Report link | `<this comment; final handoff contains URL when available>` |
 
 ## Metadata
@@ -21,10 +25,13 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Issue | `<gitlab issue URL>` |
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | |
-| Decision | `<approve / request-changes / reject>` |
-| CI decision | `<green / pending-auto-merge / waived / blocked-stale-or-red>` |
+| Review verdict | `<pass / request-changes / reject / blocked>` |
+| CI decision | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing>` |
 | Decoupling proof verification | `<N/A / accepted as-stated / re-checked: result>` |
-| Merge action | `<merged / auto-merge queued / approval-only / not approved / blocked: reason>` |
+| Approval action | `<approved / not-approved / blocked: reason / N/A>` |
+| Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Time spent | |
 | Ran code? | `<no / yes: commands>` |
 
@@ -53,6 +60,8 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 ## Summary
 
 ## Decision
+
+State the `Review verdict` and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, or human-decision blockers that prevent safe approval or finish without representing a code defect.
 
 ## Must Fix
 

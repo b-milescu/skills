@@ -15,7 +15,7 @@ logs.
 agent_handoff:
   kind: "reviewer-final"
   version: "1"
-  decision: "approve | request-changes | reject"
+  review_verdict: "pass | request-changes | reject | blocked"
   mr:
     iid: "123"
     url: "https://gitlab.example/group/project/-/merge_requests/123"
@@ -38,11 +38,11 @@ agent_handoff:
     should_fix: []
     consider: []
   open_questions_addressed: []
-  merge:
-    authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
-    action_taken: "approved | merged | queued-auto-merge | none"
-    blocker: "none | reason"
-  next_action: "merge | revise | human-escalation | wait-ci"
+  merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
+  approval_action: "approved | not-approved | blocked | N/A"
+  finish_action: "merged | queued-auto-merge | none | blocked | N/A"
+  action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | other"
+  next_action: "finish-by-authorized-actor | revise | human-escalation | wait-ci | rerun-review | fix-blocker"
   report_url: "https://gitlab.example/group/project/-/merge_requests/123#note_789 | N/A"
   extra: {}
 ```
@@ -51,10 +51,12 @@ agent_handoff:
 ## Field guidance
 
 - `kind` and `version` are fixed parser anchors for this template version.
-- `decision` is `approve`, `request-changes`, or `reject`, matching the Review
-  Report decision.
-- `reviewed_sha` is the exact MR head SHA the reviewer read and approved,
-  requested changes for, or rejected. Never approve a SHA that was not reviewed.
+- `review_verdict` is the review judgment: `pass`, `request-changes`, `reject`,
+  or `blocked`, matching the Review Report. `pass` means the review judgment
+  passed; it does not imply a GitLab approval, merge, or auto-merge action was
+  taken.
+- `reviewed_sha` is the exact MR head SHA the reviewer read. Never approve a SHA
+  that was not reviewed.
 - `pipeline` records the decision-grade pipeline. Green CI counts only when its
   SHA matches `reviewed_sha`.
 - `local_checks` lists commands run by the reviewer, or `not-run` with rationale
@@ -63,9 +65,18 @@ agent_handoff:
   parent can route revisions.
 - `open_questions_addressed` lists every `OQ-N` answered, escalated, or
   downgraded in the Review Report.
-- `merge.authority` is copied from the Review Packet or project rulebook.
-  `merge.action_taken` reports what the reviewer actually did; it must remain
-  `none` when the reviewer lacks explicit approval or merge authority.
-- `next_action` tells the parent whether to merge, revise, escalate, or wait for
-  CI.
+- `merge_authority` is copied from the Review Packet or project rulebook.
+- `approval_action` records only the GitLab approval side effect: `approved`,
+  `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
+  safely take approval due to missing authority, SHA/CI/tool/preflight/permission
+  failures, or a required human decision.
+- `finish_action` records only the GitLab finish side effect: merge,
+  auto-merge queueing, no finish action, blocked, or `N/A`.
+- `action_blocker` is `none` or one stable blocker token: `missing-authority`,
+  `stale-or-missing-ci`, `changed-head-sha`,
+  `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`,
+  `human-decision-needed`, or `other`.
+- `next_action` tells the parent whether an authorized actor should finish,
+  the builder should revise, a human must decide, CI should be waited on, the
+  reviewer should rerun after a changed head, or a blocker needs fixing.
 - `report_url` points at the posted GitLab Review Report comment when available.
