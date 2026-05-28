@@ -1,4 +1,6 @@
 node_modules/
 .npm/
-/graphify-out/
-/progress.md
+
+# Local agent/runtime artifacts
+graphify-out/
+.graphify*
