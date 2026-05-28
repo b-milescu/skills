@@ -26,6 +26,7 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 - Delegate independent review to fresh `mr-reviewer` sessions via `../start-review/REVIEW-FLOW.md`.
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
 - Parent spot-check before review/finish: MR URL/IID, source/target branch, current SHA, Reviewer Lift, CI, changed paths, local gate, open questions, merge authority.
+- Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `pi-worktree-*`; GitLab MR descriptions/comments remain canonical.
 - Revision loop: up to 3 review rounds per MR; on request-changes, push fixes, update MR/Reviewer Lift, and start a fresh reviewer; on reject or round-limit exhaustion, escalate.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
 - After merge or protected auto-merge, hand off read-only validation to `../post-merge-verifier/SKILL.md`.
@@ -33,4 +34,4 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 
 ## Handoff
 
-Use this skill as coordinator-only guidance. Keep live GitLab command syntax in `/gitlab-local` and workflow detail in `start-build` / `start-review`.
+Use this skill as coordinator-only guidance. Keep live GitLab command syntax in `/gitlab-local`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.
