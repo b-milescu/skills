@@ -28,6 +28,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 - **Tests and Evidence Reviewed** — Builder evidence accepted/rejected; tests you ran; CI status. Note whether `CI pipeline` SHA matches `Reviewed SHA` when GitLab exposes it.
 - **Acceptance Criteria Evidence Checked** — For each acceptance criterion from the MR/issue, state accepted evidence or gap.
 - **TDD / Behavior-Test Evidence** — Behavior-touching MR: public interface tested? `RED`/`GREEN` trace present or reasonably N/A? Tests avoid implementation coupling? Non-behavior MR: "N/A".
+- **Structural Maintainability Sweep** — Summarize the bounded diff-first pass from `REVIEW-FLOW.md`: code-judo simplification, spaghetti/special-case branching, wrappers/abstractions, wrong-layer or duplicate helpers, type-boundary issues, orchestration complexity, and the `<1000` -> `>1000` file threshold. Record blocker-level regressions as `MF-N`; use `C-N` only for non-blocking or broader follow-up quality work; do not block on style-only preferences.
 - **Code I Ran** — Exact read-only commands and concise result, or "None". Never paste secrets or run mutating product/runtime/operator commands.
 - **Reviewer Focus Sweep** — What the builder flagged in Reviewer Lift > Reviewer Focus, and what you found when you read those areas first. "None flagged" if the builder did not name any.
 - **Open Questions Addressed** — One subsection per OQ-N from the MR description. Either answer it, defer to human (and say so), or downgrade to an evidence request. Unanswered OQs cannot sit silently.
