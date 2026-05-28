@@ -83,6 +83,27 @@ stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI
 results stay bound to the MR head before approval or merge; and credentials or
 product/runtime/operator external systems are not exposed through workflow artifacts.
 
+### Durable child outputs
+
+Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on
+`worktree:true` plus a relative `output` path plus `outputMode:"file-only"` for
+any artifact the parent must read later: that combination can return a path
+inside a temporary `pi-worktree-*` checkout, and parent reads can fail after the
+worktree is removed.
+
+Safe patterns:
+
+- Prefer inline child output for the parent handoff when size permits.
+- If a file output is required, have the caller create a durable run directory
+  outside any `pi-worktree-*` path, then pass an absolute output path under that
+  directory and ensure the parent directory exists before launch.
+- If a child returns a stale temporary-worktree output path, recover from async
+  run logs or other durable run artifacts when available; do not treat the
+  missing local file as the canonical delivery record.
+- For GitLab delivery, the MR description's Reviewer Lift / Review Packet and
+  GitLab comments are the canonical durable handoff. Local handoff files and run
+  artifacts are convenience copies only.
+
 ### Parent loop
 
 1. **Resolve issue(s).** Read the issue, comments, labels, linked MRs or parent
@@ -146,8 +167,9 @@ product/runtime/operator external systems are not exposed through workflow artif
    The parent or verifier follows the [Post-merge verifier recipe](#post-merge-verifier-recipe)
    to confirm merged/default-branch state without taking reviewer authority.
 10. **Archive local artifacts.** Keep local run artifacts redacted and untracked.
-    Durable handoff stays in GitLab MR descriptions and comments, using
-    file-backed comments for multiline updates.
+    Local handoff files are convenience artifacts only. Durable handoff stays in
+    GitLab MR descriptions and comments, using file-backed comments for
+    multiline updates.
 
 ### Post-merge verifier recipe
 
