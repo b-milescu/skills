@@ -24,18 +24,37 @@ Discover, propose, and plan cleanup work. Default mode is planning-only: do not 
 2. Resolve repo root and check cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`). Dirty worktree means avoid broad rewrites and call out possible noise.
 3. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*` when present, especially `docs/agents/coding-guardrails.md` and check-gate docs, plus `CONTEXT.md`/`CONTEXT-MAP.md` and ADRs.
 4. Launch mandatory read-only subagent discovery. For broad scopes, split by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process, graph communities). For narrow scopes, launch at least one focused verifier/discovery child over the requested path or concern. Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return. If launch authority or safe isolation is unavailable, stop and ask the user to authorize subagents or explicitly choose a different non-`/cleanup-housekeeping` workflow.
-5. For broad scopes, use `/graphify <path> --mode deep`, `/graphify <path> --update`, or graph queries when `/graphify` is installed or `graphify-out/` exists; otherwise state the gap and continue with structural scanning.
+5. For broad, unfamiliar, architecture-heavy, or relationship-heavy scopes, check whether `graphify-out/GRAPH_REPORT.md` or `graphify-out/graph.json` exists and read existing graph output when present. If graph output is missing or stale, recommend `/graphify . --update` only when scope justifies it and ask before creating or updating graph artifacts. Skip graphify for narrow, docs-only, config-only, dependency-only, or quick hygiene passes.
 6. Discover ecosystems from manifests/config/CI, then inspect enough files to ground findings across the requested scope.
 7. Build candidate list with evidence, impact, risk, effort, confidence, likely validation, dependencies, and guardrail alignment.
 8. Challenge candidates against docs and domain terms. If terminology, boundaries, or durable decisions are unclear, use or recommend `/grill-with-docs` before finalising plan.
 9. Present proposal; ask user which slices to approve, defer, merge, split, or discard.
 10. After approval, route planning output to `/to-issues` or `/gitlab-to-issues` when issue creation is desired. Route implementation to the repo's build workflow, not this skill.
 
+## Graphify-assisted discovery optional
+
+Use graphify as a lead generator for broad, unfamiliar, architecture-heavy, or relationship-heavy cleanup scopes.
+
+- If `graphify-out/graph.json` or `graphify-out/GRAPH_REPORT.md` exists, inspect graph output during discovery.
+- If graph output is missing or stale, recommend `/graphify . --update` only when scope is broad enough to justify it. Ask before creating or updating graph artifacts.
+- Do not require graphify for narrow, docs-only, config-only, dependency-only, or quick hygiene passes.
+- Treat graph findings as leads, not evidence. Verify every cleanup candidate with source files, docs, tests, CI, commands, or tracker evidence.
+- Treat `INFERRED` and `AMBIGUOUS` edges as hypotheses requiring direct confirmation.
+- If a finding is supported only by graph output, classify it as `Needs info`.
+
+Useful graph leads:
+
+- God nodes: possible over-coupling, mixed responsibility, or hidden ownership concentration.
+- Surprising connections: possible undocumented dependency, stale integration, or boundary leak.
+- Low-cohesion communities: possible unclear module/docs boundaries.
+- Orphan clusters: possible stale, generated, experimental, or poorly integrated areas.
+- Repeated bridge nodes: possible abstraction, config, or shared-helper cleanup hotspot.
+
 ## Discovery checklist
 
 Scan for cleanup opportunities across any language/toolchain:
 
-- **Graph-backed discovery (when available)**: If `/graphify` is present or `graphify-out/` exists, use a deep or updated graph, `GRAPH_REPORT.md`, god nodes, communities, paths, and surprising connections to direct inspection.
+- **Graphify-assisted signals (optional lead-gen)**: Use graphify leads only to direct inspection: god nodes for over-coupling candidates, surprising connections for hidden dependencies, low-cohesion communities for unclear boundaries, orphan clusters for stale or isolated areas, and repeated bridge nodes for abstraction/config hotspots. Verify all graph-led candidates with direct evidence before recommending them.
 - **Guardrail drift**: Compare candidates to `docs/agents/coding-guardrails.md` when present: hidden assumptions, overengineering, drive-by edits, broad refactors, orphan cleanup, missing success criteria, weak reproduction, or weak check evidence.
 - **Subagent fan-out (mandatory, parent-owned)**: Parent/coordinator sessions must launch read-only discovery subagents before final recommendations. For broad scopes, split by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process, graph communities). For path-limited or focused scopes, launch at least one narrow verifier/discovery child over the requested surface. Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return.
 - **Subagent aggregation**: Parent de-duplicates child findings, rejects unsupported claims, records gaps/conflicts, then classifies candidates as AFK/HITL/Needs info. If no launch authority or safe isolation exists, stop and report that `/cleanup-housekeeping` is blocked until subagent discovery is available or the user chooses another workflow.
@@ -54,6 +73,7 @@ For each finding, report:
 
 - **Title**: action-oriented cleanup slice.
 - **Evidence**: files, commands, docs, issues, or observations.
+- **Graph lead**: god node, community, path, or surprising connection that prompted inspection; include edge confidence when relevant.
 - **Why now**: maintenance pain, risk reduction, reviewability, onboarding, CI clarity, operator safety.
 - **Scope**: included surfaces and explicit out of scope.
 - **Risk**: behavior/runtime/operator/security/data/review impact.
@@ -82,8 +102,9 @@ For each finding, report:
 ## Output shape
 
 1. **Scope inspected** — paths, docs, commands, graph sources if used, mandatory subagent coverage, and known gaps.
-2. **Guardrails applied** — coding guardrails, project rules, check gate, domain docs, and ADRs used as evaluation criteria.
-3. **Top findings** — ranked table of candidates.
-4. **Recommended plan** — ordered slices with type, risk, validation, dependencies, and guardrail alignment.
-5. **Grill points** — decisions or domain questions to resolve with `/grill-with-docs`.
-6. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
+2. **Graph context** — not used / existing graph read / update recommended / update skipped.
+3. **Guardrails applied** — coding guardrails, project rules, check gate, domain docs, and ADRs used as evaluation criteria.
+4. **Top findings** — ranked table of candidates.
+5. **Recommended plan** — ordered slices with type, risk, validation, dependencies, and guardrail alignment.
+6. **Grill points** — decisions or domain questions to resolve with `/grill-with-docs`.
+7. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
