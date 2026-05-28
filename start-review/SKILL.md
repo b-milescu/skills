@@ -41,6 +41,7 @@ One isolated worktree per MR, fetched into temp refs — never shared `FETCH_HEA
 ## Essential review summary
 
 - Block on scope creep, credential leakage, weakened gates, missing/weak behavior tests, red/stale CI, or omitted gate evidence. Treat style as non-blocking.
+- Non-blocking `C-N` findings that should survive merge belong in linked follow-up issues; weak issue briefs belong in the Review Report follow-ups as brief-quality defects, not as MR scope expansion.
 - Multiple MRs require separate Review Reports, decisions, and reviewed SHAs — never batch.
 - Approval requires: no Must Fix, all `OQ-N` answered, head SHA = reviewed SHA, explicit `Merge authority`, and CI green/waived/pending under protected auto-merge.
 - Approve with `gitlab-local` **Snippet: sha-bound-approval** only when explicit `Merge authority` allows approval. Use `gitlab-local` **Snippet: sha-bound-merge** or **Snippet: sha-bound-auto-merge-queue** only when that exact action is authorized; missing authority is a blocker, not approval-only.

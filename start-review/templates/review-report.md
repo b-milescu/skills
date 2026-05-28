@@ -90,4 +90,8 @@ None.
 
 ## Follow-ups for Other Tasks
 
+List linked follow-up issue URLs here for non-blocking findings that should survive after merge. Use the documented GitLab/local issue workflow and live label vocabulary only; do not widen current MR scope.
+
+Record brief-quality defects here too when the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals. Name the missing fields and any avoidable discovery or rework.
+
 ## Final Notes

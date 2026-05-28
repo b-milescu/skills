@@ -108,3 +108,5 @@ Safety-critical filling rules remain in this flow:
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into Review Reports, inline comments, templates, or CI output.
 - Address every stable `OQ-N` from the MR description; unresolved open questions require escalation or request-changes.
 - Use stable review item IDs (`MF-N`, `SF-N`, `C-N`) for Must Fix, Should Fix, and Consider items so revision commits and responses can cite them.
+- When a `C-N` or other non-blocking finding should survive after merge, create or link a follow-up issue via the documented GitLab/local issue workflow and current live labels only; keep the current MR scope unchanged.
+- When the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals, record a brief-quality defect in the Review Report follow-ups section, naming the missing fields and any avoidable discovery or rework it caused.
