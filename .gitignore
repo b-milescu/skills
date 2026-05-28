@@ -1,4 +1,3 @@
 node_modules/
 .npm/
-/progress.md
-/cleanup-discovery/
+/graphify-out/
