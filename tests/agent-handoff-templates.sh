@@ -137,4 +137,44 @@ for (const file of process.argv.slice(2)) {
 }
 NODE
 
+require_text() {
+  local file="$1" pattern="$2" label="$3"
+  grep -Eiq -- "$pattern" "$file" || {
+    echo "agent-handoff-templates: FAIL: $file missing $label" >&2
+    exit 1
+  }
+}
+
+reviewer_final_guidance=(
+  "$REPO_ROOT/start-review/REVIEW-FLOW.md"
+  "$REPO_ROOT/start-review/SKILL.md"
+  "$REPO_ROOT/agents/claude/mr-reviewer.md"
+  "$REPO_ROOT/agents/pi/mr-reviewer.md"
+)
+
+for file in "${reviewer_final_guidance[@]}"; do
+  require_text "$file" 'reviewer-final-handoff\.md' 'reviewer final handoff template reference'
+  require_text "$file" 'final response[^.]*MUST|MUST[^.]*final response' 'mandatory final response handoff'
+  require_text "$file" 'review_verdict' 'review verdict field in final handoff guidance'
+  require_text "$file" 'report_url' 'report URL field in final handoff guidance'
+  require_text "$file" 'template[^.]*unavailable|unavailable[^.]*template' 'safe fallback when final handoff template is unavailable'
+done
+
+require_text \
+  "$REPO_ROOT/start-review/REVIEW-FLOW.md" \
+  'after[^.]*Review Report[^.]*authorized[^.]*action|after[^.]*authorized[^.]*action[^.]*Review Report' \
+  'procedure ordering after Review Report and authorized action attempt'
+require_text \
+  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  'reviewer final handoff|reviewer-final-handoff\.md' \
+  'parent-orchestrator reviewer final handoff mention'
+require_text \
+  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  'parseable|parent[^.]*parsing' \
+  'parent-orchestrator parseable handoff guidance'
+require_text \
+  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  'GitLab Review Report[^.]*durable|durable[^.]*GitLab Review Report' \
+  'GitLab Review Report remains durable record guidance'
+
 echo "agent-handoff-templates: PASS"

@@ -4,8 +4,8 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 ## reviewer-final-handoff.md
 
-- Emit this machine-readable block in `mr-reviewer` final responses after posting the GitLab Review Report.
-- Keep the GitLab Review Report comment as the durable review record; this block complements it for parent parsing.
+- Emit this machine-readable block in `mr-reviewer` final responses after posting the GitLab Review Report and after any authorized approval/finish action attempt.
+- Keep the GitLab Review Report comment as the durable review record; this block complements it as a parseable artifact for parent parsing.
 - Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
 - Make the first fields summary-first for parent orchestration: review verdict, MR, reviewed SHA, pipeline, local checks, findings, merge authority, merge authority source, approval action, finish action, action blocker, next action, and report URL.
 - `review_verdict` is `pass / request-changes / reject / blocked`. `pass` is a review judgment only; it never means "looks good but no approval was taken". `approval_action`, `finish_action`, and `action_blocker` say what GitLab side effects happened or why none happened.

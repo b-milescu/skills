@@ -44,7 +44,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary and keeps review verdict, SHA, CI, findings, checks, action fields, and report-link fields visible. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
-| Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, and use synthetic example URLs. |
+| Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, use synthetic example URLs, and keep reviewer final-handoff procedure/prompt guidance required. |
 | Setup Skill guardrails | `bash tests/setup-dev-skills-guardrails.sh` | Verifies `setup-dev-skills` ships and references the coding guardrails seed without vendoring upstream prose. |
 | Setup Skill invocation mode | `bash tests/setup-dev-skills-invocation.sh` | Verifies `setup-dev-skills` stays manual-invocation only and docs preserve the ask-before-running guidance. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.pi/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
@@ -60,7 +60,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Script | Focus |
 | --- | --- |
 | `tests/agent-check.sh` | `agents/check.sh` parity, canonical-pointer, prompt-drift, external-skill dependency, and no-mutation `install.sh --check` regressions under temporary homes. |
-| `tests/agent-handoff-templates.sh` | Builder/reviewer machine-readable final handoff template field order, YAML parsing, and synthetic example URL safety. |
+| `tests/agent-handoff-templates.sh` | Builder/reviewer machine-readable final handoff template field order, YAML parsing, synthetic example URL safety, and reviewer final-handoff procedure/prompt requirements. |
 | `tests/agents-schema.sh` | Claude/pi agent frontmatter parsing, required fields, name/filename matching, runtime-only field drift, and dialect-specific tool casing. |
 | `tests/check-gate-inventory.sh` | Check Gate shipped shell regression inventory stays synchronized with tracked `tests/*.sh` files. |
 | `tests/gitlab-local-help-cache.sh` | `/gitlab-local` help-first run-dir cache guidance, context invalidation, and verification-status wording. |
@@ -96,7 +96,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | CI and Open Question decisions stay centralized in one canonical table section. | `bash tests/review-ci-oq-decision-tables.sh` |
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
 | Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, and report-link fields. | `bash tests/review-report-summary-first.sh` |
-| Builder/reviewer final handoff schemas keep parseable field order and safe example URLs. | `bash tests/agent-handoff-templates.sh` |
+| Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
 
 ## Discovery notes
