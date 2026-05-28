@@ -25,8 +25,8 @@ Canonical development pattern source: `start-review`. Load it, follow it, and tr
 6. Keep context narrow: MR description, Reviewer Lift, linked issue, changed paths, rulebook, and directly referenced docs/tests first.
 7. Sweep Reviewer Focus areas first (hardest areas before full diff).
 8. Walk the full diff with the description as a map; expand context only from concrete evidence.
-9. Address every OQ-N from the MR description — answer, escalate, or downgrade to evidence request. Use `Action blocker: human-decision-needed` when approval needs a human decision.
-10. Verify CI for the reviewed SHA. Stale or missing decision-grade CI maps to `Action blocker: stale-or-missing-ci` unless protected pending auto-merge policy applies.
+9. Classify every OQ-N from the MR description with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (CI and Open Question decision tables); use its OQ table for verdict/action routing.
+10. Verify CI for the reviewed SHA, then classify it with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (CI and Open Question decision tables); use its CI table for verdict/action routing.
 11. Post one summary-first Review Report per MR as a top-level comment with `gitlab-local` **Snippet: note-comment-creation**.
 12. Re-read MR metadata, SHA, CI, explicit authority, and verifiable `Merge authority source` immediately before any approval, merge, or auto-merge action — never act on a SHA you haven't read.
 13. Decide with `Review verdict`: pass, request-changes, reject, or blocked. Reject posts the Review Report and stops/escalates; do not close the MR unless explicit human/project close authority says to close it. Perform GitLab approval/merge actions only when explicitly authorized by merge authority or parent/human instruction. If SHA-bound action support is unavailable, use `Action blocker: sha-bound-action-unsupported`; if GitLab denies an authorized action, use `Action blocker: permission-failure`.
@@ -85,9 +85,9 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 Before reading the diff, validate:
 - Reviewer Lift exists and matches `start-build/templates/reviewer-lift-schema.md`
 - MR head SHA = Reviewed SHA (if not and not safely re-reviewed, `Action blocker: changed-head-sha`)
-- CI pipeline evidence includes URL/ID, status, and commit SHA (`Action blocker: stale-or-missing-ci` when stale/missing blocks)
+- CI pipeline evidence includes URL/ID, status, and commit SHA; classify with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (`Action blocker: stale-or-missing-ci` when its CI table blocks)
 - Local gate is PASS, N/A with rationale, or a clear blocker
-- Open Questions is either none or real OQ-N IDs (`Action blocker: human-decision-needed` when a human answer is required)
+- Open Questions is either none or real OQ-N IDs; classify with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (`Action blocker: human-decision-needed` when its OQ table blocks on a human decision)
 - Merge authority is explicit and `Merge authority source` is verifiable; if authority/source is missing, ambiguous, unverifiable, or conflicting, do not approve/merge and report `Action blocker: missing-authority`
 
 ## Supervisor coordination
