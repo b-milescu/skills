@@ -12,25 +12,30 @@ Discover, propose, and plan cleanup work. Default mode is planning-only: do not 
 - Language agnostic: infer ecosystems from repo evidence; never assume app stack from filenames alone.
 - Evidence first: every recommendation needs concrete file, command, doc, tracker, or test evidence.
 - Project rules first: read the host repo rulebook (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README, docs/agents, `CONTEXT.md`, ADRs) before judging cleanup value.
+- Guardrail-aligned: when `docs/agents/coding-guardrails.md` exists, compare findings to it. Treat newer guardrails as target direction for existing code, not blame for older choices.
 - Domain-safe: cleanup must preserve domain language, safety invariants, review gates, deploy topology, migrations, and operator workflows.
+- Deep for repo-wide scans: avoid shallow sampling; use repo structure, docs, tests, and graph evidence when available.
 - Planning-only by default: produce scoped plans, risks, validation, and follow-up questions; leave implementation to the user-approved build/review workflow.
 
 ## Quick start
 
 1. Confirm scope if unclear: repo-wide, path-limited, docs-only, config-only, dependency hygiene, tracker hygiene, or specific concern.
 2. Resolve repo root and check cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`). Dirty worktree means avoid broad rewrites and call out possible noise.
-3. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*` when present, `CONTEXT.md`/`CONTEXT-MAP.md`, ADRs, and check-gate docs.
-4. Discover ecosystems from manifests/config/CI, then inspect only enough files to ground findings.
-5. Build candidate list with evidence, impact, risk, effort, confidence, likely validation, and dependencies.
-6. Challenge candidates against docs and domain terms. If terminology, boundaries, or durable decisions are unclear, use or recommend `/grill-with-docs` before finalising plan.
-7. Present proposal; ask user which slices to approve, defer, merge, split, or discard.
-8. After approval, route planning output to `/to-issues` or `/gitlab-to-issues` when issue creation is desired. Route implementation to the repo's build workflow, not this skill.
+3. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*` when present, especially `docs/agents/coding-guardrails.md` and check-gate docs, plus `CONTEXT.md`/`CONTEXT-MAP.md` and ADRs.
+4. For broad scopes, use `/graphify <path> --mode deep`, `/graphify <path> --update`, or graph queries when `/graphify` is installed or `graphify-out/` exists; otherwise state the gap and continue with structural scanning.
+5. Discover ecosystems from manifests/config/CI, then inspect enough files to ground findings across the requested scope.
+6. Build candidate list with evidence, impact, risk, effort, confidence, likely validation, dependencies, and guardrail alignment.
+7. Challenge candidates against docs and domain terms. If terminology, boundaries, or durable decisions are unclear, use or recommend `/grill-with-docs` before finalising plan.
+8. Present proposal; ask user which slices to approve, defer, merge, split, or discard.
+9. After approval, route planning output to `/to-issues` or `/gitlab-to-issues` when issue creation is desired. Route implementation to the repo's build workflow, not this skill.
 
 ## Discovery checklist
 
 Scan for cleanup opportunities across any language/toolchain:
 
-- **Subagent fan-out (optional, parent-owned)**: For broad scopes, parent/coordinator sessions with launch authority may split read-only discovery by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process). Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return.
+- **Graph-backed discovery (when available)**: If `/graphify` is present or `graphify-out/` exists, use a deep or updated graph, `GRAPH_REPORT.md`, god nodes, communities, paths, and surprising connections to direct inspection.
+- **Guardrail drift**: Compare candidates to `docs/agents/coding-guardrails.md` when present: hidden assumptions, overengineering, drive-by edits, broad refactors, orphan cleanup, missing success criteria, weak reproduction, or weak check evidence.
+- **Subagent fan-out (optional, parent-owned)**: For broad scopes, parent/coordinator sessions with launch authority may split read-only discovery by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process, graph communities). Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return.
 - **Subagent aggregation**: Parent de-duplicates child findings, rejects unsupported claims, records gaps/conflicts, then classifies candidates as AFK/HITL/Needs info. If no launch authority or safe isolation exists, run same checklist serially.
 - **Repo shape**: duplicate directories, abandoned modules, generated artifacts committed unexpectedly, unclear ownership, inconsistent naming, stale examples.
 - **Docs/domain**: README drift, obsolete setup steps, broken doc links, ADR contradictions, glossary mismatch, missing operator/runbook notes.
@@ -50,7 +55,8 @@ For each finding, report:
 - **Why now**: maintenance pain, risk reduction, reviewability, onboarding, CI clarity, operator safety.
 - **Scope**: included surfaces and explicit out of scope.
 - **Risk**: behavior/runtime/operator/security/data/review impact.
-- **Validation**: tests, check gate, docs link check, dry run, grep proof, CI job, or manual review.
+- **Validation**: tests, check gate, docs link check, dry run, grep proof, graph query/update, CI job, or manual review.
+- **Guardrail alignment**: coding guardrail, project rule, domain doc, or ADR this cleanup moves toward.
 - **Effort**: S/M/L and reason.
 - **Confidence**: High/Medium/Low based on evidence depth.
 - **Type**: AFK / HITL / Needs info.
@@ -64,6 +70,7 @@ For each finding, report:
 ## Planning rules
 
 - Prefer small vertical maintenance slices with independent review and validation.
+- Keep cleanup proposals surgical: touch only needed files, avoid mass reformatting, and split broad refactors into reviewable slices.
 - Separate pure docs, mechanical cleanup, dependency upgrades, behavior changes, and architecture changes unless coupling is proven.
 - Sequence risk reducers first: characterization tests, docs clarification, check-gate repair, inventory scripts, then larger cleanup.
 - Preserve generated files unless generator/source of truth is known.
@@ -72,8 +79,9 @@ For each finding, report:
 
 ## Output shape
 
-1. **Scope inspected** — paths, docs, commands, and known gaps.
-2. **Top findings** — ranked table of candidates.
-3. **Recommended plan** — ordered slices with type, risk, validation, and dependencies.
-4. **Grill points** — decisions or domain questions to resolve with `/grill-with-docs`.
-5. **Next step** — approve slices, convert to issues, or request deeper discovery.
+1. **Scope inspected** — paths, docs, commands, graph sources if used, and known gaps.
+2. **Guardrails applied** — coding guardrails, project rules, check gate, domain docs, and ADRs used as evaluation criteria.
+3. **Top findings** — ranked table of candidates.
+4. **Recommended plan** — ordered slices with type, risk, validation, dependencies, and guardrail alignment.
+5. **Grill points** — decisions or domain questions to resolve with `/grill-with-docs`.
+6. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
