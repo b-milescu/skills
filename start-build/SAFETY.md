@@ -43,6 +43,7 @@ Valid regression evidence includes:
 - Use UTC-aware timestamps; don't bypass timezone lints without a documented invariant.
 - Logs help operators without exposing secrets.
 - Health/heartbeat changes need fake-clock stale-state tests.
+- **Simplest version of your own change.** Write the most direct form of the code this issue adds or changes — not merely one that passes. During the green-refactor step, collapse needless branches, pass-through wrappers, speculative abstraction, or `any`/cast-heavy boundaries **within the lines your diff introduces or touches**, before marking ready. This is a within-diff bar, never a license to straighten adjacent code or push an untouched file past its current size; when in doubt whether a cleanup is your diff or the surrounding code, treat it as surrounding code and open a follow-up (see SKILL.md "Keep scope tight; file follow-up GitLab issues instead of drive-by refactors").
 
 ## Anti-patterns
 
