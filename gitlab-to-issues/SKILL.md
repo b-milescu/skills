@@ -29,7 +29,7 @@ Slice *toward* the shared [Decoupling Contract](../docs/decoupling-contract.md):
 
 Use only labels listed in `<repo-root>/docs/agents/triage-labels.md`; never invent or rely on lazy label creation. That file owns the live vocabulary; this section only describes when to look there.
 
-- **AFK**: ready for an agent to implement; see the AFK-safety row of `<repo-root>/docs/agents/agent-readiness-scorecard.md` for what that requires. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one and the readiness section passes or has a maintainer waiver.
+- **AFK**: ready for an agent to implement; see the AFK-safety row of `<repo-root>/docs/agents/agent-readiness-scorecard.md` for what that requires. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
@@ -44,7 +44,7 @@ For each proposed slice, show:
 - **Blocked by**: issue title or dependency, if any
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
-- **Agent Readiness**: acceptance criteria quality, current-state/repro evidence, test strategy, risk surface, dependencies, unknowns, AFK safety, and reviewer focus
+- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](../docs/agents/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](templates/issue-body.md#agent-readiness)
 - **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](../docs/decoupling-contract.md)
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
