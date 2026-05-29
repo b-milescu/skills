@@ -176,10 +176,8 @@ glab ci status --branch "$source_branch" -F json
 
 ### Snippet: ci-watch-sha-pinned
 
-Use when a parent orchestrator, reviewer, or authorized finisher needs a CI
-verdict for the exact MR head that was reviewed. Builders may record this
-output in a Review Packet, but CI success does not grant builder approval or
-merge authority.
+Role eligibility (who may call) lives in
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
 Inputs:
 
@@ -304,10 +302,8 @@ glab api "projects/${project_path}/merge_requests/${mr_iid}/approvals"
 
 ### Snippet: finish-mr-authority-aware
 
-Use after an independent review decision, not from a child builder. A builder may
-prepare or report the inputs, but must not approve, merge, queue auto-merge, or
-pretend to complete the review gate. Only a reviewer performing the review flow
-or an explicitly authorized parent/human may run the approve/merge steps.
+Role eligibility (who may call) lives in
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
 
 Inputs:
 
