@@ -29,13 +29,13 @@ Core policy stays inline:
 
 ## Discovery Budget
 
-Keep discovery bounded before edits. Read the issue, project rulebook, linked docs, and only the concrete callers/tests/ADRs needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
+Keep discovery bounded before edits. Read the issue and project rulebook index first, then expand only from evidence. Load affected docs/source/tests needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Load ADRs, architecture docs, domain docs, and `CONTEXT.md` only when evidence triggers them: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each loaded context source and why it mattered in the Build Plan Packet, MR Review Packet, or reviewer-facing Context Capsule. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
 
 If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
 
 ## Build Plan Packet
 
-Before the first edit, write a concise Build Plan Packet from the discovery result. Capture the issue, intended behavior, affected surfaces, test plan, risk, and non-goals. Keep it short enough that reviewers can compare it against the issue and diff without reading a long workflow body. Use [`templates/build-plan-packet.md`](templates/build-plan-packet.md) as the shape.
+Before the first edit, write a concise Build Plan Packet from the discovery result. Capture the issue, intended behavior, affected surfaces, test plan, risk, and non-goals. Also record loaded context sources with one-line reasons for why each source was relevant; omit boilerplate for sources that were not loaded. Keep it short enough that reviewers can compare it against the issue and diff without reading a long workflow body. Use [`templates/build-plan-packet.md`](templates/build-plan-packet.md) as the shape.
 
 This packet is pre-edit planning only; builder and reviewer authority boundaries stay in [Builder invocation modes](#builder-invocation-modes).
 
@@ -228,7 +228,7 @@ Before marking ready or requesting review, validate the MR handoff:
    - `git pull --ff-only origin <default>`. If FF fails, stop and ask; do not force.
    - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
    - Branch using the project's naming convention; reference the issue ID.
-3. Load narrow context, not the whole repo or conversation: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue. Expand outward only from concrete evidence such as imports/callers, failing tests, changed paths, or safety invariants.
+3. Load narrow context, not the whole repo or conversation: rulebook index, issue, and affected docs/source/tests first. Expand to architecture docs, ADRs, domain docs, or `CONTEXT.md` only from evidence triggers: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each non-obvious context source and relevance reason in the Build Plan Packet or Review Packet.
 4. Open a **Draft MR** early targeting the default branch, linked via `Closes #<id>`, after the source branch exists remotely. Use `gitlab-local` **Snippet: draft-mr-create** with `templates/review-packet.md` (or compact variant when eligible); do not mark ready in this step. Fill **Builder** metadata as `@builder — <model-id>` (e.g. `@builder — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. Initialize the **Reviewer Lift** block from `templates/reviewer-lift-schema.md` — leave fields with `<pending>` until you have values, but keep the block present from day one so the reviewer's lookup path is stable. Fill `Merge authority` as a quoted claim and `Merge authority source` as verifiable provenance; the builder cannot grant approval, merge, or auto-merge authority.
    - **Early Draft MR push.** This push creates the remote source branch and/or Draft MR handoff. It does not require the full local gate; use Draft status and `<pending>`/`N/A` Reviewer Lift values until evidence exists.
    - **Implementation pushes before ready.** Pre-ready pushes may publish incremental work or refreshed draft evidence. Run targeted checks during the red-green loop, keep Reviewer Lift current with the facts available, and do not request review from Draft state.

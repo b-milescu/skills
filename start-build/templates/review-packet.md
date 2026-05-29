@@ -40,12 +40,17 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 ## Summary
 
+## Loaded Context Sources
+
+List only sources loaded beyond the issue and rulebook index. Use one-line bullets with why relevant; write `none beyond issue and rulebook index` when no expansion was needed.
+
 ## Pre-Work Checklist
 
-- [ ] Linked issue and any prior reviews/ADRs read.
-- [ ] Project rulebook (top-level operating rules) read for applicable safety rules.
-- [ ] Architecture / design docs read for affected surfaces.
-- [ ] Domain rulebook read where relevant.
+- [ ] Linked issue read; prior reviews/ADRs read only when evidence-triggered.
+- [ ] Project rulebook index (top-level operating entry point) read for applicable safety rules.
+- [ ] Architecture / design docs read only when evidence-triggered for affected surfaces.
+- [ ] Domain docs / `CONTEXT.md` read only when evidence-triggered.
+- [ ] Loaded context sources and one-line relevance reasons recorded in the Build Plan Packet or this Review Packet.
 - [ ] Product/runtime/operator external-system mutation surface identified: `<none / read-only / mutating; explain>`
 - [ ] Credential/secret exposure surface identified: `<none / config / logging / deploy; explain>`
 - [ ] State / schema / migration impact identified: `<none / which stores / which migrations>`
