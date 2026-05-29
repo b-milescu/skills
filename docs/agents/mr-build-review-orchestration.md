@@ -27,22 +27,10 @@ needing to restate every builder/reviewer safety boundary.
 
 ## Active sources of truth
 
-| Surface | Canonical source |
-| --- | --- |
-| Repo workflow pointer | [Dev Workflows](dev-workflows.md) |
-| Full local check gate | [Check Gate](check-gate.md) |
-| Parent issue-to-MR loop | [`start-build/BUILD-FLOW.md` parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) |
-| Child builder responsibilities and final handoff | [`start-build/BUILD-FLOW.md` builder invocation modes](../../start-build/BUILD-FLOW.md#builder-invocation-modes) and [`builder-final-handoff.md`](../../start-build/templates/builder-final-handoff.md) |
-| Reviewer responsibilities and durable GitLab Review Report | [`start-review/REVIEW-FLOW.md`](../../start-review/REVIEW-FLOW.md) and [`review-report.md`](../../start-review/templates/review-report.md) |
-| Reviewer Lift schema | [`reviewer-lift-schema.md`](../../start-build/templates/reviewer-lift-schema.md) |
-| Review Packet templates | [`review-packet.md`](../../start-build/templates/review-packet.md) and [`review-packet-compact.md`](../../start-build/templates/review-packet-compact.md) |
-| Reviewer parseable final handoff | [`reviewer-final-handoff.md`](../../start-review/templates/reviewer-final-handoff.md) |
-| GitLab CLI snippets, CI watch, and finish guards | [`gitlab-local/SKILL.md`](../../gitlab-local/SKILL.md) |
-| Optional helper scripts | [`gitlab-local/scripts/README.md`](../../gitlab-local/scripts/README.md) |
-
-If any row here conflicts with its canonical source, update or remove this
-pointer in a small docs MR; do not copy active schemas or snippets back into this
-brief.
+For the canonical routing table to active workflow skills, schemas, templates,
+and GitLab command references, see [Dev Workflows](dev-workflows.md). This brief
+does not duplicate that pointer table; `docs/agents/dev-workflows.md` owns repo
+workflow routing per the `CLAUDE.md` doc ownership map.
 
 ## Historical outcome
 
