@@ -242,6 +242,22 @@ Check for evidence-backed implementation-quality regressions:
 
 Decision rule: block as `MF-N` when the diff introduces or preserves material structural complexity and a bounded remedy is visible inside the MR's blast radius, especially for unjustified `<1000` -> `>1000` file growth. Use `C-N` for style-only preferences, speculative broader redesigns, cleanup outside the changed paths, or improvements with no clear local remedy. Do not request changes for taste, naming, or formatting when project checks already cover them.
 
+## Review tone
+
+When you raise a structural maintainability finding, raise it plainly: name the
+smell, the `file:line`, and the bounded remedy. Do not dilute a real, blocking
+maintainability problem into a mild "maybe consider," and do not wave a change
+through just because it works when it leaves the surrounding code harder to
+reason about — say so directly. Be demanding about complexity; do not be
+demanding about taste.
+
+Tone never moves the bar. Taste, naming, and formatting stay `C-N`/non-blocking
+per the decision rule above; the demanding voice applies only to findings that
+already qualify as `MF-N` — material structural complexity with a bounded remedy
+inside the MR's blast radius. For an ambitious whole-design reframing that
+reaches beyond the diff, record a `C-N`/follow-up for a dedicated architecture
+pass rather than expanding this MR.
+
 ## Review Report expectations
 
 See [templates/filling-guide.md §review-report.md](templates/filling-guide.md#review-reportmd) for the canonical list of report sections and per-section guidance. Every Must Fix names path + line/range + concrete problem + suggested direction if not obvious. Use inline comments for line-anchored findings and reference Must Fix IDs so revision commits can cite them.
