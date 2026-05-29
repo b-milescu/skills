@@ -57,7 +57,3 @@ Prefer specific follow-ups:
 - reviewer/build workflow templates
 - docs pointers or check-gate clarifications
 - fixture, test, or helper gaps
-
-## If DB available
-
-Report the aggregate-count groupings listed in the Output contract.
