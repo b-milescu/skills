@@ -12,6 +12,17 @@ description: >-
 
 Coordinate ready-issue batches without duplicating canonical build/review procedures.
 
+## Start here
+
+Act immediately — this skill drives the batch, it is not passive reference. Follow the Operating contract below; this ramp just orders the first actions:
+
+1. Preflight (`../gitlab-local/SKILL.md`) and read the ready queue.
+2. Prove the [Decoupling Contract](../docs/decoupling-contract.md) before any parallel work.
+3. Run the parent loop per [`../start-build/reference/parent-orchestrator.md`](../start-build/reference/parent-orchestrator.md), delegating builds to [`../start-build/reference/child-builder.md`](../start-build/reference/child-builder.md) and review to [`../start-review/REVIEW-FLOW.md`](../start-review/REVIEW-FLOW.md).
+4. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
+5. Hand merged work to [`/post-merge-verifier`](../post-merge-verifier/SKILL.md).
+6. Report the per-batch metrics listed in the Operating contract.
+
 ## Use when
 
 - process ready-for-agent queue
