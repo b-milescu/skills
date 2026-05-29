@@ -88,7 +88,7 @@ Review Gate Summary detail lives in [reference/standalone-gate.md §Review Gate 
 
 ### Human bypass protocol
 
-Human bypass detail lives in [reference/standalone-gate.md §Human bypass protocol](reference/standalone-gate.md#human-bypass-protocol): only an explicit human `skip gate` / `merge unreviewed`-style override can bypass mandatory review, the reason must be recorded in the MR, and bypass never authorizes builder self-approval or self-merge.
+Human bypass detail lives in [reference/standalone-gate.md §Human bypass protocol](reference/standalone-gate.md#human-bypass-protocol), which owns the strict, non-inferable bypass rule: a closed set of exact human phrases (`skip gate` / `merge unreviewed`) plus named actor, recorded reason, `Review gate` field, and MR audit trail. Ambiguous release language does not bypass and must be clarified, and a bypass never authorizes builder self-approval or self-merge.
 
 ## Template filling guides
 

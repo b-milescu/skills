@@ -62,11 +62,13 @@ Final Review Report: <link to MR comment, or N/A — timeout/stale/interrupted w
 
 ## Human bypass protocol
 
-The human can bypass the mandatory review gate with explicit syntax. Bypass conditions:
+A human can bypass the mandatory review gate, but only through an unmistakable, non-inferable instruction. The bypass must never be inferred from paraphrase, tone, or general release enthusiasm. All of the following conditions must hold:
 
-- The human says **"skip gate"**, **"merge unreviewed"**, or equivalent explicit override.
-- The override reason is documented in the MR description.
-- The MR description `Review gate` field is set to `bypassed (human override)`.
-- The override reason is recorded in an MR comment for audit trail.
+- **Strict accepted bypass phrase.** The human used one of the exact accepted bypass phrases **"skip gate"** or **"merge unreviewed"** with clear intent to waive review for this MR. This accepted-phrase set is closed: a phrase counts only when it matches one of these literals (case-insensitive), not when it merely resembles them. There is no "or equivalent" escape hatch — paraphrase does not bypass.
+- **Ambiguous release language does not bypass.** Vague approval/release phrases such as **"ship it"**, **"looks fine"**, **"lgtm"**, "go ahead", or "send it" do not bypass review, even when said by the human. Ambiguous release language must be clarified before any bypass: ask the human to either restate using an accepted bypass phrase or confirm that normal review applies. When in doubt, the gate stays mandatory.
+- **Named actor.** The waiver names the human or human-authorized actor who issued it; the named human (or authorized actor) must be identifiable, and an anonymous or assumed-on-someone's-behalf bypass is invalid.
+- **Recorded reason.** The override reason is documented in the MR description.
+- **`Review gate` field.** The MR description `Review gate` Reviewer Lift field is set to `bypassed (human override)`.
+- **Audit trail.** The accepted phrase, named actor, and reason are recorded in an MR comment so an auditor can later see who bypassed, why, and where it is recorded.
 
 A bypass does not waive the safety invariant against builder self-approval — even with a bypass, the builder still must not approve or merge its own MR. The human performs the merge directly or authorizes a named agent to do so.
