@@ -53,7 +53,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Reviewed SHA | `<copy from Reviewer Lift; must equal MR head sha at approve-time>` |
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
 | CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
-| Local gate | `<copy from Reviewer Lift; PASS, N/A with rationale, or blocker>` |
+| Local gate | `<copy from Reviewer Lift; PASS before ready/review, N/A with rationale, or blocker>` |
 | RED | `<copy from Reviewer Lift; evaluate TDD applicability>` |
 | GREEN | `<copy from Reviewer Lift; evaluate passing evidence>` |
 | Changed paths | `<copy from Reviewer Lift; verify against diff>` |

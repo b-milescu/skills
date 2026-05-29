@@ -34,6 +34,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` parity, canonical-pointer, prompt-drift, dependency failures, and the no-mutation `install.sh --check` path under temporary homes. |
 | Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
+| Start-build ready gate / push semantics | `bash tests/start-build-ready-gate-push-semantics.sh` | Verifies early Draft and implementation pushes remain allowed before full gate, while ready/request-review still requires local gate evidence and synchronized Reviewer Lift delta semantics. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
 | GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
 | Start-review command ownership | `bash tests/start-review-command-ownership.sh` | Verifies `/start-review` points to review cards/snippets for GitLab syntax and rejects raw `glab` command copies in reviewer-owned docs/prompts. |
@@ -98,6 +99,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 | `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
+| `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, ready-marking local gate boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
 | `tests/start-review-command-ownership.sh` | `/start-review` GitLab command ownership stays in review cards/snippets; reviewer-owned docs/prompts reject raw `glab` command copies. |
 
 ## Workflow regression coverage map
@@ -125,6 +127,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Reviewer prompts stay pointer-based and ADR template ownership stays shared/drift-protected. | `bash tests/reviewer-prompt-dedupe.sh` |
 | Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
+| Early Draft/implementation pushes do not require the full local gate, but ready/request-review does; Reviewer Lift local-gate and post-ready delta semantics stay aligned. | `bash tests/start-build-ready-gate-push-semantics.sh` |
 
 ## Discovery notes
 

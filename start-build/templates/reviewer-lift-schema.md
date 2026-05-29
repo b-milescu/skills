@@ -9,7 +9,7 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 | Reviewed SHA | MR head SHA at ready-marking; update on every post-ready push before asking for review. |
 | Review gate | `mandatory` unless a human explicitly bypassed the gate; for bypass use `bypassed (human override)` and record the reason in the MR. |
 | CI pipeline | Pipeline URL/ID, status, and commit SHA when available; use `N/A — <why>` when no CI exists or the pipeline is unavailable. Green CI counts only when its SHA matches `Reviewed SHA`. |
-| Local gate | `PASS`, `FAIL`, or `N/A` plus the exact command; explain any `N/A`. |
+| Local gate | `PASS`, `FAIL`, or `N/A` plus the exact command. `PASS` is required before marking ready/requesting review unless `N/A` explains why only CI can provide the gate. |
 | RED | Failing test command and expected failure reason for behavior work; use `N/A — <why>` for docs/config/mechanical work. |
 | GREEN | Passing test/check command and brief result for behavior work; use `N/A — <why>` when no test applies beyond the local gate. |
 | Changed paths | File-level diffstat or concise path list; update with every push. |
