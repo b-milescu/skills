@@ -34,7 +34,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` parity, canonical-pointer, prompt-drift, dependency failures, and the no-mutation `install.sh --check` path under temporary homes. |
 | Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
-| GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies SHA-bound approval/merge/auto-merge snippets and MR-note/issue-note snippets stay separate; retired combined approve+merge and MR+issue note snippets stay absent. |
+| GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
 | GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
 | Start-review command ownership | `bash tests/start-review-command-ownership.sh` | Verifies `/start-review` points to review cards/snippets for GitLab syntax and rejects raw `glab` command copies in reviewer-owned docs/prompts. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
@@ -74,7 +74,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/check-gate-inventory.sh` | Check Gate shipped shell regression inventory stays synchronized with tracked `tests/*.sh` files. |
 | `tests/gitlab-local-help-cache.sh` | `/gitlab-local` help-first run-dir cache guidance, context invalidation, and verification-status wording. |
 | `tests/gitlab-local-review-cards.sh` | Review-focused `/gitlab-local` command cards stay pointer-based, cover review read/action/CI snippets, and remain linked from `/start-review`. |
-| `tests/gitlab-local-split-snippets.sh` | GitLab workflow snippets remain split into SHA-bound approval, merge, auto-merge, MR-note, issue-note, CI watch, and finish helper guidance. |
+| `tests/gitlab-local-split-snippets.sh` | GitLab workflow snippets remain split into Draft MR create, MR description update, Draft MR mark-ready, SHA-bound approval, merge, auto-merge, MR-note, issue-note, CI watch, and finish helper guidance. |
 | `tests/gitlab-workflow-helpers.sh` | `gitlab-local/scripts/gitlab-ci-watch.sh` and `gitlab-local/scripts/gitlab-finish-mr.sh` SHA/CI/authority guard behavior with fake GitLab/Git helpers. |
 | `tests/install-external-deps.sh` | `install.sh` warnings for missing required/optional external skills and silence when dependencies exist under a temporary `HOME`. |
 | `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks and replaces stale in-repo symlinks under a temporary `HOME`. |
@@ -107,7 +107,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 
 | Guardrail | Targeted command |
 | --- | --- |
-| Combined executable approve+merge and MR+issue note snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
+| Combined executable Draft MR create+description-update+ready, approve+merge, and MR+issue note snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
 | Review command cards avoid broad GitLab command context while preserving fail-closed snippet pointers. | `bash tests/gitlab-local-review-cards.sh` |
 | Review command syntax ownership stays in GitLab review cards/snippets, not copied raw in `/start-review` docs/prompts. | `bash tests/start-review-command-ownership.sh` |
 | Missing merge authority blocks approval actions; explicit `approval-only` remains valid. | `bash tests/review-authority-explicit.sh` |

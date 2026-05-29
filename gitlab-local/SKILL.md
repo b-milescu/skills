@@ -103,16 +103,41 @@ glab issue close <id>
 glab issue update <id> --label foo,bar --unlabel baz
 ```
 
-### Snippet: draft-mr-create-update
+### Snippet: draft-mr-create
+
+Use only to open the early Draft MR after the source branch exists remotely.
+This snippet intentionally does not update an existing MR or mark it ready.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr.XXXXXX")"
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-create.XXXXXX")"
 description_file="$run_dir/review-packet.md"
-# Write or fill "$description_file" before creating or updating the MR.
+# Write or fill "$description_file" before creating the MR.
 
 glab mr create --draft --push --target-branch "$default_branch" --source-branch "$source_branch" \
   --title "$title" --description "$(cat "$description_file")" --yes
+```
+
+### Snippet: mr-description-update
+
+Use to refresh the MR description / Reviewer Lift. This snippet intentionally
+keeps draft/ready state unchanged.
+
+```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-description.XXXXXX")"
+description_file="$run_dir/review-packet.md"
+# Write or fill "$description_file" before updating the MR description.
+
 glab mr update <id> --description "$(cat "$description_file")"
+```
+
+### Snippet: draft-mr-mark-ready
+
+Use only after the local gate has passed (or N/A is documented), the MR
+description and Reviewer Lift name the current head SHA, and the workflow is
+ready for review. Do not paste this with Draft MR creation or description update
+commands as one executable sequence.
+
+```bash
 glab mr update <id> --ready
 ```
 

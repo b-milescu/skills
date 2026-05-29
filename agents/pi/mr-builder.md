@@ -23,10 +23,10 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 4. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch current.
 5. Branch using the project's naming convention, referencing the issue ID.
 6. Load narrow context: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue; expand only from concrete evidence.
-7. Open a **Draft MR** early once the source branch exists remotely, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
+7. Open a **Draft MR** early once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create**, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
 8. For behavior-touching work, follow the `tdd` skill. For docs/config-only/mechanical work, state `TDD: N/A` with rationale.
-9. Run the project's full check gate before marking ready. Update the MR description with evidence.
-10. Mark ready with `gitlab-local` **Snippet: draft-mr-create-update**.
+9. Run the project's full check gate before marking ready. Update the MR description with evidence using `gitlab-local` **Snippet: mr-description-update**.
+10. Mark ready with `gitlab-local` **Snippet: draft-mr-mark-ready**.
 11. Stop. Return the machine-readable builder-final handoff plus the evidence contract below. **The parent orchestrator spawns the reviewer and owns any approval, merge, or auto-merge allowed by policy/human instruction.** Do not attempt the mandatory review gate yourself unless the parent explicitly changes your role scope.
 
 ## Final handoff contract

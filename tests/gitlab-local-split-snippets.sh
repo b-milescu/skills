@@ -40,6 +40,9 @@ assert_not_contains() {
   [[ "$text" != *"$needle"* ]] || fail "unexpected $label: $needle"
 }
 
+draft_create_body="$(require_snippet draft-mr-create)"
+mr_description_update_body="$(require_snippet mr-description-update)"
+draft_mark_ready_body="$(require_snippet draft-mr-mark-ready)"
 approval_body="$(require_snippet sha-bound-approval)"
 merge_body="$(require_snippet sha-bound-merge)"
 auto_merge_body="$(require_snippet sha-bound-auto-merge-queue)"
@@ -48,6 +51,19 @@ ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
 finish_body="$(require_snippet finish-mr-authority-aware)"
 mr_note_body="$(require_snippet mr-note-create)"
 issue_note_body="$(require_snippet issue-note-create)"
+
+assert_contains "$draft_create_body" 'glab mr create --draft' 'Draft MR create command'
+assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch flag'
+assert_not_contains "$draft_create_body" 'glab mr update' 'MR update command in Draft MR create snippet'
+assert_not_contains "$draft_create_body" '--ready' 'ready flag in Draft MR create snippet'
+
+assert_contains "$mr_description_update_body" 'glab mr update <id> --description "$(cat "$description_file")"' 'MR description update command'
+assert_not_contains "$mr_description_update_body" 'glab mr create' 'MR create command in description update snippet'
+assert_not_contains "$mr_description_update_body" '--ready' 'ready flag in description update snippet'
+
+assert_contains "$draft_mark_ready_body" 'glab mr update <id> --ready' 'Draft MR mark-ready command'
+assert_not_contains "$draft_mark_ready_body" 'glab mr create' 'MR create command in mark-ready snippet'
+assert_not_contains "$draft_mark_ready_body" '--description' 'description update in mark-ready snippet'
 
 assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha"' 'SHA-bound approval command'
 assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
@@ -97,6 +113,27 @@ fi
 if grep -Fq 'Snippet: note-comment-creation' gitlab-local/SKILL.md; then
   fail 'retired combined note-comment-creation snippet still present'
 fi
+
+if grep -Fq 'Snippet: draft-mr-create-update' gitlab-local/SKILL.md; then
+  fail 'retired combined draft-mr-create-update snippet still present'
+fi
+
+for file in \
+  gitlab-local/SKILL.md \
+  start-build/SKILL.md \
+  start-build/BUILD-FLOW.md \
+  agents/claude/mr-builder.md \
+  agents/pi/mr-builder.md; do
+  if grep -Fq 'draft-mr-create-update' "$file"; then
+    fail "$file still references retired combined draft-mr-create-update snippet"
+  fi
+done
+
+for file in start-build/SKILL.md start-build/BUILD-FLOW.md; do
+  require_text "$file" 'Snippet: draft-mr-create' 'Draft MR create snippet reference'
+  require_text "$file" 'Snippet: mr-description-update' 'MR description update snippet reference'
+  require_text "$file" 'Snippet: draft-mr-mark-ready' 'Draft MR mark-ready snippet reference'
+done
 
 for file in \
   gitlab-local/SKILL.md \
@@ -172,6 +209,31 @@ awk '
     exit bad ? 1 : 0
   }
 ' gitlab-local/SKILL.md || fail 'combined executable approve+merge snippet detected'
+
+awk '
+  /^### Snippet:/ {
+    if (snippet != "" && saw_create && saw_description_update && saw_ready) {
+      printf "snippet %s contains create, description update, and ready commands\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    snippet=$0
+    sub(/^### Snippet: /, "", snippet)
+    saw_create=0
+    saw_description_update=0
+    saw_ready=0
+    next
+  }
+  snippet != "" && /^[[:space:]]*glab mr create[[:space:]]/ { saw_create=1 }
+  snippet != "" && /^[[:space:]]*glab mr update[[:space:]].*--description/ { saw_description_update=1 }
+  snippet != "" && /^[[:space:]]*glab mr update[[:space:]].*--ready/ { saw_ready=1 }
+  END {
+    if (snippet != "" && saw_create && saw_description_update && saw_ready) {
+      printf "snippet %s contains create, description update, and ready commands\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    exit bad ? 1 : 0
+  }
+' gitlab-local/SKILL.md || fail 'combined executable create+description-update+ready snippet detected'
 
 awk '
   /^### Snippet:/ {
