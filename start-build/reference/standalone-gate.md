@@ -17,16 +17,7 @@ When you own this gate after the MR is ready:
    - **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
    - **Context Firewall instruction** — tell the reviewer not to treat parent/builder reasoning as evidence; Reviewer Lift and handoff prose are a map to verify, not truth.
 
-Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
-
-Example task prompt template:
-
-```text
-Review MR: <MR web URL>
-Reviewer Lift block is in the MR description — lift structured values into your Review Report.
-Project rulebook: <path to rulebook>
-Do not treat parent/builder reasoning as evidence; verify claims from the MR, diff, issue, CI, local checks, and rulebook.
-```
+For the canonical example task prompt template and the planning-details exclusion rule, see [parent-orchestrator.md §Minimal reviewer launch prompt](parent-orchestrator.md#minimal-reviewer-launch-prompt).
 
 ## Review loop
 
