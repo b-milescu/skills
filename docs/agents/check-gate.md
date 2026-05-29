@@ -37,6 +37,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Start-build child path size | `bash tests/start-build-child-path-size.sh` | Verifies the child-builder path doc exists, stays materially smaller than the legacy full `BUILD-FLOW.md`, and excludes parent-only subagent discovery text. |
 | Start-build context read matrix | `bash tests/start-build-context-read-matrix.sh` | Verifies the first-screen mode routing table covers builder/coordinator modes and preserves child avoid-list anchors. |
 | Start-build ready gate / push semantics | `bash tests/start-build-ready-gate-push-semantics.sh` | Verifies early Draft and implementation pushes remain allowed before full gate, while ready/request-review still requires local gate evidence and synchronized Reviewer Lift delta semantics. |
+| Start-build stale reviewer control | `bash tests/start-build-stale-reviewer-control.sh` | Verifies review-timeout guidance checks observed reviewer status/activity, uses runtime control when available, fails closed when unavailable, and does not allow blind duplicate reviewers. |
 | Start-build TDD trigger policy | `bash tests/start-build-tdd-trigger-policy.sh` | Verifies behavior-touching implementation is the one TDD trigger, runtime/operator/safety changes are examples, exceptions require MR rationale without fake tests, and sufficient issue acceptance criteria avoid extra user approval prompts. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
 | GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
@@ -105,6 +106,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/start-build-context-read-matrix.sh` | `start-build` first-screen mode routing table and child avoid-list anchor regressions. |
 | `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
 | `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, ready-marking local gate boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
+| `tests/start-build-stale-reviewer-control.sh` | `start-build` stale reviewer control, status/activity observation, runtime interrupt/escalation, and no blind duplicate-reviewer retry regressions. |
 | `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, and issue-driven no-extra-approval prompt regressions. |
 | `tests/start-review-command-ownership.sh` | `/start-review` GitLab command ownership stays in review cards/snippets; reviewer-owned docs/prompts reject raw `glab` command copies. |
 
@@ -135,6 +137,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Child-builder path stays materially smaller than the legacy full `BUILD-FLOW.md` path while keeping parent-owned review gate boundaries. | `bash tests/start-build-child-path-size.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
 | Early Draft/implementation pushes do not require the full local gate, but ready/request-review does; Reviewer Lift local-gate and post-ready delta semantics stay aligned. | `bash tests/start-build-ready-gate-push-semantics.sh` |
+| Stale reviewer control checks status/activity before replacement, uses runtime interrupt/control when available, escalates when unavailable, and blocks blind duplicate reviewers. | `bash tests/start-build-stale-reviewer-control.sh` |
 | Behavior-touching implementation stays the one TDD trigger; exceptions require MR rationale and cannot allow fake tests; sufficient issue acceptance criteria do not force extra approval prompts. | `bash tests/start-build-tdd-trigger-policy.sh` |
 
 ## Discovery notes

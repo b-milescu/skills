@@ -31,7 +31,7 @@ Do not treat parent/builder reasoning as evidence; verify claims from the MR, di
 ## Review loop
 
 1. **Start** a fresh reviewer session.
-2. **Wait** for the Review Report. Timeout: 10 minutes per round.
+2. **Wait** for the Review Report using the caller's review wait budget. No fixed wall-clock value alone authorizes replacement; if the report is missing after the budget, follow [Timeout handling](#timeout-handling) before any second reviewer attempt.
 3. **Evaluate** the reviewer's decision:
    - **Approve** — reviewer records approval for the reviewed SHA, then finish per `Merge authority`. If authority is `approval-only` or `human release`, stop after approval and report the reviewed SHA. If authority is `reviewer may merge` or `queue auto-merge`, only the reviewer, an authorized parent, or a human may merge or queue with the reviewed SHA. If GitLab blocks reviewer-side merge or queue, report the blocker and route finish to an authorized parent or human; the builder must not merge as a fallback. For safety-critical tasks, link the MR from any durable decision log the project keeps. Record the reviewed SHA and decision.
    - **Request changes** — push fix commits, each commit subject naming the item ID such as `MF-1: <fix>`; post a revision-packet comment; update the MR description and Reviewer Lift; then start a **new** reviewer session with fresh context.
@@ -40,23 +40,25 @@ Do not treat parent/builder reasoning as evidence; verify claims from the MR, di
 
 ## Timeout handling
 
-Detailed timeout handling lives in [timeout-handling.md](timeout-handling.md). Core policy: if no Review Report comes back within 10 minutes, do not retry the same reviewer session; start one fresh reviewer session with the same task prompt; if the second attempt also times out, escalate to human.
+Detailed timeout handling lives in [timeout-handling.md](timeout-handling.md). Core policy: missing Review Report after the wait budget is a stale-run signal, not review completion. Check observed status/activity through the runtime's status/control/interruption mechanism when available, interrupt or replace only failed/stale/interrupted/unreachable runs with a documented reason, escalate instead of launching a duplicate reviewer when status/control is unavailable or ambiguous, and never replace a reviewer that is still active.
 
 ## Review Gate Summary
 
-After all rounds complete, post a brief summary as an MR comment:
+After all rounds complete or escalation is needed, post a brief summary as an MR comment:
 
 ```markdown
 ## Review Gate Summary
 
 | Round | Reviewer | Decision | Headline |
 |-------|----------|----------|----------|
-| 1     | <agent>  | approve / request-changes / reject / timeout | <one-line summary> |
+| 1     | <agent>  | approve / request-changes / reject / timeout / stale / interrupted | <one-line summary> |
 | 2     | <agent>  | ...      | ...      |
 | 3     | <agent>  | ...      | ...      |
 
-Final Review Report: <link to MR comment>
+Final Review Report: <link to MR comment, or N/A — timeout/stale/interrupted without completed report>
 ```
+
+`timeout / stale / interrupted are non-completion states`: they document gate history and escalation blockers only. They do not imply independent review completed, approval exists, or finish authority is available.
 
 ## Human bypass protocol
 

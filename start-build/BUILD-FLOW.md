@@ -40,7 +40,7 @@ Durable-output detail lives in [reference/parent-orchestrator.md §Durable child
 
 ### Parent loop
 
-The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle approve/request-changes/reject/timeout outcomes, and finish only according to explicit merge authority.
+The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle approve/request-changes/reject/timeout/stale/interrupted outcomes with status/activity checks before replacement, and finish only according to explicit merge authority.
 
 ### Post-merge verifier recipe
 
@@ -80,11 +80,11 @@ Review-loop detail lives in [reference/standalone-gate.md §Review loop](referen
 
 ### Timeout handling
 
-Timeout detail lives in [reference/timeout-handling.md](reference/timeout-handling.md) and [reference/standalone-gate.md §Timeout handling](reference/standalone-gate.md#timeout-handling): if no Review Report arrives within 10 minutes, do not reuse the same reviewer session; try one fresh reviewer session, then escalate.
+Timeout detail lives in [reference/timeout-handling.md](reference/timeout-handling.md) and [reference/standalone-gate.md §Timeout handling](reference/standalone-gate.md#timeout-handling): missing Review Report after the wait budget is a stale-run signal, not review completion. Check observed reviewer status/activity and use the runtime's status/control/interruption mechanism when available; if status/control is unavailable or ambiguous, escalate instead of launching a duplicate reviewer. Allow a second reviewer attempt only after the first attempt is failed, stale, interrupted, or unreachable with the reason documented.
 
 ### Review Gate Summary
 
-Review Gate Summary detail lives in [reference/standalone-gate.md §Review Gate Summary](reference/standalone-gate.md#review-gate-summary): after all rounds complete, post a concise MR comment listing each round, reviewer, decision, headline, and final Review Report link.
+Review Gate Summary detail lives in [reference/standalone-gate.md §Review Gate Summary](reference/standalone-gate.md#review-gate-summary): after all rounds complete or escalate, post a concise MR comment listing each round, reviewer, decision, headline, and final Review Report link when available; timeout/stale/interrupted entries are non-completion states and do not imply review completion.
 
 ### Human bypass protocol
 
