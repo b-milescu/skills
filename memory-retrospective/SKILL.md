@@ -47,6 +47,10 @@ normal repo checks.
 
 ## Candidate changes
 
+Output proposals only; never edit skill prompts, templates, docs, gates,
+fixtures, or tests directly. Route approved candidates to `/gitlab-to-issues`
+(or `/to-issues`) or the build workflow.
+
 Prefer specific follow-ups:
 
 - skill prompt wording
@@ -56,9 +60,4 @@ Prefer specific follow-ups:
 
 ## If DB available
 
-Report groupings by:
-
-- activity type
-- project
-- agent role
-- date range
+Report the aggregate-count groupings listed in the Output contract.
