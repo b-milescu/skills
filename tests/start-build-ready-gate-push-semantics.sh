@@ -10,7 +10,8 @@ fail() {
 }
 
 safety="start-build/SAFETY.md"
-flow="start-build/BUILD-FLOW.md"
+router="start-build/BUILD-FLOW.md"
+flow="start-build/reference/implementation-flow.md"
 schema="start-build/templates/reviewer-lift-schema.md"
 
 if grep -qiE 'Run the (full )?(local )?gate locally before pushing|full Check Gate[^\n]*before pushing|full local gate[^\n]*before pushing' "$safety"; then
@@ -19,6 +20,9 @@ fi
 
 grep -qF "Project's full check gate green before marking ready/requesting review" "$safety" || \
   fail "$safety missing ready/request-review gate boundary"
+
+grep -qF 'reference/implementation-flow.md' "$router" || \
+  fail "$router missing implementation-flow canonical link"
 
 for phrase in \
   "**Early Draft MR push.**" \

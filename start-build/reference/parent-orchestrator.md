@@ -1,0 +1,42 @@
+# Parent-orchestrator recipe
+
+Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. The stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../BUILD-FLOW.md#parent-orchestrator-recipe). Project rulebooks may specialize labels, local gates, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
+
+Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI results stay bound to the MR head before approval or merge; credentials and product/runtime/operator external systems are not exposed through workflow artifacts.
+
+## Durable child outputs
+
+Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on `worktree:true` plus a relative `output` path plus `outputMode:"file-only"` for any artifact the parent must read later: that combination can return a path inside a temporary `pi-worktree-*` checkout, and parent reads can fail after the worktree is removed.
+
+Safe patterns:
+
+- Prefer inline child output for the parent handoff when size permits.
+- If a file output is required, have the caller create a durable run directory outside any `pi-worktree-*` path, then pass an absolute output path under that directory and ensure the parent directory exists before launch.
+- If a child returns a stale temporary-worktree output path, recover from async run logs or other durable run artifacts when available; do not treat the missing local file as the canonical delivery record.
+- For GitLab delivery, the MR description's Reviewer Lift / Review Packet and GitLab comments are the canonical durable handoff. Local handoff files and run artifacts are convenience copies only.
+
+## Parent loop
+
+1. **Resolve issue(s).** Read the issue, comments, labels, linked MRs or parent design docs, and project rulebook. Confirm each issue is `ready-for-agent` or otherwise approved for agent work. If multiple issues are in scope, prove the [Decoupling Contract](../../docs/decoupling-contract.md) before parallel work; otherwise process issues serially in dependency order.
+2. **Prepare isolated work.** Verify clean status, fetch the target branch, and create the source branch or one isolated worktree per decoupled issue. The parent checkout remains coordinator-only during multi-issue runs.
+3. **Discover and run child `mr-builder`.** If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates issue-implementation specialization, for example `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker` override. Prefer project-scope agents over user-scope agents over a builtin `worker`. Start one builder per issue/worktree with one issue URL/IID, one worktree, the target branch, project rulebook, local Check Gate, quoted merge authority plus source, and any run directory. Never let two agents share a checkout, branch, temp DB, port, or uncommitted artifact directory. The builder owns implementation, Draft MR creation, Review Packet and Reviewer Lift updates, local gate evidence, ready-marking, and final handoff. In child mode the builder stops there; it does not spawn a reviewer, approve, merge, or clean up the parent-owned run.
+4. **Parent spot-check.** Before review, validate the builder handoff and MR via `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch, pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha`, Reviewer Lift `Reviewed SHA`, pipeline SHA when exposed, changed paths, touched safety surfaces, decoupling proof, local gate result, open questions, merge authority, and merge authority source. Escalate if the handoff is missing, stale, out of scope, or contradicts the issue/rulebook.
+5. **Discover and run `mr-reviewer`.** If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization, for example `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override. Prefer project-scope agents over user-scope agents over a builtin reviewer. Start a fresh reviewer session with a minimal reviewer launch prompt: MR URL, pointer to the Reviewer Lift block in the MR description, project rulebook path, and the instruction not to treat parent/builder reasoning as evidence. Add a run directory only as a local artifact pointer when needed, not as review reasoning. The reviewer posts one GitLab Review Report for one reviewed SHA, then returns the parseable reviewer final handoff from `../../start-review/templates/reviewer-final-handoff.md` for parent-orchestrator parsing after any authorized action attempt. The GitLab Review Report remains the durable review record; the final handoff is a parsing aid. Approval or merge actions remain limited by the explicit merge authority and verifiable `Merge authority source` in the Review Packet, parent/human instruction, or project rulebook.
+6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any finish action. On `request-changes`, send finding IDs and reviewed SHA to the builder; require fix commits, targeted evidence, a full local gate when substantive, a file-backed revision note, and updated Reviewer Lift before a fresh reviewer session reads the new SHA. On `reject`, stop and escalate. On reviewer timeout, try one fresh reviewer session, then escalate. Keep the three-round review limit from the standalone gate.
+7. **Enforce SHA and CI guards.** Before approval, merge, or auto-merge, re-read MR metadata and require the current MR SHA to equal the reviewed SHA. Treat CI as valid only when it is for that SHA. Red, canceled, skipped, missing, or stale CI blocks merge unless an authorized human records an explicit waiver. Pending CI may only be accepted under the CI-pending review policy and protected merge checks.
+8. **Finish by authority.** For `approval-only` or `human release`, stop after reporting reviewed SHA, CI, and blockers. For `reviewer may merge` or `queue auto-merge`, only an authorized reviewer or parent may approve, merge, or queue with the reviewed SHA; a child builder still must not approve or merge. After merge or queueing, fetch the target branch, verify issue closure or pending closure, remove clean worktrees, and delete source branches only when project policy allows.
+9. **Verify after merge.** Keep post-merge verification separate from review. The parent or verifier follows [Post-merge verifier recipe](post-merge-verifier.md) to confirm merged/default-branch state without taking reviewer authority.
+10. **Archive local artifacts.** Keep local run artifacts redacted and untracked. Local handoff files are convenience artifacts only. Durable handoff stays in GitLab MR descriptions and comments, using file-backed comments for multiline updates.
+
+## Minimal reviewer launch prompt
+
+When the parent starts a fresh reviewer, pass only the review target and evidence-boundary instructions:
+
+```text
+Review MR: <MR web URL>
+Reviewer Lift block is in the MR description — lift structured values into your Review Report.
+Project rulebook: <path to rulebook>
+Do not treat parent/builder reasoning as evidence; verify claims from the MR, diff, issue, CI, local checks, and rulebook.
+```
+
+Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.

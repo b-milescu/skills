@@ -33,7 +33,8 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` parity, canonical-pointer, prompt-drift, dependency failures, and the no-mutation `install.sh --check` path under temporary homes. |
-| Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
+| Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator reference guidance and out of child builder prompts/docs. |
+| Start-build child path size | `bash tests/start-build-child-path-size.sh` | Verifies the child-builder path doc exists, stays materially smaller than the legacy full `BUILD-FLOW.md`, and excludes parent-only subagent discovery text. |
 | Start-build context read matrix | `bash tests/start-build-context-read-matrix.sh` | Verifies the first-screen mode routing table covers builder/coordinator modes and preserves child avoid-list anchors. |
 | Start-build ready gate / push semantics | `bash tests/start-build-ready-gate-push-semantics.sh` | Verifies early Draft and implementation pushes remain allowed before full gate, while ready/request-review still requires local gate evidence and synchronized Reviewer Lift delta semantics. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
@@ -99,6 +100,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
+| `tests/start-build-child-path-size.sh` | `start-build` child-builder path size, child authority boundary, and parent-only discovery exclusion regressions. |
 | `tests/start-build-context-read-matrix.sh` | `start-build` first-screen mode routing table and child avoid-list anchor regressions. |
 | `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
 | `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, ready-marking local gate boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
@@ -128,6 +130,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, report-link fields, concise core headings, and required evidence/OQ placeholder-clean requirements. | `bash tests/review-report-summary-first.sh` |
 | Reviewer prompts stay pointer-based and ADR template ownership stays shared/drift-protected. | `bash tests/reviewer-prompt-dedupe.sh` |
 | Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
+| Child-builder path stays materially smaller than the legacy full `BUILD-FLOW.md` path while keeping parent-owned review gate boundaries. | `bash tests/start-build-child-path-size.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
 | Early Draft/implementation pushes do not require the full local gate, but ready/request-review does; Reviewer Lift local-gate and post-ready delta semantics stay aligned. | `bash tests/start-build-ready-gate-push-semantics.sh` |
 

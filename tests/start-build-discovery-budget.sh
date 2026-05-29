@@ -9,26 +9,33 @@ fail() {
   exit 1
 }
 
-flow="start-build/BUILD-FLOW.md"
+router="start-build/BUILD-FLOW.md"
+context="start-build/reference/context-and-planning.md"
 skill="start-build/SKILL.md"
 template="start-build/templates/build-plan-packet.md"
 
-grep -qE '^## Discovery Budget$' "$flow" || fail "$flow missing Discovery Budget section"
-grep -qE '^## Build Plan Packet$' "$flow" || fail "$flow missing Build Plan Packet section"
+for section in 'Discovery Budget' 'Build Plan Packet'; do
+  grep -qE "^## ${section}$" "$router" || fail "$router missing $section compatibility section"
+  grep -qE "^## ${section}$" "$context" || fail "$context missing canonical $section section"
+done
 
-discovery_start="$(grep -n '^## Discovery Budget$' "$flow" | cut -d: -f1)"
-packet_start="$(grep -n '^## Build Plan Packet$' "$flow" | cut -d: -f1)"
-builder_modes_start="$(grep -n '^## Builder invocation modes$' "$flow" | cut -d: -f1)"
+grep -qF 'reference/context-and-planning.md#discovery-budget' "$router" || \
+  fail "$router Discovery Budget stub missing canonical context link"
+grep -qF 'reference/context-and-planning.md#build-plan-packet' "$router" || \
+  fail "$router Build Plan Packet stub missing canonical context link"
+
+discovery_start="$(grep -n '^## Discovery Budget$' "$context" | cut -d: -f1)"
+packet_start="$(grep -n '^## Build Plan Packet$' "$context" | cut -d: -f1)"
+check_gate_start="$(grep -n '^## Check gate discovery$' "$context" | cut -d: -f1)"
 
 [ -n "$discovery_start" ] || fail "Discovery Budget heading not found"
 [ -n "$packet_start" ] || fail "Build Plan Packet heading not found"
-[ -n "$builder_modes_start" ] || fail "Builder invocation modes heading not found"
-
+[ -n "$check_gate_start" ] || fail "Check gate discovery heading not found"
 [ "$discovery_start" -lt "$packet_start" ] || fail "Discovery Budget must precede Build Plan Packet"
-[ "$packet_start" -lt "$builder_modes_start" ] || fail "Build Plan Packet must precede Builder invocation modes"
+[ "$packet_start" -lt "$check_gate_start" ] || fail "Build Plan Packet must precede check gate discovery"
 
-discovery_block="$(sed -n "${discovery_start},$((packet_start - 1))p" "$flow")"
-packet_block="$(sed -n "${packet_start},$((builder_modes_start - 1))p" "$flow")"
+discovery_block="$(sed -n "${discovery_start},$((packet_start - 1))p" "$context")"
+packet_block="$(sed -n "${packet_start},$((check_gate_start - 1))p" "$context")"
 
 require_block_text() {
   block="$1"
@@ -51,7 +58,7 @@ for trigger in 'issue links' 'rulebook references' 'changed paths' 'imports/call
 done
 
 printf '%s\n' "$packet_block" | grep -q 'issue, intended behavior, affected surfaces, test plan, risk, and non-goals' || fail "Build Plan Packet block missing required fields"
-printf '%s\n' "$packet_block" | grep -q 'templates/build-plan-packet.md' || fail "Build Plan Packet block missing template pointer"
+printf '%s\n' "$packet_block" | grep -q '../templates/build-plan-packet.md' || fail "Build Plan Packet block missing template pointer"
 require_block_text "$packet_block" 'loaded context sources' "Build Plan Packet block missing loaded-context-source recording"
 require_block_text "$packet_block" 'why each source was relevant' "Build Plan Packet block missing context relevance rationale"
 
@@ -61,7 +68,7 @@ if grep -qE 'Load the host project.?s rulebook first.*architecture docs, ADRs' "
 fi
 
 for pattern in 'Standalone `/start-build` mode' 'Child `mr-builder` mode'; do
-  grep -qF "$pattern" "$flow" || fail "$flow missing authority boundary text: $pattern"
+  grep -qF "$pattern" "$router" || fail "$router missing authority boundary text: $pattern"
 done
 
 grep -qF 'templates/build-plan-packet.md' "$skill" || fail "$skill missing build plan packet template pointer"

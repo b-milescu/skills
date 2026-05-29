@@ -43,10 +43,11 @@ done
 
 child_row="$(printf '%s\n' "$matrix_block" | grep -F '| Child `mr-builder` |')"
 for required_anchor in \
+  'reference/child-builder.md' \
   'BUILD-FLOW.md#child-mr-builder-mode' \
   'templates/builder-final-handoff.md' \
-  'BUILD-FLOW.md#parent-orchestrator-recipe' \
-  'BUILD-FLOW.md#reviewer-launch-protocol' \
+  'reference/parent-orchestrator.md' \
+  'reference/standalone-gate.md#reviewer-launch-protocol' \
   'BUILD-FLOW.md#post-merge-verifier-recipe'
 do
   printf '%s' "$child_row" | grep -qF "$required_anchor" || fail "child row missing anchor: $required_anchor"
@@ -55,6 +56,16 @@ done
 for phrase in 'merge/finish' 'unless parent changes role scope'; do
   printf '%s' "$child_row" | grep -qF "$phrase" || fail "child row missing avoid-list phrase: $phrase"
 done
+
+# Child required context must be smaller than the old BUILD-FLOW path: parent and
+# standalone gate details are avoid-list/optional, not required reads.
+child_required_cell="$(printf '%s' "$child_row" | awk -F'|' '{ print $3 }')"
+if printf '%s' "$child_required_cell" | grep -qF 'reference/parent-orchestrator.md'; then
+  fail "child required cell includes parent-orchestrator detail"
+fi
+if printf '%s' "$child_required_cell" | grep -qF 'reference/standalone-gate.md'; then
+  fail "child required cell includes standalone gate detail"
+fi
 
 docs_row="$(printf '%s\n' "$matrix_block" | grep -F '| Docs-only/config-only builder |')"
 for phrase in 'templates/review-packet-compact.md' 'Check Gate' 'TDD: N/A' 'unless behavior becomes touched'; do
