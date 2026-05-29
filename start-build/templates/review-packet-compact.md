@@ -37,6 +37,10 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 ## Summary
 
+## Loaded Context Sources
+
+List only sources loaded beyond the issue and rulebook index. Use one-line bullets with why relevant; write `none beyond issue and rulebook index` when no expansion was needed.
+
 ## Scope
 
 ### In scope

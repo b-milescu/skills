@@ -10,7 +10,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 ## build-plan-packet.md
 
 - Use before first edit, after the Discovery Budget completes.
-- Capture only evidence-backed facts: issue, intended behavior, affected surfaces, test plan, risk, and non-goals.
+- Capture only evidence-backed facts: issue, intended behavior, loaded context sources with why-relevant reasons, affected surfaces, test plan, risk, and non-goals.
 - If critical info is still missing, stop and route the issue back to triage instead of filling blanks.
 
 ## review-packet.md
@@ -19,6 +19,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Merge authority source** — Record where the authority claim came from, such as a parent task prompt, human MR comment URL, rulebook path+section, or project default source. Do not write builder-local interpretation as authority; quote the source and let the reviewer/parent verify it.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators.
+- **Loaded Context Sources** — Short bullets for sources loaded beyond the issue and rulebook index, each with why relevant. Write `none beyond issue and rulebook index` instead of listing broad docs that were not loaded.
 - **In scope** — Bullet list of intended and actual changes.
 - **Out of scope** — Explicitly name adjacent work not done. Open separate issues for follow-ups.
 - **Acceptance Criteria Evidence** — Map issue acceptance criteria to proof so the reviewer can validate scope quickly.
@@ -51,6 +52,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 - Its Reviewer Lift table is an approved generated copy of `reviewer-lift-schema.md`; keep field names/order identical and use explicit `N/A`/`none` values where compact evidence applies.
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Summary** — One paragraph: what changed and why.
+- **Loaded Context Sources** — Short bullets for sources loaded beyond the issue and rulebook index, each with why relevant; `none beyond issue and rulebook index` is valid.
 - **In scope** — Bullet list.
 - **Out of scope** — Usually: "No runtime behavior, external paths, state schema, gates, or domain rules changed."
 - **Test Evidence** — Commands run and result, or CI link. State TDD: N/A for compact-eligible non-behavior changes. For docs-only, a targeted markdown/read check may be enough.
