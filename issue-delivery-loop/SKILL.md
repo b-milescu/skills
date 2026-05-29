@@ -21,7 +21,7 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 ## Operating contract
 
 - Default WIP: 1 active delivery loop, serial by default.
-- Run the parent loop per `../start-build/reference/parent-orchestrator.md` (steps 1/4/6 — decoupling proof before parallel work, the full parent spot-check field list, and the revision rounds with SHA/CI/authority guards; the three-round limit defers to `../start-build/reference/standalone-gate.md`).
+- Run the parent loop per `../start-build/reference/parent-orchestrator.md` — proving the decoupling proof before parallel work, completing the full parent spot-check field list, driving the decision loop, and finishing only behind the SHA/CI/authority guards; the three-round limit defers to `../start-build/reference/standalone-gate.md`.
 - Delegate implementation to child `mr-builder` sessions via `../start-build/reference/child-builder.md` (stable router: `../start-build/BUILD-FLOW.md`).
 - Delegate independent review to fresh `mr-reviewer` sessions via `../start-review/REVIEW-FLOW.md`.
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
