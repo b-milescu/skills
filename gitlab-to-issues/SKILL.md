@@ -1,6 +1,6 @@
 ---
 name: gitlab-to-issues
-description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for the current target GitLab repo using tracer-bullet vertical slices and target-repo triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues (if installed) separate.
+description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for the current target GitLab repo using vertical slices and target-repo triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues (if installed) separate.
 ---
 
 # GitLab To Issues
@@ -16,18 +16,20 @@ Turn an approved plan into GitLab issues for the current target GitLab repositor
 5. Before drafting or publishing, display the detected GitLab target as host/project (for example, `gitlab.example/group/project`) from `/gitlab-local` preflight/repo metadata and ask the user to confirm it if there is any ambiguity.
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.
-8. Draft tracer-bullet slices; ask the user to approve the breakdown before publishing.
+8. Draft vertical slices; ask the user to approve the breakdown before publishing.
 9. Publish approved slices to GitLab using `/gitlab-local` command syntax only after explicit publish approval.
 
 ## Slice rules
 
 Each issue is a thin vertical slice through all affected user-visible layers: docs, CLI behavior, Dev Workflow guidance, state, API, UI, tests, deploy/runbook, or other observable surfaces. Do not assume every project has schema/API/UI. Each slice should be demoable, reviewable, and testable on its own.
 
+Slice *toward* the shared [Decoupling Contract](../docs/decoupling-contract.md): aim each slice at independence so a builder and reviewer can later grade it against that same contract. This skill references the contract for the independence target only; it does not enforce or prove decoupling — that stays with `/start-build`, `/start-review`, and `/issue-delivery-loop`.
+
 ## Slice types and labels
 
 Use only labels listed in `<repo-root>/docs/agents/triage-labels.md`; never invent or rely on lazy label creation. That file owns the live vocabulary; this section only describes when to look there.
 
-- **AFK**: implementable without new human decisions. Normal review/merge policy still applies; AFK means ready for an agent, not review bypass. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one and the readiness section passes or has a maintainer waiver.
+- **AFK**: ready for an agent to implement; see the AFK-safety row of `<repo-root>/docs/agents/agent-readiness-scorecard.md` for what that requires. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one and the readiness section passes or has a maintainer waiver.
 - **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
@@ -43,7 +45,7 @@ For each proposed slice, show:
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
 - **Agent Readiness**: acceptance criteria quality, current-state/repro evidence, test strategy, risk surface, dependencies, unknowns, AFK safety, and reviewer focus
-- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices
+- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](../docs/decoupling-contract.md)
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
 
