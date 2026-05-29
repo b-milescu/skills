@@ -1,5 +1,9 @@
 # Review Packet (compact)
 
+For docs-only, tests-only with no runtime safety impact, typo/lint, or a
+dependency bump with no API/runtime impact. `filling-guide.md`
+(review-packet-compact.md) owns eligibility and section instructions.
+
 ## Metadata
 
 | Field | Value |
@@ -37,15 +41,13 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 ## Summary
 
-## Loaded Context Sources
-
-List only sources loaded beyond the issue and rulebook index. Use one-line bullets with why relevant; write `none beyond issue and rulebook index` when no expansion was needed.
+One paragraph: what changed and why. Name loaded context sources beyond the
+issue and rulebook index, or write `none beyond issue and rulebook index`.
 
 ## Scope
 
-### In scope
-
-### Out of scope
+- **In scope:**
+- **Out of scope:** `<usually: no runtime behavior, external paths, state schema, gates, or domain rules changed>`
 
 ## Acceptance Criteria Evidence
 
@@ -55,11 +57,16 @@ List only sources loaded beyond the issue and rulebook index. Use one-line bulle
 
 ## Safety Confirmation
 
-- [ ] No product/runtime/operator external-system mutation path changed.
-- [ ] No credential / secret-store handling changed.
-- [ ] No domain rule or strategy behavior changed.
-- [ ] No state schema, migration, deploy topology, or enforce-mode behavior changed.
+`<Confirm none changed: product/runtime/operator external-system mutation path;
+credential / secret-store handling; domain rule or strategy behavior; state
+schema, migration, deploy topology, or enforce-mode behavior. Note any exception.>`
 
 ## Test Evidence
 
+Commands run and result, or CI link. State `TDD: N/A — <reason>` for
+compact-eligible non-behavior changes. A targeted markdown/read check may be
+enough for docs-only work.
+
 ## Follow-ups
+
+`None` or linked follow-up issues.
