@@ -14,7 +14,7 @@ This repo uses GitLab-backed dev workflows.
 ## Active recipes
 
 - `issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps command syntax in `/gitlab-local`.
-- `start-build/BUILD-FLOW.md` section [Parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe) — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `/post-merge-verifier`.
+- `start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `/post-merge-verifier`; the stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../../start-build/BUILD-FLOW.md#parent-orchestrator-recipe).
 - `post-merge-verifier/SKILL.md` — active read-only verifier skill for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` for command syntax instead of copying snippets here.
 
 ## Design briefs

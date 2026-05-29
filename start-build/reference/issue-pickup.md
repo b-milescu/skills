@@ -1,0 +1,18 @@
+# Issue pickup flow
+
+Detailed issue-resolution procedure for `start-build`. The stable compatibility anchor remains [BUILD-FLOW.md §Issue pickup](../BUILD-FLOW.md#issue-pickup); this file owns the full selection and suitability checklist.
+
+## Procedure
+
+1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm cwd is the intended GitLab repo and `glab` resolves to it. If it fails, stop and ask.
+2. Use `gitlab-local` **Snippet: issue-pickup** to list candidates when the caller did not supply an issue. Narrow with labels, assignment, author, or milestone only when project conventions support those filters.
+3. Inspect enough candidates to validate fit and coupling. For a normal queue, inspect 3-5 candidates; for a supplied issue, inspect that issue, its comments, and linked MRs.
+4. Prefer open issues that are unassigned or assigned to you, ready/triaged, clear, unblocked, non-confidential, and sized for one MR.
+5. Deprioritize blocked issues, issues with information-needed or human-decision equivalents, WIP/in-progress issues, and confidential/security-sensitive issues unless the user explicitly supplied them.
+6. For multiple issues, select only a set that satisfies the shared [Decoupling Contract](../../docs/decoupling-contract.md). If any contract item is false, unknown, or contradicted, do not parallelize.
+7. Summarize each inspected candidate with ID, title, labels, assignee, suitability, and coupling risk before proceeding when there is a real choice.
+8. Claim issues only when the target project's rulebook documents that convention. Do not create labels or mutate assignment casually.
+
+## Supplied issue fast path
+
+When the user or parent supplies an issue ID or URL, use it if it is open and within scope. Still read the issue body, comments, linked MRs, dependency notes, project rulebook, and affected docs/tests before editing. If dependency status, acceptance criteria, or merge authority contradict the parent prompt, stop and ask instead of guessing.
