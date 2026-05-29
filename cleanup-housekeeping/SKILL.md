@@ -1,110 +1,99 @@
 ---
 name: cleanup-housekeeping
-description: Discover cleanup and housekeeping opportunities in any codebase, then propose and plan safe maintenance changes without implementing them by default. Use when the user asks for cleanup, housekeeping, repo hygiene, technical-debt discovery, stale code/docs/config inventory, or planning non-feature maintenance work.
+description: Discover and plan repo-maintenance cleanup as subtractive work — deslop (behavior- and boundary-preserving simplification of needlessly complex local structures) and destale (remove or correct stale/inaccurate code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (use `improve-codebase-architecture`), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (use `triage`). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
 ---
 
 # Cleanup Housekeeping
 
-Discover, propose, and plan cleanup work. Default mode is planning-only: do not edit source, delete files, upgrade dependencies, reformat code, or run destructive commands unless the user explicitly pivots to an implementation workflow.
+Discover and plan **subtractive** maintenance in two tight, evidence-gated scopes: **deslop** (simplify needlessly complex local structures without changing behavior or boundaries) and **destale** (remove or mechanically correct stale/inaccurate items). Planning-only by default: do not edit source, delete files, upgrade dependencies, reformat code, or run destructive commands; approved slices go to the build workflow, not this skill.
 
 ## Operating stance
 
-- Language agnostic: infer ecosystems from repo evidence; never assume app stack from filenames alone.
-- Evidence first: every recommendation needs concrete file, command, doc, tracker, or test evidence.
-- Project rules first: read the host repo rulebook (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README, docs/agents, `CONTEXT.md`, ADRs) before judging cleanup value.
-- Guardrail-aligned: when `docs/agents/coding-guardrails.md` exists, compare findings to it. Treat newer guardrails as target direction for existing code, not blame for older choices.
+- Language agnostic and evidence first: infer ecosystems from repo evidence (never from filenames alone); every candidate needs concrete file, command, doc, or test evidence.
+- Project rules first: read the host rulebook (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README, `docs/agents`, `CONTEXT.md`, ADRs) before judging cleanup value.
 - Domain-safe: cleanup must preserve domain language, safety invariants, review gates, deploy topology, migrations, and operator workflows.
-- Deep for repo-wide scans: avoid shallow sampling; use repo structure, docs, tests, and graph evidence when available.
-- Mandatory subagent discovery: every cleanup run must launch read-only subagent discovery before final recommendations. Use broad fan-out for repo-wide scope and at least one narrow verifier/discovery child for path-limited scope. If subagents cannot be launched safely, stop and report the blocker instead of silently falling back to serial-only discovery.
-- Planning-only by default: produce scoped plans, risks, validation, and follow-up questions; leave implementation to the user-approved build/review workflow.
+- Planning-only by default: produce scoped plans, risks, validation, and follow-up questions; leave implementation to the build workflow.
+
+## Scope 1 — DESLOP (behavior- AND boundary-preserving simplification)
+
+*Observable behavior* = return values, exceptions (type+message), side effects, emitted text (logs/stdout other code may parse), ordering, rounding, **and time/space complexity class**; a consumer relying on any of these must not be able to tell. **Allowed transforms — CLOSED list** (anything not on it → `improve-codebase-architecture`, not deslop):
+
+- remove dead/unreachable code
+- remove a literal/near-literal duplicate where a canonical copy exists in-reach (cross-unit dedup is OUT)
+- inline a private, single-call-site pass-through wrapper that only forwards
+- remove speculative/unused generality (params/config/extension points with no current consumer)
+- remove vestigial leftovers (commented-out code, dead flags, shims for removed features)
+- flatten **provably-equivalent** local control flow (nested-if → guard, collapse identical branches)
+- replace hand-rolled code with an existing helper/stdlib at the same call site with identical contract
+
+**Gate sequence** (apply per candidate; any *yes/unknown* → OUT or `Needs info`):
+
+1. **Export gate** — exported/public/referenced across a module boundary? → OUT
+2. **Reference gate** — within a *declared observability budget* (this file + direct importers + tests/fixtures, listed in the candidate Evidence), referenced by any other unit incl. tests/mocks/reflection/DI/dynamic access? → OUT
+3. **Incidental-contract gate** — changes exception/message, log format, complexity class, ordering, rounding, or side-effect timing? → OUT
+4. **Domain gate** — could the structure *be* a domain rule (branch table, tier, state machine) and you cannot show it is incidental? → OUT
+5. **Edge gate** — creates/removes/relocates an edge between units (incl. cross-unit dedup)? → OUT
+
+Survives all five ⇒ in-scope. The candidate MUST state the observability budget it inspected; an unstated/unbounded budget ⇒ `Needs info`, never AFK. Behavior-touching simplification stays **HITL + requires characterization tests**. **Firewall:** *simplify inside the unit; never move a seam — only via the allowed transforms, each proven unobservable within a declared blast radius.*
+
+## Scope 2 — DESTALE (remove or correct stale/inaccurate items)
+
+Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples. **Correction is in-scope only when a single mechanical source of truth proves both the drift AND the corrected value** (command output, lockfile, config, code signature). If the fix needs judgment, prose authoring, or a domain call → `Needs info` / `grill-with-docs`. ("Fix the drifted README command" is IN; "rewrite the README for clarity" is OUT.)
+
+## Out of scope — handoffs (each carries a fallback)
+
+- boundary-moving restructuring (split mixed-responsibility files, move responsibilities, change APIs/layers, cross-unit dedup) → `improve-codebase-architecture` *(fallback: file a boundary-change follow-up issue)*
+- tracker/backlog hygiene (stale issues, labels, untriaged backlog) → `triage` *(fallback: repo tracker workflow)*
+- unsafe-default / security assessment → `security-review`, flag-and-refer only *(built-in)*
+- terminology / ADR / glossary → `grill-with-docs` *(fallback: edit `CONTEXT.md`/ADRs manually)*
+
+## Boundaries with sibling skills
+
+- **When NOT to use this skill:** if you already have a pending change/diff and just want it tidied → `/simplify` (or `/code-review`). Cleanup is for discovering debt across *committed* code with no active change.
+- **Implementation route:** planning-only. Approved slices → the build workflow (`/start-build`), which produces the diff; `/simplify` + `/code-review` run *downstream* on that diff; the start-review structural maintainability sweep gates the same smells at MR time. **No direct cleanup→simplify edge** (a plan cannot be consumed by a diff-level applier).
+- **vs the start-review structural sweep:** same smell taxonomy, different altitude — cleanup finds them repo-wide as plan candidates; the sweep gates them inside one MR diff. Do not merge.
+- **Subagent fan-out:** a scaling tool for **broad** scopes only — NOT mandatory for narrow, path-limited, docs-only, or quick passes.
 
 ## Quick start
 
-1. Confirm scope if unclear: repo-wide, path-limited, docs-only, config-only, dependency hygiene, tracker hygiene, or specific concern.
-2. Resolve repo root and check cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`). Dirty worktree means avoid broad rewrites and call out possible noise.
-3. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*` when present, especially `docs/agents/coding-guardrails.md` and check-gate docs, plus `CONTEXT.md`/`CONTEXT-MAP.md` and ADRs.
-4. Launch mandatory read-only subagent discovery. For broad scopes, split by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process, graph communities). For narrow scopes, launch at least one focused verifier/discovery child over the requested path or concern. Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return. If launch authority or safe isolation is unavailable, stop and ask the user to authorize subagents or explicitly choose a different non-`/cleanup-housekeeping` workflow.
-5. For broad, unfamiliar, architecture-heavy, or relationship-heavy scopes, check whether `graphify-out/GRAPH_REPORT.md` or `graphify-out/graph.json` exists and read existing graph output when present. If graph output is missing or stale, recommend `/graphify . --update` only when scope justifies it and ask before creating or updating graph artifacts. Skip graphify for narrow, docs-only, config-only, dependency-only, or quick hygiene passes.
-6. Discover ecosystems from manifests/config/CI, then inspect enough files to ground findings across the requested scope.
-7. Build candidate list with evidence, impact, risk, effort, confidence, likely validation, dependencies, and guardrail alignment.
-8. Challenge candidates against docs and domain terms. If terminology, boundaries, or durable decisions are unclear, use or recommend `/grill-with-docs` before finalising plan.
-9. Present proposal; ask user which slices to approve, defer, merge, split, or discard.
-10. After approval, route planning output to `/to-issues` or `/gitlab-to-issues` when issue creation is desired. Route implementation to the repo's build workflow, not this skill.
+1. Confirm scope if unclear: repo-wide, path-limited, docs-only, config-only, dependency hygiene, or a specific concern.
+2. Resolve repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); a dirty worktree means call out possible noise. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*`, check-gate docs, `CONTEXT.md`, and ADRs.
+3. For **broad** scopes only, optionally fan out read-only discovery subagents (see Boundaries). Skip fan-out for narrow, path-limited, docs-only, or quick passes.
+4. Discover ecosystems from manifests/config/CI, then build the candidate list (deslop and destale), applying the deslop gate sequence and the destale source-of-truth gate.
+5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
+6. After approval, route to `/to-issues` or `/gitlab-to-issues` for issue creation; route implementation to the build workflow, not this skill.
 
-## Graphify-assisted discovery optional
+## Graphify-assisted discovery (optional lead-gen)
 
-Use graphify as a lead generator for broad, unfamiliar, architecture-heavy, or relationship-heavy cleanup scopes.
-
-- If `graphify-out/graph.json` or `graphify-out/GRAPH_REPORT.md` exists, inspect graph output during discovery.
-- If graph output is missing or stale, recommend `/graphify . --update` only when scope is broad enough to justify it. Ask before creating or updating graph artifacts.
-- Do not require graphify for narrow, docs-only, config-only, dependency-only, or quick hygiene passes.
-- Treat graph findings as leads, not evidence. Verify every cleanup candidate with source files, docs, tests, CI, commands, or tracker evidence.
-- Treat `INFERRED` and `AMBIGUOUS` edges as hypotheses requiring direct confirmation.
-- If a finding is supported only by graph output, classify it as `Needs info`.
-
-Useful graph leads:
-
-- God nodes: possible over-coupling, mixed responsibility, or hidden ownership concentration.
-- Surprising connections: possible undocumented dependency, stale integration, or boundary leak.
-- Low-cohesion communities: possible unclear module/docs boundaries.
-- Orphan clusters: possible stale, generated, experimental, or poorly integrated areas.
-- Repeated bridge nodes: possible abstraction, config, or shared-helper cleanup hotspot.
-
-## Discovery checklist
-
-Scan for cleanup opportunities across any language/toolchain:
-
-- **Graphify-assisted signals (optional lead-gen)**: Use graphify leads only to direct inspection: god nodes for over-coupling candidates, surprising connections for hidden dependencies, low-cohesion communities for unclear boundaries, orphan clusters for stale or isolated areas, and repeated bridge nodes for abstraction/config hotspots. Verify all graph-led candidates with direct evidence before recommending them.
-- **Guardrail drift**: Compare candidates to `docs/agents/coding-guardrails.md` when present: hidden assumptions, overengineering, drive-by edits, broad refactors, orphan cleanup, missing success criteria, weak reproduction, or weak check evidence.
-- **Subagent fan-out (mandatory, parent-owned)**: Parent/coordinator sessions must launch read-only discovery subagents before final recommendations. For broad scopes, split by independent surface (docs/domain, build/CI, dependencies/tooling, code health, config/ops, tracker/process, graph communities). For path-limited or focused scopes, launch at least one narrow verifier/discovery child over the requested surface. Give each child narrow paths, project rules, banned actions (no edits, deletes, upgrades, reformatting, live mutations, or secret output), and candidate fields to return.
-- **Subagent aggregation**: Parent de-duplicates child findings, rejects unsupported claims, records gaps/conflicts, then classifies candidates as AFK/HITL/Needs info. If no launch authority or safe isolation exists, stop and report that `/cleanup-housekeeping` is blocked until subagent discovery is available or the user chooses another workflow.
-- **Repo shape**: duplicate directories, abandoned modules, generated artifacts committed unexpectedly, unclear ownership, inconsistent naming, stale examples.
-- **Docs/domain**: README drift, obsolete setup steps, broken doc links, ADR contradictions, glossary mismatch, missing operator/runbook notes.
-- **Build/test/CI**: redundant scripts, stale workflow jobs, missing local check gate docs, flaky/skipped tests needing decision, unused fixtures.
-- **Dependencies/tooling**: unused or duplicated packages, lockfile drift, unsupported runtime pins, overlapping formatters/linters. Propose upgrades only as separate reviewable slices.
-- **Code health**: dead exports, duplicate helpers, TODO/FIXME clusters, large files with mixed responsibilities, inconsistent error handling. Treat behavior changes as higher risk.
-- **Code simplification**: unnecessary abstractions, single-use wrappers, speculative extension points, deep nesting, duplicated control flow, over-generalized configuration, indirection that hides simple behavior, and complex conditionals that can be made clearer. Prefer behavior-preserving simplifications; require characterization tests for behavior-touching changes. Treat simplification that changes domain boundaries, safety invariants, public APIs, or operator workflows as HITL/high risk.
-- **Config/ops**: stale env examples, duplicate config sources, unsafe defaults, obsolete deploy docs, secret-looking values. Never print secrets.
-- **Tracker/process**: stale issues, missing labels, untriaged cleanup backlog, plans lacking acceptance criteria.
+- Use graphify as a lead generator for broad, unfamiliar, or relationship-heavy scopes only. If `graphify-out/graph.json` or `graphify-out/GRAPH_REPORT.md` exists, inspect it; if missing or stale, recommend `/graphify . --update` only when scope justifies it and ask before creating or updating graph artifacts. Do not require graphify for narrow, docs-only, config-only, dependency-only, or quick passes.
+- Treat graph findings (especially `INFERRED`/`AMBIGUOUS` edges) as leads, not evidence. A finding supported only by graph output is `Needs info`. Verify every candidate with source files, docs, tests, CI, commands, or tracker evidence.
 
 ## Candidate template
 
-For each finding, report:
-
-- **Title**: action-oriented cleanup slice.
-- **Evidence**: files, commands, docs, issues, or observations.
-- **Graph lead**: god node, community, path, or surprising connection that prompted inspection; include edge confidence when relevant.
-- **Why now**: maintenance pain, risk reduction, reviewability, onboarding, CI clarity, operator safety.
+- **Title**: action-oriented cleanup slice (deslop or destale).
+- **Evidence**: files, commands, docs, or observations; for deslop, the **declared observability budget** inspected; note any graph lead and edge confidence.
+- **Why now**: maintenance pain, risk reduction, reviewability, onboarding, CI clarity.
 - **Scope**: included surfaces and explicit out of scope.
 - **Risk**: behavior/runtime/operator/security/data/review impact.
-- **Validation**: tests, check gate, docs link check, dry run, grep proof, graph query/update, CI job, or manual review.
-- **Guardrail alignment**: coding guardrail, project rule, domain doc, or ADR this cleanup moves toward.
-- **Effort**: S/M/L and reason.
-- **Confidence**: High/Medium/Low based on evidence depth.
+- **Validation**: tests, check gate, docs link check, dry run, grep proof, graph query, or manual review.
+- **Effort / Confidence**: S/M/L with reason; High/Medium/Low by evidence depth.
 - **Type**: AFK / HITL / Needs info.
 
 ## Classification rules
 
-- **AFK**: mechanical, reversible, scoped, and acceptance criteria are clear; normal review still required.
-- **HITL**: architecture boundary, product behavior, security/legal, naming/domain decision, migration/deploy policy, or deletion with uncertain ownership.
-- **Needs info**: insufficient evidence, missing acceptance criteria, blocked by unknown owner, unclear check gate, or uncertain runtime impact.
+- **AFK**: mechanical, reversible, scoped, acceptance criteria clear; normal review still required.
+- **HITL**: behavior-touching deslop (characterization tests required) or any candidate with uncertain ownership/impact.
+- **Needs info**: insufficient evidence, missing acceptance criteria, unstated/unbounded observability budget, no mechanical source of truth for a correction, or unclear check gate.
 
 ## Planning rules
 
-- Prefer small vertical maintenance slices with independent review and validation.
-- Keep cleanup proposals surgical: touch only needed files, avoid mass reformatting, and split broad refactors into reviewable slices.
-- Separate pure docs, mechanical cleanup, dependency upgrades, behavior changes, and architecture changes unless coupling is proven.
-- Sequence risk reducers first: characterization tests, docs clarification, check-gate repair, inventory scripts, then larger cleanup.
-- Preserve generated files unless generator/source of truth is known.
-- Never delete, rewrite history, mass-format, change locks, or upgrade dependencies from discovery mode.
-- If cleanup reveals missing terminology or durable decisions, capture questions for `/grill-with-docs` and docs updates (`CONTEXT.md`, ADRs) before implementation.
+- Prefer small surgical slices with independent review; separate pure docs, mechanical destale, dependency upgrades, and behavior-touching deslop unless coupling is proven, sequencing characterization tests first.
+- Preserve generated files unless the generator/source of truth is known. Never delete, rewrite history, mass-format, change locks, or upgrade dependencies from discovery mode.
 
 ## Output shape
 
-1. **Scope inspected** — paths, docs, commands, graph sources if used, mandatory subagent coverage, and known gaps.
-2. **Graph context** — not used / existing graph read / update recommended / update skipped.
-3. **Guardrails applied** — coding guardrails, project rules, check gate, domain docs, and ADRs used as evaluation criteria.
-4. **Top findings** — ranked table of candidates.
-5. **Recommended plan** — ordered slices with type, risk, validation, dependencies, and guardrail alignment.
-6. **Grill points** — decisions or domain questions to resolve with `/grill-with-docs`.
-7. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
+1. **Scope inspected** — paths, docs, commands, known gaps, and graph context (not used / existing graph read / update recommended / update skipped).
+2. **Top findings** — ranked table of deslop and destale candidates.
+3. **Recommended plan** — ordered slices with type, risk, validation, and dependencies.
+4. **Handoffs** — items routed to `improve-codebase-architecture`, `triage`, `security-review`, or `grill-with-docs`, each with its fallback.
+5. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
