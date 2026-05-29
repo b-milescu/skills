@@ -73,6 +73,12 @@ Review-focused command cards for `/start-review` live in
 names, inputs/outputs, fail-closed rules, and fallback conditions; this `SKILL.md`
 remains the full help-first owner for command syntax and flag drift.
 
+The relocated polling/SHA mechanics for `ci-watch-sha-pinned` and the finish
+guard/authority mechanics for `finish-mr-authority-aware` live in
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md); each snippet
+below links to that card and points verdict-classification/authority policy to
+the canonical owners in `start-review/REVIEW-FLOW.md` and `start-build/SAFETY.md`.
+
 ### Snippet: local-repo-preflight
 
 ```bash
@@ -183,24 +189,9 @@ Inputs:
 - `timeout_seconds` and `poll_seconds`: caller-selected wait budget.
 - Optional output mode: human summary or machine-readable YAML.
 
-Polling and SHA rules:
-
-1. Re-read `glab mr view "$mr_iid" -F json` on every poll; do not rely on
-   `glab mr list` for decision-grade data.
-2. Fail immediately if MR `.sha` differs from `reviewed_sha`; the review is
-   stale and a new review is needed.
-3. Prefer MR `.pipeline`; use `glab ci status --branch "$source_branch" -F json`
-   only when MR metadata has no attached pipeline yet or to print job progress.
-   Do not use `glab ci status --mr`.
-4. A green CI verdict is valid only when pipeline `.sha` equals
-   `reviewed_sha` and `.status` is `success`.
-5. `failed`, `canceled`, `skipped`, or required-job failure for
-   `reviewed_sha` is a failing verdict.
-6. Stale CI for any other SHA never passes. Continue polling until the expected
-   SHA appears or the timeout expires; final output must say `stale_ci` or
-   `timeout` and include the last observed SHA/status.
-7. Timeout output is non-zero and includes last MR pipeline and branch/job
-   summary so the caller can distinguish "no pipeline yet" from stale CI.
+Polling/SHA mechanics, fail-closed output shape, and the pointer to the canonical
+CI verdict classification live in
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
 Implementation body lives inside this skill:
 
@@ -221,12 +212,9 @@ this `gitlab-local` skill directory before running it from a target repo:
   --format human
 ```
 
-If adapting raw commands instead of the helper, keep every polling/SHA rule
-above, run help-first for `glab mr view` and `glab ci status`, and fail closed
-on missing, stale, red, or SHA-mismatched CI. Machine output fields should
-include `mr`, `expected_sha`, `observed_sha`, `pipeline_id`, `status`, `url`,
-failed/running job names when available, and
-`result: pass | fail | head_changed | stale_ci | timeout`.
+For raw-command adaptation (keeping every polling/SHA rule, fail-closed output,
+and machine fields), see
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
 ### Snippet: mr-note-create
 
@@ -331,38 +319,11 @@ Inputs:
 - `source_branch`, `default_branch`, and optional `worktree_path`.
 - Optional `issue_iid` when it is not obvious from `Closes #...`.
 
-Guard and authority order:
-
-1. Run the help-first checks for every flagged command in the chosen path.
-2. Re-read `glab mr view "$mr_iid" -F json`; require current `.sha` to equal
-   `reviewed_sha` before approval, merge, auto-merge, or cleanup.
-3. Require CI evidence for `reviewed_sha`: `.pipeline.sha == reviewed_sha` and
-   `.pipeline.status == success`. Pending/running CI may only proceed to
-   protected auto-merge when project policy and `merge_authority` allow it.
-   Red, canceled, skipped, missing, or stale CI blocks finish unless an
-   authorized human waiver is recorded in the MR.
-4. Apply authority:
-   - `builder`: always stop with a handoff; no approval, merge, queue, or remote
-     branch deletion.
-   - `approval-only`: finish flow stops after reporting SHA/CI. Reviewer
-     approval, if any, belongs to the separate review action; no merge.
-   - `reviewer may merge`: reviewer or authorized parent may approve/merge with
-     `--sha` after the guards pass.
-   - `queue auto-merge`: authorized caller may queue auto-merge with `--sha`;
-     GitLab protected checks must still require green CI before merge.
-   - `human release`: stop with release handoff; no agent merge.
-5. Fetch/pull default branch only after merge/queue action or when producing a
-   final status. Use `git fetch origin`, then fast-forward local default only in
-   a clean checkout where that branch can be checked out safely.
-6. Verify linked issue state with `glab issue view "$issue_iid" -F json` when an
-   issue IID is known. Report `closure_pending` rather than force-closing unless
-   the workflow explicitly told you to close the issue.
-7. Remove a worktree only when `git -C "$worktree_path" status --porcelain` is
-   empty and branch push/merge state is known. Delete local/remote source
-   branches only after merge or auto-merge policy permits it; prefer GitLab's
-   remove-source-branch setting when available.
-8. Emit final status: MR IID/URL, reviewed SHA, CI status/SHA, action taken,
-   issue state, cleanup result, and blocker reason if any.
+The full guard order (SHA-bound finish, exactly one finish action,
+fetch/fast-forward only after the action, `closure_pending` issue reporting,
+worktree-removal preconditions) and the pointer to the canonical merge/authority
+matrix live in
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
 
 Implementation body lives inside this skill:
 
@@ -388,12 +349,10 @@ target repo:
 Add `--issue-iid`, `--worktree-path`, `--approve-as-reviewer`, or source-branch
 cleanup flags only when the workflow and authority explicitly allow them.
 
-If adapting raw commands instead of the helper, keep the guard order above,
-run help-first for every flagged `glab` command, perform exactly one finish
-action, keep approval/merge SHA-bound, and preserve builder handoff semantics.
-Machine output should use the same facts as the human line, for example
-`result: merged | auto_merge_queued | handoff | blocked`, plus `blocker` when
-non-success output requires parent/human action.
+For raw-command adaptation (keeping the guard order, exactly one finish action,
+SHA-bound approval/merge, builder handoff semantics, and machine output fields),
+see
+[`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
 
 ## Optional helper scripts
 
