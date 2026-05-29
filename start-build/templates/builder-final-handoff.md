@@ -38,8 +38,8 @@ agent_handoff:
     command: "npm run check"
     summary: "completed successfully"
   tdd:
-    red: "N/A — docs-only template update"
-    green: "N/A — docs-only; local gate passed"
+    red: "bash tests/example-behavior.sh failed before fix: expected behavior missing"
+    green: "bash tests/example-behavior.sh passed after fix"
   changed_files:
     - "path/one.md"
   safety_surfaces:
@@ -81,8 +81,8 @@ agent_handoff:
   `failed`, `canceled`, `skipped`, or `N/A` with a reason.
 - `local_gate` names the exact command and concise result. `local_gate.status` is
   `PASS`, `FAIL`, or `N/A`; use `N/A` only with a concrete reason.
-- `tdd` records RED/GREEN evidence for behavior work, or an explicit N/A reason
-  for docs/config/mechanical work.
+- `tdd` records RED/GREEN evidence for behavior-touching implementation, or
+  explicit N/A rationale for docs/config/mechanical work or impossible TDD.
 - `changed_files`, `safety_surfaces`, `decoupling`, and `reviewer_focus` must
   match the MR description's Reviewer Lift values. `safety_surfaces` entries are
   `none`, `credentials`, `external-system`, `state`, `migration`, `gates`,

@@ -23,8 +23,8 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Review gate | `<mandatory / bypassed (human override)>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
 | Local gate | `<PASS before ready/review / FAIL while draft / N/A — why> — <exact command>` |
-| RED | `<N/A — compact/non-behavior, or exact failing command for tests-only behavior>` |
-| GREEN | `<passing command + brief result, or N/A — why>` |
+| RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
+| GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / other>` |
 | Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |

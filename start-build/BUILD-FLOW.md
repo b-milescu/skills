@@ -28,7 +28,7 @@ Standalone builders follow [reference/implementation-flow.md](reference/implemen
 
 ### Child `mr-builder` mode
 
-Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, run the full local gate before ready, mark ready, then stop with the builder final handoff because the parent orchestrator owns the mandatory review gate and any finish action.
+Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, run the full local gate before ready, mark ready, then stop with the builder final handoff because the parent orchestrator owns the mandatory review gate and any finish action. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Parent-orchestrator recipe
 
@@ -56,7 +56,7 @@ Handoff checks live in [reference/context-and-planning.md §Handoff integrity ch
 
 ## Implementation flow
 
-Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, use targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, and mark ready with **Snippet: draft-mr-mark-ready** only after the full local gate passes and Reviewer Lift names the current head SHA.
+Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, and mark ready with **Snippet: draft-mr-mark-ready** only after the full local gate passes and Reviewer Lift names the current head SHA. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Compact packet eligibility
 

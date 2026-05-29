@@ -54,8 +54,8 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
 | CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
 | Local gate | `<copy from Reviewer Lift; PASS before ready/review, N/A with rationale, or blocker>` |
-| RED | `<copy from Reviewer Lift; evaluate TDD applicability>` |
-| GREEN | `<copy from Reviewer Lift; evaluate passing evidence>` |
+| RED | `<copy from Reviewer Lift; evaluate behavior-touching implementation RED evidence or N/A with rationale; do not fake tests>` |
+| GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy from Reviewer Lift; verify against diff>` |
 | Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |

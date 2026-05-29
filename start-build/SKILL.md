@@ -19,7 +19,7 @@ This skill is language- and domain-agnostic; domain-specific safety terms below 
 - **Standalone `/start-build` mode** — the builder owns the mandatory review gate: after marking the MR ready, spawn a fresh reviewer, drive the review loop, post the Review Gate Summary, and never self-approve or self-merge.
 - **Child `mr-builder` mode** — the child builder builds, opens/updates the MR, marks it ready, and stops at final handoff. The parent orchestrator owns the mandatory review gate and merge; the child builder does not spawn a reviewer unless the parent explicitly instructs it to.
 
-For runtime/operator/safety behavior changes, load and follow the `tdd` skill. If TDD is not applicable (docs-only, mechanical rename, generated update, urgent hotfix), say why in the MR. Keep context as narrow as possible: issue, rulebook, affected docs/source/tests, and evidence-linked references first; expand only when a concrete dependency, test, or safety invariant requires it.
+Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR. Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger. Exception categories require MR rationale and must not allow fake tests or meaningless checks. Issue-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice. Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions. Keep context as narrow as possible: issue, rulebook, affected docs/source/tests, and evidence-linked references first; expand only when a concrete dependency, test, or safety invariant requires it.
 
 ## Mode routing context read matrix
 
@@ -43,7 +43,7 @@ Use this first-screen matrix before expanding context. Load the required files/s
 5. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch detected, `origin/<default>` current. If dirty/stale, stop and ask.
 6. Single issue → branch from latest default in cwd. Multiple issues → one sibling worktree per issue from `origin/<default>`; never share a checkout.
 7. Open a Draft MR early per issue once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create**, `Closes #<id>`, and the appropriate Review Packet template. Use **Snippet: mr-description-update** for later description / Reviewer Lift refreshes. Fill the **Reviewer Lift** block using `templates/reviewer-lift-schema.md` so the reviewer can copy structured values directly into their report, and record loaded context sources plus relevance in the Build Plan Packet or Review Packet. Quote `Merge authority` as a claim and fill `Merge authority source`; the builder cannot grant approval, merge, or auto-merge authority.
-8. For behavior-touching work, follow `tdd`. For docs/config-only, state TDD: N/A in the MR.
+8. Apply the behavior-touching implementation TDD policy above. For docs/config-only, state `TDD: N/A` with rationale in the MR.
 9. Run the project's full check gate per MR/worktree, or explain why only CI can provide it. Update the MR description with `gitlab-local` **Snippet: mr-description-update** (including every field from the Reviewer Lift schema, especially `Merge authority source`) and then mark ready with **Snippet: draft-mr-mark-ready** when the local gate is green.
 10. **Review-gate handoff** — after marking ready, follow the invocation mode above: standalone builders spawn a fresh reviewer per the [standalone review gate](reference/standalone-gate.md) protocol (compatibility anchor: [Mandatory review gate](BUILD-FLOW.md#mandatory-review-gate)); child `mr-builder` agents stop at final handoff for the parent orchestrator.
 
@@ -58,7 +58,7 @@ When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, migrations, or deploy topology casually.
 - Use project adapters for external APIs; new raw HTTP/SDK/CLI calls require ADR-level justification.
 - Every behavior change needs meaningful tests and regression evidence.
-- Behavior-touching implementation follows TDD unless impossible; exceptions must be explicit in the MR.
+- Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR; do not fake tests.
 - Keep scope tight; file follow-up GitLab issues instead of drive-by refactors.
 
 See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, escalation, and done criteria.

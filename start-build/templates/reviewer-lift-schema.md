@@ -10,8 +10,8 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 | Review gate | `mandatory` unless a human explicitly bypassed the gate; for bypass use `bypassed (human override)` and record the reason in the MR. |
 | CI pipeline | Pipeline URL/ID, status, and commit SHA when available; use `N/A — <why>` when no CI exists or the pipeline is unavailable. Green CI counts only when its SHA matches `Reviewed SHA`. |
 | Local gate | `PASS`, `FAIL`, or `N/A` plus the exact command. `PASS` is required before marking ready/requesting review unless `N/A` explains why only CI can provide the gate. |
-| RED | Failing test command and expected failure reason for behavior work; use `N/A — <why>` for docs/config/mechanical work. |
-| GREEN | Passing test/check command and brief result for behavior work; use `N/A — <why>` when no test applies beyond the local gate. |
+| RED | For behavior-touching implementation, failing test/check command and expected failure reason from a TDD slice; use `N/A with rationale — <why>` for docs/config/mechanical/generated work or impossible TDD; do not fake tests. |
+| GREEN | For behavior-touching implementation, passing test/check command and brief result; use `N/A with rationale — <why>` when no test applies beyond the local gate; do not fake tests or meaningless checks. |
 | Changed paths | File-level diffstat or concise path list; update with every push. |
 | Touched safety surfaces | `none` or affected surfaces such as `external-system`, `credentials`, `state`, `migration`, `gates`, `locks`, `deploy`, or `other`. |
 | Decoupling proof | `single MR` for single-issue work; otherwise list co-running MR IIDs/branches and summarize the Decoupling Contract check. |
