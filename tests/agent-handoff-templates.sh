@@ -133,6 +133,27 @@ for (const file of process.argv.slice(2)) {
     if (!content.includes('`reviewed_sha` is the same commit as `head_sha`')) {
       throw new Error(`${file}: missing explicit reviewed_sha/head_sha equality semantics`);
     }
+
+    const pipeValues = [];
+    const collectPipeValues = (value, path = ['agent_handoff']) => {
+      if (typeof value === 'string') {
+        if (value.includes('|')) pipeValues.push(`${path.join('.')}: ${JSON.stringify(value)}`);
+        return;
+      }
+      if (Array.isArray(value)) {
+        value.forEach((item, index) => collectPipeValues(item, [...path, String(index)]));
+        return;
+      }
+      if (value && typeof value === 'object') {
+        for (const [key, child] of Object.entries(value)) {
+          collectPipeValues(child, [...path, key]);
+        }
+      }
+    };
+    collectPipeValues(handoff);
+    if (pipeValues.length > 0) {
+      throw new Error(`${file}: builder YAML example must not include pipe-union values: ${pipeValues.join('; ')}`);
+    }
   }
 }
 NODE
