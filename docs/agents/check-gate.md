@@ -25,6 +25,12 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 
 ## Targeted checks
 
+These are the **non-test** operator commands worth running on their own: the gate's
+canonical entrypoints plus ad-hoc install smokes and inspection commands. Per-test
+rows are intentionally not duplicated here — the [Shipped shell regression
+inventory](#shipped-shell-regression-inventory) below is the single source of truth
+for every `tests/*.sh` script, and `npm run check` runs them all.
+
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only check for Claude/pi agent variant parity (including pi-only drift), canonical workflow / `gitlab-local` pointer drift, Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
@@ -32,46 +38,6 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
-| Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` parity, canonical-pointer, prompt-drift, dependency failures, and the no-mutation `install.sh --check` path under temporary homes. |
-| Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator reference guidance and out of child builder prompts/docs. |
-| Start-build child path size | `bash tests/start-build-child-path-size.sh` | Verifies the child-builder path doc exists, stays materially smaller than the legacy full `BUILD-FLOW.md`, and excludes parent-only subagent discovery text. |
-| Start-build context read matrix | `bash tests/start-build-context-read-matrix.sh` | Verifies the first-screen mode routing table covers builder/coordinator modes and preserves child avoid-list anchors. |
-| Start-build ready gate / push semantics | `bash tests/start-build-ready-gate-push-semantics.sh` | Verifies early Draft and implementation pushes remain allowed before full gate, while ready/request-review still requires local gate evidence and synchronized Reviewer Lift delta semantics. |
-| Start-build stale reviewer control | `bash tests/start-build-stale-reviewer-control.sh` | Verifies review-timeout guidance checks observed reviewer status/activity, uses runtime control when available, fails closed when unavailable, and does not allow blind duplicate reviewers. |
-| Start-build TDD trigger policy | `bash tests/start-build-tdd-trigger-policy.sh` | Verifies behavior-touching implementation is the one TDD trigger, runtime/operator/safety changes are examples, exceptions require MR rationale without fake tests, and sufficient issue acceptance criteria avoid extra user approval prompts. |
-| Start-build within-diff simplicity bar | `bash tests/start-build-simplicity-bar.sh` | Verifies `start-build/SAFETY.md` "Quality rules" carries the within-diff simplicity bar with its blast-radius firewall anchors, preserves the scope anti-pattern, and keeps `SAFETY.md`/`SKILL.md` free of vendored upstream URL/thermo prose. |
-| Start-build mode-tiered done criteria | `bash tests/start-build-done-criteria.sh` | Verifies `start-build/SAFETY.md` "Done criteria" names the builder-ready / review-gate-complete / finish-merge / post-merge-verified tiers, points each tier to its reference flow, keeps the builder tier free of self-approve/self-merge wording, and `SKILL.md` flags the checklist as mode-specific. |
-| Start-build builder secret invariant | `bash tests/start-build-secret-invariant.sh` | Verifies the builder credential/secret-handling tokens survive: `start-build/SAFETY.md` keeps the never-paste-secrets and strip-secrets-from-logs tokens, and both `agents/*/mr-builder.md` keep the never-touch/print/paste credential token. |
-| Post-merge verifier read-only invariant | `bash tests/post-merge-verifier-read-only.sh` | Verifies `post-merge-verifier/SKILL.md` and `start-build/reference/post-merge-verifier.md` keep the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator) plus the `issue_closure_pending` / `source_branch_cleanup_pending` report tokens, and that the post-#152 dropped "promised docs/ADR/follow-ups" check stays absent. |
-| Cleanup-housekeeping invariant | `bash tests/cleanup-housekeeping-invariants.sh` | Verifies `cleanup-housekeeping/SKILL.md` keeps the post-#149 rescoped identity: planning-only default, deslop + destale scopes, the CLOSED allowed-transform list, the five-gate deslop firewall sequence, broad-scope-only (not mandatory) subagent fan-out, and OUT-of-scope handoffs with fallbacks. |
-| Issue-delivery-loop invariant | `bash tests/issue-delivery-loop-invariants.sh` | Verifies `issue-delivery-loop/SKILL.md` keeps the post-#151 pointer shape: serial-by-default WIP=1 batch envelope, the parent-orchestrator.md pointer for decoupling-before-parallel/spot-check/revision rounds with the three-round limit deferred to standalone-gate, preserved authority boundaries, child-builder/reviewer delegation, the per-batch metrics envelope, and the post-merge-verifier handoff. |
-| Memory-retrospective invariant | `bash tests/memory-retrospective-invariants.sh` | Verifies `memory-retrospective/SKILL.md` keeps the read-only stance, the never-print-secrets / never-paste-session-dumps / redact safety tokens, and the post-#153 propose-only / route-out boundary (output proposals only, never edit skill surfaces directly, route approved candidates to the issue/build workflow). |
-| Review structural maintainability sweep | `bash tests/review-structural-sweep.sh` | Verifies `start-review/REVIEW-FLOW.md` keeps the diff-first, blast-radius-bounded `## Structural maintainability sweep` section asserting the `<1000` -> `>1000` file-growth threshold SHAPE paired with its "compelling decomposition rationale" escape hatch and the MF-N/C-N decision rule, without ossifying a bare `1000`. |
-| Start-build review-gate bypass wording | `bash tests/start-build-bypass-wording.sh` | Verifies the canonical human bypass protocol uses a strict, non-inferable accepted-phrase rule, rejects ambiguous release language, requires named actor/reason/`Review gate` field/MR audit trail, and keeps `SAFETY.md`/`BUILD-FLOW.md` pointer-only with no-self-approval intact. |
-| GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
-| GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
-| Start-review command ownership | `bash tests/start-review-command-ownership.sh` | Verifies `/start-review` points to review cards/snippets for GitLab syntax and rejects raw `glab` command copies in reviewer-owned docs/prompts. |
-| Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
-| Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
-| Review authority explicitness | `bash tests/review-authority-explicit.sh` | Verifies reviewer docs/templates/prompts do not default missing merge authority to approval-only, while preserving explicit `approval-only` as valid authority. |
-| Review authority provenance | `bash tests/review-authority-provenance.sh` | Verifies Reviewer Lift, Review Report, final handoffs, builder prompts, and reviewer prompts require merge authority source provenance and precedence. |
-| Review blocked verdict/action split | `bash tests/review-blocked-verdict.sh` | Verifies reviewer verdict enums include blocked, Review Report/final handoff verdict and action-blocker enums stay synchronized, GitLab approval/finish action fields stay separate, and authority/SHA/CI/tool/human blockers route deterministically. |
-| Review CI/OQ decision tables | `bash tests/review-ci-oq-decision-tables.sh` | Verifies reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
-| Review context policy | `bash tests/review-context-policy.sh` | Verifies Context Firewall, Review Context Capsule, context tiers, parent launch prompt minimality, and Reviewer Lift map-not-truth semantics. |
-| Review one-MR reviewer isolation | `bash tests/review-one-mr-per-reviewer.sh` | Verifies one-MR-per-fresh-reviewer-session default, multiple-MR isolation/serialization limits, child reviewer boundaries, and no grouped approval wording. |
-| Review project binding | `bash tests/start-review-project-binding.sh` | Verifies supplied MR URL/ID/branch binding captures host/project/repo/IID/branch/SHA, blocks mismatches unless cross-repo target is explicit, records bound target in reports/handoffs, and forbids ambiguous bare-ID action guidance. |
-| Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
-| Review partial/secret fail-closed path | `bash tests/review-partial-secret-fail-closed.sh` | Verifies partial-review and suspected-secret rules block approval, define triggers, redact reports, avoid payload copying, and expose final-handoff blocker tokens. |
-| Review action/report ordering | `bash tests/review-action-order.sh` | Verifies reviewer report drafting, final snapshots, blocked conversion, post-report SHA guards, stale-head skip handling, and intended-vs-completed action wording. |
-| Review SHA-bound checkout | `bash tests/review-sha-bound-checkout.sh` | Verifies single-MR review checkout guidance requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
-| Review tone | `bash tests/review-tone.sh` | Verifies `start-review/REVIEW-FLOW.md` carries the scoped `## Review tone` section with its `Tone never moves the bar.` anchor, preserves the style-non-blocking guarantees in `REVIEW-FLOW.md`/`SKILL.md`, and keeps both files free of vendored upstream URL/thermo prose. |
-| Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary, keeps review verdict/SHA/CI/findings/checks/action/report-link fields visible, preserves concise core headings, and bans hardcoded `None.` placeholders in required evidence/OQ sections. |
-| Builder prompt dedupe | `bash tests/builder-prompt-dedupe.sh` | Verifies Claude/pi builder prompts keep the canonical `start-build` pointer block for Issue-pickup / Decoupling / Multiple-issue-worktree procedures, reject re-inlined procedure headings/commands, stay below the builder-sized body cap, and preserve anti-fabrication and child-mode authority invariants. |
-| Reviewer prompt dedupe / ADR ownership | `bash tests/reviewer-prompt-dedupe.sh` | Verifies Claude/pi reviewer prompts stay pointer-based below the duplication threshold while preserving critical runtime invariants, and verifies shared ADR template ownership/drift. |
-| Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
-| Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, use synthetic example URLs, and keep reviewer final-handoff procedure/prompt guidance required. |
-| Setup Skill guardrails | `bash tests/setup-dev-skills-guardrails.sh` | Verifies `setup-dev-skills` ships and references the coding guardrails seed without vendoring upstream prose. |
-| Setup Skill invocation mode | `bash tests/setup-dev-skills-invocation.sh` | Verifies `setup-dev-skills` stays manual-invocation only and docs preserve the ask-before-running guidance. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.pi/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.pi/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near the skill guideline of under 100 lines when practical. |
@@ -134,37 +100,11 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 
 ## Workflow regression coverage map
 
-Issue #79 workflow guardrails are runnable through `npm run check` because
-`scripts/check.sh` executes every `tests/*.sh` script. The focused commands are:
-
-| Guardrail | Targeted command |
-| --- | --- |
-| Combined executable Draft MR create+description-update+ready, approve+merge, and MR+issue note snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
-| Review command cards avoid broad GitLab command context while preserving fail-closed snippet pointers. | `bash tests/gitlab-local-review-cards.sh` |
-| Review command syntax ownership stays in GitLab review cards/snippets, not copied raw in `/start-review` docs/prompts. | `bash tests/start-review-command-ownership.sh` |
-| Missing merge authority blocks approval actions; explicit `approval-only` remains valid. | `bash tests/review-authority-explicit.sh` |
-| Merge authority source provenance and precedence block builder-minted authority. | `bash tests/review-authority-provenance.sh` |
-| Blocked review verdict separates guard/tool/authority blockers from code-review findings and keeps report/final-handoff enums synchronized. | `bash tests/review-blocked-verdict.sh` |
-| CI and Open Question decisions stay centralized in one canonical table section. | `bash tests/review-ci-oq-decision-tables.sh` |
-| Narrow-context review stays enforceable through Context Firewall, Review Context Capsule, context tiers, and map-not-truth Reviewer Lift handling. | `bash tests/review-context-policy.sh` |
-| One reviewer session reviews one MR by default; multiple-MR review requires isolation or explicit serialization without grouped actions. | `bash tests/review-one-mr-per-reviewer.sh` |
-| Supplied MR URL/ID/branch targets are project-bound before review actions. | `bash tests/start-review-project-binding.sh` |
-| Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
-| Partial-review and suspected-secret paths fail closed without partial approval or secret value propagation. | `bash tests/review-partial-secret-fail-closed.sh` |
-| Review report/action ordering blocks stale approval reports and guards every approval/finish action. | `bash tests/review-action-order.sh` |
-| Single-MR review checkout local checks stay exact-SHA-bound and record checkout path/SHA evidence. | `bash tests/review-sha-bound-checkout.sh` |
-| Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, report-link fields, concise core headings, and required evidence/OQ placeholder-clean requirements. | `bash tests/review-report-summary-first.sh` |
-| Reviewer prompts stay pointer-based and ADR template ownership stays shared/drift-protected. | `bash tests/reviewer-prompt-dedupe.sh` |
-| Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
-| Child-builder path stays materially smaller than the legacy full `BUILD-FLOW.md` path while keeping parent-owned review gate boundaries. | `bash tests/start-build-child-path-size.sh` |
-| Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
-| Early Draft/implementation pushes do not require the full local gate, but ready/request-review does; Reviewer Lift local-gate and post-ready delta semantics stay aligned. | `bash tests/start-build-ready-gate-push-semantics.sh` |
-| Stale reviewer control checks status/activity before replacement, uses runtime interrupt/control when available, escalates when unavailable, and blocks blind duplicate reviewers. | `bash tests/start-build-stale-reviewer-control.sh` |
-| Behavior-touching implementation stays the one TDD trigger; exceptions require MR rationale and cannot allow fake tests; sufficient issue acceptance criteria do not force extra approval prompts. | `bash tests/start-build-tdd-trigger-policy.sh` |
-| Within-diff simplicity bar stays in `SAFETY.md` "Quality rules" with its blast-radius firewall and in-doubt tie-breaker, preserves the scope anti-pattern, and vendors no upstream URL/thermo prose. | `bash tests/start-build-simplicity-bar.sh` |
-| Review-gate human bypass stays strict and non-inferable: closed accepted-phrase set, ambiguous release language rejected and clarified, named actor/reason/`Review gate` field/MR audit trail required, pointer-only `SAFETY.md`/`BUILD-FLOW.md`, and no builder self-approval under bypass. | `bash tests/start-build-bypass-wording.sh` |
-| Builder credential/secret-handling tokens (never-paste-secrets, strip-secrets-from-logs, never-touch/print/paste credential) stay present in `start-build/SAFETY.md` and both `agents/*/mr-builder.md`. | `bash tests/start-build-secret-invariant.sh` |
-| Post-merge verifier stays read-only: forbidden-action tokens and `issue_closure_pending` / `source_branch_cleanup_pending` report tokens stay present, and the post-#152 dropped "promised docs/ADR/follow-ups" check stays absent. | `bash tests/post-merge-verifier-read-only.sh` |
+Issue #79 introduced the workflow guardrail scripts; they are all runnable through
+`npm run check` because `scripts/check.sh` executes every `tests/*.sh` script. The
+per-script focus for each guardrail lives in the [Shipped shell regression
+inventory](#shipped-shell-regression-inventory) above, which is the single source of
+truth for `tests/*.sh` coverage.
 
 ## Discovery notes
 
