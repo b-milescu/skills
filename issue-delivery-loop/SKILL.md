@@ -21,13 +21,11 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 ## Operating contract
 
 - Default WIP: 1 active delivery loop, serial by default.
-- Parallel work only after proving `../docs/decoupling-contract.md` for every item.
+- Run the parent loop per `../start-build/reference/parent-orchestrator.md` (steps 1/4/6 — decoupling proof before parallel work, the full parent spot-check field list, and the revision rounds with SHA/CI/authority guards; the three-round limit defers to `../start-build/reference/standalone-gate.md`).
 - Delegate implementation to child `mr-builder` sessions via `../start-build/reference/child-builder.md` (stable router: `../start-build/BUILD-FLOW.md`).
 - Delegate independent review to fresh `mr-reviewer` sessions via `../start-review/REVIEW-FLOW.md`.
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
-- Parent spot-check before review/finish: MR URL/IID, source/target branch, current SHA, Reviewer Lift, CI, changed paths, local gate, open questions, merge authority.
 - Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `pi-worktree-*`; GitLab MR descriptions/comments remain canonical.
-- Revision loop: up to 3 review rounds per MR; on request-changes, push fixes, update MR/Reviewer Lift, and start a fresh reviewer; on reject or round-limit exhaustion, escalate.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
 - After merge or protected auto-merge, hand off read-only validation to `../post-merge-verifier/SKILL.md`.
 - Canonical sources: `../gitlab-local/SKILL.md`, `../start-build/BUILD-FLOW.md`, `../start-build/reference/parent-orchestrator.md`, `../start-build/reference/child-builder.md`, `../start-build/templates/reviewer-lift-schema.md`, `../start-build/templates/review-packet.md`, `../start-review/REVIEW-FLOW.md`, `../start-review/templates/review-report.md`, `../post-merge-verifier/SKILL.md`.
