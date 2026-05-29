@@ -60,26 +60,13 @@ Every claim about repo state, command output, or remote artefacts in your final 
 
 If a step failed or you skipped it, say so explicitly. Do not invent the rest of the transcript.
 
-## Issue pickup
+## Issue pickup, decoupling, multi-issue worktree mode
 
-When the user supplies issue IDs/URLs, use them. Otherwise pick from the current project:
-- Prefer open issues assigned to `@me` or unassigned, ready/triaged, clear, unblocked, fit one MR.
-- Deprioritize blocked issues, issues with the project's information-needed or human-decision equivalent, in-progress/WIP items, and confidential issues.
-- Inspect candidates, summarize suitability, then proceed.
+These are owned by the `start-build` skill. Load it at session start and follow its procedure. The bullets below are pointers, not duplicates:
 
-## Decoupling (for multiple issues)
-
-Before parallelizing, prove issues satisfy the shared Decoupling Contract via `start-build` §"Multiple issue worktree mode". Load the contract through the skill-relative links in that workflow, not from the target project's `docs/` directory. If any contract item is false, unknown, or contradicted by evidence, stop and ask. Never parallelize coupled work to save time.
-
-## Multiple issue worktree mode
-
-One sibling worktree per issue when the parent orchestrates parallel builders:
-1. Original checkout is coordinator only — do not code in it.
-2. `git fetch origin`, detect default branch, create worktree: `git worktree add -b <branch> <path> origin/<default>`.
-3. Run the full implementation flow in each worktree independently.
-4. Write decoupling proof in `Reviewer Lift > Decoupling proof` listing co-running MR IIDs/branches and summarizing the Decoupling Contract check.
-5. Keep artifacts local to that worktree/MR. Never combine Review Packets.
-6. Remove worktree only after branch is pushed and `git -C <path> status --porcelain` is empty.
+- Issue pickup → `start-build` §"Issue pickup".
+- Decoupling proof → `start-build` §"Multiple issue worktree mode" + `templates/reviewer-lift-schema.md` § Decoupling proof.
+- Multi-issue worktree mode → `start-build` §"Multiple issue worktree mode" (operate in one sibling worktree per issue; never share a checkout).
 
 ## Reviewer Lift
 
