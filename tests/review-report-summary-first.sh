@@ -63,6 +63,68 @@ if grep -En 'None\.' "$REPORT"; then
   fail "Review Report template contains hardcoded 'None.' placeholder"
 fi
 
+extract_section() {
+  local file="$1" heading="$2"
+  awk -v heading="$heading" '
+    $0 == "## " heading { in_section=1; next }
+    in_section && /^##[[:space:]]+/ { exit }
+    in_section { print }
+  ' "$file"
+}
+
+assert_required_sections_placeholder_clean() {
+  local file="$1" section content
+  for section in 'Findings' 'Open Questions Addressed' 'Evidence' 'Action / Blocker'; do
+    content="$(extract_section "$file" "$section")"
+    [[ -n "$content" ]] || return 1
+    if grep -En '^[[:space:]]*None\.?[[:space:]]*$|None\.' <<<"$content"; then
+      return 1
+    fi
+  done
+}
+
+bad_placeholders="$TMPDIR/bad-required-placeholders.md"
+cat > "$bad_placeholders" <<'BAD'
+# Review Report
+
+## Decision Summary
+
+| Field | Value |
+|---|---|
+| Review verdict | `<pass / request-changes / reject / blocked>` |
+| Reviewed SHA | `<sha>` |
+| CI status / SHA | `<status / sha>` |
+| Findings summary | `MF: 0; SF: 0; C: 0` |
+| Local checks | `<checks>` |
+| Approval action | `<action>` |
+| Finish action | `<action>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
+| Next action | `<next>` |
+| Report link | `<link>` |
+
+## Findings
+
+None.
+
+## Open Questions Addressed
+
+None.
+
+## Evidence
+
+None.
+
+## Action / Blocker
+
+None.
+BAD
+
+if assert_required_sections_placeholder_clean "$bad_placeholders" >/dev/null 2>&1; then
+  fail "negative fixture with hardcoded None placeholders was not rejected"
+fi
+
+assert_required_sections_placeholder_clean "$REPORT" || fail "Review Report required sections contain hardcoded None placeholders"
+
 for old_heading in \
   'Safety Checklist' \
   'State / Migration / Persistence Checklist' \
