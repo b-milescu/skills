@@ -49,6 +49,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 - Use when responding to a Stuck Packet. Post as an MR comment with `gitlab-local` **Snippet: mr-note-create**. When Builder resumes, remove the project's unblock label if one exists.
 - **Summary** — One paragraph: your read and the recommended direction.
+- **Engagement with hypotheses** — Respond to each ranked hypothesis (`H-N`) the builder listed in the Stuck Packet, one subsection per hypothesis: confirm, refute, refine, or defer it with the evidence or check that backs your call.
 - **Direction** — Pointer / correction / pair / escalation. Cite files, tests, docs, or commands.
 - **Safety notes** — Any product/runtime/operator external-system / credential / state precautions before continuing.
 - **What I did not check** — Honest scope.

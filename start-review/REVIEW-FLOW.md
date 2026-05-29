@@ -164,17 +164,15 @@ Before reading the full diff, validate the builder handoff:
 
 Use only when the user supplies multiple MRs, asks for multiple reviews, or asks to review the next N ready MRs. Default/preferred behavior remains one MR per fresh reviewer session. A single reviewer session cannot provide separate LLM contexts for multiple MRs.
 
-1. Resolve candidates first. Collect at least IID, title, source branch, target branch, head SHA, author, labels, CI state, linked issue, and changed paths.
-2. **Read the builder's `Reviewer Lift > Decoupling proof` from each MR description first.** Apply the [Decoupling Contract's reviewer consumer guidance](../docs/decoupling-contract.md#reviewer-consumer-guidance): accept mutually consistent proofs that align with sampled paths and metadata; re-derive when proofs are missing, insufficient, inconsistent, or contradicted by evidence.
-3. If coupling is unclear after the contract check, review serially in the safest order or ask the user to choose. Never parallelize coupled work to save time, and never group approvals or finish actions for coupled MRs.
-4. Parallel multiple-MR review requires parent/harness-provided separate sessions and worktrees: one reviewer session per MR/worktree. Use the original checkout as a coordinator for GitLab queries only. Create one review worktree per MR when local checkout/tests are needed. Do not use shared `FETCH_HEAD` in parallel review mode; fetch each MR into its own temp ref:
+1. Resolve and decouple candidates first using [MR pickup](#mr-pickup): candidate resolution (collect at least IID, title, source/target branch, head SHA, author, labels, CI state, linked issue, and changed paths) and the `Reviewer Lift > Decoupling proof` / [Decoupling Contract](../docs/decoupling-contract.md#reviewer-consumer-guidance) check both live there. If coupling is unclear after the contract check, review serially in the safest order or ask the user to choose. Never parallelize coupled work to save time, and never group approvals or finish actions for coupled MRs.
+2. Parallel multiple-MR review requires parent/harness-provided separate sessions and worktrees: one reviewer session per MR/worktree. Use the original checkout as a coordinator for GitLab queries only. Create one review worktree per MR when local checkout/tests are needed. Do not use shared `FETCH_HEAD` in parallel review mode; fetch each MR into its own temp ref:
    - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
    - `git worktree add --detach <path> refs/tmp/review/mr-<iid>`
    - `git -C <path> rev-parse HEAD` must equal MR metadata `sha`; if not, refresh metadata and stop if still mismatched.
-5. If a parent/harness has already provided parallel reviewer sessions and worktrees, keep one reviewer session per MR/worktree. If you are running inside a reviewer child session, review only the assigned MR/worktree and do not launch sibling reviewers. Review independence requires separate LLM/session context plus separate checkout for local execution.
-6. Explicit serialized mode does not batch decisions, comments, or actions: finish one MR's Review Report, `Review verdict`, reviewed SHA, action result, and final handoff before starting the next MR.
-7. Produce one Review Report, one `Review verdict`, and one reviewed SHA per MR. Do not group multiple MRs into one GitLab comment, approval, request-changes, reject, or blocked action.
-8. Approval/merge sequence per MR:
+3. If a parent/harness has already provided parallel reviewer sessions and worktrees, keep one reviewer session per MR/worktree. If you are running inside a reviewer child session, review only the assigned MR/worktree and do not launch sibling reviewers. Review independence requires separate LLM/session context plus separate checkout for local execution.
+4. Explicit serialized mode does not batch decisions, comments, or actions: finish one MR's Review Report, `Review verdict`, reviewed SHA, action result, and final handoff before starting the next MR.
+5. Produce one Review Report, one `Review verdict`, and one reviewed SHA per MR. Do not group multiple MRs into one GitLab comment, approval, request-changes, reject, or blocked action.
+6. Approval/merge sequence per MR:
    - re-run `gitlab-local` **Snippet: sha-guard** immediately before any approval, merge, or auto-merge action; the decision point must visibly bind the reviewed head and project by resolving the current SHA from `bound_mr_iid` plus `bound_repo_url` (or `bound_mr_url`) and comparing it to `reviewed_sha`;
    - approve with `gitlab-local` **Snippet: sha-bound-approval** only when approval is authorized, using the bound MR IID plus `-R "$bound_repo_url"` or the full `bound_mr_url`;
    - confirm approval with `gitlab-local` **Snippet: approval-confirmation** when approval status must be verified;
@@ -183,7 +181,7 @@ Use only when the user supplies multiple MRs, asks for multiple reviews, or asks
    - choose one action at each authorization point; never run a combined approval/merge block or paste multiple action snippets as one executable sequence;
    - if SHA-bound approval/merge flags are unavailable or unsupported, report `Review verdict: blocked` with `Action blocker: sha-bound-action-unsupported` rather than taking an unpinned action;
    - after merging one MR, re-check remaining MRs' CI and `detailed_merge_status`; if one becomes conflicted/stale, stop that MR and report the blocker instead of forcing.
-9. Remove a review worktree only when no local evidence/artifacts are needed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Then delete the temp ref if no other review uses it: `git update-ref -d refs/tmp/review/mr-<iid>`.
+7. Remove a review worktree only when no local evidence/artifacts are needed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Then delete the temp ref if no other review uses it: `git update-ref -d refs/tmp/review/mr-<iid>`.
 
 ## Single MR checkout mode
 
@@ -271,10 +269,8 @@ See [templates/filling-guide.md §review-report.md](templates/filling-guide.md#r
 
 ## After review
 
+- **Reject / Blocked / Pass:** post the Review Report, then apply the per-verdict post-action handling already specified in [Decisions](#decisions) — reject stops/escalates to parent/human without closing the MR absent explicit close authority; blocked takes no approval/merge/close action and routes by `Action blocker` and `Next action`; pass records its own reviewed SHA, separate Approval action and Finish action, and final handoff.
 - **Request changes:** Build agent pushes commits and replies to threads; reviewer resolves threads after verifying unless the project explicitly allows builder-side resolution.
-- **Pass:** Reviewer has posted a passing review judgment and separately recorded Approval action and Finish action. Each passing MR has its own reviewed SHA, action result, and final handoff. If a durable summary is required, ensure the MR links are recorded there.
-- **Reject:** Review Report is posted and the reviewer stops/escalates to the parent/human. Do not close the MR unless explicit human/project close authority says to close it.
-- **Blocked:** Review Report is posted, no approval/merge/close action is taken, and the parent/human routes by `Action blocker` and `Next action`.
 - **Stuck Packet:** post `templates/unblock-response.md` as an MR comment with `gitlab-local` **Snippet: mr-note-create**, give short direction, and remove the project's unblock label when one exists and work resumes.
 
 ## Template filling guides
