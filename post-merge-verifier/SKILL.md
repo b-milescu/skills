@@ -1,6 +1,6 @@
 ---
 name: post-merge-verifier
-description: Read-only post-merge verification skill for merged or protected auto-merge completion. Use when asked to verify default-branch state, linked issue closure or pending closure, CI evidence, source-branch cleanup, and blockers. Do not use it to approve, merge, queue auto-merge, force-close issues, delete branches, release, deploy, or perform operator mutations.
+description: Read-only post-merge verification skill for merged or protected auto-merge completion. Use when asked to verify default-branch state, linked issue closure or pending closure, source-branch cleanup, and blockers. Do not use it to approve, merge, queue auto-merge, force-close issues, delete branches, release, deploy, or perform operator mutations.
 ---
 
 # Post-Merge Verifier
@@ -27,7 +27,6 @@ If a separate workflow authorizes one of those actions, switch workflows. This s
 
 - MR merged/default-branch state
 - Linked issue closure or pending closure
-- CI evidence for reviewed/head SHA where available (non-mutating only)
 - Source-branch cleanup state
 - Blockers and pending items
 
