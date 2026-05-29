@@ -46,6 +46,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review one-MR reviewer isolation | `bash tests/review-one-mr-per-reviewer.sh` | Verifies one-MR-per-fresh-reviewer-session default, multiple-MR isolation/serialization limits, child reviewer boundaries, and no grouped approval wording. |
 | Review project binding | `bash tests/start-review-project-binding.sh` | Verifies supplied MR URL/ID/branch binding captures host/project/repo/IID/branch/SHA, blocks mismatches unless cross-repo target is explicit, records bound target in reports/handoffs, and forbids ambiguous bare-ID action guidance. |
 | Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
+| Review partial/secret fail-closed path | `bash tests/review-partial-secret-fail-closed.sh` | Verifies partial-review and suspected-secret rules block approval, define triggers, redact reports, avoid payload copying, and expose final-handoff blocker tokens. |
 | Review action/report ordering | `bash tests/review-action-order.sh` | Verifies reviewer report drafting, final snapshots, blocked conversion, post-report SHA guards, stale-head skip handling, and intended-vs-completed action wording. |
 | Review SHA-bound checkout | `bash tests/review-sha-bound-checkout.sh` | Verifies single-MR review checkout guidance requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary, keeps review verdict/SHA/CI/findings/checks/action/report-link fields visible, preserves concise core headings, and bans hardcoded `None.` placeholders. |
@@ -85,6 +86,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-one-mr-per-reviewer.sh` | One-MR-per-fresh-reviewer-session default, multiple-MR isolation/serialization limits, child reviewer boundaries, and no grouped approval wording stay present. |
 | `tests/start-review-project-binding.sh` | Reviewer project binding records bound target fields, blocks wrong-project mismatches without explicit cross-repo choice, and forbids ambiguous bare-ID action guidance. |
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
+| `tests/review-partial-secret-fail-closed.sh` | Partial-review and suspected-secret fail-closed rules block approval, define triggers, redact reports, avoid payload copying, and expose final-handoff blocker tokens. |
 | `tests/review-action-order.sh` | Reviewer report/action order keeps final snapshots before posting, SHA guards before actions, stale-head skip handling, and intended-vs-completed action wording. |
 | `tests/review-sha-bound-checkout.sh` | Single-MR review checkout mode requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, report-link fields, concise core headings, and placeholder-clean requirements visible. |
@@ -111,6 +113,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | One reviewer session reviews one MR by default; multiple-MR review requires isolation or explicit serialization without grouped actions. | `bash tests/review-one-mr-per-reviewer.sh` |
 | Supplied MR URL/ID/branch targets are project-bound before review actions. | `bash tests/start-review-project-binding.sh` |
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
+| Partial-review and suspected-secret paths fail closed without partial approval or secret value propagation. | `bash tests/review-partial-secret-fail-closed.sh` |
 | Review report/action ordering blocks stale approval reports and guards every approval/finish action. | `bash tests/review-action-order.sh` |
 | Single-MR review checkout local checks stay exact-SHA-bound and record checkout path/SHA evidence. | `bash tests/review-sha-bound-checkout.sh` |
 | Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, report-link fields, concise core headings, and placeholder-clean requirements. | `bash tests/review-report-summary-first.sh` |
