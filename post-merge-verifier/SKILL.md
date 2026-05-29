@@ -7,6 +7,14 @@ description: Read-only post-merge verification skill for merged or protected aut
 
 Use after merge or protected auto-merge completes. This skill is read-only by default.
 
+## Start here
+
+1. Confirm a merge or protected auto-merge actually completed before verifying anything.
+2. Load `/gitlab-local` for command syntax and file-backed note handling.
+3. Run the read-only [Checks](#checks) in the order owned by [`start-build/reference/post-merge-verifier.md`](../start-build/reference/post-merge-verifier.md).
+4. Emit the [Report sections](#report-sections).
+5. Never mutate — report `issue_closure_pending` or `source_branch_cleanup_pending` instead of acting.
+
 ## Trigger
 
 - MR merged and default branch updated
