@@ -12,6 +12,7 @@ Detailed issue-resolution procedure for `start-build`. The stable compatibility 
 6. For multiple issues, select only a set that satisfies the shared [Decoupling Contract](../../docs/decoupling-contract.md). If any contract item is false, unknown, or contradicted, do not parallelize.
 7. Summarize each inspected candidate with ID, title, labels, assignee, suitability, and coupling risk before proceeding when there is a real choice.
 8. Claim issues only when the target project's rulebook documents that convention. Do not create labels or mutate assignment casually.
+9. Immediately before starting work, re-read the chosen issue's assignee and state; if it changed since selection or is already assigned to another active session, stop and ask rather than opening a competing branch or Draft MR.
 
 ## Supplied issue fast path
 
