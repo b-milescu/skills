@@ -36,11 +36,12 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies SHA-bound approval/merge/auto-merge snippets and MR-note/issue-note snippets stay separate; retired combined approve+merge and MR+issue note snippets stay absent. |
 | GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
+| Start-review command ownership | `bash tests/start-review-command-ownership.sh` | Verifies `/start-review` points to review cards/snippets for GitLab syntax and rejects raw `glab` command copies in reviewer-owned docs/prompts. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
 | Review authority explicitness | `bash tests/review-authority-explicit.sh` | Verifies reviewer docs/templates/prompts do not default missing merge authority to approval-only, while preserving explicit `approval-only` as valid authority. |
 | Review authority provenance | `bash tests/review-authority-provenance.sh` | Verifies Reviewer Lift, Review Report, final handoffs, builder prompts, and reviewer prompts require merge authority source provenance and precedence. |
-| Review blocked verdict/action split | `bash tests/review-blocked-verdict.sh` | Verifies reviewer verdict enums include blocked, keep GitLab approval/finish action fields separate, and route authority/SHA/CI/tool/human blockers deterministically. |
+| Review blocked verdict/action split | `bash tests/review-blocked-verdict.sh` | Verifies reviewer verdict enums include blocked, Review Report/final handoff verdict and action-blocker enums stay synchronized, GitLab approval/finish action fields stay separate, and authority/SHA/CI/tool/human blockers route deterministically. |
 | Review CI/OQ decision tables | `bash tests/review-ci-oq-decision-tables.sh` | Verifies reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
 | Review context policy | `bash tests/review-context-policy.sh` | Verifies Context Firewall, Review Context Capsule, context tiers, parent launch prompt minimality, and Reviewer Lift map-not-truth semantics. |
 | Review one-MR reviewer isolation | `bash tests/review-one-mr-per-reviewer.sh` | Verifies one-MR-per-fresh-reviewer-session default, multiple-MR isolation/serialization limits, child reviewer boundaries, and no grouped approval wording. |
@@ -49,7 +50,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review partial/secret fail-closed path | `bash tests/review-partial-secret-fail-closed.sh` | Verifies partial-review and suspected-secret rules block approval, define triggers, redact reports, avoid payload copying, and expose final-handoff blocker tokens. |
 | Review action/report ordering | `bash tests/review-action-order.sh` | Verifies reviewer report drafting, final snapshots, blocked conversion, post-report SHA guards, stale-head skip handling, and intended-vs-completed action wording. |
 | Review SHA-bound checkout | `bash tests/review-sha-bound-checkout.sh` | Verifies single-MR review checkout guidance requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
-| Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary, keeps review verdict/SHA/CI/findings/checks/action/report-link fields visible, preserves concise core headings, and bans hardcoded `None.` placeholders. |
+| Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary, keeps review verdict/SHA/CI/findings/checks/action/report-link fields visible, preserves concise core headings, and bans hardcoded `None.` placeholders in required evidence/OQ sections. |
 | Reviewer prompt dedupe / ADR ownership | `bash tests/reviewer-prompt-dedupe.sh` | Verifies Claude/pi reviewer prompts stay pointer-based below the duplication threshold while preserving critical runtime invariants, and verifies shared ADR template ownership/drift. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
 | Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, use synthetic example URLs, and keep reviewer final-handoff procedure/prompt guidance required. |
@@ -81,7 +82,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
 | `tests/review-authority-explicit.sh` | Reviewer workflow docs require explicit Merge authority and preserve explicit `approval-only` handling. |
 | `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require merge authority source provenance, precedence, and builder-claim-not-grant semantics. |
-| `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class and routes non-code blockers through explicit action fields. |
+| `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class, synchronizes Review Report/final handoff verdict and action-blocker enums, and routes non-code blockers through explicit action fields. |
 | `tests/review-ci-oq-decision-tables.sh` | Reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
 | `tests/review-context-policy.sh` | Context Firewall, Review Context Capsule, context tiers, parent launch prompt minimality, and Reviewer Lift map-not-truth semantics stay present. |
 | `tests/review-one-mr-per-reviewer.sh` | One-MR-per-fresh-reviewer-session default, multiple-MR isolation/serialization limits, child reviewer boundaries, and no grouped approval wording stay present. |
@@ -90,13 +91,14 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-partial-secret-fail-closed.sh` | Partial-review and suspected-secret fail-closed rules block approval, define triggers, redact reports, avoid payload copying, and expose final-handoff blocker tokens. |
 | `tests/review-action-order.sh` | Reviewer report/action order keeps final snapshots before posting, SHA guards before actions, stale-head skip handling, and intended-vs-completed action wording. |
 | `tests/review-sha-bound-checkout.sh` | Single-MR review checkout mode requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
-| `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, report-link fields, concise core headings, and placeholder-clean requirements visible. |
+| `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, report-link fields, concise core headings, and required evidence/OQ placeholder-clean requirements visible. |
 | `tests/reviewer-prompt-dedupe.sh` | Claude/pi reviewer prompts remain pointer-based below the duplication threshold while preserving critical runtime invariants, and shared ADR template ownership/drift stays enforced. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
 | `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 | `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
+| `tests/start-review-command-ownership.sh` | `/start-review` GitLab command ownership stays in review cards/snippets; reviewer-owned docs/prompts reject raw `glab` command copies. |
 
 ## Workflow regression coverage map
 
@@ -107,9 +109,10 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | --- | --- |
 | Combined executable approve+merge and MR+issue note snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
 | Review command cards avoid broad GitLab command context while preserving fail-closed snippet pointers. | `bash tests/gitlab-local-review-cards.sh` |
+| Review command syntax ownership stays in GitLab review cards/snippets, not copied raw in `/start-review` docs/prompts. | `bash tests/start-review-command-ownership.sh` |
 | Missing merge authority blocks approval actions; explicit `approval-only` remains valid. | `bash tests/review-authority-explicit.sh` |
 | Merge authority source provenance and precedence block builder-minted authority. | `bash tests/review-authority-provenance.sh` |
-| Blocked review verdict separates guard/tool/authority blockers from code-review findings. | `bash tests/review-blocked-verdict.sh` |
+| Blocked review verdict separates guard/tool/authority blockers from code-review findings and keeps report/final-handoff enums synchronized. | `bash tests/review-blocked-verdict.sh` |
 | CI and Open Question decisions stay centralized in one canonical table section. | `bash tests/review-ci-oq-decision-tables.sh` |
 | Narrow-context review stays enforceable through Context Firewall, Review Context Capsule, context tiers, and map-not-truth Reviewer Lift handling. | `bash tests/review-context-policy.sh` |
 | One reviewer session reviews one MR by default; multiple-MR review requires isolation or explicit serialization without grouped actions. | `bash tests/review-one-mr-per-reviewer.sh` |
@@ -118,7 +121,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Partial-review and suspected-secret paths fail closed without partial approval or secret value propagation. | `bash tests/review-partial-secret-fail-closed.sh` |
 | Review report/action ordering blocks stale approval reports and guards every approval/finish action. | `bash tests/review-action-order.sh` |
 | Single-MR review checkout local checks stay exact-SHA-bound and record checkout path/SHA evidence. | `bash tests/review-sha-bound-checkout.sh` |
-| Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, report-link fields, concise core headings, and placeholder-clean requirements. | `bash tests/review-report-summary-first.sh` |
+| Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, report-link fields, concise core headings, and required evidence/OQ placeholder-clean requirements. | `bash tests/review-report-summary-first.sh` |
 | Reviewer prompts stay pointer-based and ADR template ownership stays shared/drift-protected. | `bash tests/reviewer-prompt-dedupe.sh` |
 | Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
