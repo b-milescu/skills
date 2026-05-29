@@ -75,9 +75,14 @@ agent_handoff:
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
   safely take approval due to missing authority, SHA/CI/tool/preflight/permission
-  failures, or a required human decision.
+  failures, or a required human decision. When the Review Report used intended
+  action wording before a post-report approval attempt, this field records the
+  completed approval result or blocker after the fresh SHA guard.
 - `finish_action` records only the GitLab finish side effect: merge,
-  auto-merge queueing, no finish action, blocked, or `N/A`.
+  auto-merge queueing, no finish action, blocked, or `N/A`. When the Review
+  Report used intended action wording before a post-report direct merge or
+  auto-merge queue attempt, this field records the completed finish result or
+  blocker after the fresh SHA guard for that specific action.
 - `action_blocker` is `none` or one stable blocker token: `missing-authority`,
   `stale-or-missing-ci`, `changed-head-sha`,
   `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`,

@@ -2,7 +2,7 @@
 
 ## Decision Summary
 
-Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report. `Review verdict` is the review judgment; GitLab side effects are recorded separately in the action fields.
+Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report. `Review verdict` is the review judgment; GitLab side effects are recorded separately in the action fields. When the report is posted before GitLab actions, action fields must distinguish intended action from completed action; completed approval/merge/queue results belong in the final handoff or an action-result note after verification.
 
 | Field | Value |
 |---|---|
@@ -11,8 +11,8 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing; pipeline SHA or N/A>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
-| Approval action | `<approved / not-approved / blocked: reason / N/A>` |
-| Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
+| Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
+| Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
 | Merge authority | `<verified value or blocked: missing-authority>` |
 | Merge authority source | `<verified source or blocked: missing-authority>` |
@@ -30,8 +30,8 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Review verdict | `<pass / request-changes / reject / blocked>` |
 | CI decision | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing>` |
 | Decoupling proof verification | `<N/A / accepted as-stated / re-checked: result>` |
-| Approval action | `<approved / not-approved / blocked: reason / N/A>` |
-| Finish action | `<merged / auto-merge queued / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
+| Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
+| Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
 | Merge authority | `<verified value or blocked: missing-authority>` |
 | Merge authority source | `<verified source or blocked: missing-authority>` |
