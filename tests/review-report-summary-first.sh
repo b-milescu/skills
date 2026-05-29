@@ -46,6 +46,33 @@ require_summary_text 'Action blocker' 'action blocker field'
 require_summary_text 'Next action' 'next action field'
 require_summary_text 'Report link' 'report link placeholder'
 
+require_template_heading() {
+  local heading="$1"
+  local label="$2"
+  grep -Eq "^##[[:space:]]+${heading}[[:space:]]*$" "$REPORT" || fail "Review Report missing $label"
+}
+
+require_template_heading 'Context / Snapshot' 'core context/snapshot section'
+require_template_heading 'Findings' 'core findings section'
+require_template_heading 'Open Questions Addressed' 'core Open Questions section'
+require_template_heading 'Evidence' 'core evidence section'
+require_template_heading 'Action / Blocker' 'core action/blocker section'
+require_template_heading 'Optional Annex: Checklists' 'optional checklist annex'
+
+if grep -En 'None\.' "$REPORT"; then
+  fail "Review Report template contains hardcoded 'None.' placeholder"
+fi
+
+for old_heading in \
+  'Safety Checklist' \
+  'State / Migration / Persistence Checklist' \
+  'External-System and Credential Checklist' \
+  'Praise'; do
+  if grep -Eq "^##[[:space:]]+${old_heading}[[:space:]]*$" "$REPORT"; then
+    fail "Review Report keeps old required top-level ${old_heading}; move it under optional annex/compact sections"
+  fi
+done
+
 require_prompt_text() {
   local file="$1"
   local pattern="$2"
@@ -74,5 +101,12 @@ for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Next action' 'next action summary field reference'
   require_prompt_text "$file" 'Report link|report link' 'report link summary field reference'
 done
+
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Context / Snapshot' 'Context / Snapshot filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Findings' 'Findings filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Open Questions Addressed' 'Open Questions filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Evidence' 'Evidence filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Action / Blocker' 'Action / Blocker filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Optional Annex: Checklists' 'optional checklist annex filling guidance'
 
 printf 'review-report-summary-first: PASS\n'
