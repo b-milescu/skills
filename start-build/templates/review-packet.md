@@ -1,5 +1,9 @@
 # Review Packet
 
+Summary-first packet. Fill the default sections below; add a conditional section
+only when its trigger applies. `filling-guide.md` (review-packet.md) owns
+section-by-section instructions and the conditional-section triggers.
+
 ## Metadata
 
 | Field | Value |
@@ -40,28 +44,14 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 ## Summary
 
-## Loaded Context Sources
-
-List only sources loaded beyond the issue and rulebook index. Use one-line bullets with why relevant; write `none beyond issue and rulebook index` when no expansion was needed.
-
-## Pre-Work Checklist
-
-- [ ] Linked issue read; prior reviews/ADRs read only when evidence-triggered.
-- [ ] Project rulebook index (top-level operating entry point) read for applicable safety rules.
-- [ ] Architecture / design docs read only when evidence-triggered for affected surfaces.
-- [ ] Domain docs / `CONTEXT.md` read only when evidence-triggered.
-- [ ] Loaded context sources and one-line relevance reasons recorded in the Build Plan Packet or this Review Packet.
-- [ ] Product/runtime/operator external-system mutation surface identified: `<none / read-only / mutating; explain>`
-- [ ] Credential/secret exposure surface identified: `<none / config / logging / deploy; explain>`
-- [ ] State / schema / migration impact identified: `<none / which stores / which migrations>`
-- [ ] Refactor behavior-touching assessment: `<N/A or evidence plan>`
-- [ ] TDD applicability/tracer-bullet behavior identified: `<N/A or behavior + expected RED failure>`
+One paragraph: what changed, why, and the observable effect on users/operators.
+Name loaded context sources beyond the issue and rulebook index (each with why
+relevant), or write `none beyond issue and rulebook index`.
 
 ## Scope
 
-### In scope
-
-### Out of scope
+- **In scope:**
+- **Out of scope:**
 
 ## Acceptance Criteria Evidence
 
@@ -69,26 +59,40 @@ List only sources loaded beyond the issue and rulebook index. Use one-line bulle
 |---|---|
 | AC-1: `<criterion>` | `<test/command/link/manual evidence>` |
 
-## Safety Impact
+## Safety / State / External Delta
 
-## Architecture / Design Decisions
+One line per surface; write `N/A — <reason>` when a surface is untouched.
 
-## State, Persistence, and Migration Impact
-
-## External-System and Credential Safety
-
-## Diff Summary
+- **Safety invariants:** `<none changed / which invariants + how preserved>`
+- **State / persistence / migration:** `<none / which stores, migration numbers, smoke-test plan>`
+- **External-system / credential:** `<no live external mutation; no secret read/printed/committed / details>`
 
 ## Test Evidence
 
-## Manual / Operational Evidence
+Expand on the `RED`/`GREEN` Reviewer Lift fields: targeted tests, full check
+gate output (or CI link), and regression evidence for behavior-touching
+refactors. State `TDD: N/A — <reason>` for non-behavior changes.
 
-## Concerns / Reviewer Focus
+## Reviewer Focus
+
+What could go wrong and where to read hardest. Mirror the Reviewer Lift >
+Reviewer Focus headline, or write `none`.
 
 ## Open Questions
 
-None.
+`None.` or stable OQ-N IDs the reviewer can answer/escalate.
 
 ## Follow-ups
 
-## Reviewer Hints
+Linked issues for deferred items, or `None`.
+
+<!--
+Conditional sections — add the matching heading below ONLY when its trigger
+applies. Triggers and filling instructions live in filling-guide.md
+(review-packet.md > Conditional sections).
+
+## Architecture / Design Decisions   (a non-trivial design choice or required ADR)
+## Diff Summary                       (large/spread diff needing a per-file map)
+## Manual / Operational Evidence      (dry-run / runbook / read-only operator output)
+## Reviewer Hints                     (files/tests to inspect first)
+-->
