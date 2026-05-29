@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$REPO_ROOT"
+
+fail() {
+  printf 'start-build-context-read-matrix: FAIL: %s\n' "$*" >&2
+  exit 1
+}
+
+skill="start-build/SKILL.md"
+
+matrix_start="$(grep -n '^## Mode routing context read matrix$' "$skill" | cut -d: -f1 || true)"
+quick_start="$(grep -n '^## Quick start$' "$skill" | cut -d: -f1 || true)"
+
+[ -n "$matrix_start" ] || fail "$skill missing Mode routing context read matrix section"
+[ -n "$quick_start" ] || fail "$skill missing Quick start section"
+[ "$matrix_start" -lt "$quick_start" ] || fail "read matrix must appear before Quick start"
+[ $((quick_start - matrix_start)) -le 80 ] || fail "read matrix must stay near Quick start"
+
+matrix_block="$(sed -n "${matrix_start},$((quick_start - 1))p" "$skill")"
+
+printf '%s\n' "$matrix_block" | grep -qF '| Mode | Required files / sections | Optional expansion | Stop / avoid |' || \
+  fail "read matrix missing required/optional/avoid table headers"
+
+for mode in \
+  'Parent orchestrator' \
+  'Standalone builder' \
+  'Child `mr-builder`' \
+  'Revision builder' \
+  'Docs-only/config-only builder' \
+  'Multi-issue coordinator'
+do
+  row="$(printf '%s\n' "$matrix_block" | grep -F "| ${mode} |" || true)"
+  [ -n "$row" ] || fail "read matrix missing mode row: $mode"
+  cell_count="$(printf '%s' "$row" | awk -F'|' '{ print NF - 2 }')"
+  [ "$cell_count" -eq 4 ] || fail "mode row must have four cells: $mode"
+  if printf '%s' "$row" | grep -qE '\|[[:space:]]*\|'; then
+    fail "mode row has empty cell: $mode"
+  fi
+done
+
+child_row="$(printf '%s\n' "$matrix_block" | grep -F '| Child `mr-builder` |')"
+for required_anchor in \
+  'BUILD-FLOW.md#child-mr-builder-mode' \
+  'templates/builder-final-handoff.md' \
+  'BUILD-FLOW.md#parent-orchestrator-recipe' \
+  'BUILD-FLOW.md#reviewer-launch-protocol' \
+  'BUILD-FLOW.md#post-merge-verifier-recipe'
+do
+  printf '%s' "$child_row" | grep -qF "$required_anchor" || fail "child row missing anchor: $required_anchor"
+done
+
+for phrase in 'merge/finish' 'unless parent changes role scope'; do
+  printf '%s' "$child_row" | grep -qF "$phrase" || fail "child row missing avoid-list phrase: $phrase"
+done
+
+docs_row="$(printf '%s\n' "$matrix_block" | grep -F '| Docs-only/config-only builder |')"
+for phrase in 'templates/review-packet-compact.md' 'Check Gate' 'TDD: N/A' 'unless behavior becomes touched'; do
+  printf '%s' "$docs_row" | grep -qF "$phrase" || fail "docs-only row missing phrase: $phrase"
+done
+
+printf 'start-build-context-read-matrix: PASS\n'
