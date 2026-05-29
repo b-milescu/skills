@@ -39,6 +39,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Start-build ready gate / push semantics | `bash tests/start-build-ready-gate-push-semantics.sh` | Verifies early Draft and implementation pushes remain allowed before full gate, while ready/request-review still requires local gate evidence and synchronized Reviewer Lift delta semantics. |
 | Start-build stale reviewer control | `bash tests/start-build-stale-reviewer-control.sh` | Verifies review-timeout guidance checks observed reviewer status/activity, uses runtime control when available, fails closed when unavailable, and does not allow blind duplicate reviewers. |
 | Start-build TDD trigger policy | `bash tests/start-build-tdd-trigger-policy.sh` | Verifies behavior-touching implementation is the one TDD trigger, runtime/operator/safety changes are examples, exceptions require MR rationale without fake tests, and sufficient issue acceptance criteria avoid extra user approval prompts. |
+| Start-build review-gate bypass wording | `bash tests/start-build-bypass-wording.sh` | Verifies the canonical human bypass protocol uses a strict, non-inferable accepted-phrase rule, rejects ambiguous release language, requires named actor/reason/`Review gate` field/MR audit trail, and keeps `SAFETY.md`/`BUILD-FLOW.md` pointer-only with no-self-approval intact. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies Draft MR create/description-update/mark-ready snippets, SHA-bound approval/merge/auto-merge snippets, and MR-note/issue-note snippets stay separate; retired combined snippets stay absent. |
 | GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
 | Start-review command ownership | `bash tests/start-review-command-ownership.sh` | Verifies `/start-review` points to review cards/snippets for GitLab syntax and rejects raw `glab` command copies in reviewer-owned docs/prompts. |
@@ -102,6 +103,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
+| `tests/start-build-bypass-wording.sh` | `start-build` canonical human bypass protocol strict non-inferable accepted-phrase rule, ambiguous-release-language rejection, named-actor/reason/audit-trail requirements, and pointer-only `SAFETY.md`/`BUILD-FLOW.md` with no-self-approval intact. |
 | `tests/start-build-child-path-size.sh` | `start-build` child-builder path size, child authority boundary, and parent-only discovery exclusion regressions. |
 | `tests/start-build-context-read-matrix.sh` | `start-build` first-screen mode routing table and child avoid-list anchor regressions. |
 | `tests/start-build-discovery-budget.sh` | `start-build` Discovery Budget, Build Plan Packet, bounce rule, authority boundaries, and template pointer regressions. |
@@ -139,6 +141,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Early Draft/implementation pushes do not require the full local gate, but ready/request-review does; Reviewer Lift local-gate and post-ready delta semantics stay aligned. | `bash tests/start-build-ready-gate-push-semantics.sh` |
 | Stale reviewer control checks status/activity before replacement, uses runtime interrupt/control when available, escalates when unavailable, and blocks blind duplicate reviewers. | `bash tests/start-build-stale-reviewer-control.sh` |
 | Behavior-touching implementation stays the one TDD trigger; exceptions require MR rationale and cannot allow fake tests; sufficient issue acceptance criteria do not force extra approval prompts. | `bash tests/start-build-tdd-trigger-policy.sh` |
+| Review-gate human bypass stays strict and non-inferable: closed accepted-phrase set, ambiguous release language rejected and clarified, named actor/reason/`Review gate` field/MR audit trail required, pointer-only `SAFETY.md`/`BUILD-FLOW.md`, and no builder self-approval under bypass. | `bash tests/start-build-bypass-wording.sh` |
 
 ## Discovery notes
 
