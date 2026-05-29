@@ -9,7 +9,7 @@ This repo uses GitLab-backed dev workflows.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
 - **`/issue-delivery-loop`** — coordinate bounded ready-issue batches and issue-to-MR loops; keep Decoupling Contract proof, parent spot-checks, revision routing, and delivery metrics in one place. See [skill doc](../../issue-delivery-loop/SKILL.md).
-- **`/post-merge-verifier`** — read-only post-merge verification after merge or protected auto-merge: default-branch state, linked issue closure or pending closure, CI evidence, source-branch cleanup, promised docs/ADR/follow-ups, and blockers. See [skill doc](../../post-merge-verifier/SKILL.md).
+- **`/post-merge-verifier`** — read-only post-merge verification after merge or protected auto-merge: default-branch state, linked issue closure or pending closure, CI evidence, source-branch cleanup, and blockers. See [skill doc](../../post-merge-verifier/SKILL.md).
 
 ## Active recipes
 
