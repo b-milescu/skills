@@ -43,6 +43,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review CI/OQ decision tables | `bash tests/review-ci-oq-decision-tables.sh` | Verifies reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
 | Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
 | Review action/report ordering | `bash tests/review-action-order.sh` | Verifies reviewer report drafting, final snapshots, blocked conversion, post-report SHA guards, stale-head skip handling, and intended-vs-completed action wording. |
+| Review SHA-bound checkout | `bash tests/review-sha-bound-checkout.sh` | Verifies single-MR review checkout guidance requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
 | Review Report summary-first contract | `bash tests/review-report-summary-first.sh` | Verifies the Review Report starts with Decision Summary and keeps review verdict, SHA, CI, findings, checks, action fields, and report-link fields visible. |
 | Reviewer Lift schema drift | `bash tests/reviewer-lift-schema.sh` | Verifies Reviewer Lift generated copies match the canonical schema and flags unmarked stale duplicate field-list tables. |
 | Machine handoff template schema | `bash tests/agent-handoff-templates.sh` | Verifies builder/reviewer machine-readable final handoff templates exist, keep top-level field order, parse as YAML, use synthetic example URLs, and keep reviewer final-handoff procedure/prompt guidance required. |
@@ -77,6 +78,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-ci-oq-decision-tables.sh` | Reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
 | `tests/review-action-order.sh` | Reviewer report/action order keeps final snapshots before posting, SHA guards before actions, stale-head skip handling, and intended-vs-completed action wording. |
+| `tests/review-sha-bound-checkout.sh` | Single-MR review checkout mode requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, and report-link fields visible. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
 | `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
@@ -98,6 +100,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | CI and Open Question decisions stay centralized in one canonical table section. | `bash tests/review-ci-oq-decision-tables.sh` |
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
 | Review report/action ordering blocks stale approval reports and guards every approval/finish action. | `bash tests/review-action-order.sh` |
+| Single-MR review checkout local checks stay exact-SHA-bound and record checkout path/SHA evidence. | `bash tests/review-sha-bound-checkout.sh` |
 | Review Report keeps summary-first review verdict, SHA, CI, findings, checks, action fields, and report-link fields. | `bash tests/review-report-summary-first.sh` |
 | Builder/reviewer final handoff schemas keep parseable field order, safe example URLs, and reviewer final-handoff procedure/prompt requirements. | `bash tests/agent-handoff-templates.sh` |
 | Discovery Budget and Build Plan Packet stay reachable from `/start-build` with preserved authority boundaries. | `bash tests/start-build-discovery-budget.sh` |
