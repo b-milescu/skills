@@ -49,7 +49,7 @@ agent_handoff:
   merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   approval_action: "approved | not-approved | blocked | N/A"
   finish_action: "merged | queued-auto-merge | none | blocked | N/A"
-  action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | other"
+  action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | partial-review | secret-exposure-suspected | other"
   next_action: "finish-by-authorized-actor | revise | human-escalation | wait-ci | rerun-review | fix-blocker"
   report_url: "https://gitlab.example/group/project/-/merge_requests/123#note_789 | N/A"
   extra: {}
@@ -87,7 +87,8 @@ agent_handoff:
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
   safely take approval due to missing authority, SHA/CI/tool/preflight/permission
-  failures, or a required human decision. When the Review Report used intended
+  failures, partial-review, suspected secret exposure, or a required human
+  decision. When the Review Report used intended
   action wording before a post-report approval attempt, this field records the
   completed approval result or blocker after the fresh SHA guard.
 - `finish_action` records only the GitLab finish side effect: merge,
@@ -98,7 +99,9 @@ agent_handoff:
 - `action_blocker` is `none` or one stable blocker token: `missing-authority`,
   `stale-or-missing-ci`, `changed-head-sha`,
   `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`,
-  `human-decision-needed`, or `other`.
+  `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or
+  `other`. For `secret-exposure-suspected`, report the blocker and safe
+  path/artifact locator without secret values.
 - `next_action` tells the parent whether an authorized actor should finish,
   the builder should revise, a human must decide, CI should be waited on, the
   reviewer should rerun after a changed head, or a blocker needs fixing.

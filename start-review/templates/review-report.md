@@ -18,7 +18,7 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
 | Merge authority | `<verified value or blocked: missing-authority>` |
 | Merge authority source | `<verified source or blocked: missing-authority>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
@@ -82,7 +82,7 @@ Use Reviewer Lift as a map, not truth. For every safety-critical field, record r
 
 ## Findings
 
-Required. Use stable IDs only for real findings. If a bucket has no findings, write a verifier-safe sentence such as `No MF findings after diff, evidence, and safety review.`
+Required. Use stable IDs only for real findings. If a bucket has no findings, write a verifier-safe sentence such as `No MF findings after diff, evidence, and safety review.` For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
 
 ### Must Fix
 
@@ -136,7 +136,7 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect.
+Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect.
 
 | Field | Value |
 |---|---|
@@ -144,7 +144,7 @@ Required. State the `Review verdict`, bound MR URL/project, verified Merge autho
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / other>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Post-report action note | `<N/A, or URL/summary for approval/finish failure, changed-head-sha, or completed action result>` |
 
