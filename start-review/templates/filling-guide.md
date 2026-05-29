@@ -17,7 +17,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 ## review-report.md
 
-- Post as a single top-level comment on the MR. Use inline review comments for line-anchored findings, and reference each Must Fix item ID (MF-1, MF-2, ...) so revision commits can cite them.
+- Post as a single top-level comment on the MR with `gitlab-local` **Snippet: mr-note-create**. Use inline review comments for line-anchored findings, and reference each Must Fix item ID (MF-1, MF-2, ...) so revision commits can cite them.
 - **Decision Summary** — First section and first screen. Draft it before final guards, then refresh it after the final MR/CI/authority snapshot and before posting. Use the same summary-first structure as the reviewer prompts: review verdict (`pass / request-changes / reject / blocked`), bound MR target, reviewed SHA, CI status/SHA, findings summary (`MF-N` / `SF-N` / `C-N` counts or IDs), local checks, Approval action, Finish action, Action blocker, Merge authority, Merge authority source, Next action, and Report link placeholder (`this comment; final handoff contains URL when available` until GitLab exposes the comment URL). When approval/merge/queue happens after posting, distinguish intended action from completed action; never claim completed approval, merge, or auto-merge queue before verifying it.
 - **Summary** — Overall assessment. If requesting changes, state the headline. If blocked, name the guard/tool/authority blocker and say whether builder revision is needed.
 - **Project binding fields** — Copy the bound MR URL/project, explicit repo target, IID, source branch, target branch, and current SHA from the final metadata snapshot. A project mismatch blocks unless the user explicitly chose a cross-repo review target. Commands that post comments, approve, merge, queue auto-merge, or close use an explicit repo target or full MR URL, never a cwd-inferred bare IID when a URL was supplied or repo inference is uncertain.
@@ -48,7 +48,7 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 ## unblock-response.md
 
-- Use when responding to a Stuck Packet. Post as an MR comment. When Builder resumes, remove the project's unblock label if one exists.
+- Use when responding to a Stuck Packet. Post as an MR comment with `gitlab-local` **Snippet: mr-note-create**. When Builder resumes, remove the project's unblock label if one exists.
 - **Summary** — One paragraph: your read and the recommended direction.
 - **Direction** — Pointer / correction / pair / escalation. Cite files, tests, docs, or commands.
 - **Safety notes** — Any product/runtime/operator external-system / credential / state precautions before continuing.

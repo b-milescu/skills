@@ -46,6 +46,8 @@ auto_merge_body="$(require_snippet sha-bound-auto-merge-queue)"
 confirmation_body="$(require_snippet approval-confirmation)"
 ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
 finish_body="$(require_snippet finish-mr-authority-aware)"
+mr_note_body="$(require_snippet mr-note-create)"
+issue_note_body="$(require_snippet issue-note-create)"
 
 assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha"' 'SHA-bound approval command'
 assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
@@ -73,6 +75,17 @@ assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$s
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
 assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
 
+assert_contains "$mr_note_body" 'glab mr note create <id> --message "$(cat "$report_file")"' 'MR note command'
+assert_not_contains "$mr_note_body" 'glab issue note' 'issue-note command in MR-note snippet'
+assert_contains "$mr_note_body" 'report_file="$run_dir/mr-report.md"' 'file-backed MR report path'
+
+assert_contains "$issue_note_body" 'glab issue note <id> --message "$(cat "$comment_file")"' 'issue note command'
+assert_not_contains "$issue_note_body" 'glab mr note create' 'MR-note command in issue-note snippet'
+assert_contains "$issue_note_body" 'comment_file="$run_dir/issue-note.md"' 'file-backed issue note path'
+
+require_text "gitlab-local/SKILL.md" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
+require_text "gitlab-local/SKILL.md" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
+
 require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
 require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
 require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
@@ -80,6 +93,41 @@ require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-he
 if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
   fail 'retired combined approve-merge-sha-bound snippet still present'
 fi
+
+if grep -Fq 'Snippet: note-comment-creation' gitlab-local/SKILL.md; then
+  fail 'retired combined note-comment-creation snippet still present'
+fi
+
+for file in \
+  gitlab-local/SKILL.md \
+  start-review/SKILL.md \
+  start-review/REVIEW-FLOW.md \
+  start-review/templates/filling-guide.md \
+  agents/claude/mr-reviewer.md \
+  agents/pi/mr-reviewer.md \
+  start-build/BUILD-FLOW.md \
+  start-build/reference/stuck-protocol.md; do
+  if grep -Fq 'note-comment-creation' "$file"; then
+    fail "$file still references retired combined note-comment-creation snippet"
+  fi
+done
+
+for file in \
+  start-review/SKILL.md \
+  start-review/REVIEW-FLOW.md \
+  start-review/templates/filling-guide.md \
+  start-review/templates/review-report.md \
+  start-review/templates/unblock-response.md \
+  agents/claude/mr-reviewer.md \
+  agents/pi/mr-reviewer.md; do
+  require_text "$file" 'Snippet: mr-note-create' 'MR-note snippet reference'
+  if grep -Fq 'Snippet: issue-note-create' "$file"; then
+    fail "$file references issue-note-create in MR review posting guidance"
+  fi
+done
+
+require_text "gitlab-local/SKILL.md" 'Snippet: issue-note-create' 'issue-note snippet reference'
+require_text "start-build/reference/post-merge-verifier.md" 'Snippet: issue-note-create' 'post-merge issue-note snippet reference'
 
 require_text \
   "gitlab-local/SKILL.md" \
@@ -124,5 +172,28 @@ awk '
     exit bad ? 1 : 0
   }
 ' gitlab-local/SKILL.md || fail 'combined executable approve+merge snippet detected'
+
+awk '
+  /^### Snippet:/ {
+    if (snippet != "" && saw_mr_note && saw_issue_note) {
+      printf "snippet %s contains both glab mr note create and glab issue note\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    snippet=$0
+    sub(/^### Snippet: /, "", snippet)
+    saw_mr_note=0
+    saw_issue_note=0
+    next
+  }
+  snippet != "" && /^[[:space:]]*glab mr note create[[:space:]]/ { saw_mr_note=1 }
+  snippet != "" && /^[[:space:]]*glab issue note[[:space:]]/ { saw_issue_note=1 }
+  END {
+    if (snippet != "" && saw_mr_note && saw_issue_note) {
+      printf "snippet %s contains both glab mr note create and glab issue note\n", snippet > "/dev/stderr"
+      bad=1
+    }
+    exit bad ? 1 : 0
+  }
+' gitlab-local/SKILL.md || fail 'combined executable MR+issue note snippet detected'
 
 printf 'gitlab-local-split-snippets: PASS\n'

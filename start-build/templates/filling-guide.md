@@ -73,7 +73,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## stuck-packet.md
 
-- Submit when blocked for >2 hours on one issue. Post as an MR comment, keep the MR in Draft, and apply the project's unblock label when one exists.
+- Submit when blocked for >2 hours on one issue. Post as an MR comment with `gitlab-local` **Snippet: mr-note-create**, keep the MR in Draft, and apply the project's unblock label when one exists.
 - **What I'm trying to do** — One paragraph.
 - **What I've tried** — Chronological list with files, tests, errors, logs, or traces. No secrets.
 - **What's in front of me** — Hypotheses, most likely first.

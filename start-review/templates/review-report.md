@@ -1,5 +1,7 @@
 # Review Report
 
+<!-- Post this filled report as an MR note with `gitlab-local` Snippet: mr-note-create. -->
+
 ## Decision Summary
 
 Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report. `Review verdict` is the review judgment; GitLab side effects are recorded separately in the action fields. When the report is posted before GitLab actions, action fields must distinguish intended action from completed action; completed approval/merge/queue results belong in the final handoff or an action-result note after verification.
