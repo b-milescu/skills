@@ -12,7 +12,7 @@ Allowed checks:
 4. Confirm the linked issue state. If closure from `Closes #<id>` is still pending, report `issue_closure_pending` with the observed issue state and do not force-close the issue unless the project workflow explicitly instructs the verifier to do so.
 5. Check source-branch cleanup by reading MR metadata and/or remote refs. If the source branch still exists, report `source_branch_cleanup_pending` or `source_branch_retained_by_policy`; do not delete local or remote branches unless a separate authorized finish/cleanup step grants that authority.
 6. Run documented post-merge validation only when the command is non-mutating and safe for the current environment. If no such command is documented, report `post_merge_validation: N/A — not documented`.
-7. Post a concise issue note only when the repo/project workflow explicitly asks for post-merge notes. Use `/gitlab-local` file-backed note guidance, include only evidence from the checks above, and skip the note otherwise.
+7. Post a concise issue note only when the repo/project workflow explicitly asks for post-merge notes. Use `/gitlab-local` **Snippet: issue-note-create** with file-backed note guidance, include only evidence from the checks above, and skip the note otherwise.
 
 Forbidden actions:
 

@@ -247,7 +247,7 @@ Use `templates/review-packet-compact.md` when the diff is simple enough that a s
 
 This compatibility heading preserves the `#stuck-protocol` anchor. Detailed stuck handling lives in [reference/stuck-protocol.md](reference/stuck-protocol.md).
 
-Core policy stays inline: if blocked for more than 2 hours, keep the MR in Draft, post `templates/stuck-packet.md` as an MR comment via `gitlab-local` **Snippet: note-comment-creation**, apply the documented unblock label if one exists, list ranked hypotheses, and park the branch/worktree or switch only on a fresh branch/worktree.
+Core policy stays inline: if blocked for more than 2 hours, keep the MR in Draft, post `templates/stuck-packet.md` as an MR comment via `gitlab-local` **Snippet: mr-note-create**, apply the documented unblock label if one exists, list ranked hypotheses, and park the branch/worktree or switch only on a fresh branch/worktree.
 
 ## Mandatory review gate
 

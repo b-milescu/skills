@@ -87,16 +87,13 @@ glab issue view <id> --comments
 glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
 ```
 
-Maintenance only when workflow calls for it:
+Maintenance only when workflow calls for it. For issue comments, use
+`gitlab-local` **Snippet: issue-note-create** explicitly instead of combining
+issue and MR note commands.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-issue-note.XXXXXX")"
-comment_file="$run_dir/issue-note.md"
-# Write or fill "$comment_file" before posting it.
-
 glab issue close <id>
 glab issue update <id> --label foo,bar --unlabel baz
-glab issue note <id> --message "$(cat "$comment_file")"
 ```
 
 ### Snippet: draft-mr-create-update
@@ -199,15 +196,31 @@ include `mr`, `expected_sha`, `observed_sha`, `pipeline_id`, `status`, `url`,
 failed/running job names when available, and
 `result: pass | fail | head_changed | stale_ci | timeout`.
 
-### Snippet: note-comment-creation
+### Snippet: mr-note-create
+
+Use for MR comments only: Review Reports, unblock responses, revision notes, and
+action-result notes. Use a bound MR URL or explicit repo target when project
+binding requires it; do not pair this with an issue-note command.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-note.XXXXXX")"
 report_file="$run_dir/mr-report.md"
-comment_file="$run_dir/issue-note.md"
-# Write or fill "$report_file" / "$comment_file" before posting them.
+# Write or fill "$report_file" before posting it.
 
 glab mr note create <id> --message "$(cat "$report_file")"
+```
+
+### Snippet: issue-note-create
+
+Use for issue comments only when the issue workflow explicitly calls for an
+issue note. Use a bound issue URL or explicit repo target when project binding
+requires it; do not pair this with an MR-note command.
+
+```bash
+run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-issue-note.XXXXXX")"
+comment_file="$run_dir/issue-note.md"
+# Write or fill "$comment_file" before posting it.
+
 glab issue note <id> --message "$(cat "$comment_file")"
 ```
 

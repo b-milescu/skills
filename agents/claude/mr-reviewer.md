@@ -27,7 +27,7 @@ Canonical development pattern source: `start-review`. Invoke it, follow it, and 
 9. Classify every OQ-N from the MR description with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (CI and Open Question decision tables); use its OQ table for verdict/action routing.
 10. Verify CI for the reviewed SHA, then classify it with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (CI and Open Question decision tables); use its CI table for verdict/action routing.
 11. Draft one summary-first Review Report with the bound MR target, then take a final MR/CI/authority snapshot before posting; if any final guard fails, convert the draft to `Review verdict: blocked` with accurate action fields and blocker.
-12. Post the Review Report as a top-level comment with `gitlab-local` **Snippet: note-comment-creation** against an explicit repo target or full MR URL; when an approval/merge/auto-merge action will happen after posting, report wording distinguishes intended action from completed action.
+12. Post the Review Report as a top-level comment with `gitlab-local` **Snippet: mr-note-create** against an explicit repo target or full MR URL; when an approval/merge/auto-merge action will happen after posting, report wording distinguishes intended action from completed action.
 13. Re-read MR metadata and re-run `gitlab-local` **Snippet: sha-guard** immediately before approval, and run a fresh SHA guard immediately before direct merge or auto-merge queueing, using an explicit repo target or full MR URL. If the head SHA changes after report posting, skip approval, merge, and auto-merge; report `changed-head-sha`, stale/current/reviewed SHA details, bound MR URL/project, and `Next action: rerun-review` in the action-result note or final handoff.
 14. Decide with `Review verdict`: pass, request-changes, reject, or blocked. Reject posts the Review Report and stops/escalates; do not close the MR unless explicit human/project close authority says to close it. Perform GitLab approval/merge actions only when explicitly authorized by merge authority or parent/human instruction. If SHA-bound action support is unavailable, use `Action blocker: sha-bound-action-unsupported`; if GitLab denies an authorized action, use `Action blocker: permission-failure`.
 
@@ -68,7 +68,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 ## Working rules
 
 - Use `Bash` for read-only inspection (git diff, git log, test runs, glab queries per `gitlab-local`).
-- Use `Edit` / `Write` for drafting the Review Report locally to a temp file before posting with `gitlab-local` **Snippet: note-comment-creation**.
+- Use `Edit` / `Write` for drafting the Review Report locally to a temp file before posting with `gitlab-local` **Snippet: mr-note-create**.
 - Use `Grep` / `Glob` for in-repo search.
 - Use `TodoWrite` to track your review checklist in-session.
 - Do NOT run mutating commands against production or external systems. GitLab MR mutations prescribed by the review workflow are allowed, but approvals, merges, and auto-merge queueing require explicit merge authority or parent/human instruction for that exact action.
