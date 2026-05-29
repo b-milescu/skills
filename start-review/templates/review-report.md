@@ -7,6 +7,7 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Field | Value |
 |---|---|
 | Review verdict | `<pass / request-changes / reject / blocked>` |
+| Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
 | Reviewed SHA | `<sha reviewed; must equal MR head at decision time>` |
 | CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing; pipeline SHA or N/A>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
@@ -24,6 +25,13 @@ Fill this first-screen summary before evidence detail so parent orchestrators ca
 | Field | Value |
 |---|---|
 | MR | `<gitlab MR URL>` |
+| Bound MR URL | `<full MR URL used for review/actions>` |
+| Bound MR project | `<host/project path, e.g. gitlab.example/group/project>` |
+| Bound repo URL | `<explicit repo target used with glab -R>` |
+| Bound MR IID | `<project-scoped IID>` |
+| Bound source branch | `<source branch from MR metadata>` |
+| Bound target branch | `<target branch from MR metadata>` |
+| Bound current SHA | `<current MR head SHA from metadata>` |
 | Issue | `<gitlab issue URL>` |
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | |
@@ -66,7 +74,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 
 ## Decision
 
-State the `Review verdict`, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, or human-decision blockers that prevent safe approval or finish without representing a code defect.
+State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect.
 
 ## Must Fix
 
