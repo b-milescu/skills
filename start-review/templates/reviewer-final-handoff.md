@@ -19,6 +19,13 @@ agent_handoff:
   mr:
     iid: "123"
     url: "https://gitlab.example/group/project/-/merge_requests/123"
+    bound_url: "https://gitlab.example/group/project/-/merge_requests/123"
+    bound_host: "gitlab.example"
+    project_path: "group/project"
+    repo_url: "https://gitlab.example/group/project.git"
+    source_branch: "issue-123-example"
+    target_branch: "main"
+    current_sha: "2222222222222222222222222222222222222222"
   reviewed_sha: "2222222222222222222222222222222222222222"
   pipeline:
     id: "456 | N/A"
@@ -56,6 +63,11 @@ agent_handoff:
   or `blocked`, matching the Review Report. `pass` means the review judgment
   passed; it does not imply a GitLab approval, merge, or auto-merge action was
   taken.
+- `mr.bound_url`, `mr.bound_host`, `mr.project_path`, `mr.repo_url`,
+  `mr.source_branch`, `mr.target_branch`, and `mr.current_sha` record the
+  project-bound MR target used for Review Report comments, approval, merge,
+  auto-merge, or close-equivalent actions. The bound project must match the
+  preflight repo unless the user explicitly chose a cross-repo review target.
 - `reviewed_sha` is the exact MR head SHA the reviewer read. Never approve a SHA
   that was not reviewed.
 - `pipeline` records the decision-grade pipeline. Green CI counts only when its

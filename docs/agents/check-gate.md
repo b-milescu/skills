@@ -41,6 +41,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Review authority provenance | `bash tests/review-authority-provenance.sh` | Verifies Reviewer Lift, Review Report, final handoffs, builder prompts, and reviewer prompts require merge authority source provenance and precedence. |
 | Review blocked verdict/action split | `bash tests/review-blocked-verdict.sh` | Verifies reviewer verdict enums include blocked, keep GitLab approval/finish action fields separate, and route authority/SHA/CI/tool/human blockers deterministically. |
 | Review CI/OQ decision tables | `bash tests/review-ci-oq-decision-tables.sh` | Verifies reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
+| Review project binding | `bash tests/start-review-project-binding.sh` | Verifies supplied MR URL/ID/branch binding captures host/project/repo/IID/branch/SHA, blocks mismatches unless cross-repo target is explicit, records bound target in reports/handoffs, and forbids ambiguous bare-ID action guidance. |
 | Review reject non-mutating path | `bash tests/review-reject-non-mutating.sh` | Verifies reject guidance reports, stops/escalates, and never instructs MR closure without explicit human/project authority. |
 | Review action/report ordering | `bash tests/review-action-order.sh` | Verifies reviewer report drafting, final snapshots, blocked conversion, post-report SHA guards, stale-head skip handling, and intended-vs-completed action wording. |
 | Review SHA-bound checkout | `bash tests/review-sha-bound-checkout.sh` | Verifies single-MR review checkout guidance requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
@@ -76,6 +77,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require merge authority source provenance, precedence, and builder-claim-not-grant semantics. |
 | `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class and routes non-code blockers through explicit action fields. |
 | `tests/review-ci-oq-decision-tables.sh` | Reviewer CI and Open Question policy lives in one canonical decision-table section and reviewer-facing docs/prompts point to it. |
+| `tests/start-review-project-binding.sh` | Reviewer project binding records bound target fields, blocks wrong-project mismatches without explicit cross-repo choice, and forbids ambiguous bare-ID action guidance. |
 | `tests/review-reject-non-mutating.sh` | Reviewer reject path reports, stops/escalates, and avoids unauthorized MR closure guidance. |
 | `tests/review-action-order.sh` | Reviewer report/action order keeps final snapshots before posting, SHA guards before actions, stale-head skip handling, and intended-vs-completed action wording. |
 | `tests/review-sha-bound-checkout.sh` | Single-MR review checkout mode requires exact-SHA local execution, bans unsafe pull wording, and records checkout path/SHA evidence. |
@@ -98,6 +100,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Merge authority source provenance and precedence block builder-minted authority. | `bash tests/review-authority-provenance.sh` |
 | Blocked review verdict separates guard/tool/authority blockers from code-review findings. | `bash tests/review-blocked-verdict.sh` |
 | CI and Open Question decisions stay centralized in one canonical table section. | `bash tests/review-ci-oq-decision-tables.sh` |
+| Supplied MR URL/ID/branch targets are project-bound before review actions. | `bash tests/start-review-project-binding.sh` |
 | Reject path reports, stops/escalates, and avoids unauthorized MR closure. | `bash tests/review-reject-non-mutating.sh` |
 | Review report/action ordering blocks stale approval reports and guards every approval/finish action. | `bash tests/review-action-order.sh` |
 | Single-MR review checkout local checks stay exact-SHA-bound and record checkout path/SHA evidence. | `bash tests/review-sha-bound-checkout.sh` |
