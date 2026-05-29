@@ -77,4 +77,4 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 
 ## Done
 
-See [SAFETY.md §Done criteria](SAFETY.md#done-criteria) for the canonical completion checklist.
+See [SAFETY.md §Done criteria](SAFETY.md#done-criteria) for the canonical completion checklist. That checklist is mode-specific: a child `mr-builder` is done at the builder-ready tier (MR ready + handoff), while review-gate-complete, finish-merge, and post-merge-verified belong to later, authority-scoped roles. Match the tier to your active mode in the routing matrix above.
