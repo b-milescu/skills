@@ -72,6 +72,20 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
+## Review Context Capsule
+
+Use Reviewer Lift as a map, not truth. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
+
+| Capsule field | Claim | Reviewer verification | Source |
+|---|---|---|---|
+| Repo | `<claimed host/project/repo/default or target branch; cross-repo choice if any>` | `<verified preflight + project binding result>` | `<repo command output / MR URL / rulebook path>` |
+| MR | `<claimed MR IID/URL/source/target/head/reviewed SHA/readiness>` | `<verified MR metadata, Reviewed SHA match, diff captured>` | `<mr-pickup output / MR URL / diff artifact>` |
+| Authority | `<claimed Merge authority and Merge authority source>` | `<verified source, precedence, conflicts/no-action result>` | `<Reviewer Lift row + parent/human/rulebook/project source>` |
+| CI | `<claimed pipeline/local gate>` | `<verified exact-SHA CI decision and local-gate status>` | `<MR pipeline metadata / ci snapshot / local command output>` |
+| Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / MR description / diff / rulebook>` |
+| Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<MR description/comment URL / artifact path / command transcript>` |
+| Context expansion | `<Tier 2 or Tier 3 context used/considered>` | `<verified trigger, bounded read, and Tier 3 human/necessity rationale>` | `<path:line / finding ID / CI log / human instruction / rulebook section>` |
+
 ## Summary
 
 ## Decision

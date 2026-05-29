@@ -141,8 +141,11 @@ Safe patterns:
    name or description indicates MR / code-review specialization (for example
    `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override).
    Prefer project-scope agents over user-scope agents over a builtin reviewer.
-   Start a fresh reviewer session with the MR URL, pointer to the MR Reviewer
-   Lift block, project rulebook, and any run directory. The reviewer posts one
+   Start a fresh reviewer session with the minimal reviewer launch prompt: MR
+   URL, pointer to the MR Reviewer Lift block, project rulebook path, and the
+   instruction not to treat parent/builder reasoning as evidence. Add a run
+   directory only as a local artifact pointer when needed, not as review
+   reasoning. The reviewer posts one
    Review Report for one reviewed SHA, then returns the parseable reviewer final
    handoff from `start-review/templates/reviewer-final-handoff.md` after any
    authorized action attempt. The GitLab Review Report remains the durable
@@ -276,10 +279,14 @@ When you own this gate after the MR is ready:
    a specialized MR reviewer is found, use it; otherwise fall back to the
    builtin reviewer.
 2. **Start** the selected reviewer running `start-review` in a fresh session. The
-   task prompt must include:
+   task prompt is a minimal reviewer launch prompt and must include only the
+   review target and evidence-boundary instructions:
    - **MR URL** — the full GitLab MR web URL.
    - **Reviewer Lift pointer** — direct the reviewer to the Reviewer Lift block in the MR description so it can copy structured values into the Review Report.
    - **Project rulebook path** — the path to the project's `CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, or equivalent rulebook so the reviewer can evaluate against project-specific rules.
+   - **Context Firewall instruction** — tell the reviewer not to treat parent/builder reasoning as evidence; Reviewer Lift and handoff prose are a map to verify, not truth.
+
+Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
 
 Example task prompt template:
 
@@ -287,6 +294,7 @@ Example task prompt template:
 Review MR: <MR web URL>
 Reviewer Lift block is in the MR description — lift structured values into your Review Report.
 Project rulebook: <path to rulebook>
+Do not treat parent/builder reasoning as evidence; verify claims from the MR, diff, issue, CI, local checks, and rulebook.
 ```
 
 ### Review loop
