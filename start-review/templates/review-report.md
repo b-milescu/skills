@@ -94,6 +94,8 @@ State the `Review verdict`, verified Merge authority / Merge authority source, a
 
 ## Code I Ran
 
+Record checkout path and checkout SHA used for local checks before listing commands. If no local execution was run, state `None — no local checkout/tests run` plus the rationale.
+
 ## Reviewer Focus Sweep
 
 ## Open Questions Addressed

@@ -89,6 +89,25 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
    - after merging one MR, re-check remaining MRs' CI and `detailed_merge_status`; if one becomes conflicted/stale, stop that MR and report the blocker instead of forcing.
 8. Remove a review worktree only when no local evidence/artifacts are needed and `git -C <path> status --porcelain` is empty: `git worktree remove <path>`. Then delete the temp ref if no other review uses it: `git update-ref -d refs/tmp/review/mr-<iid>`.
 
+## Single MR checkout mode
+
+Use this mode when reviewing one MR and local checkout/tests are needed. Local evidence is valid only from a checkout proven to be at the MR SHA under review; review checkout setup must never move by an arbitrary branch pull.
+
+Allowed current-checkout path:
+
+1. Re-read decision-grade MR metadata and establish `reviewed_sha` from the lifted `Reviewed SHA` plus the current MR metadata `sha`. If those values differ and the delta cannot be reviewed safely, report `Action blocker: changed-head-sha` before local execution.
+2. `git status --porcelain` in the current checkout must be empty/clean. If not clean, do not run local checks there.
+3. `git rev-parse HEAD` must equal `reviewed_sha` or, when re-deriving for an older MR without a lifted value, the current MR SHA from metadata. Record the checkout path and SHA before running checks.
+
+Fallback exact-SHA worktree path:
+
+1. Do not run `git pull` during review checkout setup; arbitrary `git pull` can test a branch tip or merge result that is not the reviewed MR SHA.
+2. Fetch the MR head into a temp ref instead of shared `FETCH_HEAD`: `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`.
+3. Create a detached review worktree: `git worktree add --detach <path> refs/tmp/review/mr-<iid>`.
+4. Verify `git -C <path> rev-parse HEAD` equals the current MR metadata `sha`; if it does not, refresh MR metadata once and stop with `Action blocker: changed-head-sha` if still mismatched.
+5. Run targeted tests/checks only from the verified checkout. The Review Report `Code I Ran` / evidence must record checkout path and SHA used for local checks.
+6. Remove a temporary review worktree only when no local evidence/artifacts are needed and `git -C <path> status --porcelain` is empty; then delete the temp ref if no other review uses it.
+
 ## Procedure
 
 1. Resolve the MR(s): supplied IDs/URLs/branches, current-branch MR, or pickup. If multiple, enter **Multiple MR worktree mode** and run the rest independently per MR.
@@ -99,7 +118,7 @@ Use when the user supplies multiple MRs, asks for multiple reviews, or asks to r
 6. **Sweep `Reviewer Focus` first** — read those areas hardest before walking the full diff with `gitlab-local` **Snippet: artifact-capture** as needed. Note your findings in the Review Report's `Reviewer Focus Sweep` section even when nothing is wrong.
 7. Walk the review categories: scope match, strategy/safety invariants, architecture boundaries, correctness (edges, recovery, exact-decimal math, concurrency, timestamps), tests/evidence, external-API safety (adapters/quirks/redaction), state/DB/migrations (typed models, atomic writes, append-only migrations), observability/ops (metrics, health, runbooks), security/credentials, and the bounded structural maintainability sweep. For behavior-touching MRs, apply `tdd` test-quality principles when judging evidence.
 8. Verify CI status against the lifted `CI pipeline` value with `gitlab-local` **Snippet: ci-decision-snapshot**, then classify it with the [CI decision table](#ci-decision-table).
-9. Pull and run targeted tests in that MR's worktree when behavior needs confirmation, tests look light, you suspect a bug, or migration/CLI/health behavior is easier to verify by execution. Do **not** run mutating commands.
+9. When local execution is needed because behavior needs confirmation, tests look light, you suspect a bug, or migration/CLI/health behavior is easier to verify by execution, enter **Single MR checkout mode** first for one MR (or the existing multiple-MR worktree path for multiple MRs), then run targeted tests only from the verified exact-SHA checkout. Do **not** run mutating commands.
 10. **Address every `OQ-N` from the MR description in the report's `Open Questions Addressed` section.** Classify each question with the [Open Question decision table](#open-question-decision-table) before choosing the review verdict or action fields.
 11. Post inline comments for specific lines where useful.
 12. **Draft the Review Report before final guards.** Normative report/action order: draft Review Report -> final MR/CI/authority snapshot -> convert to blocked if any guard fails -> post Review Report -> SHA guard before approval -> authorized action -> optional action-result note/final handoff. Fill **Reviewer** metadata as `@reviewer — <model-id>` (e.g. `@reviewer — claude-opus-4-7`); do not add a separate model-only row; if the harness doesn't expose the model id, omit it instead of guessing. In the draft, action fields describe the intended action when approval/merge/auto-merge will happen after posting; they must not claim completed GitLab side effects before those effects are verified.
