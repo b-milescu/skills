@@ -35,6 +35,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | Agent check regression | `bash tests/agent-check.sh` | Verifies `agents/check.sh` parity, canonical-pointer, prompt-drift, dependency failures, and the no-mutation `install.sh --check` path under temporary homes. |
 | Parent subagent placement | `bash tests/parent-subagent-placement.sh` | Verifies runtime-specific subagent list calls stay in parent-orchestrator guidance and out of child builder prompts. |
 | GitLab workflow snippet split | `bash tests/gitlab-local-split-snippets.sh` | Verifies SHA-bound approval/merge/auto-merge snippets and MR-note/issue-note snippets stay separate; retired combined approve+merge and MR+issue note snippets stay absent. |
+| GitLab review command cards | `bash tests/gitlab-local-review-cards.sh` | Verifies review-focused command cards stay pointer-based, cover read/action/CI snippet names, and remain linked from `/start-review`. |
 | Install external dependency warnings | `bash tests/install-external-deps.sh` | Verifies missing/present external skill warning behavior under a temporary `HOME`. |
 | Install symlink ownership | `bash tests/install-symlink-ownership.sh` | Regression coverage that `install.sh` preserves out-of-repo symlinks (skips them with a `skip:` line) and replaces stale in-repo symlinks under a temporary `HOME`. |
 | Review authority explicitness | `bash tests/review-authority-explicit.sh` | Verifies reviewer docs/templates/prompts do not default missing merge authority to approval-only, while preserving explicit `approval-only` as valid authority. |
@@ -67,6 +68,7 @@ regression scripts documented with `bash ...` or `node ...` stay non-executable
 | `tests/agents-schema.sh` | Claude/pi agent frontmatter parsing, required fields, name/filename matching, runtime-only field drift, and dialect-specific tool casing. |
 | `tests/check-gate-inventory.sh` | Check Gate shipped shell regression inventory stays synchronized with tracked `tests/*.sh` files. |
 | `tests/gitlab-local-help-cache.sh` | `/gitlab-local` help-first run-dir cache guidance, context invalidation, and verification-status wording. |
+| `tests/gitlab-local-review-cards.sh` | Review-focused `/gitlab-local` command cards stay pointer-based, cover review read/action/CI snippets, and remain linked from `/start-review`. |
 | `tests/gitlab-local-split-snippets.sh` | GitLab workflow snippets remain split into SHA-bound approval, merge, auto-merge, MR-note, issue-note, CI watch, and finish helper guidance. |
 | `tests/gitlab-workflow-helpers.sh` | `gitlab-local/scripts/gitlab-ci-watch.sh` and `gitlab-local/scripts/gitlab-finish-mr.sh` SHA/CI/authority guard behavior with fake GitLab/Git helpers. |
 | `tests/install-external-deps.sh` | `install.sh` warnings for missing required/optional external skills and silence when dependencies exist under a temporary `HOME`. |
@@ -96,6 +98,7 @@ Issue #79 workflow guardrails are runnable through `npm run check` because
 | Guardrail | Targeted command |
 | --- | --- |
 | Combined executable approve+merge and MR+issue note snippets stay split and absent. | `bash tests/gitlab-local-split-snippets.sh` |
+| Review command cards avoid broad GitLab command context while preserving fail-closed snippet pointers. | `bash tests/gitlab-local-review-cards.sh` |
 | Missing merge authority blocks approval actions; explicit `approval-only` remains valid. | `bash tests/review-authority-explicit.sh` |
 | Merge authority source provenance and precedence block builder-minted authority. | `bash tests/review-authority-provenance.sh` |
 | Blocked review verdict separates guard/tool/authority blockers from code-review findings. | `bash tests/review-blocked-verdict.sh` |

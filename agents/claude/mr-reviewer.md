@@ -63,7 +63,7 @@ Fill Reviewer metadata as `@reviewer — <model-id>`; omit model-id if unknown.
 
 ## glab CLI
 
-Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here — the skill is the single source of truth.
+Use the `gitlab-local` review cards first for review command lookup: `gitlab-local/reference/review-read.md`, `gitlab-local/reference/review-actions.md`, and `gitlab-local/reference/ci.md`. Fall back to full `gitlab-local/SKILL.md` when the cards say to, when flag/JSON drift appears, or when a needed command is not carded. Full `gitlab-local` remains the single source of truth for command syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here.
 
 ## Working rules
 

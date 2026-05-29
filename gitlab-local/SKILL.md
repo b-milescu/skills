@@ -66,6 +66,13 @@ Names below are stable API for workflow skills. Verify flags with `--help` befor
 Long helper bodies live in `scripts/` with tests; this skill keeps contracts,
 safety rules, and pointers authoritative.
 
+Review-focused command cards for `/start-review` live in
+[`reference/review-read.md`](reference/review-read.md),
+[`reference/review-actions.md`](reference/review-actions.md), and
+[`reference/ci.md`](reference/ci.md). The cards are pointer maps for snippet
+names, inputs/outputs, fail-closed rules, and fallback conditions; this `SKILL.md`
+remains the full help-first owner for command syntax and flag drift.
+
 ### Snippet: local-repo-preflight
 
 ```bash
