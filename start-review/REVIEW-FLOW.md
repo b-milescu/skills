@@ -268,14 +268,10 @@ Detailed section-by-section instructions live next to the templates:
 - [Reviewer template filling guide](templates/filling-guide.md)
 - [Shared ADR filling guide](../templates/filling-guide.md)
 
-Safety-critical filling rules remain in this flow:
+Safety-critical filling rules are stated in full earlier in this flow; do not restate them here. Use these pointers:
 
-- Apply the Context Firewall: same-session builder/parent/planner/reviser review is advisory only, parent/builder reasoning is not evidence, and inherited broad context stays Tier 3 unless concrete risk or human instruction justifies it.
-- Copy every field from the canonical Reviewer Lift schema before reading the full diff. Treat Reviewer Lift as a map, not truth; every safety-critical field needs reviewer verification and source before any decision, and MR head SHA still must equal `Reviewed SHA` immediately before any decision.
-- Fill the Review Context Capsule with claim, reviewer verification, and source rows for repo, MR, authority, CI, scope, artifacts, and context expansion.
-- Classify CI evidence with the [CI decision table](#ci-decision-table); it owns exact-SHA, pending, red, missing, stale, and waived handling.
-- Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into Review Reports, inline comments, templates, final handoffs, or CI output; for suspected exposure, write `[REDACTED]` and `secret-exposure-suspected` without secret values.
-- Classify every stable `OQ-N` from the MR description with the [Open Question decision table](#open-question-decision-table); it owns evidence, builder-gap, human-decision, and non-blocking handling.
-- Use stable review item IDs (`MF-N`, `SF-N`, `C-N`) for Must Fix, Should Fix, and Consider items so revision commits and responses can cite them.
-- When a `C-N` or other non-blocking finding should survive after merge, create or link a follow-up issue via the documented GitLab/local issue workflow and current live labels only; keep the current MR scope unchanged.
-- When the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals, record a brief-quality defect in the Review Report follow-ups section, naming the missing fields and any avoidable discovery or rework it caused.
+- Context Firewall, context tiers, and "parent/builder reasoning is not evidence" (same-session builder/parent/planner/reviser review is advisory only): [Context Firewall](#context-firewall).
+- Reviewer Lift as a map (not truth) plus the safety-critical verification/source requirement and `Reviewed SHA` head match: [Review Context Capsule](#review-context-capsule) and [Handoff integrity check](#handoff-integrity-check).
+- CI, Open Question, and stable `OQ-N` classification: [CI and Open Question decision tables](#ci-and-open-question-decision-tables).
+- Secret/credential handling, redaction, and `secret-exposure-suspected`: [Fail-closed review coverage](#fail-closed-review-coverage).
+- Stable review item IDs (`MF-N`, `SF-N`, `C-N`), follow-up issues for surviving non-blocking findings, and brief-quality defects: [Review Report expectations](#review-report-expectations) and the [Reviewer template filling guide](templates/filling-guide.md).

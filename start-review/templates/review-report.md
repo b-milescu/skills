@@ -138,14 +138,16 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect.
 
+Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
+
 | Field | Value |
 |---|---|
-| Review verdict | `<pass / request-changes / reject / blocked>` |
+| Review verdict | `<chosen value>` |
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
-| Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
-| Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
-| Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
+| Approval action | `<chosen value>` |
+| Finish action | `<chosen value>` |
+| Action blocker | `<chosen value>` |
+| Next action | `<chosen value>` |
 | Post-report action note | `<N/A, or URL/summary for approval/finish failure, changed-head-sha, or completed action result>` |
 
 ## Optional Annex: Checklists

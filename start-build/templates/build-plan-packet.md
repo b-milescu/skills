@@ -17,3 +17,7 @@ List only sources loaded for evidence. Use one short bullet per source: `<path o
 ## Risk
 
 ## Non-goals
+
+## Unanswered questions
+
+List the exact unanswered questions blocking or scoping this work, or `none`. If any remain open, route them back to triage instead of guessing.
