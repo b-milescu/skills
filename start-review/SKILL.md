@@ -66,7 +66,7 @@ Default/preferred review is one MR per fresh reviewer session. Multiple-MR work 
 - `templates/review-report.md` — single top-level MR comment posted with `gitlab-local` **Snippet: mr-note-create**.
 - `templates/unblock-response.md` — response to a Stuck Packet posted with `gitlab-local` **Snippet: mr-note-create**.
 - `templates/filling-guide.md` — section-by-section filling instructions for reviewer templates.
-- `templates/adr.md` — architectural recommendation requiring its own MR; see shared `../templates/filling-guide.md`.
+- `../templates/adr.md` — shared architectural recommendation template requiring its own MR; see shared `../templates/filling-guide.md`.
 
 ## Decisions
 
