@@ -226,13 +226,13 @@ report_drift_output="$TMP_ROOT/report-drift.out"
 copy_repo "$report_drift_repo"
 cat >> "$report_drift_repo/agents/claude/mr-reviewer.md" <<'DRIFT'
 
-## Summary
+## Decision Summary
 
-## Decision
+## Context / Snapshot
 
-## Must Fix
+## Reviewer Lift (builder handoff)
 
-## Should Fix
+## Review Context Capsule
 DRIFT
 prepare_installed_agents "$report_drift_repo" "$report_drift_home" yes
 run_check_fail "$report_drift_repo" "$report_drift_home" "$report_drift_output"
