@@ -39,7 +39,13 @@ Use these tables as the canonical approval/finish policy for CI and reviewer Ope
 
 ## GitLab tooling reference
 
-The command reference intentionally lives in the host project's issue-tracker guide, or in the `gitlab-local` skill when a project has no guide. Use its canonical snippet names for preflight/auth, issue/MR/CI syntax, artifact capture, file-backed comments/descriptions, known `glab` flag pitfalls, and separated SHA-bound action snippets. This flow names commands only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at action points.
+Reviewers load the small `gitlab-local` review cards before the full command reference where possible:
+
+- [`review-read`](../gitlab-local/reference/review-read.md) — preflight, issue/MR metadata, project binding reads, and artifact capture.
+- [`ci`](../gitlab-local/reference/ci.md) — CI snapshots, exact-SHA CI waiting, and fail-closed CI verdict rules.
+- [`review-actions`](../gitlab-local/reference/review-actions.md) — MR notes, issue-note target split, SHA guards, approval, merge, auto-merge queueing, approval confirmation, and authority-aware finish.
+
+The cards carry snippet names, inputs/outputs, and fail-closed rules without copying raw command bodies. Full command ownership still lives in the host project's issue-tracker guide or [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md): fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card is missing/ambiguous, live CLI help or JSON shape drifts, a needed command is not carded, non-review issue/MR operations are required, or helper behavior needs troubleshooting. This flow names commands only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at action points.
 
 ## Project binding
 
