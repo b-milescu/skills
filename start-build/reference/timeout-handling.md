@@ -4,6 +4,8 @@ Detailed stale-run control reference for `start-build`. The stable entrypoint an
 
 A missing Review Report after the caller's review wait budget is only a stale-run signal. It does not by itself authorize a replacement reviewer.
 
+**Wait on the completion event; do not poll.** The runtime notifies the gate owner when a spawned child completes — foreground runs block until they return, background runs signal completion. Re-reading a child's run, re-invoking it to "check in", or repeatedly fetching its status while it is still active spends context for no new signal; rely on the completion notification. Inspect run status only when the wait budget elapses with no completion, or a concrete anomaly (error, crash, contradictory partial output) appears.
+
 Before replacing a reviewer attempt:
 
 1. Check observed reviewer status/activity through the runtime's status/control/interruption mechanism when that mechanism is available. Prefer direct run state, recent output, heartbeat/progress markers, or completion/failure status over elapsed time.
