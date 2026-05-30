@@ -45,11 +45,12 @@ require_contains 'Domain gate'
 require_contains 'Edge gate'
 require_contains 'Survives all five'
 
-# Broad-scope-only subagent fan-out (post-#149) replaces the old "mandatory on
-# every run" stance: fan-out is a scaling tool for broad scopes, NOT mandatory
-# for narrow/docs-only/quick passes.
+# Broad-sweep-by-default discovery (amends #149): fan-out is the DEFAULT posture for a
+# repo-wide sweep; narrowing to a single/docs-only pass is an explicit, user-requested
+# opt-out, not the default. 'broad' must still appear.
 require_contains 'broad'
-require_contains 'NOT mandatory for narrow'
+require_contains 'the default posture for discovery'
+require_contains 'narrow to a single pass only when'
 
 # OUT-of-scope handoffs with fallbacks stay present (deslop firewall keeps
 # boundary-moving work routed away).

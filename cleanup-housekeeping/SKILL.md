@@ -5,14 +5,15 @@ description: Discover and plan repo-maintenance cleanup as subtractive work — 
 
 # Cleanup Housekeeping
 
-Discover and plan **subtractive** maintenance in two tight, evidence-gated scopes: **deslop** (simplify needlessly complex local structures without changing behavior or boundaries) and **destale** (remove or mechanically correct stale/inaccurate items). Planning-only by default: do not edit source, delete files, upgrade dependencies, reformat code, or run destructive commands; approved slices go to the build workflow, not this skill.
+Operate as a **relentless subtractive auditor**: exhaustive within the declared scope, evidence-gated, behavior- and boundary-preserving, and unwilling to cut without proof — every cut is proven safe within a declared blast radius or it routes to `Needs info`. Discover and plan **subtractive** maintenance in two tight, evidence-gated scopes: **deslop** (simplify needlessly complex local structures without changing behavior or boundaries) and **destale** (remove or mechanically correct stale/inaccurate items). Planning-only by default: do not edit source, delete files, upgrade dependencies, reformat code, or run destructive commands; approved slices go to the build workflow, not this skill.
 
 ## Operating stance
 
-- Language agnostic and evidence first: infer ecosystems from repo evidence (never from filenames alone); every candidate needs concrete file, command, doc, or test evidence.
-- Project rules first: read the host rulebook (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README, `docs/agents`, `CONTEXT.md`, ADRs) before judging cleanup value.
-- Domain-safe: cleanup must preserve domain language, safety invariants, review gates, deploy topology, migrations, and operator workflows.
-- Planning-only by default: produce scoped plans, risks, validation, and follow-up questions; leave implementation to the build workflow.
+- **Evidence first, language agnostic:** infer ecosystems from repo evidence, never from filenames alone; every candidate **MUST** carry concrete file, command, doc, or test evidence, or it is not a candidate.
+- **Project rules first:** read the host rulebook (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README, `docs/agents`, `CONTEXT.md`, ADRs) before judging cleanup value — rules outrank instinct.
+- **Domain-safe, fail-closed:** cleanup **MUST** preserve domain language, safety invariants, review gates, deploy topology, migrations, and operator workflows; when you cannot prove a structure is incidental, leave it.
+- **Exhaustive in coverage, restrained in severity:** sweep the whole declared scope and leave no debt unexamined — but route nits, style, and judgment calls to `Needs info` or a handoff; never inflate trivia into a blocking finding.
+- **Planning-only by default:** produce scoped plans, risks, validation, and follow-up questions; leave implementation to the build workflow.
 
 ## Scope 1 — DESLOP (behavior- AND boundary-preserving simplification)
 
@@ -34,11 +35,11 @@ Discover and plan **subtractive** maintenance in two tight, evidence-gated scope
 4. **Domain gate** — could the structure *be* a domain rule (branch table, tier, state machine) and you cannot show it is incidental? → OUT
 5. **Edge gate** — creates/removes/relocates an edge between units (incl. cross-unit dedup)? → OUT
 
-Survives all five ⇒ in-scope. The candidate MUST state the observability budget it inspected; an unstated/unbounded budget ⇒ `Needs info`, never AFK. Behavior-touching simplification stays **HITL + requires characterization tests**. **Firewall:** *simplify inside the unit; never move a seam — only via the allowed transforms, each proven unobservable within a declared blast radius.*
+Survives all five ⇒ in-scope. The candidate MUST state the observability budget it inspected; an unstated/unbounded budget ⇒ `Needs info`, never AFK. Behavior-touching simplification stays **HITL + requires characterization tests**. **Firewall:** *simplify inside the unit; never move a seam — only via the allowed transforms, each proven unobservable within a declared blast radius.* Treat every transform as observable until you have proven otherwise; an unproven transform is OUT, not a judgment call.
 
 ## Scope 2 — DESTALE (remove or correct stale/inaccurate items)
 
-Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples. **Correction is in-scope only when a single mechanical source of truth proves both the drift AND the corrected value** (command output, lockfile, config, code signature). If the fix needs judgment, prose authoring, or a domain call → `Needs info` / `grill-with-docs`. ("Fix the drifted README command" is IN; "rewrite the README for clarity" is OUT.)
+Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples. **Correction is in-scope only when a single mechanical source of truth proves both the drift AND the corrected value** (command output, lockfile, config, code signature) — treat the stale text as a map, not truth, and never correct from inference; without that mechanical proof, the candidate is OUT. If the fix needs judgment, prose authoring, or a domain call → `Needs info` / `grill-with-docs`. ("Fix the drifted README command" is IN; "rewrite the README for clarity" is OUT.)
 
 ## Out of scope — handoffs (each carries a fallback)
 
@@ -52,21 +53,21 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 - **When NOT to use this skill:** if you already have a pending change/diff and just want it tidied → `/simplify` (or `/code-review`). Cleanup is for discovering debt across *committed* code with no active change.
 - **Implementation route:** planning-only. Approved slices → the build workflow (`/start-build`), which produces the diff; `/simplify` + `/code-review` run *downstream* on that diff; the start-review structural maintainability sweep gates the same smells at MR time. **No direct cleanup→simplify edge** (a plan cannot be consumed by a diff-level applier).
 - **vs the start-review structural sweep:** same smell taxonomy, different altitude — cleanup finds them repo-wide as plan candidates; the sweep gates them inside one MR diff. Do not merge.
-- **Subagent fan-out:** a scaling tool for **broad** scopes only — NOT mandatory for narrow, path-limited, docs-only, or quick passes.
+- **Subagent fan-out:** the default posture for discovery — fan out read-only subagents to sweep the repo broadly; narrow to a single pass only when the user explicitly scopes the work to a narrow, path-limited, or docs-only pass.
 
 ## Quick start
 
-1. Confirm scope if unclear: repo-wide, path-limited, docs-only, config-only, dependency hygiene, or a specific concern.
+1. Default to a repo-wide sweep; confirm scope only to narrow it (path-limited, docs-only, config-only, dependency hygiene, or a specific concern).
 2. Resolve repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); a dirty worktree means call out possible noise. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*`, check-gate docs, `CONTEXT.md`, and ADRs.
-3. For **broad** scopes only, optionally fan out read-only discovery subagents (see Boundaries). Skip fan-out for narrow, path-limited, docs-only, or quick passes.
+3. By default, fan out read-only discovery subagents for a broad repo-wide sweep (see Boundaries); narrow to a single pass only when the user explicitly scopes the work down.
 4. Discover ecosystems from manifests/config/CI, then build the candidate list (deslop and destale), applying the deslop gate sequence and the destale source-of-truth gate.
 5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
 6. After approval, route to `/to-issues` or `/gitlab-to-issues` for issue creation; route implementation to the build workflow, not this skill.
 
 ## Graphify-assisted discovery (optional lead-gen)
 
-- Use graphify as a lead generator for broad, unfamiliar, or relationship-heavy scopes only. If `graphify-out/graph.json` or `graphify-out/GRAPH_REPORT.md` exists, inspect it; if missing or stale, recommend `/graphify . --update` only when scope justifies it and ask before creating or updating graph artifacts. Do not require graphify for narrow, docs-only, config-only, dependency-only, or quick passes.
-- Treat graph findings (especially `INFERRED`/`AMBIGUOUS` edges) as leads, not evidence. A finding supported only by graph output is `Needs info`. Verify every candidate with source files, docs, tests, CI, commands, or tracker evidence.
+- Use graphify as a lead generator for broad, unfamiliar, or relationship-heavy scopes. If `graphify-out/graph.json` or `graphify-out/GRAPH_REPORT.md` exists, inspect it; if missing or stale, recommend `/graphify . --update` only when scope justifies it and ask before creating or updating graph artifacts. Do not require graphify for narrow, docs-only, config-only, or dependency-only passes.
+- Treat graph findings (especially `INFERRED`/`AMBIGUOUS` edges) as **leads, not evidence**. A finding supported only by graph output is `Needs info`. Verify every candidate with source files, docs, tests, CI, commands, or tracker evidence.
 
 ## Candidate template
 
@@ -81,14 +82,14 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 
 ## Classification rules
 
-- **AFK**: mechanical, reversible, scoped, acceptance criteria clear; normal review still required.
-- **HITL**: behavior-touching deslop (characterization tests required) or any candidate with uncertain ownership/impact.
-- **Needs info**: insufficient evidence, missing acceptance criteria, unstated/unbounded observability budget, no mechanical source of truth for a correction, or unclear check gate.
+- **AFK** — mechanical, reversible, scoped, acceptance criteria clear; normal review is still mandatory, never waived.
+- **HITL** — behavior-touching deslop (characterization tests required) or any candidate with uncertain ownership/impact; uncertainty escalates, it never relaxes.
+- **Needs info** — the fail-closed default: insufficient evidence, missing acceptance criteria, unstated/unbounded observability budget, no mechanical source of truth for a correction, or unclear check gate.
 
 ## Planning rules
 
 - Prefer small surgical slices with independent review; separate pure docs, mechanical destale, dependency upgrades, and behavior-touching deslop unless coupling is proven, sequencing characterization tests first.
-- Preserve generated files unless the generator/source of truth is known. Never delete, rewrite history, mass-format, change locks, or upgrade dependencies from discovery mode.
+- Preserve generated files unless the generator/source of truth is known. From discovery mode: never delete, never rewrite history, never mass-format, never change locks, never upgrade dependencies.
 
 ## Output shape
 
@@ -96,4 +97,4 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 2. **Top findings** — ranked table of deslop and destale candidates.
 3. **Recommended plan** — ordered slices with type, risk, validation, and dependencies.
 4. **Handoffs** — items routed to `improve-codebase-architecture`, `triage`, `security-review`, or `grill-with-docs`, each with its fallback.
-5. **Next step** — approve slices, convert to issues, run/update graphify, or request deeper discovery.
+5. **Next step** — approve slices, convert to issues, run/update graphify, or widen/re-scope discovery.
