@@ -21,9 +21,7 @@ if (diagnostics.length > 0) {
   process.exit(1);
 }
 
-console.log(
-  `md-links: checked ${files.length} Markdown files; external network ${CONFIG.externalLinks.network}; timeout policy ${CONFIG.externalLinks.timeoutMs}ms`,
-);
+console.log(`md-links: checked ${files.length} Markdown files; external network ${CONFIG.externalLinks.network}`);
 
 function findRepoRoot() {
   try {
@@ -41,7 +39,6 @@ function loadConfig(root) {
   const defaults = {
     externalLinks: {
       network: 'disabled',
-      timeoutMs: 2000,
       allowedSchemes: ['http:', 'https:', 'mailto:'],
       allowedHosts: [],
     },
@@ -54,9 +51,6 @@ function loadConfig(root) {
   config.externalLinks = { ...defaults.externalLinks, ...config.externalLinks };
   if (config.externalLinks.network !== 'disabled') {
     throw new Error('.md-link-check.json must keep externalLinks.network set to "disabled"; live network checks are out of scope');
-  }
-  if (!Number.isInteger(config.externalLinks.timeoutMs) || config.externalLinks.timeoutMs < 0) {
-    throw new Error('.md-link-check.json externalLinks.timeoutMs must be a non-negative integer');
   }
   return config;
 }
@@ -217,11 +211,6 @@ function checkDestination({ file, lineNumber, destination }) {
   }
 
   if (isExternalDestination(destination)) {
-    checkExternalDestination({ file, lineNumber, destination });
-    return;
-  }
-
-  if (destination.startsWith('mailto:')) {
     checkExternalDestination({ file, lineNumber, destination });
     return;
   }

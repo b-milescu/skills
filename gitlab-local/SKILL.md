@@ -275,7 +275,7 @@ authority permits direct merge.
 ```bash
 mr_iid="<id>"
 reviewed_sha="<sha-you-reviewed>"
-glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"
+glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false
 ```
 
 ### Snippet: sha-bound-auto-merge-queue
@@ -310,7 +310,8 @@ Inputs:
 - `mr_iid`: merge request IID.
 - `reviewed_sha`: SHA approved by the reviewer and guarded with `--sha`.
 - `merge_authority`: `approval-only`, `reviewer may merge`,
-  `queue auto-merge`, `human release`, or project default text.
+  `queue auto-merge`, or `human release`. Resolve project-default policy text
+  to one of those accepted helper authorities before invoking the helper.
 - `caller_role`: `builder`, `reviewer`, `authorized-parent`, or `human`.
 - `source_branch`, `default_branch`, and optional `worktree_path`.
 - Optional `issue_iid` when it is not obvious from `Closes #...`.

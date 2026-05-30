@@ -155,6 +155,19 @@ for (const file of process.argv.slice(2)) {
       throw new Error(`${file}: builder YAML example must not include pipe-union values: ${pipeValues.join('; ')}`);
     }
   }
+
+  if (file.endsWith('reviewer-final-handoff.md')) {
+    const expectedFinishAction = 'merged | auto-merge queued | approval-only stop | human-release stop | none | blocked | N/A';
+    const actualFinishAction = parsed.agent_handoff.finish_action;
+    if (actualFinishAction !== expectedFinishAction) {
+      throw new Error(`${file}: reviewer finish_action enum drift: ${actualFinishAction}`);
+    }
+    for (const token of ['`auto-merge queued`', '`approval-only stop`', '`human-release stop`']) {
+      if (!content.includes(token)) {
+        throw new Error(`${file}: reviewer finish_action guidance missing ${token}`);
+      }
+    }
+  }
 }
 NODE
 

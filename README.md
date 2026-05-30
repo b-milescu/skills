@@ -40,22 +40,7 @@ This repo does not vendor every skill referenced by docs or prompts. Install ext
 
 ## Check before install or review
 
-Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitLab CI all declare the Node 22 major line. GitLab CI mirrors the repo-local Check Gate documented in `docs/agents/check-gate.md`: install pinned Node dependencies with `npm ci`, then run the canonical `npm run check`. Run the same commands locally before asking for review so MR evidence matches CI evidence.
-
-```bash
-npm ci
-npm run check
-```
-
-For the agent/install consistency subset only, use the read-only check directly:
-
-```bash
-./install.sh --check
-```
-
-That subset verifies Claude/pi agent variant parity (including pi-only files that install discovery would otherwise skip), flags stale inlined Reviewer Lift field lists or Review Report structures, and reports missing required external skills such as `tdd` for installed agent runtimes with install guidance. To inspect a disposable HOME instead of the real one, set `AGENT_SKILLS_CHECK_HOME=/path/to/temp-home`.
-
-Equivalent direct command for that subset: `bash agents/check.sh`.
+Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitLab CI all declare the Node 22 major line. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and MR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
 
 ## Install on a new machine
 

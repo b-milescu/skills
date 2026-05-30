@@ -1,7 +1,6 @@
 {
   "externalLinks": {
     "network": "disabled",
-    "timeoutMs": 2000,
     "allowedSchemes": ["http:", "https:", "mailto:"],
     "allowedHosts": ["gitlab.example.com", "code.claude.com"]
   }

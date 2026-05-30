@@ -321,7 +321,7 @@ test_finish_authorized_paths_are_sha_bound() {
 
   assert_status 0
   assert_log_contains "$dir/glab.log" "glab mr approve 59 --sha abc123"
-  assert_log_contains "$dir/glab.log" "glab mr merge 59 --yes --sha abc123"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 --yes --sha abc123 --auto-merge=false"
 
   dir="$(make_fixture_dir finish-auto-merge)"
   write_mr_json "$dir/mr.json" opened abc123 running abc123

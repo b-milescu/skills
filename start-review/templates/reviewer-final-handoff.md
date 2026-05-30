@@ -48,7 +48,7 @@ agent_handoff:
   merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
   merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   approval_action: "approved | not-approved | blocked | N/A"
-  finish_action: "merged | queued-auto-merge | none | blocked | N/A"
+  finish_action: "merged | auto-merge queued | approval-only stop | human-release stop | none | blocked | N/A"
   action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | partial-review | secret-exposure-suspected | other"
   next_action: "finish-by-authorized-actor | revise | human-escalation | wait-ci | rerun-review | fix-blocker"
   report_url: "https://gitlab.example/group/project/-/merge_requests/123#note_789 | N/A"
@@ -91,11 +91,12 @@ agent_handoff:
   decision. When the Review Report used intended
   action wording before a post-report approval attempt, this field records the
   completed approval result or blocker after the fresh SHA guard.
-- `finish_action` records only the GitLab finish side effect: merge,
-  auto-merge queueing, no finish action, blocked, or `N/A`. When the Review
-  Report used intended action wording before a post-report direct merge or
-  auto-merge queue attempt, this field records the completed finish result or
-  blocker after the fresh SHA guard for that specific action.
+- `finish_action` records only the GitLab finish side effect: `merged`,
+  `auto-merge queued`, `approval-only stop`, `human-release stop`, `none`,
+  `blocked`, or `N/A`. When the Review Report used intended action wording
+  before a post-report direct merge or auto-merge queue attempt, this field
+  records the completed finish result or blocker after the fresh SHA guard for
+  that specific action.
 - `action_blocker` is `none` or one stable blocker token: `missing-authority`,
   `stale-or-missing-ci`, `changed-head-sha`,
   `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`,

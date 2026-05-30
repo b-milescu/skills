@@ -64,6 +64,8 @@ REQUIRED_EXTERNAL_SKILLS=(
 OPTIONAL_EXTERNAL_SKILLS=(
   grill-with-docs
   to-issues
+  improve-codebase-architecture
+  triage
 )
 
 if realpath --relative-to=/ / >/dev/null 2>&1; then
@@ -131,6 +133,12 @@ external_skill_note() {
       ;;
     to-issues)
       printf 'generic non-GitLab issue breakdowns can use it if installed; otherwise follow tracker docs manually'
+      ;;
+    improve-codebase-architecture)
+      printf 'boundary-moving cleanup handoffs can use it if installed; otherwise file follow-up issues manually'
+      ;;
+    triage)
+      printf 'tracker/backlog hygiene handoffs can use it if installed; otherwise follow tracker docs manually'
       ;;
     *)
       printf 'declared external skill dependency'
