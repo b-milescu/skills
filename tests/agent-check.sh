@@ -93,7 +93,9 @@ tracked_markdown_count="$(git -C "$git_noise_repo" ls-files '*.md' | wc -l | tr 
 mkdir -p \
   "$git_noise_repo/node_modules/noise" \
   "$git_noise_repo/.npm/cache" \
-  "$git_noise_repo/cleanup-discovery"
+  "$git_noise_repo/cleanup-discovery" \
+  "$git_noise_repo/graphify-out" \
+  "$git_noise_repo/.graphify-cache"
 cat > "$git_noise_repo/node_modules/noise/reviewer-lift-drift.md" <<'DRIFT'
 | Field | Value |
 |---|---|
@@ -119,6 +121,27 @@ cat > "$git_noise_repo/cleanup-discovery/report.md" <<'DRIFT'
 
 ## Should Fix
 DRIFT
+cat > "$git_noise_repo/graphify-out/GRAPH_REPORT.md" <<'DRIFT'
+## Graph Report
+
+| Field | Value |
+|---|---|
+| Reviewed SHA | graph-noise |
+DRIFT
+cat > "$git_noise_repo/.graphify-cache/report.md" <<'DRIFT'
+## Graph Cache
+
+| Field | Value |
+|---|---|
+| Reviewed SHA | graph-cache-noise |
+DRIFT
+cat > "$git_noise_repo/.graphify-report.md" <<'DRIFT'
+## Graph File
+
+| Field | Value |
+|---|---|
+| Reviewed SHA | graph-file-noise |
+DRIFT
 cat > "$git_noise_repo/progress.md" <<'DRIFT'
 | Field | Value |
 |---|---|
@@ -137,10 +160,29 @@ if [[ "$scan_count" != "$tracked_markdown_count" ]]; then
   cat "$git_noise_scan" >&2
   exit 1
 fi
-if grep -E '/(node_modules|cleanup-discovery|\.npm)/|/progress\.md$' "$git_noise_scan"; then
+if grep -E '/(node_modules|cleanup-discovery|graphify-out|\.npm|\.graphify[^/]*)/|/progress\.md$|/\.graphify[^/]*\.md$' "$git_noise_scan"; then
   echo "expected prompt-drift Markdown scan to ignore local artifacts" >&2
   echo "--- scan list ---" >&2
   cat "$git_noise_scan" >&2
+  exit 1
+fi
+
+fallback_noise_repo="$TMP_ROOT/fallback-noise-repo"
+fallback_noise_scan="$TMP_ROOT/fallback-noise-scan.list"
+copy_repo "$fallback_noise_repo"
+mkdir -p \
+  "$fallback_noise_repo/graphify-out" \
+  "$fallback_noise_repo/.graphify-cache"
+printf '# graph report\n' > "$fallback_noise_repo/graphify-out/GRAPH_REPORT.md"
+printf '# graph cache\n' > "$fallback_noise_repo/.graphify-cache/report.md"
+printf '# graph file\n' > "$fallback_noise_repo/.graphify-report.md"
+bash "$fallback_noise_repo/scripts/list-prompt-drift-markdown.sh" "$fallback_noise_repo" |
+  tr '\0' '\n' |
+  sed '/^$/d' > "$fallback_noise_scan"
+if grep -E '/(graphify-out|\.graphify[^/]*)/|/\.graphify[^/]*\.md$' "$fallback_noise_scan"; then
+  echo "expected fallback prompt-drift Markdown scan to ignore graphify artifacts" >&2
+  echo "--- scan list ---" >&2
+  cat "$fallback_noise_scan" >&2
   exit 1
 fi
 run_check_ok "$git_noise_repo" "$git_noise_home" "$git_noise_output"

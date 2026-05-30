@@ -126,7 +126,6 @@ emit_result() {
   exit "$code"
 }
 
-last_summary="none"
 pipeline_id="none"
 pipeline_status="none"
 pipeline_sha="none"

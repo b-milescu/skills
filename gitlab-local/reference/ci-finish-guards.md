@@ -66,12 +66,12 @@ Guard and authority order:
    [CI decision table in `start-review/REVIEW-FLOW.md`](../../start-review/REVIEW-FLOW.md#ci-decision-table).
    Red, canceled, skipped, missing, or stale CI blocks finish unless an
    authorized human waiver is recorded in the MR.
-4. Apply the merge authority matrix (`builder` / `approval-only` /
+4. Apply the caller-role and merge-authority matrix (`approval-only` /
    `reviewer may merge` / `queue auto-merge` / `human release`) per the canonical
    owners: [`start-build/SAFETY.md` authority / no-self-merge](../../start-build/SAFETY.md#non-negotiables)
    and [`start-review/REVIEW-FLOW.md` CI & finish policy](../../start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables).
-   A `builder` always stops with a handoff and never approves, merges, queues,
-   or deletes a remote branch.
+   A `builder` caller role always stops with a handoff and never approves,
+   merges, queues, or deletes a remote branch.
 5. Fetch/pull the default branch only after a merge/queue action or when
    producing a final status. Use `git fetch origin`, then fast-forward the local
    default only in a clean checkout where that branch can be checked out safely.

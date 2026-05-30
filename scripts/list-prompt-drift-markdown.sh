@@ -4,7 +4,7 @@
 # In normal Git worktrees, only tracked Markdown can reach an MR, so use the
 # index to avoid ignored/generated/untracked local artifact noise. In fixture or
 # temp-copied repos without Git metadata, fall back to a conservative find scan
-# that prunes known local artifact directories.
+# that prunes known local artifact directories/files.
 
 set -euo pipefail
 
@@ -35,6 +35,8 @@ find "$repo_root" \
     -name .git -o \
     -name node_modules -o \
     -name .npm -o \
-    -name cleanup-discovery \
+    -name cleanup-discovery -o \
+    -name graphify-out -o \
+    -name '.graphify*' \
   \) -prune \) \
-  -o \( -type f -name '*.md' ! -path "$repo_root/progress.md" -print0 \)
+  -o \( -type f -name '*.md' ! -path "$repo_root/progress.md" ! -path '*/.graphify*' -print0 \)

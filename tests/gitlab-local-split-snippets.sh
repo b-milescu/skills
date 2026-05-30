@@ -69,9 +69,9 @@ assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha
 assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
 assert_not_contains "$approval_body" 'glab api' 'approval confirmation command in approval snippet'
 
-assert_contains "$merge_body" 'glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"' 'SHA-bound merge command'
+assert_contains "$merge_body" 'glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false' 'SHA-bound direct merge command'
 assert_not_contains "$merge_body" 'glab mr approve' 'approval command in merge snippet'
-assert_not_contains "$merge_body" '--auto-merge' 'auto-merge queueing in direct merge snippet'
+assert_not_contains "$merge_body" 'glab mr merge "$mr_iid" --auto-merge --yes' 'auto-merge queueing in direct merge snippet'
 assert_not_contains "$merge_body" 'glab api' 'approval confirmation command in merge snippet'
 
 assert_contains "$auto_merge_body" 'glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"' 'SHA-bound auto-merge queue command'

@@ -222,7 +222,7 @@ case "$caller_role:$merge_authority" in
     if [[ "$approve_as_reviewer" == "true" ]]; then
       glab mr approve "$mr_iid" --sha "$reviewed_sha"
     fi
-    glab mr merge "$mr_iid" --yes --sha "$reviewed_sha"
+    glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false
     finish_action="merged"
     ;;
   reviewer:queue\ auto-merge|authorized-parent:queue\ auto-merge|human:queue\ auto-merge)
