@@ -57,4 +57,4 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 ## adr.md
 
-See the [shared ADR filling guide](../../templates/filling-guide.md) for ADR template filling instructions.
+See the [shared ADR filling guide](../shared-templates/filling-guide.md) for ADR template filling instructions.

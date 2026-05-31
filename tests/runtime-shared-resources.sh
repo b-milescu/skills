@@ -47,15 +47,22 @@ if [[ -e "$foreign_project/docs/decoupling-contract.md" ]]; then
   exit 1
 fi
 
-# The shared contract and templates must be available through the installed
-# skill symlink itself, independent of the current project checkout, without
-# placing non-skill resource directories in the runtime skill root.
+# Shared docs/templates must be available through skill-local resource symlinks,
+# independent of the current project checkout, without placing non-skill
+# resource directories in the runtime skill root. These paths mirror
+# skill://<skill>/docs/... and skill://<skill>/shared-templates/... reads.
 (
   cd "$foreign_project"
-  assert_readable "$home_dir/.claude/skills/start-build/../docs/decoupling-contract.md"
-  assert_readable "$home_dir/.pi/agent/skills/start-build/../docs/decoupling-contract.md"
-  assert_readable "$home_dir/.claude/skills/start-build/../templates/filling-guide.md"
-  assert_readable "$home_dir/.pi/agent/skills/start-build/../templates/filling-guide.md"
+  for runtime in \
+    "$home_dir/.claude/skills" \
+    "$home_dir/.pi/agent/skills"; do
+    for skill_file in "$REPO_ROOT"/*/SKILL.md; do
+      skill_name="$(basename "$(dirname "$skill_file")")"
+      assert_readable "$runtime/$skill_name/docs/decoupling-contract.md"
+      assert_readable "$runtime/$skill_name/docs/effort-scaling.md"
+      assert_readable "$runtime/$skill_name/shared-templates/filling-guide.md"
+    done
+  done
 )
 
 # Agent prompts run with the target project as cwd. A prompt-level instruction such

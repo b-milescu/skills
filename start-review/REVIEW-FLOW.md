@@ -135,7 +135,7 @@ the **current GitLab project**. When the user supplies or requests multiple MRs,
 do not treat one reviewer session as several independent review contexts: prefer
 parent/harness fanout into one fresh reviewer session per MR/worktree, or enter
 explicit serialized mode only after the set satisfies the shared
-[Decoupling Contract](../docs/decoupling-contract.md):
+[Decoupling Contract](docs/decoupling-contract.md):
 
 1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm `glab` resolves to the cwd repo. If preflight fails, post/report `Review verdict: blocked` with `Action blocker: preflight-failure` when an MR context exists; otherwise stop and ask.
 2. Bind supplied MR references to the preflight repo, or block on cross-repo mismatch until the user explicitly chooses the cross-repo review target.
@@ -144,7 +144,7 @@ explicit serialized mode only after the set satisfies the shared
 5. Deprioritize drafts, blocked MRs, MRs labeled with the project's revision/unblock/WIP equivalent, and obviously red-CI MRs unless the user asked for failure triage.
 6. Inspect the selected candidate, or 3-5 candidates when selecting among MRs. For multiple requested MRs, inspect enough to validate coupling. Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 7. If one MR is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user or parent to choose between separate reviewer-session fanout and explicit serialized mode.
-8. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description and apply the [Decoupling Contract's reviewer consumer guidance](../docs/decoupling-contract.md#reviewer-consumer-guidance). If proof is absent, insufficient, inconsistent, or contradicted by evidence, collect changed paths with `gitlab-local` **Snippet: artifact-capture** (or the GitLab changes API) before declaring the set decoupled. Decoupling Contract proof is required before parent parallel fanout.
+8. For multiple supplied/requested MRs, prefer the builder's `Reviewer Lift > Decoupling proof` from each MR description and apply the [Decoupling Contract's reviewer consumer guidance](docs/decoupling-contract.md#reviewer-consumer-guidance). If proof is absent, insufficient, inconsistent, or contradicted by evidence, collect changed paths with `gitlab-local` **Snippet: artifact-capture** (or the GitLab changes API) before declaring the set decoupled. Decoupling Contract proof is required before parent parallel fanout.
 
 ## Handoff integrity check
 
@@ -164,7 +164,7 @@ Before reading the full diff, validate the builder handoff:
 
 Use only when the user supplies multiple MRs, asks for multiple reviews, or asks to review the next N ready MRs. Default/preferred behavior remains one MR per fresh reviewer session. A single reviewer session cannot provide separate LLM contexts for multiple MRs.
 
-1. Resolve and decouple candidates first using [MR pickup](#mr-pickup): candidate resolution (collect at least IID, title, source/target branch, head SHA, author, labels, CI state, linked issue, and changed paths) and the `Reviewer Lift > Decoupling proof` / [Decoupling Contract](../docs/decoupling-contract.md#reviewer-consumer-guidance) check both live there. If coupling is unclear after the contract check, review serially in the safest order or ask the user to choose. Never parallelize coupled work to save time, and never group approvals or finish actions for coupled MRs.
+1. Resolve and decouple candidates first using [MR pickup](#mr-pickup): candidate resolution (collect at least IID, title, source/target branch, head SHA, author, labels, CI state, linked issue, and changed paths) and the `Reviewer Lift > Decoupling proof` / [Decoupling Contract](docs/decoupling-contract.md#reviewer-consumer-guidance) check both live there. If coupling is unclear after the contract check, review serially in the safest order or ask the user to choose. Never parallelize coupled work to save time, and never group approvals or finish actions for coupled MRs.
 2. Parallel multiple-MR review requires parent/harness-provided separate sessions and worktrees: one reviewer session per MR/worktree. Use the original checkout as a coordinator for GitLab queries only. Create one review worktree per MR when local checkout/tests are needed. Do not use shared `FETCH_HEAD` in parallel review mode; fetch each MR into its own temp ref:
    - `git fetch origin +refs/merge-requests/<iid>/head:refs/tmp/review/mr-<iid>`
    - `git worktree add --detach <path> refs/tmp/review/mr-<iid>`
@@ -278,7 +278,7 @@ See [templates/filling-guide.md §review-report.md](templates/filling-guide.md#r
 Detailed section-by-section instructions live next to the templates:
 
 - [Reviewer template filling guide](templates/filling-guide.md)
-- [Shared ADR filling guide](../templates/filling-guide.md)
+- [Shared ADR filling guide](shared-templates/filling-guide.md)
 
 Safety-critical filling rules are stated in full earlier in this flow; do not restate them here. Use these pointers:
 

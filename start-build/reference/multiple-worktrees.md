@@ -4,7 +4,7 @@ Detailed reference for `start-build` multi-issue worktree handling. The stable e
 
 Use this mode when the user supplies multiple issues, asks for multiple tasks, or requests more than one issue at once.
 
-1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and satisfies the shared [Decoupling Contract](../../docs/decoupling-contract.md).
+1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md).
 2. Prove decoupling before parallelizing using the contract's builder producer guidance. If any contract item is false, unknown, or contradicted by evidence, treat the work as coupled.
 3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled work to save time.
 4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
@@ -13,7 +13,7 @@ Use this mode when the user supplies multiple issues, asks for multiple tasks, o
    - detect default branch with `gitlab-local` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
    - one sibling worktree per issue: `git worktree add -b <branch> <path> origin/<default_branch>`.
 5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
-6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
+6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](../docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
 7. **Delegate isolated work from a coordinator only.** A parent/coordinator with agent-launch authority may start one builder per worktree using its runtime-specific mechanism and the [Parent-orchestrator recipe](parent-orchestrator.md). The compatibility anchor remains in [BUILD-FLOW.md](../BUILD-FLOW.md#parent-orchestrator-recipe). If you are already running inside a child builder worktree, this step is complete: do not launch builders or reviewers from the child session.
 8. **Use durable parent-readable outputs.** For child handoffs that the parent must read after cleanup, follow the [durable child output guidance](parent-orchestrator.md#durable-child-outputs): inline output, or an absolute output path in a caller-created run directory outside any `pi-worktree-*` checkout. Treat GitLab MR descriptions/comments as canonical for delivery handoffs; the compatibility anchor remains in [BUILD-FLOW.md](../BUILD-FLOW.md#durable-child-outputs).
 9. Keep per-issue artifacts/evidence scoped to that worktree/MR or the parent run dir named for that issue. Do not combine Review Packets, close multiple issues from one MR, or stack branches unless the user explicitly switches to a serial plan.

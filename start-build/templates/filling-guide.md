@@ -94,4 +94,4 @@ Add the heading only when its trigger applies; the template lists these in a com
 
 ## adr.md
 
-See the [shared ADR filling guide](../../templates/filling-guide.md) for ADR template filling instructions.
+See the [shared ADR filling guide](../shared-templates/filling-guide.md) for ADR template filling instructions.

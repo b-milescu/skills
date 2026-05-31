@@ -4,7 +4,7 @@ Router and compatibility anchor host for `start-build`. Detailed mode-specific f
 
 ## Issue pickup
 
-Issue selection detail lives in [reference/issue-pickup.md](reference/issue-pickup.md): run `gitlab-local` preflight, use `gitlab-local` **Snippet: issue-pickup** when no issue is supplied, prefer ready/unblocked one-MR work, inspect comments/linked MRs, prove the [Decoupling Contract](../docs/decoupling-contract.md) before multiple-issue work, and avoid casual claim/label mutation.
+Issue selection detail lives in [reference/issue-pickup.md](reference/issue-pickup.md): run `gitlab-local` preflight, use `gitlab-local` **Snippet: issue-pickup** when no issue is supplied, prefer ready/unblocked one-MR work, inspect comments/linked MRs, prove the [Decoupling Contract](docs/decoupling-contract.md) before multiple-issue work, and avoid casual claim/label mutation.
 
 ## Multiple issue worktree mode
 

@@ -45,7 +45,7 @@ Use `../templates/review-packet-compact.md` when the diff is simple enough that 
 Detailed section-by-section instructions live next to the templates:
 
 - [Builder template filling guide](../templates/filling-guide.md)
-- [Shared ADR filling guide](../../templates/filling-guide.md)
+- [Shared ADR filling guide](../shared-templates/filling-guide.md)
 
 Safety-critical filling rules remain in the active flow:
 

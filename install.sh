@@ -15,9 +15,10 @@
 # cleanly.
 #
 # Runtime skill roots must contain only actual skill directories. Shared repo
-# docs/templates stay reachable through each installed skill symlink via paths
-# like ~/.claude/skills/start-build/../docs/...; linking those resource dirs as
-# siblings makes some runtimes present them as bogus skills.
+# docs/templates stay reachable through skill-local resource symlinks such as
+# ~/.claude/skills/start-build/docs/... and
+# ~/.claude/skills/start-build/shared-templates/...; linking those resource dirs
+# as skill-root siblings makes some runtimes present them as bogus skills.
 
 set -euo pipefail
 shopt -s nullglob
