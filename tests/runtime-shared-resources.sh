@@ -15,6 +15,14 @@ assert_readable() {
   fi
 }
 
+assert_not_exists() {
+  local path="$1"
+  if [[ -e "$path" || -L "$path" ]]; then
+    echo "unexpected runtime skill-root resource entry: $path" >&2
+    exit 1
+  fi
+}
+
 home_dir="$TMP_ROOT/home"
 foreign_project="$TMP_ROOT/foreign-project"
 output_file="$TMP_ROOT/install.out"
@@ -27,17 +35,27 @@ mkdir -p \
 
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
+for runtime in \
+  "$home_dir/.claude/skills" \
+  "$home_dir/.pi/agent/skills"; do
+  assert_not_exists "$runtime/docs"
+  assert_not_exists "$runtime/templates"
+done
+
 if [[ -e "$foreign_project/docs/decoupling-contract.md" ]]; then
   echo "test setup error: foreign project unexpectedly has docs/decoupling-contract.md" >&2
   exit 1
 fi
 
-# The shared contract must be available through the installed skill resource tree,
-# independent of the current project checkout.
+# The shared contract and templates must be available through the installed
+# skill symlink itself, independent of the current project checkout, without
+# placing non-skill resource directories in the runtime skill root.
 (
   cd "$foreign_project"
   assert_readable "$home_dir/.claude/skills/start-build/../docs/decoupling-contract.md"
   assert_readable "$home_dir/.pi/agent/skills/start-build/../docs/decoupling-contract.md"
+  assert_readable "$home_dir/.claude/skills/start-build/../templates/filling-guide.md"
+  assert_readable "$home_dir/.pi/agent/skills/start-build/../templates/filling-guide.md"
 )
 
 # Agent prompts run with the target project as cwd. A prompt-level instruction such

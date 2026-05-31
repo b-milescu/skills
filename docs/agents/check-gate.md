@@ -84,7 +84,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/review-report-summary-first.sh` | Review Report summary-first contract keeps review verdict, reviewed SHA, CI status/SHA, findings, local checks, action fields, report-link fields, concise core headings, and required evidence/OQ placeholder-clean requirements visible. |
 | `tests/reviewer-prompt-dedupe.sh` | Claude/pi reviewer prompts remain pointer-based below the duplication threshold while preserving critical runtime invariants, and shared ADR template ownership/drift stays enforced. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
-| `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd, and installed agent prompts avoid cwd-relative shared-resource paths. |
+| `tests/runtime-shared-resources.sh` | Installed skill shared resources stay readable from foreign project cwd through skill symlinks, runtime skill roots do not expose `docs`/`templates` as bogus skills, and installed agent prompts avoid cwd-relative shared-resource paths. |
 | `tests/setup-dev-skills-guardrails.sh` | `setup-dev-skills` coding guardrails seed, generated pointer, and no upstream prose vendoring regressions. |
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 | `tests/start-build-bypass-wording.sh` | `start-build` canonical human bypass protocol strict non-inferable accepted-phrase rule, ambiguous-release-language rejection, named-actor/reason/audit-trail requirements, and pointer-only `SAFETY.md`/`BUILD-FLOW.md` with no-self-approval intact. |

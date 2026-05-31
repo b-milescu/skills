@@ -8,7 +8,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs pi dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
 - `gitlab-local/scripts/` — helper scripts bundled with the `/gitlab-local` skill.
-- `templates/` — shared template files (ADR, filling guides). Shared via symlinks (e.g. `adr.md`) or relative-path cross-references from skill-specific docs.
+- `templates/` — shared template files (ADR, filling guides). Referenced through skill-relative paths or skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills
 
@@ -52,6 +52,6 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 
 GitLab project namespace is `agents/skills`; the npm package name `@agents/skills` is intentionally unchanged.
 
-`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`), installs skills into each agent dir that exists on this host (skipping the rest with a clear `skip:` line), warns for missing declared external skill dependencies, and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, load `gitlab-local` and use direct `glab` commands from inside the target repo.
+`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as siblings because some runtimes interpret every skill-root directory as a skill. Relative references such as `start-build/../docs/...` still resolve through the installed skill symlinks. The installer warns for missing declared external skill dependencies and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, load `gitlab-local` and use direct `glab` commands from inside the target repo.
 
 Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).

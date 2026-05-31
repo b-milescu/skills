@@ -103,6 +103,14 @@ ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-revi
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"
 
+# Older installers linked shared resource dirs into runtime skill roots. They are
+# repo-owned but not skills, so a rerun must prune them instead of preserving the
+# bogus skill entries.
+ln -s "$REPO_ROOT/docs" "$home_dir/.claude/skills/docs"
+ln -s "$REPO_ROOT/templates" "$home_dir/.claude/skills/templates"
+ln -s "$REPO_ROOT/docs" "$home_dir/.pi/agent/skills/docs"
+ln -s "$REPO_ROOT/templates" "$home_dir/.pi/agent/skills/templates"
+
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
 assert_symlink_target "$home_dir/.claude/skills/start-build" "$external_dir/custom-skill"
@@ -120,8 +128,8 @@ assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT
 for runtime in \
   "$home_dir/.claude/skills" \
   "$home_dir/.pi/agent/skills"; do
-  assert_symlink_resolves_to "$runtime/docs" "$REPO_ROOT/docs"
-  assert_symlink_resolves_to "$runtime/templates" "$REPO_ROOT/templates"
+  assert_not_exists "$runtime/docs"
+  assert_not_exists "$runtime/templates"
 done
 assert_not_exists "$home_dir/.claude/skills/old-repo-skill"
 assert_not_exists "$home_dir/.claude/agents/old-repo-agent.md"

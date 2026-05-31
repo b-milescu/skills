@@ -13,6 +13,11 @@
 # non-symlink targets or user-managed symlinks pointing outside this repo — fix
 # those by hand. Stale repo-owned symlinks are pruned so renames propagate
 # cleanly.
+#
+# Runtime skill roots must contain only actual skill directories. Shared repo
+# docs/templates stay reachable through each installed skill symlink via paths
+# like ~/.claude/skills/start-build/../docs/...; linking those resource dirs as
+# siblings makes some runtimes present them as bogus skills.
 
 set -euo pipefail
 shopt -s nullglob
@@ -46,14 +51,6 @@ esac
 SKILL_DESTS=(
   "$HOME/.claude/skills"
   "$HOME/.pi/agent/skills"
-)
-
-# Shared support dirs referenced by skills via ../docs and ../templates. Link
-# them next to installed skill dirs so relative markdown links resolve from
-# runtime paths like ~/.pi/agent/skills/start-build/SKILL.md.
-SHARED_SKILL_RESOURCE_NAMES=(
-  docs
-  templates
 )
 
 # External skills referenced by this repo but not vendored here. They should be
@@ -100,19 +97,6 @@ is_skill_name() {
     [[ "$known" == "$name" ]] && return 0
   done
   return 1
-}
-
-is_shared_skill_resource_name() {
-  local name="$1" known
-  for known in "${SHARED_SKILL_RESOURCE_NAMES[@]}"; do
-    [[ "$known" == "$name" ]] && return 0
-  done
-  return 1
-}
-
-is_skill_install_entry_name() {
-  local name="$1"
-  is_skill_name "$name" || is_shared_skill_resource_name "$name"
 }
 
 is_agent_name() {
@@ -249,11 +233,8 @@ for skill_dir in "${SKILL_DESTS[@]}"; do
   fi
   mkdir -p "$skill_dir"
   echo "Skills → $skill_dir"
-  prune_stale_repo_links "$skill_dir" is_skill_install_entry_name
+  prune_stale_repo_links "$skill_dir" is_skill_name
   for name in "${SKILL_NAMES[@]}"; do
-    link "$REPO_ROOT/$name" "$skill_dir/$name"
-  done
-  for name in "${SHARED_SKILL_RESOURCE_NAMES[@]}"; do
     link "$REPO_ROOT/$name" "$skill_dir/$name"
   done
   warn_missing_external_skills "$skill_dir"
