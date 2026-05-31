@@ -114,6 +114,10 @@ assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'ci-watch helper s
 assert_contains "$ci_watch_body" 'scripts/README.md' 'ci-watch helper docs pointer'
 assert_contains "$ci_watch_body" 'tests/gitlab-workflow-helpers.sh' 'ci-watch regression test pointer'
 assert_contains "$ci_watch_body" '--reviewed-sha "$reviewed_sha"' 'ci-watch helper invocation block'
+assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"' 'ci-watch full skill URI helper path'
+assert_contains "$ci_watch_body" '"$gitlab_ci_watch_script"' 'ci-watch helper variable invocation'
+assert_not_contains "$ci_watch_body" 'skill_dir/scripts/gitlab-ci-watch.sh' 'ci-watch bare skill_dir script path pattern'
+assert_not_contains "$ci_watch_body" 'gitlab_local_skill_dir/scripts/gitlab-ci-watch.sh' 'ci-watch bare gitlab_local_skill_dir script path pattern'
 assert_contains "$ci_watch_body" 'reference/ci-finish-guards.md' 'ci-watch link to relocation card'
 
 # finish-mr-authority-aware structure preserved inline.
@@ -122,6 +126,10 @@ assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper scri
 assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
 assert_contains "$finish_body" 'tests/gitlab-workflow-helpers.sh' 'finish regression test pointer'
 assert_contains "$finish_body" '--merge-authority "$merge_authority"' 'finish helper invocation block'
+assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
+assert_contains "$finish_body" '"$gitlab_finish_mr_script"' 'finish helper variable invocation'
+assert_not_contains "$finish_body" 'skill_dir/scripts/gitlab-finish-mr.sh' 'finish bare skill_dir script path pattern'
+assert_not_contains "$finish_body" 'gitlab_local_skill_dir/scripts/gitlab-finish-mr.sh' 'finish bare gitlab_local_skill_dir script path pattern'
 assert_contains "$finish_body" 'reference/ci-finish-guards.md' 'finish link to relocation card'
 
 # The verbose relocated narrative must no longer live inline in the snippets.

@@ -83,8 +83,10 @@ assert_not_contains "$confirmation_body" 'glab mr approve' 'approval command in 
 assert_not_contains "$confirmation_body" 'glab mr merge' 'merge command in confirmation snippet'
 
 assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'CI watcher helper script pointer'
+assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"' 'CI watcher full skill URI helper path'
 assert_contains "$ci_watch_body" 'scripts/README.md' 'CI watcher helper docs pointer'
 assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper script pointer'
+assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
 assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
 assert_not_contains "$ci_watch_body" 'while [ "$SECONDS" -le "$deadline" ]; do' 'long CI watcher shell body'
 assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$source_branch" -F json 2>/dev/null || true)"' 'inline branch CI status body'

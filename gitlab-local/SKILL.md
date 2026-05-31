@@ -197,11 +197,13 @@ Implementation body lives inside this skill:
 - Helper docs: [`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted behavior fits. Resolve the script path against
-this `gitlab-local` skill directory before running it from a target repo:
+Use the helper when the accepted behavior fits. In agent-run shell commands, use
+the full script URI; do **not** assign `skill://gitlab-local` to a directory
+variable because bare skill URIs resolve to `SKILL.md` in shell runners.
 
 ```bash
-"$gitlab_local_skill_dir/scripts/gitlab-ci-watch.sh" \
+gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"
+"$gitlab_ci_watch_script" \
   --mr-iid "$mr_iid" \
   --source-branch "$source_branch" \
   --reviewed-sha "$reviewed_sha" \
@@ -328,12 +330,14 @@ Implementation body lives inside this skill:
 - Helper docs: [`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper only when the exact accepted authority model fits. Resolve the
-script path against this `gitlab-local` skill directory before running it from a
-target repo:
+Use the helper only when the exact accepted authority model fits. In agent-run
+shell commands, use the full script URI; do **not** assign
+`skill://gitlab-local` to a directory variable because bare skill URIs resolve
+to `SKILL.md` in shell runners.
 
 ```bash
-"$gitlab_local_skill_dir/scripts/gitlab-finish-mr.sh" \
+gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"
+"$gitlab_finish_mr_script" \
   --mr-iid "$mr_iid" \
   --reviewed-sha "$reviewed_sha" \
   --merge-authority "$merge_authority" \
