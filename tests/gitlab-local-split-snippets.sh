@@ -51,6 +51,9 @@ ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
 finish_body="$(require_snippet finish-mr-authority-aware)"
 mr_note_body="$(require_snippet mr-note-create)"
 issue_note_body="$(require_snippet issue-note-create)"
+label_reconcile_body="$(require_snippet label-reconcile)"
+safe_mr_json_body="$(require_snippet safe-mr-json)"
+auto_merge_api_body="$(require_snippet auto-merge-api-fallback)"
 
 assert_contains "$draft_create_body" 'glab mr create --draft' 'Draft MR create command'
 assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch flag'
@@ -93,19 +96,40 @@ assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$s
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
 assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
 
-assert_contains "$mr_note_body" 'glab mr note create <id> --message "$(cat "$report_file")"' 'MR note command'
+assert_contains "$mr_note_body" 'scripts/gitlab-wrappers.sh' 'MR note wrapper script pointer'
+assert_contains "$mr_note_body" 'mr_note_create' 'MR note wrapper command'
+assert_contains "$mr_note_body" '--mr-iid "$mr_iid"' 'explicit MR target'
+assert_contains "$mr_note_body" '--message-file "$report_file"' 'file-backed MR message'
 assert_not_contains "$mr_note_body" 'glab issue note' 'issue-note command in MR-note snippet'
-assert_contains "$mr_note_body" 'report_file="$run_dir/mr-report.md"' 'file-backed MR report path'
+assert_not_contains "$mr_note_body" 'glab mr note create' 'raw MR-note command in MR-note snippet'
 
-assert_contains "$issue_note_body" 'glab issue note <id> --message "$(cat "$comment_file")"' 'issue note command'
+assert_contains "$issue_note_body" 'scripts/gitlab-wrappers.sh' 'issue note wrapper script pointer'
+assert_contains "$issue_note_body" 'issue_note_create' 'issue note wrapper command'
+assert_contains "$issue_note_body" '--issue-iid "$issue_iid"' 'explicit issue target'
+assert_contains "$issue_note_body" '--message-file "$comment_file"' 'file-backed issue message'
 assert_not_contains "$issue_note_body" 'glab mr note create' 'MR-note command in issue-note snippet'
-assert_contains "$issue_note_body" 'comment_file="$run_dir/issue-note.md"' 'file-backed issue note path'
+assert_not_contains "$issue_note_body" 'glab issue note <id>' 'raw issue-note command in issue-note snippet'
+
+assert_contains "$label_reconcile_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'label reconcile self-contained wrapper script path'
+assert_contains "$label_reconcile_body" 'label_reconcile' 'label reconcile wrapper command'
+assert_contains "$label_reconcile_body" '--add-labels "$add_labels"' 'label reconcile add input'
+assert_contains "$label_reconcile_body" '--remove-labels "$remove_labels"' 'label reconcile remove input'
+assert_contains "$label_reconcile_body" 'state/category label conflicts' 'label conflict fail-closed docs'
+assert_contains "$safe_mr_json_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'safe MR JSON self-contained wrapper script path'
+assert_contains "$safe_mr_json_body" 'safe_mr_json' 'safe MR JSON wrapper command'
+assert_contains "$safe_mr_json_body" 'project binding, SHA, pipeline' 'safe MR JSON fail-closed docs'
+assert_contains "$auto_merge_api_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'auto-merge fallback self-contained wrapper script path'
+assert_contains "$auto_merge_api_body" 'auto_merge_api_fallback' 'auto-merge fallback wrapper command'
+assert_contains "$auto_merge_api_body" '--authority-verified true' 'verified authority source input'
+assert_contains "$auto_merge_api_body" 'known `glab mr merge --auto-merge` 405 path' 'known 405 fallback docs'
+assert_not_contains "$auto_merge_api_body" 'glab api' 'raw API command in auto-merge fallback snippet'
 
 require_text "gitlab-local/SKILL.md" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
 require_text "gitlab-local/SKILL.md" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
 
 require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
 require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
+require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*auto-merge-api-fallback' 'wrappers README contract reference'
 require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
 if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
