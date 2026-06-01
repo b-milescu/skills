@@ -95,6 +95,18 @@ agent_handoff:
       finish: "none"
       next: "parent-run-gate"
       blockers: []
+    handoff_contract:
+      phase: "parent-gate"
+      expected_next_actor: "parent"
+      expected_next_action: "parent-run-gate"
+      blocked: false
+      blocker_token: "none"
+      required_parent_decision: "none"
+      safe_to_continue_without_parent: true
+      changed_since_last_handoff: false
+      evidence_ready_for_next_actor:
+        - "mr-description-reviewer-lift-current"
+        - "candidate-sha-pushed"
     evidence:
       - tier: "tier-1"
         kind: "mr-metadata"
@@ -210,6 +222,11 @@ agent_handoff:
   `builder_gate_status.status: "not-run"`,
   `builder_gate_status.not_run_reason: "parent-owned"`, and
   `ready_transition_owner: "parent"`.
+- `delivery.handoff_contract` is the shared routing contract. Keep it aligned
+  with `status`, `next_action`, blockers, and the parent-owned gate contract.
+  Use `required_parent_decision: "none"` when no extra parent choice is still
+  needed, and omit `blocking_question` unless a specific actionable question is
+  what stops progress.
 - `tdd` records RED/GREEN evidence for behavior-touching implementation, or
   explicit N/A rationale for docs/config/mechanical work or impossible TDD.
 - `changed_files`, `safety_surfaces`, `decoupling`, and `reviewer_focus` must
@@ -226,5 +243,6 @@ agent_handoff:
   information is a blocker for reviewer approval/finish actions.
 - `next_action` tells the parent whether to run the parent-owned gate, spawn
   review, make a human decision, or fix a blocker. Use `parent-run-gate`,
-  `spawn-reviewer`, `human-decision`, or `fix-blocker`.
+  `spawn-reviewer`, `human-decision`, or `fix-blocker`, and keep it equal to
+  `delivery.handoff_contract.expected_next_action`.
 - `artifacts` point to local redacted run files only. Do not commit them.

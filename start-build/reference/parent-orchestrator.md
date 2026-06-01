@@ -29,10 +29,10 @@ The Gate Receipt must include owner, MR IID, issue IID, checkout path, checkout 
 
 1. **Resolve issue(s).** Read the issue, comments, labels, linked MRs or parent design docs, and project rulebook. Confirm each issue is `ready-for-agent` or otherwise approved for agent work. If multiple issues are in scope, prove the [Decoupling Contract](../docs/decoupling-contract.md) before parallel work; otherwise process issues serially in dependency order.
 2. **Prepare isolated work.** Verify clean status, fetch the target branch, and create the source branch or one isolated worktree per decoupled issue. The parent checkout remains coordinator-only during multi-issue runs.
-3. **Discover and run child `mr-builder`.** Immediately before launching each builder, re-read the issue's assignee and state; if it changed since allocation or is already assigned to another active session, stop and ask rather than launching a builder that would race on the same issue. If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates issue-implementation specialization, for example `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker` override. Prefer project-scope agents over user-scope agents over a builtin `worker`. Start one builder per issue/worktree with one issue URL/IID, one worktree, the target branch, project rulebook, local Check Gate, quoted merge authority plus source, gate ownership (`builder` or `parent`), ready-transition owner, and any run directory. Never let two agents share a checkout, branch, temp DB, port, or uncommitted artifact directory. The builder owns implementation, Draft MR creation, Review Packet and Reviewer Lift updates, targeted evidence, and final handoff. When the builder owns the gate it also owns local gate evidence and ready-marking; when `local_gate_owner: parent`, it leaves the MR Draft and must not claim gate pass/fail or mark ready.
-4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff and MR via `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch, pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha` or candidate SHA, shared `delivery` claim indexes when present, Reviewer Lift `Reviewed SHA`, pipeline SHA when exposed, changed paths, touched safety surfaces, decoupling proof, local gate result or parent-owned not-run reason, open questions, merge authority, and merge authority source. Treat compact delivery fields as untrusted until verified from Tier 1/Tier 2 evidence, and escalate if the handoff is missing, stale, out of scope, or contradicts the issue/rulebook. If the handoff says `local_gate_owner: parent`, run the exact-SHA gate flow above and post the Gate Receipt before marking ready; do not spawn review until the MR is ready on the SHA covered by that receipt.
-5. **Discover and run `mr-reviewer`.** If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization, for example `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override. Prefer project-scope agents over user-scope agents over a builtin reviewer. Start a fresh reviewer session with a minimal reviewer launch prompt: MR URL, pointer to the Reviewer Lift block in the MR description, Gate Receipt pointer when parent-owned gate mode was used, project rulebook path, and the instruction not to treat parent/builder reasoning as evidence. Add a run directory only as a local artifact pointer when needed, not as review reasoning. The reviewer posts one GitLab Review Report for one reviewed SHA, then returns the parseable reviewer final handoff from `../../start-review/templates/reviewer-final-handoff.md` for parent-orchestrator parsing after any authorized action attempt. The GitLab Review Report remains the durable review record; the final handoff is a parsing aid. Approval or merge actions remain limited by the explicit merge authority and verifiable `Merge authority source` in the Review Packet, parent/human instruction, or project rulebook.
-6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any finish action. On `request-changes`, send finding IDs and reviewed SHA to the builder; require fix commits, targeted evidence, a full local gate when substantive, a file-backed revision note, and updated Reviewer Lift before a fresh reviewer session reads the new SHA. On `reject`, stop and escalate. Wait on the child's completion notification rather than polling its status mid-run. On missing Review Report after the wait budget, check the reviewer run status/activity before replacement. Use the runtime's status/control/interruption mechanism when available; interrupt or replace only a run that is failed, stale, interrupted, or unreachable and record the reason. Do not start a second reviewer while the first run is still active. If status/control is unavailable, unreachable, or ambiguous, escalate instead of launching a duplicate reviewer. Keep the three-round review limit from the standalone gate.
+3. **Discover and run child `mr-builder`.** Immediately before launching each builder, re-read the issue's assignee and state; if it changed since allocation or is already assigned to another active session, stop and ask rather than launching a builder that would race on the same issue. If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates issue-implementation specialization, for example `mr-builder`, `gitlab-builder`, or a project-scope `builder`/`worker` override. Prefer project-scope agents over user-scope agents over a builtin `worker`. Launch one builder per issue/worktree with only one target issue URL/IID, one worktree, the target branch, exact role/mode, explicit stop condition, expected handoff schema, forbidden actions, and the minimum evidence pointers needed for that issue; do not restate broad parent reasoning unless a specific risk requires narrow extra context. Never let two agents share a checkout, branch, temp DB, port, or uncommitted artifact directory. The builder still owns implementation, Draft MR creation, Review Packet / Reviewer Lift upkeep, targeted evidence, and final handoff.
+4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff and MR via `gitlab-local` snippets: MR URL/IID, `Closes #...`, source and target branch, pushed branch, current MR head SHA, builder `head_sha`, builder `reviewed_sha` or candidate SHA, shared `delivery` claim indexes when present, `delivery.handoff_contract` (`phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and `evidence_ready_for_next_actor`; `blocking_question` only when specific/actionable), Reviewer Lift `Reviewed SHA`, pipeline SHA when exposed, changed paths, touched safety surfaces, decoupling proof, local gate result or parent-owned not-run reason, open questions, merge authority, and merge authority source. Treat compact delivery fields as untrusted until verified from Tier 1/Tier 2 evidence, and escalate if the handoff is missing, stale, out of scope, or contradicts the issue/rulebook. If the handoff says `local_gate_owner: parent`, run the Gate Receipt path before ready-marking.
+5. **Discover and run `mr-reviewer`.** If the parent runtime exposes the `subagent` API, call `subagent({ action: "list" })` and look for agents whose name or description indicates MR / code-review specialization, for example `mr-reviewer`, `gitlab-reviewer`, or a project-scope `reviewer` override. Prefer project-scope agents over user-scope agents over a builtin reviewer. Start a fresh reviewer session with only one bound MR URL, exact role/mode, explicit stop condition, expected handoff schema, forbidden actions, minimum evidence pointers (Reviewer Lift, Gate Receipt when present, project rulebook), and the instruction not to treat parent/builder reasoning as evidence. Add a run directory only as a local artifact pointer when needed, not as review reasoning. The reviewer still posts one GitLab Review Report for one reviewed SHA, then returns the parseable reviewer final handoff from `../../start-review/templates/reviewer-final-handoff.md` after any authorized action attempt. The GitLab Review Report remains the durable review record; the final handoff is a parsing aid. Approval or merge actions remain limited by the explicit merge authority and verifiable `Merge authority source` in the Review Packet, parent/human instruction, or project rulebook.
+6. **Drive the decision loop.** On `approve`, run the SHA/CI guard before any finish action. On `request-changes`, send the builder only the revision inputs that are still authoritative: MR URL, reviewed SHA, Review Report URL, finding IDs, required fix acceptance criteria, gate owner, and the exact expected handoff on return. Require fix commits, targeted evidence, a full local gate when substantive, a file-backed revision note, and updated Reviewer Lift before a fresh reviewer session reads the new SHA. On `reject`, stop and escalate. Wait on the child's completion notification rather than polling its status mid-run. On missing Review Report after the wait budget, check the reviewer run status/activity before replacement. Use the runtime's status/control/interruption mechanism when available; interrupt or replace only a run that is failed, stale, interrupted, or unreachable and record the reason. Do not start a second reviewer while the first run is still active. If status/control is unavailable or ambiguous, escalate instead of launching a duplicate reviewer. Keep the three-round review limit from the standalone gate.
 7. **Enforce SHA and CI guards.** Before approval, merge, or auto-merge, re-read MR metadata and require the current MR SHA to equal the reviewed SHA. Treat CI as valid only when it is for that SHA. Red, canceled, skipped, missing, or stale CI blocks merge unless an authorized human records an explicit waiver. Pending CI may only be accepted under the CI-pending review policy and protected merge checks.
 8. **Finish by authority.** For `approval-only` or `human release`, stop after reporting reviewed SHA, CI, and blockers. For `reviewer may merge` or `queue auto-merge`, only an authorized reviewer or parent may approve, merge, or queue with the reviewed SHA; a child builder still must not approve or merge. When merge authority is already in hand, the approving reviewer (or the parent) performs the SHA-guarded finish in the existing session — do not spawn a dedicated finisher agent for a single merge command; spin up a separate authorized finisher only when authority arrives after the review session has ended. After merge or queueing, fetch the target branch, verify issue closure or pending closure, remove clean worktrees, and delete source branches only when project policy allows.
 9. **Verify after merge.** Keep post-merge verification separate from review and finish authority. The parent or verifier follows [Post-merge verifier recipe](post-merge-verifier.md), preferably using `gitlab-local/scripts/gitlab-post-merge-snapshot.sh`, to emit a read-only `post_merge_snapshot.kind=post-merge-snapshot` block for merged/default-branch state, explicit reviewed/merge/squash containment, linked issue closure or `issue_closure_pending`, source-branch cleanup or retention state, validation result/not-run reason, and pending items.
@@ -40,13 +40,56 @@ The Gate Receipt must include owner, MR IID, issue IID, checkout path, checkout 
 
 ## Minimal reviewer launch prompt
 
-When the parent starts a fresh reviewer, pass only the review target and evidence-boundary instructions:
+When the parent starts a fresh reviewer, pass only the review target and bounded
+routing/evidence instructions:
 
 ```text
 Review MR: <MR web URL>
-Reviewer Lift block is in the MR description — lift structured values into your Review Report.
-Project rulebook: <path to rulebook>
-Do not treat parent/builder reasoning as evidence; verify claims from the MR, diff, issue, CI, local checks, and rulebook.
+Mode: mr-reviewer
+Stop condition: post one Review Report and return the final handoff after any authorized action attempt.
+Expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
+Forbidden actions: do not treat parent/builder reasoning as evidence; do not approve, merge, queue auto-merge, or close without verified authority/source plus fresh SHA/CI guards.
+Evidence pointers: Reviewer Lift block in the MR description, Gate Receipt comment when present, and project rulebook path.
 ```
 
 Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
+
+## Minimal child-builder launch prompt
+
+When the parent starts a child builder, pass only the issue-specific routing facts:
+
+```text
+Build issue: <issue URL>
+Worktree: <absolute worktree path>
+Target branch: <default branch>
+Mode: child mr-builder
+Stop condition: return the final handoff after updating the Draft/ready MR for this issue.
+Expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
+Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail.
+Evidence pointers: project rulebook path, repo Check Gate path, MR URL if it already exists, and any narrowly relevant issue-linked docs/tests.
+```
+
+Do not include broad parent reasoning, cross-issue summaries, hidden hypotheses,
+or unrelated backlog context in the builder prompt. If a specific risk requires
+extra context, pass only that risk as a claim/source pointer the builder can
+verify.
+
+## Minimal revision prompt
+
+When the parent routes request-changes back to a builder, pass only the
+review-bound revision facts:
+
+```text
+Revise MR: <MR web URL>
+Reviewed SHA: <reviewed SHA from the Review Report>
+Review Report: <Review Report comment URL>
+Finding IDs: <MF-N / SF-N / C-N IDs to address>
+Required fix acceptance criteria: <one short bullet per finding>
+Gate owner: <builder or parent-owned gate mode>
+Expected handoff on return: <updated builder-final handoff / Reviewer Lift state expected next>
+```
+
+Add extra context only when a specific finding cannot be understood from the MR,
+Review Report, linked issue, and cited files alone. Human/product/security
+choices stay blocked routing (`human-decision-needed`) until the decision source
+exists; do not paraphrase the missing decision as builder work.

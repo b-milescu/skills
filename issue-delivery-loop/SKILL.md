@@ -32,11 +32,12 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 ## Operating contract
 
 - Default WIP: 1 active delivery loop, serial by default.
-- Run the parent loop per `../start-build/reference/parent-orchestrator.md` — proving the decoupling proof before parallel work, completing the full parent spot-check field list, driving the decision loop, and finishing only behind the SHA/CI/authority guards; the three-round limit defers to `../start-build/reference/standalone-gate.md`.
+- Run the parent loop per `../start-build/reference/parent-orchestrator.md` — proving the decoupling proof before parallel work, completing the full parent spot-check field list, honoring the minimal child/reviewer/revision launch prompts, driving the decision loop, and finishing only behind the SHA/CI/authority guards; the three-round limit defers to `../start-build/reference/standalone-gate.md`.
 - Delegate implementation to child `mr-builder` sessions via `../start-build/reference/child-builder.md` (stable router: `../start-build/BUILD-FLOW.md`).
 - Delegate independent review to fresh `mr-reviewer` sessions via `../start-review/REVIEW-FLOW.md`.
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
-- Event-driven waiting: you are notified when a child build/review completes — do not poll, re-read, or re-invoke children mid-run; act on their returned handoffs. Canonical: `../start-build/reference/timeout-handling.md`.
+- Child/reviewer prompts pass one target issue/MR, exact role/mode, stop condition, expected handoff schema, forbidden actions, and minimum evidence pointers only. Do not restate broad parent reasoning unless a specific risk requires narrow extra context.
+- Event-driven waiting: you are notified when a child build/review completes — do not poll, re-read, or re-invoke children mid-run; act on their returned handoffs. Read `delivery.handoff_contract` first for routing, but still verify compact claims from Tier 1/Tier 2 evidence before acting. Canonical: `../start-build/reference/timeout-handling.md`.
 - Scale ceremony to risk and blast radius (`docs/effort-scaling.md`): trivial/docs/mechanical issues take the compact path with light verification; behavior/safety changes take the full path with adversarial verification. The mandatory independent review gate never scales away, and when merge authority is granted up front the approving reviewer finishes in-session rather than spawning a separate finisher.
 - Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `pi-worktree-*`; GitLab MR descriptions/comments remain canonical.
 - Project-profile hooks are coordinator inputs, not safety overrides. They may

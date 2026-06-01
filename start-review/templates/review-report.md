@@ -82,11 +82,11 @@ Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, n
 
 ## Findings
 
-Required. Use stable IDs only for real findings. If a bucket has no findings, write a verifier-safe sentence such as `No MF findings after diff, evidence, and safety review.` For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
+Required. Use stable IDs only for real findings. Each `MF-N` must be revision-ready: exact path + line/range locator, concrete problem, and bounded remedy direction. If a human/product/security decision is still required, do not disguise it as a Must Fix; use `Review verdict: blocked`, `Action blocker: human-decision-needed`, and a specific actionable blocker question instead. For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
 
 ### Must Fix
 
-<!-- FILL REQUIRED: list MF-N items with path + line/range + problem + suggested direction, or write a verifier-safe no-finding sentence. -->
+<!-- FILL REQUIRED: list MF-N items with exact path + line/range + concrete problem + bounded remedy direction, or write a verifier-safe no-finding sentence. -->
 
 ### Should Fix
 
@@ -100,7 +100,7 @@ Required. Use stable IDs only for real findings. If a bucket has no findings, wr
 
 Required. Classify every `OQ-N` from the MR description with `../REVIEW-FLOW.md` [CI and Open Question decision tables](../REVIEW-FLOW.md#ci-and-open-question-decision-tables). Do not leave a default completion value.
 
-<!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. If verified no OQ-N exists, write `Verified: no OQ-N entries in the MR description after review.` -->
+<!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. Human/product/security decisions stay blocked routing (`human-decision-needed`) until the decision source exists. If verified no OQ-N exists, write `Verified: no OQ-N entries in the MR description after review.` -->
 
 ## Evidence
 
@@ -136,7 +136,7 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect.
+Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
 
 Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
 

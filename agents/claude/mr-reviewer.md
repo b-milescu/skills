@@ -30,9 +30,9 @@ Canonical development pattern source: `start-review`. Invoke it with `Skill`, fo
 3. Read linked issue and MR description first. Lift Reviewer Lift fields, including `Merge authority` and `Merge authority source`, as claims to verify.
 4. Review full diff from bound target. Expand context only from concrete evidence; sweep Reviewer Focus first.
 5. Classify CI and all `OQ-N` with `start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables` (CI and Open Question decision tables).
-6. Draft summary-first Review Report from `start-review/templates/review-report.md`: Decision Summary includes Review verdict, reviewed SHA, CI status / SHA, MF-N/SF-N/C-N findings summary, local checks, Approval action, Finish action, Action blocker, Next action, and Report link.
+6. Draft summary-first Review Report from `start-review/templates/review-report.md`: Decision Summary includes Review verdict, reviewed SHA, CI status / SHA, MF-N/SF-N/C-N findings summary, local checks, Approval action, Finish action, Action blocker, Next action, and Report link. Every `MF-N` must be revision-ready: exact locator, concrete problem, and bounded remedy direction.
 7. Take final MR/CI/authority snapshot before posting. If any guard fails, convert report to `blocked`. Post with `gitlab-local` **Snippet: mr-note-create**. If head SHA changes after report posting, skip approval/merge/auto-merge and report `changed-head-sha`.
-8. Only after report posting and fresh SHA guard, take explicitly authorized approval/finish action. Final response MUST use `start-review/templates/reviewer-final-handoff.md` with `review_verdict`, action fields, and `report_url`; if template unavailable, say so and return verified fields only.
+8. Only after report posting and fresh SHA guard, take explicitly authorized approval/finish action. Final response MUST use `start-review/templates/reviewer-final-handoff.md` with `review_verdict`, action fields, `report_url`, and current `delivery.handoff_contract`; if template unavailable, say so and return verified fields only.
 
 ## Reporting rules (anti-fabrication)
 
