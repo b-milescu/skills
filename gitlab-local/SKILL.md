@@ -216,32 +216,62 @@ For raw-command adaptation (keeping every polling/SHA rule, fail-closed output,
 and machine fields), see
 [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
+Wrapper bodies for the next five snippets live in
+[`scripts/gitlab-wrappers.sh`](scripts/gitlab-wrappers.sh); helper docs:
+[`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers); tests:
+[`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh).
+
 ### Snippet: mr-note-create
 
-Use for MR comments only: Review Reports, unblock responses, revision notes, and
-action-result notes. Use a bound MR URL or explicit repo target when project
-binding requires it; do not pair this with an issue-note command.
+Use wrapper `mr_note_create` for MR comments only. Require explicit `--repo` and
+`--mr-iid`; the message is file-backed and the wrapper output does not print it.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-note.XXXXXX")"
-report_file="$run_dir/mr-report.md"
-# Write or fill "$report_file" before posting it.
-
-glab mr note create <id> --message "$(cat "$report_file")"
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" mr_note_create --repo "$repo_url" --mr-iid "$mr_iid" --message-file "$report_file"
 ```
 
 ### Snippet: issue-note-create
 
-Use for issue comments only when the issue workflow explicitly calls for an
-issue note. Use a bound issue URL or explicit repo target when project binding
-requires it; do not pair this with an MR-note command.
+Use wrapper `issue_note_create` for issue comments only. Do not pair this with an
+MR-note command or use it for Review Reports.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-issue-note.XXXXXX")"
-comment_file="$run_dir/issue-note.md"
-# Write or fill "$comment_file" before posting it.
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" issue_note_create --repo "$repo_url" --issue-iid "$issue_iid" --message-file "$comment_file"
+```
 
-glab issue note <id> --message "$(cat "$comment_file")"
+### Snippet: label-reconcile
+
+Use wrapper `label_reconcile`; it computes add/remove sets and rejects final
+state/category label conflicts before calling `glab issue update`.
+
+```bash
+"$gitlab_wrappers_script" label_reconcile --repo "$repo_url" --issue-iid "$issue_iid" \
+  --add-labels "$add_labels" --remove-labels "$remove_labels" \
+  --state-labels "$state_labels" --category-labels "$category_labels"
+```
+
+### Snippet: safe-mr-json
+
+Use wrapper `safe_mr_json` for decision-grade MR metadata; it fails closed on
+project binding, SHA, pipeline, merge-status, branch, JSON, or control-char drift.
+
+```bash
+"$gitlab_wrappers_script" safe_mr_json --repo "$repo_url" --mr-iid "$mr_iid" --project-path "$project_path"
+```
+
+### Snippet: auto-merge-api-fallback
+
+Authorized non-builders may use wrapper `auto_merge_api_fallback` only for
+`queue auto-merge`; it preserves SHA/CI guards and falls back to API only for
+the known `glab mr merge --auto-merge` 405 path.
+
+```bash
+"$gitlab_wrappers_script" auto_merge_api_fallback --repo "$repo_url" --project-path "$project_path" \
+  --mr-iid "$mr_iid" --reviewed-sha "$reviewed_sha" --source-branch "$source_branch" \
+  --target-branch "$target_branch" --merge-authority "queue auto-merge" \
+  --authority-source "$merge_authority_source" --authority-verified true --caller-role "$caller_role"
 ```
 
 ### Snippet: sha-guard
