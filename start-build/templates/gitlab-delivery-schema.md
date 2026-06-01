@@ -4,7 +4,7 @@ Canonical shared schema for compact GitLab delivery blocks. This file owns the
 field names, field order, and enum vocabulary for `delivery.kind =
 gitlab-delivery`. The block is an additive routing index around GitLab records;
 it never replaces MR metadata, Review Packets, Review Reports, Gate Receipts, CI
-checks, or authority verification.
+checks, local Check Gate output, or authority verification.
 
 Consumers must tolerate the `delivery` block being absent, stale, or malformed.
 Every value in the block is an untrusted claim/index until verified from Tier 1
@@ -24,7 +24,7 @@ report post-merge success from compact `delivery` values alone.
 | mr | GitLab MR IID, URL, draft/state, `source_branch`, and `target_branch`. |
 | sha | SHA facts such as MR head/current SHA, reviewed SHA, candidate SHA, merge commit, and observed target SHA. |
 | pipeline | Pipeline ID/URL/status/`sha`, or unavailable/not-run details. |
-| local_gate | Local gate command/status plus `not_run_reason` when not run. |
+| local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
 | authority | Quoted authority claim, source, verification status, and conflicts. |
 | actions | Approval action, finish action, next-action token, and action blockers. |
 | evidence | Evidence tier/kind/source indexes that point to durable proof. |
@@ -117,6 +117,7 @@ approved generated copy.
 - `review-report`
 - `ci-pipeline`
 - `local-gate`
+- `gate-receipt`
 - `repo-file`
 - `test-output`
 - `run-artifact`
@@ -124,13 +125,73 @@ approved generated copy.
 - `human-authority`
 - `delivery-index`
 
+## Parent-owned gate ownership contract
+
+When the parent coordinator owns the final local gate and ready transition, the
+child builder records the ownership contract without claiming a gate result:
+
+```yaml
+local_gate_owner: "parent"
+builder_gate_status:
+  status: "not-run"
+  not_run_reason: "parent-owned"
+ready_transition_owner: "parent"
+```
+
+This contract separates "the child intentionally did not run the parent-owned
+gate" from "gate evidence is missing." It does not make the Gate Receipt a
+substitute for the full project Check Gate.
+
+## Gate Receipt schema
+
+Anchor: `gate_receipt.kind=gate-receipt`. The parent posts this as an MR comment
+before marking ready when `local_gate_owner: parent`.
+
+```yaml
+gate_receipt:
+  kind: "gate-receipt"
+  version: "1"
+  owner: "parent"
+  mr_iid: "123"
+  issue_iid: "57"
+  checkout_path: "/absolute/path/to/verified/checkout"
+  checkout_sha: "1111111111111111111111111111111111111111"
+  status_before: "draft"
+  status_after: "ready"
+  command: "npm run check"
+  result: "PASS"
+  summary: "full project Check Gate completed successfully"
+  preflight_checks:
+    - name: "clean-status-before"
+      command: "git status --porcelain"
+      result: "PASS"
+      summary: "empty"
+    - name: "tracked-files-unchanged-after"
+      command: "git status --porcelain"
+      result: "PASS"
+      summary: "empty; no tracked files changed during preflight/gate"
+  evidence:
+    - tier: "tier-1"
+      kind: "local-gate"
+      source: "MR comment or run artifact URL/path"
+      summary: "command, checkout SHA, and result"
+  observed_at: "2026-06-01T00:00:00Z"
+```
+
+`observed_at` is optional. Every other field is required so the parent, reviewer,
+and finisher can bind the receipt to the exact MR, issue, checkout path, checkout
+SHA, command, status transition, preflight state, and evidence. If tracked files
+changed during preflight or the gate, the parent blocks ready/merge unless those
+changes are committed to the MR head and the gate reruns on the new SHA, or an
+explicit parent/human waiver is recorded in the receipt and MR discussion.
+
 ## `not_run_reason` enum
 
 `not_run_reason` is required when `pipeline.status`, `local_gate.status`, or any
 action is `N/A`/`not-run`; otherwise use `N/A`.
 
 - `N/A`
-- `parent-owned-final-gate`
+- `parent-owned`
 - `ci-only`
 - `not-applicable`
 - `docs-only-no-runtime-check`
@@ -193,7 +254,7 @@ completed machine value or blocker.
 
 Use `actions.next` for routing only. The token never grants authority.
 
-- Builder: `spawn-reviewer`, `human-decision`, `fix-blocker`
+- Builder: `spawn-reviewer`, `parent-run-gate`, `human-decision`, `fix-blocker`
 - Reviewer: `finish-by-authorized-actor`, `revise`, `human-escalation`, `wait-ci`, `rerun-review`, `fix-blocker`
 - Parent: `spawn-builder`, `spawn-reviewer`, `finish-by-authorized-actor`, `post-merge-verify`, `human-decision`, `fix-blocker`
 - Verifier: `done`, `human-escalation`, `fix-blocker`

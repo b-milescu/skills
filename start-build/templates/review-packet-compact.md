@@ -26,7 +26,7 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
-| Local gate | `<PASS before ready/review / FAIL while draft / N/A — why> — <exact command>` |
+| Local gate | `<PASS before ready/review / FAIL while draft / N/A — why / not-run — parent-owned with Gate Receipt pending> — <exact command>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |
