@@ -27,6 +27,7 @@ report post-merge success from compact `delivery` values alone.
 | local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
 | authority | Quoted authority claim, source, verification status, and conflicts. |
 | actions | Approval action, finish action, next-action token, and action blockers. |
+| handoff_contract | Shared routing block naming phase, next actor/action, blocker state, parent-decision need, change flag, and evidence-ready pointers. |
 | evidence | Evidence tier/kind/source indexes that point to durable proof. |
 | blockers | Blocking tokens and concise safe descriptions. |
 | extra | Role-specific extension object; consumers must ignore unknown keys. |
@@ -113,6 +114,18 @@ delivery:
     finish: "none"
     next: "spawn-reviewer"
     blockers: []
+  handoff_contract:
+    phase: "review"
+    expected_next_actor: "reviewer"
+    expected_next_action: "spawn-reviewer"
+    blocked: false
+    blocker_token: "none"
+    required_parent_decision: "none"
+    safe_to_continue_without_parent: true
+    changed_since_last_handoff: false
+    evidence_ready_for_next_actor:
+      - "review-packet-current"
+      - "reviewer-lift-current"
   evidence:
     - tier: "tier-1"
       kind: "mr-metadata"
@@ -382,12 +395,62 @@ completed machine value or blocker.
 
 ## Next-action tokens
 
-Use `actions.next` for routing only. The token never grants authority.
+Use `actions.next` and `handoff_contract.expected_next_action` for routing only.
+The token never grants authority.
 
 - Builder: `spawn-reviewer`, `parent-run-gate`, `human-decision`, `fix-blocker`
 - Reviewer: `finish-by-authorized-actor`, `revise`, `human-escalation`, `wait-ci`, `rerun-review`, `fix-blocker`
 - Parent: `spawn-builder`, `spawn-reviewer`, `finish-by-authorized-actor`, `post-merge-verify`, `human-decision`, `fix-blocker`
 - Verifier: `done`, `human-escalation`, `fix-blocker`
+
+## Handoff contract
+
+`handoff_contract` is the shared cross-role routing block nested under
+`delivery`. It complements `actions.next`; when both appear,
+`handoff_contract.expected_next_action` must match `actions.next`.
+
+Required fields:
+
+- `phase`
+- `expected_next_actor`
+- `expected_next_action`
+- `blocked`
+- `blocker_token`
+- `required_parent_decision` — use `none` or a concise decision still needed from the parent/human owner.
+- `safe_to_continue_without_parent`
+- `changed_since_last_handoff`
+- `evidence_ready_for_next_actor`
+
+Optional fields:
+
+- `blocking_question` — include only when a specific actionable question blocks
+  progress.
+
+`phase` values:
+
+- `builder-ready`
+- `parent-gate`
+- `review`
+- `revision`
+- `finish`
+- `post-merge-verify`
+- `done`
+- `blocked`
+
+Common `expected_next_actor` values: `builder`, `reviewer`, `parent`,
+`verifier`, `human`.
+
+`blocked: true` means forward progress is stopped on a real blocker token;
+`blocker_token` uses the Action blocker enum or `none`.
+
+`safe_to_continue_without_parent` is `false` when more parent/human direction
+is still required before the expected next actor can safely continue.
+
+`changed_since_last_handoff` is `true` when commits, gate evidence, or review
+conclusions changed since the prior ready/revision/finish handoff.
+
+`evidence_ready_for_next_actor` is a non-empty list of concise pointers/tokens
+describing what the next actor can verify immediately.
 
 ## Generated-copy contract
 

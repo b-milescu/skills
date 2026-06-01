@@ -36,7 +36,8 @@ Child builders follow the smaller [reference/child-builder.md](reference/child-b
 
 ## Parent-orchestrator recipe
 
-Parent orchestration detail lives in [reference/parent-orchestrator.md](reference/parent-orchestrator.md): resolve issues, prove decoupling, launch isolated child builders, spot-check MR handoffs, start fresh reviewers with a minimal reviewer launch prompt containing only MR URL, Reviewer Lift pointer, Project rulebook path, and a parent/builder reasoning is not evidence instruction, then enforce SHA/CI/authority guards; the reviewer posts a durable GitLab Review Report and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator parsing aid.
+Parent orchestration detail lives in [reference/parent-orchestrator.md](reference/parent-orchestrator.md): resolve issues, prove decoupling, launch isolated child builders with one target issue/worktree plus exact role/mode, stop condition, expected handoff schema, forbidden actions, and minimum evidence pointers only, spot-check MR handoffs (including shared `delivery.handoff_contract` routing fields), start fresh reviewers with the same minimal-prompt discipline, then enforce SHA/CI/authority guards; the reviewer posts a durable GitLab Review Report and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator parsing aid.
+The minimal reviewer launch prompt keeps only the MR URL, Reviewer Lift pointer, Project rulebook path, and a do-not-treat parent/builder reasoning as evidence instruction; the full prompt shape remains in [reference/parent-orchestrator.md](reference/parent-orchestrator.md#minimal-reviewer-launch-prompt).
 
 ### Durable child outputs
 
@@ -56,7 +57,7 @@ Check-gate discovery detail lives in [reference/context-and-planning.md §Check 
 
 ## Handoff integrity checklist
 
-Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, local gate evidence or N/A rationale must be present, open questions must use real stable IDs or `none`, and merge authority/source must be explicit and verifiable.
+Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, `delivery.handoff_contract` must carry the required routing fields and only use `blocking_question` for specific actionable blockers, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, local gate evidence or N/A rationale must be present, open questions must use real stable IDs or `none`, and merge authority/source must be explicit and verifiable.
 
 Project-profile hooks in `templates/gitlab-delivery-schema.md` may specialize
 project gate policy, labels, branch naming, CI jobs, domain docs,

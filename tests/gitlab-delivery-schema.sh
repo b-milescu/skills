@@ -70,6 +70,41 @@ for copy in "${copies[@]}"; do
   require_text "$copy" 'source_branch' 'GitLab source_branch noun in delivery copy'
   require_text "$copy" 'target_branch' 'GitLab target_branch noun in delivery copy'
 done
+for file in "$schema" "${copies[@]}"; do
+  require_text "$file" 'handoff_contract' 'shared handoff contract field'
+done
+
+for token in \
+  'phase' \
+  'expected_next_actor' \
+  'expected_next_action' \
+  'blocked' \
+  'blocker_token' \
+  'required_parent_decision' \
+  'safe_to_continue_without_parent' \
+  'changed_since_last_handoff' \
+  'evidence_ready_for_next_actor'; do
+  require_text "$schema" "$token" "handoff contract token $token"
+done
+
+require_text "$schema" 'use `none` or a concise decision' 'required_parent_decision guidance'
+require_text "$schema" '`blocking_question`' 'optional blocking_question guidance'
+require_text "$schema" 'specific actionable question' 'blocking_question specificity guidance'
+
+for copy in "${copies[@]}"; do
+  for token in \
+    'phase:' \
+    'expected_next_actor:' \
+    'expected_next_action:' \
+    'blocked:' \
+    'blocker_token:' \
+    'required_parent_decision:' \
+    'safe_to_continue_without_parent:' \
+    'changed_since_last_handoff:' \
+    'evidence_ready_for_next_actor:'; do
+    require_text "$copy" "$token" "delivery copy routing token $token"
+  done
+done
 
 require_text "$schema" 'kind: "gitlab-delivery"' 'fixed delivery kind example'
 require_text "$schema" '`not_run_reason` enum' 'not_run_reason taxonomy'

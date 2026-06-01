@@ -33,6 +33,12 @@ for file in "$verifier_skill" "$verifier_recipe"; do
   require_text "$file" 'source_branch_cleanup_pending' "$file source_branch_cleanup_pending report token"
 done
 
+# Optional compact routing blocks stay read-only and specific.
+for file in "$verifier_skill" "$verifier_recipe"; do
+  require_text "$file" 'delivery\.handoff_contract' "$file handoff_contract routing token"
+  require_text "$file" 'specific/actionable|specific actionable' "$file actionable blocker wording token"
+done
+
 # Read-only invariant and helper wiring must be explicit.
 require_text "$verifier_skill" 'read-only' 'SKILL.md read-only invariant token'
 require_text "$verifier_recipe" 'read-only confirmation|read-only GitLab/git' 'recipe read-only invariant token'

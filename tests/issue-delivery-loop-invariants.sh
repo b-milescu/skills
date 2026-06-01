@@ -48,6 +48,12 @@ require_contains 'do not restate command bodies'
 require_contains 'Delegate implementation to child'
 require_contains 'Delegate independent review'
 
+# Parent-launch minimality and routing-index guidance stay present.
+require_contains 'exact role/mode'
+require_contains 'expected handoff schema'
+require_contains 'minimum evidence pointers'
+require_contains 'delivery.handoff_contract'
+
 # Per-batch metrics envelope survives.
 require_contains 'Metrics to report per batch'
 require_contains 'issues attempted'

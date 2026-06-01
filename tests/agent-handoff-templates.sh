@@ -125,6 +125,32 @@ for (const file of process.argv.slice(2)) {
   if (!parsed?.agent_handoff || typeof parsed.agent_handoff !== 'object') {
     throw new Error(`${file}: missing agent_handoff object`);
   }
+  const contract = parsed.agent_handoff.delivery?.handoff_contract;
+  if (!contract || typeof contract !== 'object') {
+    throw new Error(`${file}: missing delivery.handoff_contract object`);
+  }
+  for (const field of [
+    'phase',
+    'expected_next_actor',
+    'expected_next_action',
+    'blocked',
+    'blocker_token',
+    'required_parent_decision',
+    'safe_to_continue_without_parent',
+    'changed_since_last_handoff',
+    'evidence_ready_for_next_actor',
+  ]) {
+    if (!(field in contract)) {
+      throw new Error(`${file}: delivery.handoff_contract missing ${field}`);
+    }
+  }
+  if (contract.expected_next_action !== parsed.agent_handoff.delivery?.actions?.next) {
+    throw new Error(`${file}: delivery.handoff_contract.expected_next_action must match delivery.actions.next`);
+  }
+  if ('blocking_question' in contract) {
+    throw new Error(`${file}: example handoff should omit blocking_question unless genuinely blocked`);
+  }
+
 
   if (file.endsWith('builder-final-handoff.md')) {
     const handoff = parsed.agent_handoff;

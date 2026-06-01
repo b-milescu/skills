@@ -95,6 +95,18 @@ agent_handoff:
       finish: "approval-only stop"
       next: "finish-by-authorized-actor"
       blockers: []
+    handoff_contract:
+      phase: "finish"
+      expected_next_actor: "parent"
+      expected_next_action: "finish-by-authorized-actor"
+      blocked: false
+      blocker_token: "none"
+      required_parent_decision: "none"
+      safe_to_continue_without_parent: true
+      changed_since_last_handoff: false
+      evidence_ready_for_next_actor:
+        - "review-report-posted"
+        - "approval-side-effect-recorded"
     evidence:
       - tier: "tier-1"
         kind: "review-report"
@@ -200,7 +212,14 @@ agent_handoff:
   `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or
   `other`. For `secret-exposure-suspected`, report the blocker and safe
   path/artifact locator without secret values.
+- `delivery.handoff_contract` is the shared routing contract. Keep it aligned
+  with `review_verdict`, `approval_action`, `finish_action`, `action_blocker`,
+  and `next_action`. When a human/product/security choice blocks progress, set
+  `blocked: true`, use `blocker_token: "human-decision-needed"`, fill
+  `required_parent_decision`, and include a specific actionable
+  `blocking_question` instead of routing the blocker as builder revision work.
 - `next_action` tells the parent whether an authorized actor should finish,
   the builder should revise, a human must decide, CI should be waited on, the
-  reviewer should rerun after a changed head, or a blocker needs fixing.
+  reviewer should rerun after a changed head, or a blocker needs fixing. Keep it
+  equal to `delivery.handoff_contract.expected_next_action`.
 - `report_url` points at the posted GitLab Review Report comment when available.

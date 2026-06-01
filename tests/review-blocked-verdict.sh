@@ -117,6 +117,31 @@ for file in "${review_docs[@]}"; do
   require_absent "$file" 'approve[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject|approve[[:space:]]*\|[[:space:]]*request-changes[[:space:]]*\|[[:space:]]*reject' 'approve-based review verdict enum'
 done
 
+revision_ready_docs=(
+  "start-review/SKILL.md"
+  "start-review/REVIEW-FLOW.md"
+  "start-review/templates/review-report.md"
+  "start-review/templates/filling-guide.md"
+  "agents/claude/mr-reviewer.md"
+  "agents/pi/mr-reviewer.md"
+)
+
+for file in "${revision_ready_docs[@]}"; do
+  require_text "$file" 'revision-ready|bounded remedy direction' 'revision-ready MF guidance'
+done
+
+blocked_vs_revision_docs=(
+  "start-review/SKILL.md"
+  "start-review/REVIEW-FLOW.md"
+  "start-review/templates/review-report.md"
+  "start-review/templates/filling-guide.md"
+)
+
+for file in "${blocked_vs_revision_docs[@]}"; do
+  require_text "$file" 'human-decision-needed' 'human decision blocked token'
+  require_text "$file" 'builder revision work|builder work' 'blocked-vs-revision wording'
+done
+
 for field in 'Approval action' 'Finish action' 'Action blocker' 'Next action'; do
   require_text "start-review/templates/review-report.md" "$field" "Review Report $field field"
 done

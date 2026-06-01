@@ -64,6 +64,11 @@ require_text "$builder_handoff" 'local_gate_owner' 'builder handoff gate owner f
 require_text "$builder_handoff" 'builder_gate_status' 'builder handoff builder gate status field'
 require_text "$builder_handoff" 'ready_transition_owner' 'builder handoff ready transition owner field'
 
+require_text "$child_doc" 'delivery\.handoff_contract' 'child handoff routing contract guidance'
+require_text "$builder_handoff" 'handoff_contract' 'builder handoff routing block'
+require_text "$parent_doc" 'expected handoff schema' 'parent minimal prompt handoff schema token'
+require_text "$parent_doc" 'minimum evidence pointers' 'parent minimal prompt evidence pointer token'
+
 require_text "$review_flow" 'Gate Receipt' 'reviewer Gate Receipt guidance'
 require_text "$review_flow" 'claim/source pointer' 'Gate Receipt claim/source pointer rule'
 require_text "$review_flow" 'safety-critical SHA' 'reviewer safety-critical SHA verification rule'

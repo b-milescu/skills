@@ -28,7 +28,7 @@ Before you claim the full local gate is green, discover it in this order:
 Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
-- Shared `delivery.kind=gitlab-delivery` blocks, when present, follow `../templates/gitlab-delivery-schema.md` field order and are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
+- Shared `delivery.kind=gitlab-delivery` blocks, when present, follow `../templates/gitlab-delivery-schema.md` field order, include `delivery.handoff_contract` with `phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and non-empty `evidence_ready_for_next_actor`, and are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence. `blocking_question` appears only when a specific actionable question is what blocks progress.
 - `delivery.project_profile` hooks may point to project gate policy, labels,
   branch naming, CI jobs, domain docs, release/deploy policy, manual validation,
   language families, and auxiliary indexes. They specialize policy only; they

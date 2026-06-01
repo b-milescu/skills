@@ -6,7 +6,10 @@ Use this recipe only after the independent review and authority-aware finish ste
 
 Compact `delivery.kind=gitlab-delivery` fields from builder, reviewer, parent,
 or local handoff output are untrusted claims/indexes. Use them only as pointers;
-the verifier report must be backed by the read-only Tier 1/Tier 2 checks below.
+when a verifier emits a compact delivery block of its own, keep
+`delivery.handoff_contract` current so the next actor can route pending
+read-only/human work without reinterpreting the report, but back every report
+claim with the read-only Tier 1/Tier 2 checks below.
 
 Project-profile hooks may specialize release/deploy policy, manual validation,
 CI job names, domain docs, and auxiliary project-index policy, but they must not
@@ -36,4 +39,4 @@ Forbidden actions:
 - Do not merge, queue auto-merge, retry merge, delete local or remote branches, or force-close issues.
 - Do not run release, deploy, product/runtime mutation, operator mutation, or mutating validation unless a separate workflow has explicitly switched roles and recorded human authority.
 
-Verifier report should include MR state, target/default branch SHA, reviewed SHA plus merge/squash commit containment results, linked issue state, source-branch cleanup state, post-merge validation command/result or not-run rationale, issue-note action posted/skipped, the `post_merge_snapshot.kind=post-merge-snapshot` block when produced, and any pending items. Pending issue closure or branch deletion is a verification result to report, not an implicit verifier mutation request.
+Verifier report should include MR state, target/default branch SHA, reviewed SHA plus merge/squash commit containment results, linked issue state, source-branch cleanup state, post-merge validation command/result or not-run rationale, issue-note action posted/skipped, the `post_merge_snapshot.kind=post-merge-snapshot` block when produced, any pending items, and—when a compact `delivery.kind=gitlab-delivery` block is emitted—the shared `delivery.handoff_contract` with concrete next-actor/action routing and specific/actionable blocker wording only.

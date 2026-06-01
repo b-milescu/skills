@@ -44,6 +44,7 @@ When the parent owns the gate, the final report MUST start with the approved mac
 - Open questions
 - Merge authority
 - Merge authority source
+- Shared `delivery.handoff_contract` routing fields (`phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, `evidence_ready_for_next_actor`; use `blocking_question` only when a specific actionable blocker question remains)
 - Blockers
 
 If the template is unavailable, say so and still return the evidence contract above. For usage-limit, model-limit, or tool-limit interruption before completion, do not invent MR/CI/gate state: return `status: failed` with `blockers` describing what stopped, plus any verified known fields. The parent orchestrator owns retries and any fallback model/session.
