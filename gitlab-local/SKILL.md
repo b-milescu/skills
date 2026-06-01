@@ -243,10 +243,12 @@ gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
 
 ### Snippet: label-reconcile
 
-Use wrapper `label_reconcile`; it computes add/remove sets and rejects final
-state/category label conflicts before calling `glab issue update`.
+Use wrapper `label_reconcile`; it computes add/remove sets and rejects
+add/remove overlap plus final state/category label conflicts before calling
+`glab issue update`.
 
 ```bash
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" label_reconcile --repo "$repo_url" --issue-iid "$issue_iid" \
   --add-labels "$add_labels" --remove-labels "$remove_labels" \
   --state-labels "$state_labels" --category-labels "$category_labels"
@@ -258,6 +260,7 @@ Use wrapper `safe_mr_json` for decision-grade MR metadata; it fails closed on
 project binding, SHA, pipeline, merge-status, branch, JSON, or control-char drift.
 
 ```bash
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" safe_mr_json --repo "$repo_url" --mr-iid "$mr_iid" --project-path "$project_path"
 ```
 
@@ -268,6 +271,7 @@ Authorized non-builders may use wrapper `auto_merge_api_fallback` only for
 the known `glab mr merge --auto-merge` 405 path.
 
 ```bash
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" auto_merge_api_fallback --repo "$repo_url" --project-path "$project_path" \
   --mr-iid "$mr_iid" --reviewed-sha "$reviewed_sha" --source-branch "$source_branch" \
   --target-branch "$target_branch" --merge-authority "queue auto-merge" \
