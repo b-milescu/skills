@@ -337,6 +337,160 @@ assert_validation_failure_without_glab_call() {
   assert_log_not_contains "$dir/glab.log" "glab"
 }
 
+assert_json_array_contains() {
+  local field="$1" expected="$2"
+  JSON_PAYLOAD="$CAPTURE_OUTPUT" node - "$field" "$expected" <<'NODE'
+const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
+const path = process.argv[2].split('.').filter(Boolean);
+let value = data;
+for (const key of path) value = value?.[key];
+if (!Array.isArray(value) || !value.includes(process.argv[3])) {
+  throw new Error(`expected JSON array ${process.argv[2]} to contain ${process.argv[3]}, got ${JSON.stringify(value)}`);
+}
+NODE
+}
+
+make_snapshot_fake_glab() {
+  local bin_dir="$1"
+  cat > "$bin_dir/glab" <<'FAKE_GLAB'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'glab %s\n' "$*" >> "$FAKE_GLAB_LOG"
+case "${1:-} ${2:-}" in
+  "mr view")
+    cat "$FAKE_MR_JSON_FILE"
+    ;;
+  "issue view")
+    cat "$FAKE_ISSUE_JSON_FILE"
+    ;;
+  "mr approve"|"mr merge"|"issue close"|"issue update")
+    echo "mutating glab command attempted: $*" >&2
+    exit 97
+    ;;
+  *)
+    echo "unexpected glab command: $*" >&2
+    exit 99
+    ;;
+esac
+FAKE_GLAB
+  chmod +x "$bin_dir/glab"
+}
+
+make_snapshot_fake_git() {
+  local bin_dir="$1"
+  cat > "$bin_dir/git" <<'FAKE_GIT'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'git %s\n' "$*" >> "$FAKE_GIT_LOG"
+case "${1:-}" in
+  fetch)
+    [[ "${FAKE_FETCH_FAIL:-false}" != "true" ]] || exit 1
+    ;;
+  rev-parse)
+    [[ "${2:-}" == "FETCH_HEAD" ]] || { echo "unexpected git rev-parse: $*" >&2; exit 99; }
+    printf '%s\n' "$FAKE_TARGET_SHA"
+    ;;
+  merge-base)
+    [[ "${2:-}" == "--is-ancestor" ]] || { echo "unexpected git merge-base: $*" >&2; exit 99; }
+    sha="${3:-}"
+    case ",${FAKE_CONTAINED_SHAS:-}," in
+      *,"$sha",*) exit 0 ;;
+      *) exit 1 ;;
+    esac
+    ;;
+  ls-remote)
+    ref="${3:-}"
+    if [[ "$ref" == "refs/heads/${FAKE_SOURCE_BRANCH:-issue-176-post-merge-snapshot}" && "${FAKE_SOURCE_REF_EXISTS:-false}" == "true" ]]; then
+      printf '%s\t%s\n' "${FAKE_SOURCE_SHA:-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}" "$ref"
+    fi
+    ;;
+  push|branch)
+    echo "mutating git command attempted: $*" >&2
+    exit 97
+    ;;
+  *)
+    echo "unexpected git command: $*" >&2
+    exit 99
+    ;;
+esac
+FAKE_GIT
+  chmod +x "$bin_dir/git"
+}
+
+make_snapshot_fixture_dir() {
+  local name="$1"
+  local dir="$TMPDIR/$name"
+  mkdir -p "$dir/bin"
+  make_snapshot_fake_glab "$dir/bin"
+  make_snapshot_fake_git "$dir/bin"
+  : > "$dir/glab.log"
+  : > "$dir/git.log"
+  printf '%s\n' "$dir"
+}
+
+write_snapshot_issue_json() {
+  local file="$1" state="$2"
+  cat > "$file" <<JSON
+{"iid":88,"state":"$state","web_url":"https://gitlab.example.com/agents/skills/-/work_items/88"}
+JSON
+}
+
+write_snapshot_mr_json() {
+  local file="$1" state="$2" head_sha="$3" merge_sha="$4" squash_sha="$5" source_branch="$6" target_branch="$7" cleanup_policy="$8" description="${9:-Closes #88}"
+  local merge_json="null" squash_json="null" should_remove="null" force_remove="null" remove_source="null"
+  [[ -z "$merge_sha" ]] || merge_json="\"$merge_sha\""
+  [[ -z "$squash_sha" ]] || squash_json="\"$squash_sha\""
+  case "$cleanup_policy" in
+    delete)
+      should_remove="true"; force_remove="false"; remove_source="true" ;;
+    retain)
+      should_remove="false"; force_remove="false"; remove_source="false" ;;
+    unknown)
+      ;;
+    *)
+      fail "unknown snapshot cleanup policy $cleanup_policy" ;;
+  esac
+  cat > "$file" <<JSON
+{
+  "iid": 59,
+  "state": "$state",
+  "draft": false,
+  "sha": "$head_sha",
+  "merge_commit_sha": $merge_json,
+  "squash_commit_sha": $squash_json,
+  "source_branch": "$source_branch",
+  "target_branch": "$target_branch",
+  "should_remove_source_branch": $should_remove,
+  "force_remove_source_branch": $force_remove,
+  "remove_source_branch": $remove_source,
+  "description": "$description",
+  "web_url": "https://gitlab.example.com/agents/skills/-/merge_requests/59"
+}
+JSON
+}
+
+run_snapshot_fixture() {
+  local dir="$1" reviewed_sha="$2"
+  shift 2
+  run_capture env \
+    FAKE_MR_JSON_FILE="$dir/mr.json" \
+    FAKE_ISSUE_JSON_FILE="$dir/issue.json" \
+    FAKE_GLAB_LOG="$dir/glab.log" \
+    FAKE_GIT_LOG="$dir/git.log" \
+    FAKE_TARGET_SHA="${FAKE_TARGET_SHA:-dddddddddddddddddddddddddddddddddddddddd}" \
+    FAKE_CONTAINED_SHAS="${FAKE_CONTAINED_SHAS-$reviewed_sha}" \
+    FAKE_SOURCE_BRANCH="${FAKE_SOURCE_BRANCH:-issue-176-post-merge-snapshot}" \
+    FAKE_SOURCE_REF_EXISTS="${FAKE_SOURCE_REF_EXISTS:-false}" \
+    FAKE_SOURCE_SHA="${FAKE_SOURCE_SHA:-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}" \
+    FAKE_FETCH_FAIL="${FAKE_FETCH_FAIL:-false}" \
+    PATH="$dir/bin:$PATH" \
+    "$REPO_ROOT/gitlab-local/scripts/gitlab-post-merge-snapshot.sh" \
+      --repo git@gitlab.example.com:agents/skills.git \
+      --mr-iid 59 \
+      --reviewed-sha "$reviewed_sha" \
+      "$@"
+}
+
 test_ci_watch_passes_for_matching_green_pipeline() {
   local dir
   dir="$(make_fixture_dir ci-success)"
@@ -926,6 +1080,143 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_log_not_contains "$dir/glab.log" "mr merge"
 }
 
+test_post_merge_snapshot_reports_merged_closed_cleaned() {
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-merged)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_SOURCE_REF_EXISTS=false run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.kind post-merge-snapshot
+  assert_json_field post_merge_snapshot.mr.state merged
+  assert_json_field post_merge_snapshot.default_branch.contains_reviewed_sha true
+  assert_json_field post_merge_snapshot.default_branch.containment_satisfied_by reviewed_sha
+  assert_json_field post_merge_snapshot.linked_issue.closure_status closed
+  assert_json_field post_merge_snapshot.source_branch_cleanup.status cleaned_up
+  assert_log_not_contains "$dir/glab.log" "mr merge"
+  assert_log_not_contains "$dir/glab.log" "mr approve"
+  assert_log_not_contains "$dir/glab.log" "issue close"
+  assert_log_not_contains "$dir/git.log" "push"
+  assert_log_not_contains "$dir/git.log" "branch"
+}
+
+test_post_merge_snapshot_reports_issue_closure_pending() {
+  local dir reviewed
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  dir="$(make_snapshot_fixture_dir snapshot-closure-pending)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete
+  write_snapshot_issue_json "$dir/issue.json" opened
+
+  run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.state opened
+  assert_json_field post_merge_snapshot.linked_issue.closure_status issue_closure_pending
+  assert_json_array_contains post_merge_snapshot.pending_items issue_closure_pending
+}
+
+test_post_merge_snapshot_reports_branch_cleanup_pending() {
+  local dir reviewed
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  dir="$(make_snapshot_fixture_dir snapshot-branch-cleanup-pending)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_SOURCE_REF_EXISTS=true run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.source_branch_cleanup.remote_ref_exists true
+  assert_json_field post_merge_snapshot.source_branch_cleanup.policy delete_requested
+  assert_json_field post_merge_snapshot.source_branch_cleanup.status source_branch_cleanup_pending
+  assert_json_array_contains post_merge_snapshot.pending_items source_branch_cleanup_pending
+  assert_log_not_contains "$dir/git.log" "push"
+  assert_log_not_contains "$dir/git.log" "branch"
+}
+
+test_post_merge_snapshot_reports_retained_by_policy_or_unknown() {
+  local dir reviewed
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  dir="$(make_snapshot_fixture_dir snapshot-retained)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main unknown
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_SOURCE_REF_EXISTS=true run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.source_branch_cleanup.policy unknown
+  assert_json_field post_merge_snapshot.source_branch_cleanup.status source_branch_retained_by_policy_or_unknown
+  assert_json_array_contains post_merge_snapshot.pending_items source_branch_retained_by_policy_or_unknown
+}
+
+test_post_merge_snapshot_reports_explicit_and_missing_containment() {
+  local dir reviewed squash target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  squash=cccccccccccccccccccccccccccccccccccccccc
+  target=dddddddddddddddddddddddddddddddddddddddd
+
+  dir="$(make_snapshot_fixture_dir snapshot-squash-containment)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "$squash" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$squash" run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+  assert_status 0
+  assert_json_field post_merge_snapshot.default_branch.contains_reviewed_sha false
+  assert_json_field post_merge_snapshot.default_branch.contains_squash_commit_sha true
+  assert_json_field post_merge_snapshot.default_branch.containment_satisfied_by squash_commit_sha
+
+  dir="$(make_snapshot_fixture_dir snapshot-missing-containment)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="" run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+  assert_status 0
+  assert_json_field post_merge_snapshot.default_branch.contains_reviewed_sha false
+  assert_json_field post_merge_snapshot.default_branch.containment_satisfied_by none
+  assert_json_array_contains post_merge_snapshot.pending_items default_branch_containment_missing
+
+  dir="$(make_snapshot_fixture_dir snapshot-unknown-containment)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  FAKE_FETCH_FAIL=true run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+  assert_status 0
+  assert_json_field post_merge_snapshot.default_branch.fetch_status failed
+  assert_json_field post_merge_snapshot.default_branch.contains_reviewed_sha_status unknown
+  assert_json_array_contains post_merge_snapshot.pending_items default_branch_containment_unknown
+}
+
+test_post_merge_snapshot_reports_validation_not_run_cases() {
+  local dir reviewed
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+  dir="$(make_snapshot_fixture_dir snapshot-validation-not-documented)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+  assert_status 0
+  assert_json_field post_merge_snapshot.validation.status not-run
+  assert_json_field post_merge_snapshot.validation.not_run_reason not-documented
+  assert_json_array_contains post_merge_snapshot.pending_items post_merge_validation_not_run
+
+  dir="$(make_snapshot_fixture_dir snapshot-validation-missing-source)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88 --validation-command "true"
+  assert_status 0
+  assert_json_field post_merge_snapshot.validation.status not-run
+  assert_json_field post_merge_snapshot.validation.not_run_reason missing-validation-source
+  assert_json_array_contains post_merge_snapshot.pending_items post_merge_validation_not_run
+
+  dir="$(make_snapshot_fixture_dir snapshot-validation-pass)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88 --validation-command "true" --validation-source docs/agents/check-gate.md
+  assert_status 0
+  assert_json_field post_merge_snapshot.validation.status pass
+  assert_json_field post_merge_snapshot.validation.not_run_reason N/A
+}
+
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_finish_builder_handoff_never_approves_or_merges
@@ -940,5 +1231,11 @@ test_wrappers_fail_closed_for_note_validation_without_glab_calls
 test_label_reconcile_adds_and_removes_without_replace_assumption
 test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed
 test_auto_merge_api_fallback_preserves_guards_and_blocks_builders
+test_post_merge_snapshot_reports_merged_closed_cleaned
+test_post_merge_snapshot_reports_issue_closure_pending
+test_post_merge_snapshot_reports_branch_cleanup_pending
+test_post_merge_snapshot_reports_retained_by_policy_or_unknown
+test_post_merge_snapshot_reports_explicit_and_missing_containment
+test_post_merge_snapshot_reports_validation_not_run_cases
 
 echo "gitlab-workflow-helpers: PASS"
