@@ -60,6 +60,8 @@ for prompt in "${builder_prompts[@]}"; do
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Child mode authority boundary' 'child-mode authority boundary invariant'
   require_text "$prompt" 'Merge authority source' 'authority-source invariant'
+  require_text "$prompt" 'start-build/templates/reviewer-lift-schema\.md' 'canonical Reviewer Lift schema ownership pointer'
+  require_text "$prompt" 'Do not inline a Reviewer Lift field table in this prompt' 'Reviewer Lift anti-inline guard'
 
   # The Issue-pickup / Decoupling / Multiple-issue-worktree procedures are owned
   # by start-build. The builder prompts keep only a pointer block to them.

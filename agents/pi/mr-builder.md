@@ -71,7 +71,7 @@ These are owned by the `start-build` skill. Load it at session start and follow 
 
 ## Reviewer Lift
 
-Canonical source is `templates/reviewer-lift-schema.md` from the `start-build` skill. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live in canonical Review Packet / Review Report files.
+Canonical source is `start-build/templates/reviewer-lift-schema.md`. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live only in canonical Review Packet / Review Report files.
 
 ## Check gate discovery
 
