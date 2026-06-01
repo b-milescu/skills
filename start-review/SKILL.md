@@ -34,6 +34,19 @@ For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-
 13. **SHA discipline:** use **Snippet: sha-bound-approval** only when approval is authorized and targeted at an explicit repo target or full MR URL. Use **Snippet: sha-bound-merge** only after a fresh SHA guard immediately before direct merge, and use **Snippet: sha-bound-auto-merge-queue** only after a fresh SHA guard immediately before queueing auto-merge. Use **Snippet: approval-confirmation** after approval when confirmation is needed. Explicit `approval-only` is valid for approval without merge when `Merge authority source` is verifiable; missing or ambiguous authority/source blocks approval/merge actions and maps to review verdict `blocked` with Action blocker `missing-authority`.
 14. **Final response:** after posting the Review Report and after any authorized approval/finish action attempt, the final response MUST include the approved machine-readable reviewer handoff schema from `templates/reviewer-final-handoff.md` when that template is available. Use the same Review Report vocabulary for `review_verdict`, `approval_action`, `finish_action`, `action_blocker`, and `next_action`; include bound MR URL/project, reviewed SHA, pipeline status/SHA, local checks, findings IDs, Open Question handling, `merge_authority`, `merge_authority_source`, and `report_url` or `N/A`. If the template is unavailable, say so and still return those verified fields without inventing MR, CI, approval, action, blocker, or report-link state.
 
+
+## Compact review cards
+
+Use compact cards as pointer-map checklists after the active review path is known:
+[`single-mr-review-card.md`](reference/single-mr-review-card.md),
+[`request-changes-rerun-card.md`](reference/request-changes-rerun-card.md),
+[`finish-action-card.md`](reference/finish-action-card.md), and
+[`blocked-review-routing-card.md`](reference/blocked-review-routing-card.md).
+Canonical policy stays in [`REVIEW-FLOW.md`](REVIEW-FLOW.md), templates, and
+`/gitlab-local`; fall back there on ambiguity, missing field, CLI/help drift,
+authority uncertainty, SHA/CI mismatch, cross-project binding, partial review,
+suspected secret exposure, grouped action pressure, or any mutation action.
+
 ## MR pickup summary
 
 When the user supplies an MR ID/URL/branch, review it only after project binding succeeds. Otherwise pick one MR from the **current GitLab project**: prefer the current-branch MR, then an open non-draft MR labeled with the project's ready-for-review equivalent or assigned to `@me`. For multiple requested MRs, preserve one MR per fresh reviewer session as the default and preferred path; only proceed under the shared [Decoupling Contract](docs/decoupling-contract.md) plus the isolation/serialization rules in [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup). Deprioritize drafts, blocked MRs, MRs with the project's revision/unblock equivalent, or red-CI MRs. See [REVIEW-FLOW.md §MR pickup](REVIEW-FLOW.md#mr-pickup) for the full procedure using `gitlab-local` snippet names.

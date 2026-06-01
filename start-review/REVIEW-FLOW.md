@@ -92,6 +92,29 @@ Reviewers load the small `gitlab-local` review cards before the full command ref
 
 The cards carry snippet names, inputs/outputs, and fail-closed rules without copying raw command bodies. Full command ownership still lives in the host project's issue-tracker guide or [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md): fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card is missing/ambiguous, live CLI help or JSON shape drifts, a needed command is not carded, non-review issue/MR operations are required, or helper behavior needs troubleshooting. This flow names commands only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at action points.
 
+
+## Compact review cards
+
+Use these cards as pointer-map checklists for common routes after the review mode
+is known:
+
+- [`single-mr-review-card.md`](reference/single-mr-review-card.md) — default one
+  MR / one fresh reviewer session path.
+- [`request-changes-rerun-card.md`](reference/request-changes-rerun-card.md) —
+  fresh review round after a builder revision.
+- [`finish-action-card.md`](reference/finish-action-card.md) — approval and
+  finish-action sequencing after a pass-eligible report.
+- [`blocked-review-routing-card.md`](reference/blocked-review-routing-card.md) —
+  fail-closed blocker classification and parent routing.
+
+The cards do not replace this file's Context Firewall, Review Context Capsule,
+fail-closed coverage, CI decision table, Open Question decision table, authority
+source precedence, project binding rules, final snapshot order, or SHA-guarded
+action rules. Fall back to this full flow and `gitlab-local/SKILL.md` on
+ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch,
+cross-project binding, partial review, suspected secret exposure, grouped action
+pressure, or any mutation action.
+
 ## Project binding
 
 Every supplied MR URL, IID/ID, or branch name must be project-bound after
