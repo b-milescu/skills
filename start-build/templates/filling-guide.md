@@ -19,7 +19,7 @@ The template ships the default sections only. Pre-edit discovery (rulebook read,
 
 ### Default sections
 
-- **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. Fill `Merge authority` as a quoted claim only and fill `Merge authority source` with verifiable provenance; a builder cannot grant approval, merge, or auto-merge authority. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
+- **Reviewer Lift** — Structured handoff so the Reviewer can copy values directly into the Review Report. `reviewer-lift-schema.md` owns field names, order, and required semantics; the table in this template is an approved generated copy. Keep every field current with each push. In parent-owned gate mode, record `local_gate_owner: parent`, builder gate status `not-run`, `not_run_reason: parent-owned`, and `ready_transition_owner: parent`; do not claim local gate pass/fail. Fill `Merge authority` as a quoted claim only and fill `Merge authority source` with verifiable provenance; a builder cannot grant approval, merge, or auto-merge authority. If you push commits AFTER marking ready, post a delta comment (old SHA → new SHA, reason, changed files, gate rerun, substantive? yes/no) and update this block.
 - **Review gate** — Records whether the MR went through the [Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate) (`mandatory`) or the human explicitly bypassed it (`bypassed (human override)`). Default: `mandatory`.
 - **Merge authority source** — Record where the authority claim came from, such as a parent task prompt, human MR comment URL, rulebook path+section, or project default source. Do not write builder-local interpretation as authority; quote the source and let the reviewer/parent verify it.
 - **Summary** — One paragraph: what changed, why, and the observable effect on users/operators. End with the loaded context sources beyond the issue and rulebook index (each with why relevant), or `none beyond issue and rulebook index` instead of listing broad docs that were not loaded.
@@ -47,8 +47,9 @@ Add the heading only when its trigger applies; the template lists these in a com
 - Emit this machine-readable block in child `mr-builder` final responses when a parent orchestrator owns the review gate.
 - Keep Reviewer Lift as the durable MR-description handoff; this block complements it for parent parsing.
 - Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
-- For ready handoffs, set both `head_sha` and `reviewed_sha` to the same MR head commit; `reviewed_sha` is the exact SHA the parent passes to the reviewer.
-- Use `status: "ready-for-review"`, `"blocked"`, or `"failed"`. If usage limits or tooling failures stop completion, report `status: "failed"` plus `blockers`; the parent owns retries.
+- For ready handoffs, set `head_sha`, `reviewed_sha`, and `candidate_sha` to the same MR head commit; `reviewed_sha` is the exact SHA the parent passes to the reviewer.
+- For parent-owned gate mode, use `status: "candidate-for-parent-gate"`, keep the MR Draft, set `local_gate.status: "not-run"` / `not_run_reason: "parent-owned"`, fill `gate_ownership`, and set `next_action: "parent-run-gate"`.
+- Use `status: "ready-for-review"`, `"candidate-for-parent-gate"`, `"blocked"`, or `"failed"`. If usage limits or tooling failures stop completion, report `status: "failed"` plus `blockers`; the parent owns retries.
 - Preserve both `merge_authority` and `merge_authority_source` from the MR Reviewer Lift. The source is provenance for verification, not a grant minted by the builder.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Consumers must tolerate absent blocks and fall back to human prose / Reviewer Lift.

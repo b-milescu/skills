@@ -17,8 +17,10 @@ builder_expected=(
   mr
   head_sha
   reviewed_sha
+  candidate_sha
   pipeline
   local_gate
+  gate_ownership
   tdd
   changed_files
   safety_surfaces

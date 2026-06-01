@@ -4,7 +4,16 @@ Small, self-contained path for child builders delegated by a parent orchestrator
 
 ## Authority boundary
 
-The child builder implements one issue, opens and maintains one Draft MR, marks it ready only after the local gate is green or explicitly N/A with rationale, and returns the machine-readable builder final handoff. The parent orchestrator owns the mandatory review gate and any approval, merge, auto-merge, source-branch cleanup, or post-merge verification allowed by policy. A child builder must not start a reviewer, approve, merge, queue auto-merge, delete remote branches, or claim the review gate is complete unless an explicit parent/human instruction changes the role scope and that instruction is recorded first.
+The child builder implements one issue and opens/maintains one Draft MR. By default it may mark ready only after the local gate is green or explicitly N/A with rationale. When parent-owned gate mode is active, the child may open/update the Draft MR and final handoff, but must not claim gate pass/fail and must not mark ready unless explicit parent/human delegation is recorded first. The parent orchestrator owns the mandatory review gate and any approval, merge, auto-merge, source-branch cleanup, or post-merge verification allowed by policy; the child must not start a reviewer, approve, merge, queue auto-merge, delete remote branches, or claim the review gate is complete unless an explicit parent/human instruction changes the role scope and that instruction is recorded first.
+
+Parent-owned gate contract values:
+
+```yaml
+local_gate_owner: parent
+builder_gate_status.status: not-run
+not_run_reason: parent-owned
+ready_transition_owner: parent
+```
 
 ## Required reads
 
@@ -21,10 +30,10 @@ Avoid parent-orchestrator and standalone-gate detail while building: do not load
 5. Push the source branch and open a Draft MR early with `gitlab-local` **Snippet: draft-mr-create**, `Closes #<issue>`, a Review Packet, and a Reviewer Lift block initialized from `../templates/reviewer-lift-schema.md`. Fill `Merge authority` as a quoted claim and `Merge authority source` as verifiable provenance; builders cannot grant authority.
 6. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR. Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger. Exception categories require MR rationale and must not allow fake tests or meaningless checks. Issue-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice. Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions. For docs/config/mechanical work, record `TDD: N/A` and the rationale instead of faking tests.
 7. Keep the Reviewer Lift current as facts become known: reviewed SHA, CI pipeline, local gate, red/green or N/A, changed paths, safety surfaces, decoupling proof, reviewer focus, open questions, merge authority, source, and ready-push delta.
-8. Run targeted checks during the loop and the project's full local gate before marking ready. Use [context and planning](context-and-planning.md#check-gate-discovery) when the gate is not obvious.
-9. Push the final head, verify `git rev-parse HEAD` and `git ls-remote origin <branch>`, update the MR description with `gitlab-local` **Snippet: mr-description-update**, and ensure Reviewer Lift `Reviewed SHA` equals the MR head SHA.
-10. Mark ready with `gitlab-local` **Snippet: draft-mr-mark-ready** only after the local gate passes or a concrete N/A reason is recorded. Do not wait for CI when the full local gate passed unless CI infrastructure or an unavailable CI-only gate is in scope.
-11. Stop after the final handoff. The handoff starts with the YAML block from `../templates/builder-final-handoff.md` when available and names MR IID/URL, head SHA, reviewed SHA, pipeline, local gate, TDD evidence or N/A, changed files, safety surfaces, decoupling, reviewer focus, open questions, merge authority, source, artifacts, and blockers. Its shared `delivery.kind=gitlab-delivery` block is a compact routing index only; parents/reviewers must verify those fields from Tier 1/Tier 2 evidence before relying on them.
+8. Run targeted checks during the loop. If the builder owns ready-marking, run the project's full local gate before marking ready. If parent-owned gate mode is active, do not run/claim the final local gate; record the parent-owned contract values above and leave the MR Draft for the parent Gate Receipt / ready transition.
+9. Push the final head, verify `git rev-parse HEAD` and `git ls-remote origin <branch>`, update the MR description with `gitlab-local` **Snippet: mr-description-update**, and ensure Reviewer Lift `Reviewed SHA` equals the MR head SHA that the parent must gate/review.
+10. Mark ready with `gitlab-local` **Snippet: draft-mr-mark-ready** only when the builder owns the local gate and it passes (or a concrete N/A reason is recorded). In parent-owned gate mode, the child must not mark ready unless an explicit parent/human delegation is recorded in the MR and final handoff.
+11. Stop after the final handoff. The handoff starts with the YAML block from `../templates/builder-final-handoff.md` when available and names MR IID/URL, head/candidate SHA, reviewed SHA when applicable, pipeline, local gate or parent-owned not-run reason, TDD evidence or N/A, changed files, safety surfaces, decoupling, reviewer focus, open questions, merge authority, source, artifacts, and blockers. Its shared `delivery.kind=gitlab-delivery` block is a compact routing index only; parents/reviewers must verify those fields from Tier 1/Tier 2 evidence before relying on them.
 
 ## Post-ready push rule
 

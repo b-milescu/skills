@@ -35,7 +35,7 @@ agent_handoff:
       iid: "123"
       url: "https://gitlab.example/group/project/-/merge_requests/123"
       state: "opened"
-      draft: false
+      draft: true
       source_branch: "issue-57-example"
       target_branch: "main"
     sha:
@@ -45,16 +45,16 @@ agent_handoff:
       merge_commit: "N/A"
       target_observed: "N/A"
     pipeline:
-      id: "456"
-      url: "https://gitlab.example/group/project/-/pipelines/456"
-      status: "success"
-      sha: "1111111111111111111111111111111111111111"
-      not_run_reason: "N/A"
+      id: "N/A"
+      url: "N/A"
+      status: "N/A"
+      sha: "N/A"
+      not_run_reason: "unavailable-tooling"
     local_gate:
       command: "npm run check"
-      status: "PASS"
-      not_run_reason: "N/A"
-      summary: "completed successfully"
+      status: "not-run"
+      not_run_reason: "parent-owned"
+      summary: "parent owns final local gate and ready transition"
     authority:
       value: "approval-only"
       source: "parent task prompt: approval-only"
@@ -63,17 +63,27 @@ agent_handoff:
     actions:
       approval: "N/A"
       finish: "none"
-      next: "spawn-reviewer"
+      next: "parent-run-gate"
       blockers: []
     evidence:
       - tier: "tier-1"
         kind: "mr-metadata"
         source: "https://gitlab.example/group/project/-/merge_requests/123"
         summary: "MR metadata read for source/target/head"
+      - tier: "tier-1"
+        kind: "git-ref"
+        source: "git ls-remote origin issue-57-example"
+        summary: "remote source branch points at candidate SHA"
     blockers: []
-    extra: {}
+    extra:
+      gate_ownership:
+        local_gate_owner: "parent"
+        builder_gate_status:
+          status: "not-run"
+          not_run_reason: "parent-owned"
+        ready_transition_owner: "parent"
   # GITLAB-DELIVERY-SCHEMA:END
-  status: "ready-for-review"
+  status: "candidate-for-parent-gate"
   issue:
     iid: "57"
     url: "https://gitlab.example/group/project/-/issues/57"
@@ -81,23 +91,32 @@ agent_handoff:
   mr:
     iid: "123"
     url: "https://gitlab.example/group/project/-/merge_requests/123"
-    draft: false
+    draft: true
     source_branch: "issue-57-example"
     target_branch: "main"
   head_sha: "1111111111111111111111111111111111111111"
   reviewed_sha: "1111111111111111111111111111111111111111"
+  candidate_sha: "1111111111111111111111111111111111111111"
   pipeline:
-    id: "456"
-    url: "https://gitlab.example/group/project/-/pipelines/456"
-    status: "success"
-    sha: "1111111111111111111111111111111111111111"
+    id: "N/A"
+    url: "N/A"
+    status: "N/A"
+    sha: "N/A"
+    not_run_reason: "unavailable-tooling"
   local_gate:
-    status: "PASS"
+    status: "not-run"
     command: "npm run check"
-    summary: "completed successfully"
+    not_run_reason: "parent-owned"
+    summary: "parent owns final local gate and ready transition"
+  gate_ownership:
+    local_gate_owner: "parent"
+    builder_gate_status:
+      status: "not-run"
+      not_run_reason: "parent-owned"
+    ready_transition_owner: "parent"
   tdd:
-    red: "bash tests/example-behavior.sh failed before fix: expected behavior missing"
-    green: "bash tests/example-behavior.sh passed after fix"
+    red: "N/A with rationale — docs/config/mechanical work"
+    green: "N/A with rationale — targeted invariant checks only"
   changed_files:
     - "path/one.md"
   safety_surfaces:
@@ -110,7 +129,7 @@ agent_handoff:
   open_questions: []
   merge_authority: "approval-only"
   merge_authority_source: "parent task prompt: approval-only"
-  next_action: "spawn-reviewer"
+  next_action: "parent-run-gate"
   artifacts:
     run_dir: "/tmp/agent-run-issue-57-mr-123"
     review_packet: "/tmp/agent-run-issue-57-mr-123/review-packet.md"
@@ -128,20 +147,33 @@ agent_handoff:
 - The YAML block above is a concrete synthetic example, not a schema literal:
   replace every value with verified values for the current MR before sending a
   final handoff. Do not leave placeholder alternatives in copied output.
-- `status` is one of `ready-for-review`, `blocked`, or `failed`. If usage limits
-  or tooling failures prevent completion, return `status: "failed"` and list the
-  blocker(s) instead of inventing missing GitLab state.
+- `status` is one of `ready-for-review`, `candidate-for-parent-gate`,
+  `blocked`, or `failed`. Use `candidate-for-parent-gate` when parent-owned gate
+  mode leaves the MR Draft for the parent Gate Receipt / ready transition. If
+  usage limits or tooling failures prevent completion, return `status: "failed"`
+  and list the blocker(s) instead of inventing missing GitLab state.
 - `head_sha` is the pushed MR head SHA when this handoff is emitted.
-- `reviewed_sha` is the same commit as `head_sha` for `ready-for-review` handoffs;
-  it is the exact SHA the parent should pass to the reviewer and must match the
-  MR description's Reviewer Lift `Reviewed SHA`. If no reviewable head exists
-  because status is `blocked` or `failed`, use `N/A — <why>` and list the blocker.
+- `reviewed_sha` is the same commit as `head_sha` for `ready-for-review` and
+  `candidate-for-parent-gate` handoffs; in parent-owned gate mode it is the
+  candidate SHA the parent must gate before review. It must match the MR
+  description's Reviewer Lift `Reviewed SHA` unless no reviewable head exists
+  because status is `blocked` or `failed`; then use `N/A — <why>` and list the
+  blocker.
+- `candidate_sha` repeats the exact head SHA that the parent should check out
+  for the Gate Receipt when `status: "candidate-for-parent-gate"`.
 - `pipeline` is the latest known MR pipeline for `reviewed_sha`, or `N/A` with a
   reason when GitLab exposes no pipeline yet. `pipeline.status` should use the
   GitLab status when available, commonly `success`, `pending`, `running`,
   `failed`, `canceled`, `skipped`, or `N/A` with a reason.
 - `local_gate` names the exact command and concise result. `local_gate.status` is
-  `PASS`, `FAIL`, or `N/A`; use `N/A` only with a concrete reason.
+  `PASS`, `FAIL`, `N/A`, or `not-run`; use `not-run` with
+  `not_run_reason: "parent-owned"` only when the parent owns the final gate.
+  `N/A` still needs a concrete reason.
+- `gate_ownership` records `local_gate_owner`, `builder_gate_status`, and
+  `ready_transition_owner`. Parent-owned mode uses `local_gate_owner: "parent"`,
+  `builder_gate_status.status: "not-run"`,
+  `builder_gate_status.not_run_reason: "parent-owned"`, and
+  `ready_transition_owner: "parent"`.
 - `tdd` records RED/GREEN evidence for behavior-touching implementation, or
   explicit N/A rationale for docs/config/mechanical work or impossible TDD.
 - `changed_files`, `safety_surfaces`, `decoupling`, and `reviewer_focus` must
@@ -156,6 +188,7 @@ agent_handoff:
   such as parent task prompt, human MR comment URL, rulebook path and section,
   or project default source; missing, unverifiable, or conflicting source
   information is a blocker for reviewer approval/finish actions.
-- `next_action` tells the parent whether to spawn review, make a human decision,
-  or fix a blocker. Use `spawn-reviewer`, `human-decision`, or `fix-blocker`.
+- `next_action` tells the parent whether to run the parent-owned gate, spawn
+  review, make a human decision, or fix a blocker. Use `parent-run-gate`,
+  `spawn-reviewer`, `human-decision`, or `fix-blocker`.
 - `artifacts` point to local redacted run files only. Do not commit them.

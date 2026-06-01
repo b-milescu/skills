@@ -28,7 +28,7 @@ Standalone builders follow [reference/implementation-flow.md](reference/implemen
 
 ### Child `mr-builder` mode
 
-Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, run the full local gate before ready, mark ready, then stop with the builder final handoff because the parent orchestrator owns the mandatory review gate and any finish action. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
+Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, and either run/own the local gate before ready or, in parent-owned gate mode, report `local_gate_owner: parent` with builder gate status `not-run` / `not_run_reason: parent-owned` and leave the MR Draft for the parent Gate Receipt and ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Parent-orchestrator recipe
 
