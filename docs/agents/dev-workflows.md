@@ -18,6 +18,49 @@ This repo uses GitLab-backed dev workflows.
 - `post-merge-verifier/SKILL.md` — active read-only verifier skill for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` for command syntax instead of copying snippets here.
 - `start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
 
+## Project-profile hooks
+
+GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,
+`pipeline`, `source branch`, `target branch`, and `SHA`. This repo declares
+project-specific policy through bounded `project_profile` extension fields in
+[`start-build/templates/gitlab-delivery-schema.md`](../../start-build/templates/gitlab-delivery-schema.md);
+do not invent provider-neutral aliases for the GitLab records.
+
+| Project-profile field | Declaration location for this repo |
+| --- | --- |
+| `profile_id` / `profile_path` | `default` / this section. |
+| `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) full local gate and when-gate-cannot-run sections. |
+| `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
+| `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
+| `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
+| `ci_jobs` | [`docs/agents/check-gate.md`](check-gate.md) CI parity / required jobs section. |
+| `domain_docs` | [`docs/agents/domain.md`](domain.md) context and ADR layout. |
+| `release_deploy_policy` | This doc's [Release/deploy policy](#releasedeploy-policy) section. |
+| `manual_validation_rules` | [`docs/agents/check-gate.md`](check-gate.md) manual validation rules section. |
+| `auxiliary_index_policy` | This doc's [Auxiliary project-index policy](#auxiliary-project-index-policy) section. |
+
+Project-profile hooks may specialize this repo's policy, but they must not
+weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
+independent review, the child-builder boundary, the verifier read-only boundary,
+or help-first `glab` correctness.
+
+### Branch naming
+
+Use issue-referencing source branches for GitLab MRs, for example
+`issue-<iid>-<slug>`. Do not rename the delivery schema's `source_branch` or
+`target_branch` fields.
+
+### Release/deploy policy
+
+This skills repo has no product deploy path. Release actions for skill packages
+or installed skill surfaces require explicit human or workflow authority and must
+cite the authority source in the MR. Setup docs do not grant approval, merge,
+auto-merge, release, deploy, or operator authority by themselves.
+
+### Auxiliary project-index policy
+
+Parent/coordinator checkouts own generated auxiliary project-index updates by default. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child. Child worktrees must not copy index artifacts between worktrees; regenerate assigned indexes in the owning checkout instead.
+
 ## Design briefs
 
 - `docs/agents/mr-build-review-orchestration.md` — issue #55 historical design brief for the parent-orchestrator loop. It records rationale, provenance, and links to active sources; active workflow policy now lives in the recipe above.

@@ -70,8 +70,8 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 ## Templates
 
 - `templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics.
-- `templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, evidence taxonomy, action/authority enums, and generated-copy drift contract.
-- `templates/gitlab-delivery-schema.md` also defines `gate_receipt.kind=gate-receipt` for parent-owned local gate evidence before ready-marking.
+- `templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, `project_profile` extension hooks, evidence taxonomy, action/authority enums, and generated-copy drift contract.
+- `templates/gitlab-delivery-schema.md` also defines `gate_receipt.kind=gate-receipt` for parent-owned local gate evidence before ready-marking. Project-profile hooks may specialize gate policy, labels, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, language families, and auxiliary indexes, but must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, the child-builder boundary, the verifier read-only boundary, or help-first `glab` correctness.
 - `templates/builder-final-handoff.md` — machine-readable child-builder final response block for parent-orchestrator parsing.
 - `templates/review-packet.md` — full MR description.
 - `templates/review-packet-compact.md` — compact MR description for simple changes.

@@ -44,6 +44,36 @@ delivery:
     project_path: "group/project"
     repo_url: "https://gitlab.example/group/project.git"
     default_branch: "main"
+    profile_id: "default"
+    profile_path: "docs/agents/dev-workflows.md#project-profile-hooks"
+    gate_policy_ref: "docs/agents/check-gate.md#full-local-gate"
+    label_profile_ref: "docs/agents/triage-labels.md#live-label-inventory"
+    language_families:
+      - "typescript"
+      - "shell"
+      - "markdown"
+    auxiliary_index_policy:
+      ref: "docs/agents/dev-workflows.md#auxiliary-project-index-policy"
+      owner: "parent"
+      child_worktree_mode: "read-only-unless-assigned"
+      copy_between_worktrees: "forbidden"
+    branch_naming:
+      ref: "docs/agents/dev-workflows.md#branch-naming"
+      pattern: "issue-<iid>-<slug>"
+    ci_jobs:
+      ref: "docs/agents/check-gate.md#ci-parity"
+      required:
+        - "validation"
+    domain_docs:
+      ref: "docs/agents/domain.md"
+      context: "CONTEXT.md"
+      adr: "docs/adr/"
+    release_deploy_policy:
+      ref: "docs/agents/dev-workflows.md#release-deploy-policy"
+      policy: "project docs define release/deploy authority"
+    manual_validation_rules:
+      ref: "docs/agents/check-gate.md#manual-validation-rules"
+      required: []
   issue:
     iid: "57"
     url: "https://gitlab.example/group/project/-/issues/57"
@@ -91,6 +121,45 @@ delivery:
   blockers: []
   extra: {}
 ```
+
+## Project profile extension fields
+
+`project_profile` binds the GitLab delivery block to the concrete project and is
+the only place this schema exposes bounded project-specific extension hooks. The
+global delivery field names remain GitLab-specific: `issue`, `mr`, `pipeline`,
+`source_branch`, `target_branch`, and `sha`. Do not add provider-neutral aliases
+for those fields.
+
+| Field | Required semantics |
+|---|---|
+| `host` | GitLab host used for project binding. |
+| `project_path` | GitLab namespace/project path used for repo/MR/issue binding. |
+| `repo_url` | Git remote URL used for local preflight and GitLab CLI operations. |
+| `default_branch` | Target branch used for source/target binding and exact-SHA comparisons. |
+| `profile_id` | Stable project-profile identifier such as `default`, `regulated`, or a target-repo slug. |
+| `profile_path` | Repo-local doc path that owns the profile declaration. |
+| `gate_policy_ref` | Repo-local gate policy reference; usually `docs/agents/check-gate.md`. |
+| `label_profile_ref` | Repo-local label vocabulary reference; usually `docs/agents/triage-labels.md`. |
+| `language_families` | Project language/tooling families that inform local gate discovery and reviewer focus. |
+| `auxiliary_index_policy` | Ownership/read-only rules for auxiliary project indexes such as graph or search artifacts. |
+| `branch_naming` | Repo-local branch naming convention for source branches; this does not rename `source_branch` or `target_branch`. |
+| `ci_jobs` | CI job names/requirements that must be SHA-bound before they count as green evidence. |
+| `domain_docs` | Domain, context, and ADR locations that project-aware agents should read when relevant. |
+| `release_deploy_policy` | Repo-local release/deploy authority and validation references. |
+| `manual_validation_rules` | Manual validation requirements and allowed evidence when automation is unavailable. |
+
+Project-profile hooks may specialize project policy, but they must not weaken
+reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
+review, the child-builder boundary, the verifier read-only boundary, or
+help-first `glab` correctness. Compact delivery values, including
+`project_profile`, remain routing indexes until verified from Tier 1/Tier 2
+evidence.
+
+Auxiliary project-index policy defaults to parent/coordinator ownership:
+parent/coordinator checkouts update generated project indexes unless
+`auxiliary_index_policy` explicitly assigns that work elsewhere. Child
+worktrees treat index reports as read-only unless explicitly assigned and must
+not copy index artifacts between worktrees.
 
 ## Trust and evidence tiers
 

@@ -15,6 +15,18 @@ Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines
 
 Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 
+## Project-profile refs
+
+Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
+and `manual_validation_rules.ref` for this repo. The full local gate is
+`npm run check`; the CI job requirements are in [CI parity](#ci-parity); manual
+validation rules are in [Manual validation rules](#manual-validation-rules).
+
+Project-profile hooks may specialize gate policy, but they must not weaken
+reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
+review, the child-builder boundary, the verifier read-only boundary, or
+help-first `glab` correctness.
+
 ## Executable-bit policy
 
 Only directly invoked entrypoints keep executable bits: `install.sh`,
@@ -70,6 +82,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/memory-retrospective-invariants.sh` | `memory-retrospective/SKILL.md` read-only stance, never-print-secrets / never-paste-session-dumps / redact safety tokens, and the post-#153 propose-only / route-out boundary (output proposals only, never edit skill surfaces directly, route approved candidates out). |
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
 | `tests/post-merge-verifier-read-only.sh` | Post-merge verifier read-only invariant keeps the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator) and `issue_closure_pending` / `source_branch_cleanup_pending` report tokens in `post-merge-verifier/SKILL.md` and `start-build/reference/post-merge-verifier.md`, and keeps the post-#152 dropped "promised docs/ADR/follow-ups" check absent. |
+| `tests/project-profile-hooks.sh` | `project_profile` extension fields stay documented in the GitLab delivery schema and generated handoff copies; setup-dev-skills seeds/generated docs declare gate, labels, branch naming, CI jobs, domain/ADR, release/deploy, manual validation, language, and auxiliary index hooks; GitLab-specific schema names and safety invariants remain intact. |
 | `tests/review-authority-explicit.sh` | Reviewer workflow docs require explicit Merge authority and preserve explicit `approval-only` handling. |
 | `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require merge authority source provenance, precedence, and builder-claim-not-grant semantics. |
 | `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class, synchronizes Review Report/final handoff verdict and action-blocker enums, and routes non-code blockers through explicit action fields. |
@@ -135,6 +148,13 @@ Commands were derived from:
 - CI caches npm's download cache under `.npm/`, keyed by `package-lock.json`; `npm ci` remains the correctness boundary, so cache misses only make installs slower.
 
 Do not add CI-only validation here unless it is first added to `npm run check` and documented as part of the local Check Gate.
+
+## Manual validation rules
+
+Manual validation is supporting evidence only when automation cannot cover the
+change. Record exact commands or observations, redact secrets, and bind the
+evidence to the reviewed SHA. Manual validation does not replace `npm run check`
+for ready-marking unless the MR records a specific, reviewed exception.
 
 ## When the gate cannot be run
 

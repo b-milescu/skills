@@ -4,6 +4,10 @@ How the engineering skills should consume this repo's domain documentation when 
 
 This repo uses a **single-context** layout: one root `CONTEXT.md` plus `docs/adr/` when present.
 
+Use this file as `project_profile.domain_docs` for this repo. It records the
+context and ADR layout that project-profile hooks should cite when workflow
+agents need domain language.
+
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root.

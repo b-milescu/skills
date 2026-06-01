@@ -16,6 +16,17 @@ If no full local gate exists, write:
 
 > No full local gate discovered. Use the targeted checks below and rely on CI for the remaining coverage.
 
+## Project-profile refs
+
+Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
+and `manual_validation_rules.ref`. Record the exact full local gate, targeted
+checks, CI job requirements, and allowed manual validation evidence here.
+
+Project-profile hooks may specialize gate policy, but they must not weaken
+reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
+review, the child-builder boundary, the verifier read-only boundary, or
+help-first `glab` correctness.
+
 ## Targeted checks
 
 Use the smallest relevant checks during development, then run the full local gate before review.
@@ -31,9 +42,17 @@ Use the smallest relevant checks during development, then run the full local gat
 
 Record where these commands came from: `README.md`, `CONTRIBUTING.md`, `Makefile`, `package.json`, language project files, CI config, or local scripts.
 
-## CI parity
+## CI job requirements
 
-Describe which CI jobs the local gate mirrors. If CI has jobs that cannot run locally, name them and explain why.
+Describe which CI jobs the local gate mirrors. If CI has jobs that cannot run
+locally, name them and explain why. Green CI counts only when the pipeline/job
+SHA exactly matches the reviewed SHA.
+
+## Manual validation rules
+
+Document manual validation commands, dry-run rules, required screenshots/logs,
+and redaction requirements when automation is unavailable. If manual validation
+is not accepted evidence for this repo, write that explicitly.
 
 ## When the gate cannot be run
 

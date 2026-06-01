@@ -58,6 +58,13 @@ Check-gate discovery detail lives in [reference/context-and-planning.md §Check 
 
 Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, local gate evidence or N/A rationale must be present, open questions must use real stable IDs or `none`, and merge authority/source must be explicit and verifiable.
 
+Project-profile hooks in `templates/gitlab-delivery-schema.md` may specialize
+project gate policy, labels, branch naming, CI jobs, domain docs,
+release/deploy policy, manual validation, language families, and auxiliary
+indexes. They must not weaken reviewed-SHA binding, exact-SHA CI, explicit
+authority source, independent review, the child-builder boundary, the verifier
+read-only boundary, or help-first `glab` correctness.
+
 ## Implementation flow
 
 Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, and mark ready with **Snippet: draft-mr-mark-ready** only after the full local gate passes and Reviewer Lift names the current head SHA. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
