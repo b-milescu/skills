@@ -101,6 +101,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/start-build-stale-reviewer-control.sh` | `start-build` stale reviewer control, status/activity observation, runtime interrupt/escalation, and no blind duplicate-reviewer retry regressions. |
 | `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, and issue-driven no-extra-approval prompt regressions. |
 | `tests/start-review-command-ownership.sh` | `/start-review` GitLab command ownership stays in review cards/snippets; reviewer-owned docs/prompts reject raw `glab` command copies. |
+| `tests/start-review-mode-cards.sh` | `start-review` compact mode cards for single-MR review, request-changes rerun, finish-action, and blocked routing stay pointer-map-only, preserve fallback triggers and canonical review anchors, require final snapshots plus fresh SHA guards, and keep grouped actions / partial-review / secret-exposure blockers fail-closed. |
 
 ## Workflow regression coverage map
 
