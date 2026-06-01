@@ -80,12 +80,14 @@ for token in \
   'expected_next_action' \
   'blocked' \
   'blocker_token' \
+  'required_parent_decision' \
   'safe_to_continue_without_parent' \
   'changed_since_last_handoff' \
   'evidence_ready_for_next_actor'; do
   require_text "$schema" "$token" "handoff contract token $token"
 done
 
+require_text "$schema" 'use `none` or a concise decision' 'required_parent_decision guidance'
 require_text "$schema" '`blocking_question`' 'optional blocking_question guidance'
 require_text "$schema" 'specific actionable question' 'blocking_question specificity guidance'
 
@@ -96,6 +98,7 @@ for copy in "${copies[@]}"; do
     'expected_next_action:' \
     'blocked:' \
     'blocker_token:' \
+    'required_parent_decision:' \
     'safe_to_continue_without_parent:' \
     'changed_since_last_handoff:' \
     'evidence_ready_for_next_actor:'; do

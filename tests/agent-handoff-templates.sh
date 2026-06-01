@@ -135,6 +135,7 @@ for (const file of process.argv.slice(2)) {
     'expected_next_action',
     'blocked',
     'blocker_token',
+    'required_parent_decision',
     'safe_to_continue_without_parent',
     'changed_since_last_handoff',
     'evidence_ready_for_next_actor',

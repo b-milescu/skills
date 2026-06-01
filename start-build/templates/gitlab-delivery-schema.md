@@ -416,6 +416,7 @@ Required fields:
 - `expected_next_action`
 - `blocked`
 - `blocker_token`
+- `required_parent_decision` — use `none` or a concise decision still needed from the parent/human owner.
 - `safe_to_continue_without_parent`
 - `changed_since_last_handoff`
 - `evidence_ready_for_next_actor`
@@ -424,8 +425,6 @@ Optional fields:
 
 - `blocking_question` — include only when a specific actionable question blocks
   progress.
-- `required_parent_decision` — use `none` or a concise decision still needed
-  from the parent/human owner.
 
 `phase` values:
 
