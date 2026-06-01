@@ -16,6 +16,7 @@ require_text() {
 
 verifier_skill="post-merge-verifier/SKILL.md"
 verifier_recipe="start-build/reference/post-merge-verifier.md"
+snapshot_helper="gitlab-local/scripts/gitlab-post-merge-snapshot.sh"
 
 # Both verifier docs forbid the mutating actions (post-#152 wording: the dropped
 # "promised docs/ADR/follow-ups" check is intentionally NOT asserted here).
@@ -32,9 +33,15 @@ for file in "$verifier_skill" "$verifier_recipe"; do
   require_text "$file" 'source_branch_cleanup_pending' "$file source_branch_cleanup_pending report token"
 done
 
-# Read-only invariant must be explicit.
+# Read-only invariant and helper wiring must be explicit.
 require_text "$verifier_skill" 'read-only' 'SKILL.md read-only invariant token'
-require_text "$verifier_recipe" 'read-only confirmation' 'recipe read-only confirmation token'
+require_text "$verifier_recipe" 'read-only confirmation|read-only GitLab/git' 'recipe read-only invariant token'
+require_text "$verifier_skill" 'gitlab-post-merge-snapshot\.sh' 'SKILL.md snapshot helper pointer'
+require_text "$verifier_recipe" 'gitlab-post-merge-snapshot\.sh' 'recipe snapshot helper pointer'
+require_text "$verifier_skill" 'post_merge_snapshot\.kind=post-merge-snapshot' 'SKILL.md snapshot schema anchor'
+require_text "$verifier_recipe" 'post_merge_snapshot\.kind=post-merge-snapshot' 'recipe snapshot schema anchor'
+require_text "$snapshot_helper" 'post-merge-snapshot' 'snapshot helper emits schema kind'
+require_text "$snapshot_helper" 'read-only' 'snapshot helper read-only invariant token'
 
 # Post-#152 guard: the dropped "promised docs/ADR/follow-ups" check must stay gone.
 if grep -Eiq -- 'promised (docs|adr|follow-?ups?)|docs/adr/follow' "$verifier_skill" "$verifier_recipe"; then

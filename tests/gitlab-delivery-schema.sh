@@ -89,6 +89,11 @@ require_text "$schema" '`parent-run-gate`' 'builder parent-owned gate next-actio
 require_text "$schema" '`finish-by-authorized-actor`' 'reviewer/parent next-action token'
 require_text "$schema" '`post-merge-verify`' 'parent next-action token'
 require_text "$schema" '`done`' 'verifier next-action token'
+require_text "$schema" 'post_merge_snapshot' 'post-merge snapshot schema anchor'
+require_text "$schema" 'post-merge-snapshot' 'post-merge snapshot fixed kind'
+require_text "$schema" 'contains_reviewed_sha' 'post-merge reviewed containment field'
+require_text "$schema" 'contains_merge_commit_sha' 'post-merge merge containment field'
+require_text "$schema" 'contains_squash_commit_sha' 'post-merge squash containment field'
 
 if grep -Eq '\bpull_request\b|\bpull_request_url\b|\bpr_url\b' "$schema"; then
   echo "gitlab-delivery-schema: FAIL: provider-neutral pull-request aliases are not allowed" >&2

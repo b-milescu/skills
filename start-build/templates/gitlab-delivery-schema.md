@@ -185,6 +185,67 @@ changed during preflight or the gate, the parent blocks ready/merge unless those
 changes are committed to the MR head and the gate reruns on the new SHA, or an
 explicit parent/human waiver is recorded in the receipt and MR discussion.
 
+## Post-merge Snapshot schema
+
+Anchor: `post_merge_snapshot.kind=post-merge-snapshot`. Verifiers and parent
+coordinators may emit this after an authorized merge/protected auto-merge has
+completed. It is a read-only observation: it never approves, merges, queues
+auto-merge, closes issues, deletes branches, releases, deploys, or mutates
+product/runtime systems.
+
+```yaml
+post_merge_snapshot:
+  kind: "post-merge-snapshot"
+  version: "1"
+  repo: "git@gitlab.example:group/project.git"
+  mr:
+    iid: "123"
+    state: "merged"
+    url: "https://gitlab.example/group/project/-/merge_requests/123"
+    reviewed_sha: "1111111111111111111111111111111111111111"
+    head_sha: "1111111111111111111111111111111111111111"
+    merge_commit_sha: "2222222222222222222222222222222222222222"
+    squash_commit_sha: null
+    source_branch: "issue-57-example"
+    target_branch: "main"
+  default_branch:
+    name: "main"
+    observed_sha: "2222222222222222222222222222222222222222"
+    fetch_status: "fetched"
+    contains_reviewed_sha: false
+    contains_reviewed_sha_status: "false"
+    contains_merge_commit_sha: true
+    contains_merge_commit_sha_status: "true"
+    contains_squash_commit_sha: null
+    contains_squash_commit_sha_status: "not_applicable"
+    containment_satisfied_by: "merge_commit_sha"
+  linked_issue:
+    iid: "57"
+    state: "closed"
+    url: "https://gitlab.example/group/project/-/issues/57"
+    closure_status: "closed"
+  source_branch_cleanup:
+    source_branch: "issue-57-example"
+    remote_ref_exists: "false"
+    remote_ref_sha: null
+    policy: "delete_requested"
+    status: "cleaned_up"
+  validation:
+    command: null
+    source: null
+    status: "not-run"
+    not_run_reason: "not-documented"
+    exit_code: null
+  pending_items: []
+```
+
+Containment fields are per-SHA facts, not an inference shortcut. When GitLab
+exposes a merge, squash, or rebase-equivalent commit and the reviewed SHA is not
+an ancestor of the observed default branch, report each exposed commit's
+containment explicitly and set `containment_satisfied_by` to the contained
+identifier or `none`/`unknown`. Pending issue closure and source-branch cleanup
+are reportable verifier findings, not implicit permission to mutate GitLab state.
+
 ## `not_run_reason` enum
 
 `not_run_reason` is required when `pipeline.status`, `local_gate.status`, or any
