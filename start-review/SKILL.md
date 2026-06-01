@@ -15,6 +15,13 @@ Review GitLab Merge Requests against project rules and safety invariants. Operat
 
 For behavior-touching MRs, evaluate test evidence using `tdd` principles. A red-green trace strengthens evidence; missing red-first proof is an evidence request unless project rules require strict TDD or the final behavior tests themselves are weak. Apply the Context Firewall: sessions that built, planned, revised, or parent-orchestrated the MR cannot provide gate-eligible review; same-session review is advisory only; parent/builder reasoning is not evidence. Gate Receipts are claim/source pointers, not proof. Keep review context tiered and narrow: Tier 0 prompt invariants are task bounds, Tier 1 required reads are the evidence base, Tier 2 risk-triggered reads need concrete triggers, and Tier 3 forbidden-by-default broad context stays out unless justified. Use Reviewer Lift as a map, not truth, fill the Review Context Capsule with claim / reviewer verification / source, and verify safety-critical SHA, CI, local gate, and authority before any pass or action.
 
+Project-profile hooks in the GitLab delivery block may specialize gate policy,
+labels, branch naming, CI jobs, domain docs, release/deploy policy, manual
+validation, language families, and auxiliary indexes. They are routing context,
+not authority or proof, and must not weaken reviewed-SHA binding, exact-SHA CI,
+explicit authority source, independent review, child-builder boundaries,
+verifier read-only boundaries, or help-first `glab` correctness.
+
 ## Quick start
 
 > **Invocation modes.** The reviewer may be spawned by a human, by a parent orchestrator after child `mr-builder` final handoff, by a separate builder session, or via the [Mandatory review gate](../start-build/BUILD-FLOW.md#mandatory-review-gate) by a standalone builder running `/start-build`. When invoked via the Mandatory review gate, the task prompt contains a structured handoff: MR URL, pointer to the Reviewer Lift block in the MR description, and the project rulebook path. The review procedure is identical regardless of invocation method — the reviewer reads the diff fresh, runs its own tests, and makes its own judgment.

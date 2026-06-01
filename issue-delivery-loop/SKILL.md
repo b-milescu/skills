@@ -39,6 +39,13 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 - Event-driven waiting: you are notified when a child build/review completes — do not poll, re-read, or re-invoke children mid-run; act on their returned handoffs. Canonical: `../start-build/reference/timeout-handling.md`.
 - Scale ceremony to risk and blast radius (`docs/effort-scaling.md`): trivial/docs/mechanical issues take the compact path with light verification; behavior/safety changes take the full path with adversarial verification. The mandatory independent review gate never scales away, and when merge authority is granted up front the approving reviewer finishes in-session rather than spawning a separate finisher.
 - Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `pi-worktree-*`; GitLab MR descriptions/comments remain canonical.
+- Project-profile hooks are coordinator inputs, not safety overrides. They may
+  specialize gate policy, labels, branch naming, CI jobs, domain docs,
+  release/deploy policy, manual validation, language families, and auxiliary
+  indexes, but they must not weaken reviewed-SHA binding, exact-SHA CI, explicit
+  authority source, independent review, child-builder boundaries, verifier
+  read-only boundaries, or help-first `glab` correctness.
+- Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
 - After merge or protected auto-merge, hand off read-only validation to `../post-merge-verifier/SKILL.md`.
 - Canonical sources: `../gitlab-local/SKILL.md`, `../start-build/BUILD-FLOW.md`, `../start-build/reference/parent-orchestrator.md`, `../start-build/reference/child-builder.md`, `../start-build/templates/reviewer-lift-schema.md`, `../start-build/templates/review-packet.md`, `../start-review/REVIEW-FLOW.md`, `../start-review/templates/review-report.md`, `../post-merge-verifier/SKILL.md`.

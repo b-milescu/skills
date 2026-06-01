@@ -2,6 +2,12 @@
 
 This file records the target repo's tracker labels. `/setup-dev-skills` should keep it aligned with the live tracker label set whenever it is run.
 
+Use this file as the default `project_profile.label_profile_ref`. Project-profile
+hooks may specialize label vocabulary by pointing here, but they must not create
+live labels, rely on lazy label creation, or weaken reviewed-SHA binding,
+exact-SHA CI, explicit authority source, independent review, child-builder
+boundaries, verifier read-only boundaries, or help-first `glab` correctness.
+
 ## Live label inventory
 
 | Label | Category | Meaning / use |

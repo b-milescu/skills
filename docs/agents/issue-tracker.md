@@ -12,6 +12,10 @@ Use the `glab` CLI from inside this repository clone so commands resolve against
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
 - For machine-readable issue lists and the `-F`/`-O` caveat, use `/gitlab-local` **Snippet: issue-pickup** and its centralized known-pitfalls section; do not restate flag syntax here.
 - Infer the project from `git remote -v`; pass an explicit repo target only when `/gitlab-local` says it is needed to avoid host/project ambiguity.
+- Branch naming is project policy, not a GitLab schema rename. This repo declares
+  it in [`docs/agents/dev-workflows.md`](dev-workflows.md#branch-naming) as
+  `project_profile.branch_naming`; delivery fields remain `source_branch` and
+  `target_branch`.
 
 ## When a skill says "publish to the issue tracker"
 

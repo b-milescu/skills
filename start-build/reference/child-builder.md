@@ -15,6 +15,14 @@ not_run_reason: parent-owned
 ready_transition_owner: parent
 ```
 
+Project-profile hooks may specialize gate policy, labels, branch naming, CI
+jobs, domain docs, release/deploy policy, manual validation, language families,
+and auxiliary indexes. They must not weaken reviewed-SHA binding, exact-SHA CI,
+explicit authority source, independent review, this child-builder boundary, the
+verifier read-only boundary, or help-first `glab` correctness.
+
+Auxiliary project-index policy defaults to parent/coordinator ownership. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child, and child worktrees must not copy index artifacts between worktrees.
+
 ## Required reads
 
 Load only the context needed for the issue: project rulebook index, `start-build/SAFETY.md`, this child-builder path, `../templates/reviewer-lift-schema.md`, `../templates/builder-final-handoff.md`, the issue body/comments/linked MRs, and affected docs/source/tests. Use [context and planning](context-and-planning.md) for the Discovery Budget and Build Plan Packet. Open [implementation-flow.md](implementation-flow.md) only when the compact checklist below is insufficient or when an edge case, revision, post-ready push, CI policy, or gate ambiguity requires the full common flow.

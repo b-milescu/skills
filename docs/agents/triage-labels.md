@@ -2,6 +2,12 @@
 
 This repo treats GitLab's live label set as the source of truth. `/setup-dev-skills` owns regenerating this file when tracker labels change.
 
+Use this file as `project_profile.label_profile_ref` for this repo. The profile
+may point to this label vocabulary, but it must not create live labels, rely on
+lazy label creation, or weaken reviewed-SHA binding, exact-SHA CI, explicit
+authority source, independent review, child-builder boundaries, verifier
+read-only boundaries, or help-first `glab` correctness.
+
 Verified on 2026-05-27 with `glab label list`:
 
 | Label | Category | Meaning / use |

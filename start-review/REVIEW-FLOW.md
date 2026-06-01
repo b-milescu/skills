@@ -50,6 +50,14 @@ Safety-critical fields require reviewer verification and source before they can 
 
 A Gate Receipt is a claim/source pointer, not independent review evidence. When a parent-owned gate was used, reviewers still verify safety-critical SHA, CI, local gate, and authority fields from Tier 1/Tier 2 sources before approval or finish action; a missing, stale, wrong-SHA, or preflight-failed Gate Receipt blocks the pass path.
 
+Project-profile hooks in `delivery.project_profile` may specialize project gate
+policy, labels, branch naming, CI jobs, domain docs, release/deploy policy,
+manual validation, language families, and auxiliary indexes. They are routing
+claims only: reviewers still enforce reviewed-SHA binding, exact-SHA CI,
+explicit authority source, independent review, child-builder boundaries,
+verifier read-only boundaries, and help-first `glab` correctness from Tier 1 or
+Tier 2 evidence.
+
 ## Fail-closed review coverage
 
 A reviewer must never partially approve a diff. If the reviewer cannot inspect all behavior-affecting changed surfaces, stop the pass path: use `Review verdict: blocked` with `Action blocker: partial-review` when the review cannot continue safely, or `request-changes` when the builder can fix the evidence gap by splitting the MR, removing an opaque artifact, or adding provenance/context. Request split when one MR is too broad for a bounded review. Do not approve, merge, or queue auto-merge until every behavior-affecting changed surface has been inspected or the MR has been split.

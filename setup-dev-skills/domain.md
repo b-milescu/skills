@@ -2,6 +2,11 @@
 
 How dev skills should consume this repo's domain documentation when exploring the codebase.
 
+Use this file as the default `project_profile.domain_docs` reference. Record the
+repo's context and ADR layout here so project-specific hooks can point agents to
+the right domain language without changing GitLab delivery schema field names or
+workflow safety invariants.
+
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root, or

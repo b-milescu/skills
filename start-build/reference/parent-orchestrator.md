@@ -1,8 +1,8 @@
 # Parent-orchestrator recipe
 
-Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. The stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../BUILD-FLOW.md#parent-orchestrator-recipe). Project rulebooks may specialize labels, local gates, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
+Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. The stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../BUILD-FLOW.md#parent-orchestrator-recipe). Project rulebooks and `project_profile` hooks may specialize labels, local gates, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, auxiliary indexes, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
 
-Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and CI results stay bound to the MR head before approval or merge; credentials and product/runtime/operator external systems are not exposed through workflow artifacts.
+Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and exact-SHA CI results stay bound to the MR head before approval or merge; explicit authority source stays required; help-first `glab` correctness is preserved; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
 ## Durable child outputs
 
@@ -14,6 +14,8 @@ Safe patterns:
 - If a file output is required, have the caller create a durable run directory outside any `pi-worktree-*` path, then pass an absolute output path under that directory and ensure the parent directory exists before launch.
 - If a child returns a stale temporary-worktree output path, recover from async run logs or other durable run artifacts when available; do not treat the missing local file as the canonical delivery record.
 - For GitLab delivery, the MR description's Reviewer Lift / Review Packet and GitLab comments are the canonical durable handoff. Local handoff files, run artifacts, and compact `delivery.kind=gitlab-delivery` blocks are convenience indexes only; parents must verify compact fields from Tier 1/Tier 2 evidence before using them for routing, review launch, finish, or verifier decisions.
+
+Auxiliary project-index updates default to the parent/coordinator checkout unless `project_profile.auxiliary_index_policy` explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 
 ## Parent-owned Gate Receipt mode
 

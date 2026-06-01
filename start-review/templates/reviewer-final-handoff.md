@@ -25,6 +25,36 @@ agent_handoff:
       project_path: "group/project"
       repo_url: "https://gitlab.example/group/project.git"
       default_branch: "main"
+      profile_id: "default"
+      profile_path: "docs/agents/dev-workflows.md#project-profile-hooks"
+      gate_policy_ref: "docs/agents/check-gate.md#full-local-gate"
+      label_profile_ref: "docs/agents/triage-labels.md#live-label-inventory"
+      language_families:
+        - "typescript"
+        - "shell"
+        - "markdown"
+      auxiliary_index_policy:
+        ref: "docs/agents/dev-workflows.md#auxiliary-project-index-policy"
+        owner: "parent"
+        child_worktree_mode: "read-only-unless-assigned"
+        copy_between_worktrees: "forbidden"
+      branch_naming:
+        ref: "docs/agents/dev-workflows.md#branch-naming"
+        pattern: "issue-<iid>-<slug>"
+      ci_jobs:
+        ref: "docs/agents/check-gate.md#ci-parity"
+        required:
+          - "validation"
+      domain_docs:
+        ref: "docs/agents/domain.md"
+        context: "CONTEXT.md"
+        adr: "docs/adr/"
+      release_deploy_policy:
+        ref: "docs/agents/dev-workflows.md#release-deploy-policy"
+        policy: "project docs define release/deploy authority"
+      manual_validation_rules:
+        ref: "docs/agents/check-gate.md#manual-validation-rules"
+        required: []
     issue:
       iid: "57"
       url: "https://gitlab.example/group/project/-/issues/57"
@@ -121,6 +151,11 @@ agent_handoff:
   It is a compact routing index, not proof; parents/verifiers must verify its
   claims from Tier 1/Tier 2 evidence before relying on them for finish,
   post-merge, or blocker routing.
+- `delivery.project_profile` is a project-specific routing index for gate,
+  labels, branches, CI jobs, domain docs, auxiliary indexes, release/deploy
+  policy, and manual validation. Reviewers still enforce reviewed-SHA binding,
+  exact-SHA CI, explicit authority source, independent review, child-builder
+  boundaries, verifier read-only boundaries, and help-first `glab` correctness.
 - `review_verdict` is the review judgment: `pass`, `request-changes`, `reject`,
   or `blocked`, matching the Review Report. `pass` means the review judgment
   passed; it does not imply a GitLab approval, merge, or auto-merge action was

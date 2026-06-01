@@ -23,6 +23,8 @@ glab ci status --help; glab repo view --help; glab api --help
 
 Do not invent flags from memory or other CLIs. If help conflicts with this skill, use help and note skill drift.
 
+Project-profile hooks may specialize project policy, but they must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, child-builder boundaries, verifier read-only boundaries, help-first `glab` correctness, this help-first rule, or live `glab --help` verification. They also must not rename GitLab records in shared delivery blocks: keep `issue`, `MR`, `pipeline`, `source branch`, `target branch`, and `SHA` terminology.
+
 ### Per-run help cache
 
 Help-first remains mandatory. A run-dir help cache may reduce repeated output

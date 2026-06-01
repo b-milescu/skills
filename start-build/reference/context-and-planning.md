@@ -29,6 +29,12 @@ Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
 - Shared `delivery.kind=gitlab-delivery` blocks, when present, follow `../templates/gitlab-delivery-schema.md` field order and are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
+- `delivery.project_profile` hooks may point to project gate policy, labels,
+  branch naming, CI jobs, domain docs, release/deploy policy, manual validation,
+  language families, and auxiliary indexes. They specialize policy only; they
+  must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
+  independent review, child-builder boundaries, verifier read-only boundaries, or
+  help-first `glab` correctness.
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
