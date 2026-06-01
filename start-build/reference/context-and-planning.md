@@ -28,6 +28,7 @@ Before you claim the full local gate is green, discover it in this order:
 Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
+- Shared `delivery.kind=gitlab-delivery` blocks, when present, follow `../templates/gitlab-delivery-schema.md` field order and are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.

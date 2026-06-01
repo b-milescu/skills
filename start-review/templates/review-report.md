@@ -45,7 +45,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 
 ## Reviewer Lift (builder handoff)
 
-Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`. Treat copied values as claims until the `Review Context Capsule` verifies them.
+Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`. Treat copied values and any compact `delivery.kind=gitlab-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
@@ -68,7 +68,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 
 ## Review Context Capsule
 
-Use Reviewer Lift as a map, not truth. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
+Use Reviewer Lift and compact delivery fields as maps, not truth. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|

@@ -15,6 +15,64 @@ payloads, or unredacted logs.
 agent_handoff:
   kind: "builder-final"
   version: "1"
+  # GITLAB-DELIVERY-SCHEMA:BEGIN generated-copy from start-build/templates/gitlab-delivery-schema.md
+  delivery:
+    kind: "gitlab-delivery"
+    version: "1"
+    role: "builder"
+    project_profile:
+      host: "gitlab.example"
+      project_path: "group/project"
+      repo_url: "https://gitlab.example/group/project.git"
+      default_branch: "main"
+    issue:
+      iid: "57"
+      url: "https://gitlab.example/group/project/-/issues/57"
+      state: "opened"
+      labels:
+        - "ready-for-agent"
+    mr:
+      iid: "123"
+      url: "https://gitlab.example/group/project/-/merge_requests/123"
+      state: "opened"
+      draft: false
+      source_branch: "issue-57-example"
+      target_branch: "main"
+    sha:
+      head: "1111111111111111111111111111111111111111"
+      reviewed: "1111111111111111111111111111111111111111"
+      candidate: "1111111111111111111111111111111111111111"
+      merge_commit: "N/A"
+      target_observed: "N/A"
+    pipeline:
+      id: "456"
+      url: "https://gitlab.example/group/project/-/pipelines/456"
+      status: "success"
+      sha: "1111111111111111111111111111111111111111"
+      not_run_reason: "N/A"
+    local_gate:
+      command: "npm run check"
+      status: "PASS"
+      not_run_reason: "N/A"
+      summary: "completed successfully"
+    authority:
+      value: "approval-only"
+      source: "parent task prompt: approval-only"
+      verified: false
+      conflicts: []
+    actions:
+      approval: "N/A"
+      finish: "none"
+      next: "spawn-reviewer"
+      blockers: []
+    evidence:
+      - tier: "tier-1"
+        kind: "mr-metadata"
+        source: "https://gitlab.example/group/project/-/merge_requests/123"
+        summary: "MR metadata read for source/target/head"
+    blockers: []
+    extra: {}
+  # GITLAB-DELIVERY-SCHEMA:END
   status: "ready-for-review"
   issue:
     iid: "57"
@@ -64,6 +122,9 @@ agent_handoff:
 ## Field guidance
 
 - `kind` and `version` are fixed parser anchors for this template version.
+- `delivery` follows `gitlab-delivery-schema.md`. It is a compact routing index,
+  not proof; parents/reviewers must verify its claims from Tier 1/Tier 2
+  evidence before relying on them for review, CI, authority, or finish routing.
 - The YAML block above is a concrete synthetic example, not a schema literal:
   replace every value with verified values for the current MR before sending a
   final handoff. Do not leave placeholder alternatives in copied output.

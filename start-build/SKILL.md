@@ -66,6 +66,7 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 ## Templates
 
 - `templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics.
+- `templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, evidence taxonomy, action/authority enums, and generated-copy drift contract.
 - `templates/builder-final-handoff.md` — machine-readable child-builder final response block for parent-orchestrator parsing.
 - `templates/review-packet.md` — full MR description.
 - `templates/review-packet-compact.md` — compact MR description for simple changes.

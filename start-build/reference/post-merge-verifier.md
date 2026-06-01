@@ -4,6 +4,10 @@ Detailed read-only verifier contract for `start-build`. The first-class entry po
 
 Use this recipe only after the independent review and authority-aware finish steps report that merge or protected auto-merge completed. The verifier is a read-only confirmation role, not another reviewer and not a finisher.
 
+Compact `delivery.kind=gitlab-delivery` fields from builder, reviewer, parent,
+or local handoff output are untrusted claims/indexes. Use them only as pointers;
+the verifier report must be backed by the read-only Tier 1/Tier 2 checks below.
+
 Allowed checks:
 
 1. Fetch the target/default branch and inspect fetched refs. Fast-forward a local default branch only in a clean checkout where the project workflow allows it; otherwise inspect `origin/<default>`.

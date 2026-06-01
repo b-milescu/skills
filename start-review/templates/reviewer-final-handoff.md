@@ -15,6 +15,64 @@ logs.
 agent_handoff:
   kind: "reviewer-final"
   version: "1"
+  # GITLAB-DELIVERY-SCHEMA:BEGIN generated-copy from start-build/templates/gitlab-delivery-schema.md
+  delivery:
+    kind: "gitlab-delivery"
+    version: "1"
+    role: "reviewer"
+    project_profile:
+      host: "gitlab.example"
+      project_path: "group/project"
+      repo_url: "https://gitlab.example/group/project.git"
+      default_branch: "main"
+    issue:
+      iid: "57"
+      url: "https://gitlab.example/group/project/-/issues/57"
+      state: "opened"
+      labels:
+        - "ready-for-agent"
+    mr:
+      iid: "123"
+      url: "https://gitlab.example/group/project/-/merge_requests/123"
+      state: "opened"
+      draft: false
+      source_branch: "issue-123-example"
+      target_branch: "main"
+    sha:
+      head: "2222222222222222222222222222222222222222"
+      reviewed: "2222222222222222222222222222222222222222"
+      candidate: "2222222222222222222222222222222222222222"
+      merge_commit: "N/A"
+      target_observed: "N/A"
+    pipeline:
+      id: "456"
+      url: "https://gitlab.example/group/project/-/pipelines/456"
+      status: "success"
+      sha: "2222222222222222222222222222222222222222"
+      not_run_reason: "N/A"
+    local_gate:
+      command: "npm run check"
+      status: "PASS"
+      not_run_reason: "N/A"
+      summary: "accepted builder gate evidence"
+    authority:
+      value: "approval-only"
+      source: "parent task prompt: approval-only"
+      verified: true
+      conflicts: []
+    actions:
+      approval: "approved"
+      finish: "approval-only stop"
+      next: "finish-by-authorized-actor"
+      blockers: []
+    evidence:
+      - tier: "tier-1"
+        kind: "review-report"
+        source: "https://gitlab.example/group/project/-/merge_requests/123#note_789"
+        summary: "posted Review Report for reviewed SHA"
+    blockers: []
+    extra: {}
+  # GITLAB-DELIVERY-SCHEMA:END
   review_verdict: "pass | request-changes | reject | blocked"
   mr:
     iid: "123"
@@ -59,6 +117,10 @@ agent_handoff:
 ## Field guidance
 
 - `kind` and `version` are fixed parser anchors for this template version.
+- `delivery` follows `../../start-build/templates/gitlab-delivery-schema.md`.
+  It is a compact routing index, not proof; parents/verifiers must verify its
+  claims from Tier 1/Tier 2 evidence before relying on them for finish,
+  post-merge, or blocker routing.
 - `review_verdict` is the review judgment: `pass`, `request-changes`, `reject`,
   or `blocked`, matching the Review Report. `pass` means the review judgment
   passed; it does not imply a GitLab approval, merge, or auto-merge action was
