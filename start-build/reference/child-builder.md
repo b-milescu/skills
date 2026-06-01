@@ -24,7 +24,7 @@ Avoid parent-orchestrator and standalone-gate detail while building: do not load
 8. Run targeted checks during the loop and the project's full local gate before marking ready. Use [context and planning](context-and-planning.md#check-gate-discovery) when the gate is not obvious.
 9. Push the final head, verify `git rev-parse HEAD` and `git ls-remote origin <branch>`, update the MR description with `gitlab-local` **Snippet: mr-description-update**, and ensure Reviewer Lift `Reviewed SHA` equals the MR head SHA.
 10. Mark ready with `gitlab-local` **Snippet: draft-mr-mark-ready** only after the local gate passes or a concrete N/A reason is recorded. Do not wait for CI when the full local gate passed unless CI infrastructure or an unavailable CI-only gate is in scope.
-11. Stop after the final handoff. The handoff starts with the YAML block from `../templates/builder-final-handoff.md` when available and names MR IID/URL, head SHA, reviewed SHA, pipeline, local gate, TDD evidence or N/A, changed files, safety surfaces, decoupling, reviewer focus, open questions, merge authority, source, artifacts, and blockers.
+11. Stop after the final handoff. The handoff starts with the YAML block from `../templates/builder-final-handoff.md` when available and names MR IID/URL, head SHA, reviewed SHA, pipeline, local gate, TDD evidence or N/A, changed files, safety surfaces, decoupling, reviewer focus, open questions, merge authority, source, artifacts, and blockers. Its shared `delivery.kind=gitlab-delivery` block is a compact routing index only; parents/reviewers must verify those fields from Tier 1/Tier 2 evidence before relying on them.
 
 ## Post-ready push rule
 

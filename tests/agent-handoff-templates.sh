@@ -11,6 +11,7 @@ reviewer_template="$REPO_ROOT/start-review/templates/reviewer-final-handoff.md"
 builder_expected=(
   kind
   version
+  delivery
   status
   issue
   mr
@@ -35,6 +36,7 @@ builder_expected=(
 reviewer_expected=(
   kind
   version
+  delivery
   review_verdict
   mr
   reviewed_sha
