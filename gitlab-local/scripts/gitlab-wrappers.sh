@@ -39,6 +39,50 @@ require_file_arg() {
   [[ -s "$file" ]] || fail "$prefix" 64 empty_message_file
 }
 
+derive_gitlab_hostname() {
+  local prefix="$1" repo="$2" explicit_hostname="${3:-}" result status
+  require_node
+  set +e
+  result="$(node - "$repo" "$explicit_hostname" <<'NODE'
+const repo = process.argv[2] || '';
+const explicit = process.argv[3] || '';
+
+function reject(reason) {
+  process.stdout.write(reason);
+  process.exit(2);
+}
+
+function isValidHost(host) {
+  return typeof host === 'string' && host.length > 0 && !/[\u0000-\u001F\u007F\s/@]/u.test(host);
+}
+
+let derived = '';
+try {
+  if (/^[a-z][a-z0-9+.-]*:\/\//iu.test(repo)) {
+    derived = new URL(repo).host;
+  } else {
+    const scpLike = repo.match(/^[^@\s]+@([^:\s/]+(?::[0-9]+)?):.+$/u);
+    if (scpLike) derived = scpLike[1];
+  }
+} catch (_) {
+  reject('invalid_repo_url');
+}
+
+if (derived && !isValidHost(derived)) reject('invalid_repo_host');
+if (explicit && !isValidHost(explicit)) reject('invalid_api_hostname');
+if (derived && explicit && derived.toLowerCase() !== explicit.toLowerCase()) reject('api_hostname_repo_mismatch');
+
+const host = derived || explicit;
+if (!host) reject('missing_api_hostname');
+process.stdout.write(host);
+NODE
+)"
+  status=$?
+  set -e
+  [[ "$status" -eq 0 ]] || fail "$prefix" 64 "${result:-invalid_api_hostname}"
+  printf '%s' "$result"
+}
+
 json_field() {
   local json="$1" path="$2"
   JSON_PAYLOAD="$json" node - "$path" <<'NODE'
@@ -211,6 +255,10 @@ const add = parseCsv(addArg, 'add_labels');
 const remove = parseCsv(removeArg, 'remove_labels');
 const stateLabels = new Set(parseCsv(stateArg, 'state_labels'));
 const categoryLabels = new Set(parseCsv(categoryArg, 'category_labels'));
+const addSet = new Set(add);
+for (const label of remove) {
+  if (addSet.has(label)) fail('add_remove_label_overlap');
+}
 const final = new Set(current);
 for (const label of remove) final.delete(label);
 for (const label of add) final.add(label);
@@ -264,8 +312,8 @@ safe_mr_json() {
 
 auto_merge_api_fallback() {
   local repo="" project_path="" mr_iid="" reviewed_sha="" source_branch="" target_branch=""
-  local merge_authority="" authority_source="" authority_verified="" caller_role=""
-  local raw_json safe_json current_sha pipeline_sha pipeline_status project_encoded merge_output merge_status api_output api_status reviewed_sha_lower
+  local merge_authority="" authority_source="" authority_verified="" caller_role="" api_hostname_arg=""
+  local raw_json safe_json current_sha pipeline_sha pipeline_status project_encoded merge_output merge_status api_output api_status reviewed_sha_lower api_hostname
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --repo) repo="${2:-}"; shift 2 ;;
@@ -278,6 +326,7 @@ auto_merge_api_fallback() {
       --authority-source) authority_source="${2:-}"; shift 2 ;;
       --authority-verified) authority_verified="${2:-}"; shift 2 ;;
       --caller-role) caller_role="${2:-}"; shift 2 ;;
+      --hostname) api_hostname_arg="${2:-}"; shift 2 ;;
       -h|--help) usage; exit 0 ;;
       *) fail AUTO_MERGE 64 "unknown_arg:$1" ;;
     esac
@@ -299,6 +348,7 @@ auto_merge_api_fallback() {
   require_glab
   require_node
   reviewed_sha_lower="$(node -e 'process.stdout.write(process.argv[1].toLowerCase())' "$reviewed_sha")"
+  api_hostname="$(derive_gitlab_hostname AUTO_MERGE "$repo" "$api_hostname_arg")"
   raw_json="$(glab mr view "$mr_iid" -R "$repo" -F json)"
   safe_json="$(safe_mr_json_from_raw "$raw_json" "$mr_iid" "$project_path" "$source_branch" "$target_branch")"
   current_sha="$(json_field "$safe_json" sha)"
@@ -328,7 +378,7 @@ auto_merge_api_fallback() {
   fi
   project_encoded="$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$project_path")"
   set +e
-  api_output="$(glab api --method PUT "projects/${project_encoded}/merge_requests/${mr_iid}/merge" --field "sha=$reviewed_sha" --field "auto_merge=true" --silent 2>&1)"
+  api_output="$(glab api --hostname "$api_hostname" --method PUT "projects/${project_encoded}/merge_requests/${mr_iid}/merge" --field "sha=$reviewed_sha" --field "auto_merge=true" --silent 2>&1)"
   api_status=$?
   set -e
   if [[ "$api_status" -ne 0 ]]; then

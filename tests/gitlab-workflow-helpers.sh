@@ -37,7 +37,6 @@ assert_log_contains() {
   [[ -f "$file" ]] || fail "missing log $file"
   grep -Fq -- "$needle" "$file" || fail "expected $file to contain '$needle'; got: $(cat "$file")"
 }
-
 assert_log_not_contains() {
   local file="$1"
   local needle="$2"
@@ -329,6 +328,13 @@ if (actual !== process.argv[3]) {
   throw new Error(`expected JSON ${process.argv[2]}=${process.argv[3]}, got ${actual}`);
 }
 NODE
+}
+
+assert_validation_failure_without_glab_call() {
+  local dir="$1" expected_status="$2" reason="$3"
+  assert_status "$expected_status"
+  assert_contains "$CAPTURE_OUTPUT" "reason=$reason"
+  assert_log_not_contains "$dir/glab.log" "glab"
 }
 
 test_ci_watch_passes_for_matching_green_pipeline() {
@@ -661,6 +667,84 @@ test_wrappers_create_issue_and_mr_notes_without_body_leak() {
   assert_log_not_contains "$dir/glab.log" "issue note"
 }
 
+test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
+  local dir message_file unreadable_file empty_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-issue-note-missing-target)"
+  message_file="$dir/message.md"
+  printf 'issue note body\n' > "$message_file"
+  run_wrapper_fixture "$dir" \
+    issue_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --message-file "$message_file"
+  assert_validation_failure_without_glab_call "$dir" 64 missing_issue_iid
+
+  dir="$(make_wrapper_fixture_dir wrapper-issue-note-missing-message-file)"
+  run_wrapper_fixture "$dir" \
+    issue_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --issue-iid 173
+  assert_validation_failure_without_glab_call "$dir" 64 missing_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-issue-note-unreadable-message-file)"
+  unreadable_file="$dir/unreadable.md"
+  printf 'issue note body\n' > "$unreadable_file"
+  chmod 000 "$unreadable_file"
+  run_wrapper_fixture "$dir" \
+    issue_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --issue-iid 173 \
+    --message-file "$unreadable_file"
+  assert_validation_failure_without_glab_call "$dir" 66 unreadable_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-issue-note-empty-message-file)"
+  empty_file="$dir/empty.md"
+  : > "$empty_file"
+  run_wrapper_fixture "$dir" \
+    issue_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --issue-iid 173 \
+    --message-file "$empty_file"
+  assert_validation_failure_without_glab_call "$dir" 64 empty_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-note-missing-target)"
+  message_file="$dir/message.md"
+  printf 'MR note body\n' > "$message_file"
+  run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --message-file "$message_file"
+  assert_validation_failure_without_glab_call "$dir" 64 missing_mr_iid
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-note-missing-message-file)"
+  run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59
+  assert_validation_failure_without_glab_call "$dir" 64 missing_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-note-unreadable-message-file)"
+  unreadable_file="$dir/unreadable.md"
+  printf 'MR note body\n' > "$unreadable_file"
+  chmod 000 "$unreadable_file"
+  run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --message-file "$unreadable_file"
+  assert_validation_failure_without_glab_call "$dir" 66 unreadable_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-note-empty-message-file)"
+  empty_file="$dir/empty.md"
+  : > "$empty_file"
+  run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --message-file "$empty_file"
+  assert_validation_failure_without_glab_call "$dir" 64 empty_message_file
+}
+
 test_label_reconcile_adds_and_removes_without_replace_assumption() {
   local dir
   dir="$(make_wrapper_fixture_dir wrapper-label-reconcile)"
@@ -706,6 +790,20 @@ test_label_reconcile_adds_and_removes_without_replace_assumption() {
     --category-labels docs,refactor
   assert_status 2
   assert_contains "$CAPTURE_OUTPUT" "reason=state_label_conflict"
+  assert_log_not_contains "$dir/glab.log" "issue update"
+
+  dir="$(make_wrapper_fixture_dir wrapper-label-add-remove-overlap)"
+  printf '%s\n' '{"iid":173,"labels":["ready-for-agent","refactor"]}' > "$dir/issue.json"
+  run_wrapper_fixture "$dir" \
+    label_reconcile \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --issue-iid 173 \
+    --add-labels refactor \
+    --remove-labels refactor \
+    --state-labels ready,ready-for-agent \
+    --category-labels docs,refactor
+  assert_status 2
+  assert_contains "$CAPTURE_OUTPUT" "reason=add_remove_label_overlap"
   assert_log_not_contains "$dir/glab.log" "issue update"
 }
 
@@ -773,8 +871,24 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_contains "$CAPTURE_OUTPUT" "AUTO_MERGE result=auto_merge_queued"
   assert_contains "$CAPTURE_OUTPUT" "via=api"
   assert_log_contains "$dir/glab.log" "glab mr merge 59 -R git@gitlab.example.com:agents/skills.git --auto-merge --yes --sha $good_sha"
-  assert_log_contains "$dir/glab.log" "glab api --method PUT projects/agents%2Fskills/merge_requests/59/merge --field sha=$good_sha --field auto_merge=true --silent"
+  assert_log_contains "$dir/glab.log" "glab api --hostname gitlab.example.com --method PUT projects/agents%2Fskills/merge_requests/59/merge --field sha=$good_sha --field auto_merge=true --silent"
   assert_log_not_contains "$dir/glab.log" "approve"
+
+  dir="$(make_wrapper_fixture_dir wrapper-auto-merge-missing-host)"
+  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-local-wrappers main
+  FAKE_EXPECT_REPO=agents/skills FAKE_MR_MERGE_MODE=405 run_wrapper_fixture "$dir" \
+    auto_merge_api_fallback \
+    --repo agents/skills \
+    --project-path agents/skills \
+    --mr-iid 59 \
+    --reviewed-sha "$good_sha" \
+    --source-branch issue-173-gitlab-local-wrappers \
+    --target-branch main \
+    --merge-authority "queue auto-merge" \
+    --authority-source "parent task prompt: queue auto-merge" \
+    --authority-verified true \
+    --caller-role authorized-parent
+  assert_validation_failure_without_glab_call "$dir" 64 missing_api_hostname
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-builder)"
   write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-local-wrappers main
@@ -824,6 +938,7 @@ test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
 test_finish_blocks_unsafe_states_before_mutation
 test_wrappers_create_issue_and_mr_notes_without_body_leak
+test_wrappers_fail_closed_for_note_validation_without_glab_calls
 test_label_reconcile_adds_and_removes_without_replace_assumption
 test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed
 test_auto_merge_api_fallback_preserves_guards_and_blocks_builders
