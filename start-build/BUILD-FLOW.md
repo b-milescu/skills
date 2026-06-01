@@ -22,6 +22,10 @@ Build planning detail lives in [reference/context-and-planning.md §Build Plan P
 
 Mode boundaries are split across [reference/child-builder.md](reference/child-builder.md), [reference/standalone-gate.md](reference/standalone-gate.md), and [reference/parent-orchestrator.md](reference/parent-orchestrator.md): child builders stop at ready handoff, standalone builders own reviewer handoff after ready, and parents coordinate child builders/reviewers; in every mode builders quote authority instead of granting it, record `Merge authority source`, and cannot grant approval, merge, or auto-merge authority.
 
+## Compact mode cards
+
+Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; fall back to the full reference docs and `/gitlab-local` help-first snippets on ambiguity, missing fields, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
+
 ### Standalone `/start-build` mode
 
 Standalone builders follow [reference/implementation-flow.md](reference/implementation-flow.md) through ready-marking, then own the [standalone review gate](reference/standalone-gate.md): start a fresh reviewer, drive revision rounds, post the Review Gate Summary, and never self-approve, self-merge, or take fallback finish actions.
