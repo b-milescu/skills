@@ -687,9 +687,8 @@ test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
   assert_validation_failure_without_glab_call "$dir" 64 missing_message_file
 
   dir="$(make_wrapper_fixture_dir wrapper-issue-note-unreadable-message-file)"
-  unreadable_file="$dir/unreadable.md"
-  printf 'issue note body\n' > "$unreadable_file"
-  chmod 000 "$unreadable_file"
+  unreadable_file="$dir/unreadable-message-dir"
+  mkdir "$unreadable_file"
   run_wrapper_fixture "$dir" \
     issue_note_create \
     --repo git@gitlab.example.com:agents/skills.git \
@@ -724,9 +723,8 @@ test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
   assert_validation_failure_without_glab_call "$dir" 64 missing_message_file
 
   dir="$(make_wrapper_fixture_dir wrapper-mr-note-unreadable-message-file)"
-  unreadable_file="$dir/unreadable.md"
-  printf 'MR note body\n' > "$unreadable_file"
-  chmod 000 "$unreadable_file"
+  unreadable_file="$dir/unreadable-message-dir"
+  mkdir "$unreadable_file"
   run_wrapper_fixture "$dir" \
     mr_note_create \
     --repo git@gitlab.example.com:agents/skills.git \
