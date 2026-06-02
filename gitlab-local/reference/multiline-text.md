@@ -12,8 +12,8 @@ local file.
 
 The wrappers validate file bytes before calling `glab`: NUL, non-whitespace C0
 controls, and DEL are rejected locally, while tab/newline/carriage return remain
-valid for Markdown. Diagnostics name the failing file role and byte offset but do
-not print secrets or the malformed packet body.
+valid for Markdown. Diagnostics do not print secrets or the malformed packet body;
+they name the failing file role and byte offset.
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
