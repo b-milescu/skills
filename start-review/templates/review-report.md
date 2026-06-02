@@ -148,10 +148,7 @@ Record the chosen value for each field; the full enums are defined once in the [
 |---|---|
 | Review verdict | `<chosen value>` |
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
-| Approval authority | `<chosen value>` |
-| Approval authority source | `<verified source>` |
-| Merge authority | `<chosen value>` |
-| Merge authority source | `<verified source>` |
+| Authority result | `<approval policy/source + merge authority/source summary>` |
 | Approval action | `<chosen value>` |
 | Finish action | `<chosen value>` |
 | Action blocker | `<chosen value>` |
