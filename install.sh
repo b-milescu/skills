@@ -201,7 +201,7 @@ link() {
 
 prune_stale_repo_links() {
   local dir="$1" validator="$2"
-  local link_path name target target_abs
+  local link_path name target_abs
 
   for link_path in "$dir"/*; do
     [[ -L "$link_path" ]] || continue
@@ -209,12 +209,7 @@ prune_stale_repo_links() {
     name=$(basename "$link_path" .md)
     "$validator" "$name" && continue
 
-    target=$(readlink "$link_path") || continue
-    if [[ "$target" == /* ]]; then
-      target_abs=$("$REALPATH" -m "$target")
-    else
-      target_abs=$("$REALPATH" -m "$(dirname "$link_path")/$target")
-    fi
+    target_abs=$(resolve_symlink_target "$link_path") || continue
 
     case "$target_abs" in
       "$REPO_ROOT"/*)
