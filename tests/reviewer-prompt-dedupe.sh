@@ -81,6 +81,9 @@ for prompt in "${reviewer_prompts[@]}"; do
   reject_text "$prompt" 'Full command ownership still lives|Reviewers load the small `gitlab-local` review cards before the full command reference' 'copied gitlab-local tooling prose from start-review'
 done
 
+require_text 'agents/claude/mr-reviewer.md' 'Invoke it via the `Skill` tool' 'Claude-specific Skill invocation wording'
+require_text 'agents/claude/mr-reviewer.md' 'Invoke the `start-review` skill via the `Skill` tool' 'Claude core procedure Skill invocation'
+
 shared_adr='templates/adr.md'
 review_adr='start-review/templates/adr.md'
 

@@ -41,9 +41,9 @@ builder_prompts=(
 # child-mode authority invariants. Canonical implementation policy lives in
 # /start-build; the Issue-pickup / Decoupling / Multiple-issue-worktree
 # procedures must stay pointers, not inlined copies that drift silently.
-# This cap sits above the current pointer-first Claude body (~129) so it
-# ratchets future drift, and below the legacy inlined pi body (~144) so it
-# rejects re-inlining the canonical procedures. It is intentionally larger
+# This cap sits above the current pointer-first builder bodies and below legacy
+# inlined copies, so it ratchets future drift without pinning the test to exact
+# historical body counts. It is intentionally larger
 # than the reviewer dedupe cap (80): builder prompts keep more inline safety
 # and handoff contract surface.
 max_body_lines=135
@@ -63,6 +63,10 @@ for prompt in "${builder_prompts[@]}"; do
   require_text "$prompt" 'Approval authority' 'approval-authority invariant'
   require_text "$prompt" 'start-build/templates/reviewer-lift-schema\.md' 'canonical Reviewer Lift schema ownership pointer'
   require_text "$prompt" 'Do not inline a Reviewer Lift field table in this prompt' 'Reviewer Lift anti-inline guard'
+
+  require_text "$prompt" 'start-build/reference/stuck-protocol\.md' 'canonical Stuck protocol pointer'
+  require_text "$prompt" 'Every child-builder final response MUST start' 'unconditional builder-final handoff schema requirement'
+  require_text "$prompt" 'Parent-owned gate is one status/mode inside that schema, not the trigger for using it' 'parent-owned gate is a mode, not schema trigger'
 
   # The Issue-pickup / Decoupling / Multiple-issue-worktree procedures are owned
   # by start-build. The builder prompts keep only a pointer block to them.
