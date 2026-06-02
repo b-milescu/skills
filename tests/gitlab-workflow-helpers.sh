@@ -105,6 +105,14 @@ case "${1:-}" in
     ;;
   fetch|checkout|pull|branch|push)
     ;;
+  merge-base)
+    [[ "${2:-}" == "--is-ancestor" ]] || { echo "unexpected git merge-base command: $*" >&2; exit 99; }
+    if [[ -n "${FAKE_MERGE_BASE_ACCEPTS:-}" ]]; then
+      [[ "${3:-}" == "$FAKE_MERGE_BASE_ACCEPTS" ]]
+    else
+      exit "${FAKE_MERGE_BASE_STATUS:-0}"
+    fi
+    ;;
   worktree)
     [[ "${2:-}" == "remove" ]] || { echo "unexpected git worktree command: $*" >&2; exit 99; }
     ;;
@@ -129,13 +137,20 @@ make_fixture_dir() {
 }
 
 write_mr_json() {
-  local file="$1" state="$2" sha="$3" pipeline_status="$4" pipeline_sha="$5"
+  local file="$1" state="$2" sha="$3" pipeline_status="$4" pipeline_sha="$5" merge_commit_sha="${6:-}" squash_commit_sha="${7:-}"
+  local merge_line="" squash_line=""
+  if [[ -n "$merge_commit_sha" ]]; then
+    merge_line=", \"merge_commit_sha\": \"$merge_commit_sha\""
+  fi
+  if [[ -n "$squash_commit_sha" ]]; then
+    squash_line=", \"squash_commit_sha\": \"$squash_commit_sha\""
+  fi
   cat > "$file" <<JSON
 {
   "iid": 59,
   "state": "$state",
   "sha": "$sha",
-  "pipeline": {"id": 7, "status": "$pipeline_status", "sha": "$pipeline_sha", "web_url": "https://gitlab.example/pipelines/7"}
+  "pipeline": {"id": 7, "status": "$pipeline_status", "sha": "$pipeline_sha", "web_url": "https://gitlab.example/pipelines/7"}$merge_line$squash_line
 }
 JSON
 }
@@ -180,6 +195,8 @@ run_finish_fixture() {
     FAKE_GIT_LOG="$dir/git.log" \
     FAKE_GIT_STATUS="${FAKE_GIT_STATUS:-}" \
     FAKE_WORKTREE_STATUS="${FAKE_WORKTREE_STATUS:-}" \
+    FAKE_MERGE_BASE_STATUS="${FAKE_MERGE_BASE_STATUS:-0}" \
+    FAKE_MERGE_BASE_ACCEPTS="${FAKE_MERGE_BASE_ACCEPTS:-}" \
     PATH="$dir/bin:$PATH" \
     "$REPO_ROOT/gitlab-local/scripts/gitlab-finish-mr.sh" "$@"
 }
@@ -670,6 +687,49 @@ test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
   assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"
   assert_log_contains "$dir/git.log" "git branch -d build/61"
   assert_log_contains "$dir/git.log" "git push origin --delete build/61"
+}
+
+test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
+  local dir
+
+  dir="$(make_fixture_dir finish-cleanup-dirty-default)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_GIT_STATUS=' M coordinator-file' run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --worktree-path /tmp/clean-worktree \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=blocked_default_not_verified"
+  assert_contains "$CAPTURE_OUTPUT" "branch=local_delete_blocked_default_not_verified"
+  assert_log_not_contains "$dir/git.log" "git worktree remove /tmp/clean-worktree"
+  assert_log_not_contains "$dir/git.log" "git branch -d build/61"
+
+  dir="$(make_fixture_dir finish-cleanup-merge-sha)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123 merge999
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_MERGE_BASE_ACCEPTS=merge999 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --worktree-path /tmp/clean-worktree \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "worktree=removed"
+  assert_contains "$CAPTURE_OUTPUT" "branch=local_deleted"
+  assert_log_contains "$dir/git.log" "git merge-base --is-ancestor abc123 main"
+  assert_log_contains "$dir/git.log" "git merge-base --is-ancestor merge999 main"
+  assert_log_contains "$dir/git.log" "git worktree remove /tmp/clean-worktree"
+  assert_log_contains "$dir/git.log" "git branch -d build/61"
 }
 
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
@@ -1225,6 +1285,7 @@ test_finish_yaml_format_reports_structured_handoff
 test_finish_authorized_paths_are_sha_bound
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
+test_finish_blocks_local_cleanup_until_default_is_verified_safe
 test_finish_blocks_unsafe_states_before_mutation
 test_wrappers_create_issue_and_mr_notes_without_body_leak
 test_wrappers_fail_closed_for_note_validation_without_glab_calls

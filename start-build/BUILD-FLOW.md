@@ -45,7 +45,7 @@ Durable-output detail lives in [reference/parent-orchestrator.md §Durable child
 
 ### Parent loop
 
-The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle approve/request-changes/reject/timeout/stale/interrupted outcomes with status/activity checks before replacement, and finish only according to explicit merge authority.
+The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees only after an immediate `git fetch origin` plus default-branch SHA verification, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle approve/request-changes/reject/timeout/stale/interrupted outcomes with status/activity checks before replacement, and finish only according to explicit merge authority and cleanup safety.
 
 ### Post-merge verifier recipe
 
