@@ -49,18 +49,16 @@ pattern live in [reference/help-first.md](reference/help-first.md#per-run-help-c
 - `glab ci status --mr` is unreliable; prefer branch CI or MR `.pipeline`.
 - `glab mr list -F json` is candidate data; use `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when repo/host inference might be wrong.
-- Use file-backed long descriptions/messages. Never paste secrets into issues, MRs, comments, logs, or summaries.
+- Use file-backed long descriptions/messages through documented wrappers; they
+  validate text files for NUL/control-character corruption before `glab`, never print bodies, and never receive secrets.
 
 ## Safe multiline GitLab text
 
-Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
-and MR descriptions. Quoted heredocs keep Markdown backticks, variables, and
-command substitutions literal while writing the local file.
-
-Detailed file-backed note/description patterns and the inline-heredoc hazard live
-in [reference/multiline-text.md](reference/multiline-text.md#safe-multiline-gitlab-text).
-Keep generated text files under temp/run directories, never commit review
-artifacts, and redact secrets before writing text that may be pasted to GitLab.
+Use temp/run-dir files plus quoted heredocs for MR/issue notes and MR
+descriptions; submit through `scripts/gitlab-wrappers.sh`. Wrappers reject
+hidden malformed bytes before `glab mr create`, `glab mr update`, or note
+submission, and diagnostics name the file role without printing the packet body.
+Detailed patterns: [`reference/multiline-text.md`](reference/multiline-text.md#safe-multiline-gitlab-text).
 
 ## Canonical snippets
 
@@ -113,29 +111,31 @@ glab issue update <id> --label foo,bar --unlabel baz
 
 ### Snippet: draft-mr-create
 
-Use only to open the early Draft MR after the source branch exists remotely.
-This snippet intentionally does not update an existing MR or mark it ready.
+Open the early Draft MR only after the source branch exists remotely. This
+snippet neither updates an existing MR nor marks ready; wrapper `draft_mr_create`
+validates the file-backed Review Packet before `glab mr create`.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-create.XXXXXX")"
-description_file="$run_dir/review-packet.md"
+description_file="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-create.XXXXXX")/review-packet.md"
 # Write or fill "$description_file" before creating the MR.
-
-glab mr create --draft --push --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description "$(cat "$description_file")" --yes
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" draft_mr_create --repo "$repo_url" \
+  --target-branch "$default_branch" --source-branch "$source_branch" \
+  --title "$title" --description-file "$description_file"
 ```
 
 ### Snippet: mr-description-update
 
-Use to refresh the MR description / Reviewer Lift. This snippet intentionally
-keeps draft/ready state unchanged.
+Refresh the MR description / Reviewer Lift without changing draft/ready state;
+wrapper `mr_description_update` validates the file-backed Review Packet before
+`glab mr update`.
 
 ```bash
-run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-description.XXXXXX")"
-description_file="$run_dir/review-packet.md"
+description_file="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-description.XXXXXX")/review-packet.md"
 # Write or fill "$description_file" before updating the MR description.
-
-glab mr update <id> --description "$(cat "$description_file")"
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" mr_description_update --repo "$repo_url" --mr-iid "$mr_iid" \
+  --description-file "$description_file"
 ```
 
 ### Snippet: draft-mr-mark-ready
@@ -218,9 +218,9 @@ For raw-command adaptation (keeping every polling/SHA rule, fail-closed output,
 and machine fields), see
 [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
-Wrapper bodies for the next five snippets live in
-[`scripts/gitlab-wrappers.sh`](scripts/gitlab-wrappers.sh); helper docs:
-[`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers); tests:
+Wrapper bodies for the next five snippets also live in
+[`scripts/gitlab-wrappers.sh`](scripts/gitlab-wrappers.sh); helper docs/tests:
+[`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers) /
 [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh).
 
 ### Snippet: mr-note-create
@@ -396,12 +396,10 @@ see
 
 ## Optional helper scripts
 
-This skill also ships optional wrappers in `scripts/` for the accepted
-`ci-watch-sha-pinned` and `finish-mr-authority-aware` behaviors. Use them when
-that exact behavior fits and you want repeatable guardrails. Prefer the raw
-snippets in this skill when `glab` flag/JSON drift appears, a project-specific
-policy or human waiver is involved, you need a step-by-step troubleshooting
-transcript, or you are changing the accepted workflow behavior itself.
+This skill also ships optional wrappers in `scripts/` for accepted helper
+behaviors. Use them when the exact behavior fits and repeatable guardrails help;
+prefer raw snippets for flag/JSON drift, project-specific policy or human waiver,
+step-by-step troubleshooting, or changes to accepted workflow behavior.
 
 ## Troubleshooting
 

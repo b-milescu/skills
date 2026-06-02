@@ -208,16 +208,19 @@ make_wrapper_fake_glab() {
 set -euo pipefail
 
 log_args() {
-  local redact_next=false
+  local redaction_label=""
   printf 'glab' >> "$FAKE_GLAB_LOG"
   for arg in "$@"; do
-    if [[ "$redact_next" == "true" ]]; then
-      printf ' <message-redacted>' >> "$FAKE_GLAB_LOG"
-      redact_next=false
+    if [[ -n "$redaction_label" ]]; then
+      printf ' <%s-redacted>' "$redaction_label" >> "$FAKE_GLAB_LOG"
+      redaction_label=""
       continue
     fi
     printf ' %s' "$arg" >> "$FAKE_GLAB_LOG"
-    [[ "$arg" == "--message" || "$arg" == "-m" ]] && redact_next=true
+    case "$arg" in
+      --message|-m) redaction_label="message" ;;
+      --description|-d) redaction_label="description" ;;
+    esac
   done
   printf '\n' >> "$FAKE_GLAB_LOG"
 }
@@ -238,8 +241,67 @@ expect_repo_and_message() {
   [[ "$message" == "$FAKE_EXPECT_MESSAGE" ]] || { echo "wrong message" >&2; exit 98; }
 }
 
+expect_repo_and_description() {
+  local repo="" description=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -R|--repo)
+        repo="${2:-}"; shift 2 ;;
+      --description|-d)
+        description="${2:-}"; shift 2 ;;
+      *)
+        shift ;;
+    esac
+  done
+  [[ "$repo" == "$FAKE_EXPECT_REPO" ]] || { echo "wrong repo: $repo" >&2; exit 98; }
+  [[ "$description" == "$FAKE_EXPECT_DESCRIPTION" ]] || { echo "wrong description" >&2; exit 98; }
+}
+
+expect_mr_create() {
+  local repo="" target="" source="" title="" description="" saw_draft=false saw_push=false saw_yes=false
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -R|--repo)
+        repo="${2:-}"; shift 2 ;;
+      --target-branch|-b)
+        target="${2:-}"; shift 2 ;;
+      --source-branch|-s)
+        source="${2:-}"; shift 2 ;;
+      --title|-t)
+        title="${2:-}"; shift 2 ;;
+      --description|-d)
+        description="${2:-}"; shift 2 ;;
+      --draft)
+        saw_draft=true; shift ;;
+      --push)
+        saw_push=true; shift ;;
+      --yes|-y)
+        saw_yes=true; shift ;;
+      *)
+        shift ;;
+    esac
+  done
+  [[ "$repo" == "$FAKE_EXPECT_REPO" ]] || { echo "wrong repo: $repo" >&2; exit 98; }
+  [[ "$target" == "$FAKE_EXPECT_TARGET" ]] || { echo "wrong target: $target" >&2; exit 98; }
+  [[ "$source" == "$FAKE_EXPECT_SOURCE" ]] || { echo "wrong source: $source" >&2; exit 98; }
+  [[ "$title" == "$FAKE_EXPECT_TITLE" ]] || { echo "wrong title: $title" >&2; exit 98; }
+  [[ "$description" == "$FAKE_EXPECT_DESCRIPTION" ]] || { echo "wrong description" >&2; exit 98; }
+  [[ "$saw_draft" == "true" ]] || { echo "missing draft flag" >&2; exit 98; }
+  [[ "$saw_push" == "true" ]] || { echo "missing push flag" >&2; exit 98; }
+  [[ "$saw_yes" == "true" ]] || { echo "missing yes flag" >&2; exit 98; }
+}
+
 log_args "$@"
 case "${1:-} ${2:-}" in
+  "mr create")
+    shift 2
+    expect_mr_create "$@"
+    ;;
+  "mr update")
+    [[ "${3:-}" == "$FAKE_EXPECT_MR" ]] || { echo "wrong mr: ${3:-}" >&2; exit 98; }
+    shift 3
+    expect_repo_and_description "$@"
+    ;;
   "issue note")
     [[ "${3:-}" == "$FAKE_EXPECT_ISSUE" ]] || { echo "wrong issue: ${3:-}" >&2; exit 98; }
     shift 3
@@ -328,6 +390,10 @@ run_wrapper_fixture() {
     FAKE_EXPECT_MESSAGE="${FAKE_EXPECT_MESSAGE:-}" \
     FAKE_EXPECT_ISSUE="${FAKE_EXPECT_ISSUE:-173}" \
     FAKE_EXPECT_MR="${FAKE_EXPECT_MR:-59}" \
+    FAKE_EXPECT_DESCRIPTION="${FAKE_EXPECT_DESCRIPTION:-}" \
+    FAKE_EXPECT_TITLE="${FAKE_EXPECT_TITLE:-Draft title}" \
+    FAKE_EXPECT_SOURCE="${FAKE_EXPECT_SOURCE:-issue-183}" \
+    FAKE_EXPECT_TARGET="${FAKE_EXPECT_TARGET:-main}" \
     FAKE_MR_MERGE_MODE="${FAKE_MR_MERGE_MODE:-success}" \
     PATH="$dir/bin:$PATH" \
     "$REPO_ROOT/gitlab-local/scripts/gitlab-wrappers.sh" "$@"
@@ -881,8 +947,71 @@ test_wrappers_create_issue_and_mr_notes_without_body_leak() {
   assert_log_not_contains "$dir/glab.log" "issue note"
 }
 
+test_wrappers_create_and_update_mr_descriptions_with_control_validation() {
+  local dir description_file secret malformed_file
+  secret='secret-token-line'
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-create-description)"
+  description_file="$dir/review-packet.md"
+  printf '# Review Packet\n\n%s\n' "$secret" > "$description_file"
+  FAKE_EXPECT_DESCRIPTION="$(cat "$description_file")" run_wrapper_fixture "$dir" \
+    draft_mr_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --target-branch main \
+    --source-branch issue-183 \
+    --title "Draft title" \
+    --description-file "$description_file"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "DRAFT_MR_CREATE result=created"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR create output leaked description body"
+  assert_log_contains "$dir/glab.log" "glab mr create -R git@gitlab.example.com:agents/skills.git --draft --push --target-branch main --source-branch issue-183 --title Draft title --description <description-redacted> --yes"
+  assert_log_not_contains "$dir/glab.log" "$secret"
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-description-update)"
+  description_file="$dir/review-packet.md"
+  printf '# Reviewer Lift\n\n%s\n' "$secret" > "$description_file"
+  FAKE_EXPECT_DESCRIPTION="$(cat "$description_file")" run_wrapper_fixture "$dir" \
+    mr_description_update \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --description-file "$description_file"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "MR_DESCRIPTION_UPDATE result=updated"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR update output leaked description body"
+  assert_log_contains "$dir/glab.log" "glab mr update 59 -R git@gitlab.example.com:agents/skills.git --description <description-redacted>"
+  assert_log_not_contains "$dir/glab.log" "$secret"
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-create-control)"
+  malformed_file="$dir/malformed-review-packet.md"
+  printf '# Review Packet\nsafe line\n\001%s\n' "$secret" > "$malformed_file"
+  run_wrapper_fixture "$dir" \
+    draft_mr_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --target-branch main \
+    --source-branch issue-183 \
+    --title "Draft title" \
+    --description-file "$malformed_file"
+  assert_validation_failure_without_glab_call "$dir" 65 "invalid_control_character:description_file"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR create control diagnostic leaked description body"
+  [[ "$CAPTURE_OUTPUT" != *"Review Packet"* ]] || fail "MR create control diagnostic printed malformed packet"
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-update-control)"
+  malformed_file="$dir/malformed-review-packet.md"
+  printf '# Reviewer Lift\nsafe line\n\001%s\n' "$secret" > "$malformed_file"
+  run_wrapper_fixture "$dir" \
+    mr_description_update \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --description-file "$malformed_file"
+  assert_validation_failure_without_glab_call "$dir" 65 "invalid_control_character:description_file"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR update control diagnostic leaked description body"
+  [[ "$CAPTURE_OUTPUT" != *"Reviewer Lift"* ]] || fail "MR update control diagnostic printed malformed packet"
+}
+
+
 test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
-  local dir message_file unreadable_file empty_file
+  local dir message_file unreadable_file empty_file secret
+  secret='secret-token-line'
 
   dir="$(make_wrapper_fixture_dir wrapper-issue-note-missing-target)"
   message_file="$dir/message.md"
@@ -955,6 +1084,18 @@ test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
     --mr-iid 59 \
     --message-file "$empty_file"
   assert_validation_failure_without_glab_call "$dir" 64 empty_message_file
+
+  dir="$(make_wrapper_fixture_dir wrapper-mr-note-control-character)"
+  message_file="$dir/message.md"
+  printf '# Revision Packet\n\001%s\n' "$secret" > "$message_file"
+  run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --message-file "$message_file"
+  assert_validation_failure_without_glab_call "$dir" 65 "invalid_control_character:message_file"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR note control diagnostic leaked message body"
+  [[ "$CAPTURE_OUTPUT" != *"Revision Packet"* ]] || fail "MR note control diagnostic printed malformed packet"
 }
 
 test_label_reconcile_adds_and_removes_without_replace_assumption() {
@@ -1288,6 +1429,7 @@ test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
 test_finish_blocks_local_cleanup_until_default_is_verified_safe
 test_finish_blocks_unsafe_states_before_mutation
 test_wrappers_create_issue_and_mr_notes_without_body_leak
+test_wrappers_create_and_update_mr_descriptions_with_control_validation
 test_wrappers_fail_closed_for_note_validation_without_glab_calls
 test_label_reconcile_adds_and_removes_without_replace_assumption
 test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed

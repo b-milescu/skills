@@ -8,6 +8,8 @@ usage() {
 Usage: gitlab-wrappers.sh <wrapper> [options]
 
 Wrappers:
+  draft_mr_create           Create a Draft MR from --description-file.
+  mr_description_update     Update an MR description from --description-file.
   issue_note_create          Post an issue note from --message-file.
   mr_note_create             Post an MR note from --message-file.
   label_reconcile            Add/remove issue labels without replacement assumptions.
@@ -37,6 +39,35 @@ require_file_arg() {
   [[ -n "$file" ]] || fail "$prefix" 64 missing_message_file
   [[ -f "$file" && -r "$file" ]] || fail "$prefix" 66 unreadable_message_file
   [[ -s "$file" ]] || fail "$prefix" 64 empty_message_file
+}
+
+validate_text_file() {
+  local prefix="$1" file="$2" label="$3" result status
+  require_node
+  set +e
+  result="$(node - "$file" "$label" <<'NODE'
+const fs = require('fs');
+const file = process.argv[2] || '';
+const label = process.argv[3] || 'message_file';
+let bytes;
+try {
+  bytes = fs.readFileSync(file);
+} catch (_) {
+  process.stdout.write(`unreadable_${label}`);
+  process.exit(2);
+}
+for (let i = 0; i < bytes.length; i += 1) {
+  const byte = bytes[i];
+  if ((byte < 0x20 && byte !== 0x09 && byte !== 0x0a && byte !== 0x0d) || byte === 0x7f) {
+    process.stdout.write(`invalid_control_character:${label}:byte_${i}`);
+    process.exit(2);
+  }
+}
+NODE
+)"
+  status=$?
+  set -e
+  [[ "$status" -eq 0 ]] || fail "$prefix" 65 "${result:-invalid_control_character:$label}"
 }
 
 derive_gitlab_hostname() {
@@ -172,6 +203,53 @@ process.stdout.write(JSON.stringify(out));
 NODE
 }
 
+draft_mr_create() {
+  local repo="" target_branch="" source_branch="" title="" description_file="" description=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo) repo="${2:-}"; shift 2 ;;
+      --target-branch) target_branch="${2:-}"; shift 2 ;;
+      --source-branch) source_branch="${2:-}"; shift 2 ;;
+      --title) title="${2:-}"; shift 2 ;;
+      --description-file) description_file="${2:-}"; shift 2 ;;
+      -h|--help) usage; exit 0 ;;
+      *) fail DRAFT_MR_CREATE 64 "unknown_arg:$1" ;;
+    esac
+  done
+  [[ -n "$repo" ]] || fail DRAFT_MR_CREATE 64 missing_repo
+  [[ -n "$target_branch" ]] || fail DRAFT_MR_CREATE 64 missing_target_branch
+  [[ -n "$source_branch" ]] || fail DRAFT_MR_CREATE 64 missing_source_branch
+  [[ -n "$title" ]] || fail DRAFT_MR_CREATE 64 missing_title
+  require_file_arg DRAFT_MR_CREATE "$description_file"
+  validate_text_file DRAFT_MR_CREATE "$description_file" description_file
+  require_glab
+  description="$(<"$description_file")"
+  glab mr create -R "$repo" --draft --push --target-branch "$target_branch" --source-branch "$source_branch" \
+    --title "$title" --description "$description" --yes
+  echo "DRAFT_MR_CREATE result=created source_branch=$source_branch target_branch=$target_branch repo=$repo"
+}
+
+mr_description_update() {
+  local repo="" mr_iid="" description_file="" description=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --repo) repo="${2:-}"; shift 2 ;;
+      --mr-iid) mr_iid="${2:-}"; shift 2 ;;
+      --description-file) description_file="${2:-}"; shift 2 ;;
+      -h|--help) usage; exit 0 ;;
+      *) fail MR_DESCRIPTION_UPDATE 64 "unknown_arg:$1" ;;
+    esac
+  done
+  [[ -n "$repo" ]] || fail MR_DESCRIPTION_UPDATE 64 missing_repo
+  [[ -n "$mr_iid" ]] || fail MR_DESCRIPTION_UPDATE 64 missing_mr_iid
+  require_file_arg MR_DESCRIPTION_UPDATE "$description_file"
+  validate_text_file MR_DESCRIPTION_UPDATE "$description_file" description_file
+  require_glab
+  description="$(<"$description_file")"
+  glab mr update "$mr_iid" -R "$repo" --description "$description"
+  echo "MR_DESCRIPTION_UPDATE result=updated mr=$mr_iid repo=$repo"
+}
+
 issue_note_create() {
   local repo="" issue_iid="" message_file="" message=""
   while [[ $# -gt 0 ]]; do
@@ -186,6 +264,7 @@ issue_note_create() {
   [[ -n "$repo" ]] || fail ISSUE_NOTE_CREATE 64 missing_repo
   [[ -n "$issue_iid" ]] || fail ISSUE_NOTE_CREATE 64 missing_issue_iid
   require_file_arg ISSUE_NOTE_CREATE "$message_file"
+  validate_text_file ISSUE_NOTE_CREATE "$message_file" message_file
   require_glab
   message="$(<"$message_file")"
   glab issue note "$issue_iid" -R "$repo" --message "$message"
@@ -206,6 +285,7 @@ mr_note_create() {
   [[ -n "$repo" ]] || fail MR_NOTE_CREATE 64 missing_repo
   [[ -n "$mr_iid" ]] || fail MR_NOTE_CREATE 64 missing_mr_iid
   require_file_arg MR_NOTE_CREATE "$message_file"
+  validate_text_file MR_NOTE_CREATE "$message_file" message_file
   require_glab
   message="$(<"$message_file")"
   glab mr note create "$mr_iid" -R "$repo" --message "$message"
@@ -392,6 +472,8 @@ wrapper="${1:-}"
 [[ -n "$wrapper" ]] || { usage >&2; exit 64; }
 shift || true
 case "$wrapper" in
+  draft_mr_create) draft_mr_create "$@" ;;
+  mr_description_update) mr_description_update "$@" ;;
   issue_note_create) issue_note_create "$@" ;;
   mr_note_create) mr_note_create "$@" ;;
   label_reconcile) label_reconcile "$@" ;;
