@@ -14,6 +14,7 @@ See [details](details.md#setup-flow), [local heading](#main-doc), and ![logo](..
 Allowed external: [GitLab](https://gitlab.example.com/agents/skills/-/issues/52).
 Angle local: [details angle](<details.md#setup-flow>).
 Angle external: [GitLab angle](<https://gitlab.example.com/agents/skills/-/issues/52>).
+Malformed nested angle: [nested](<<details.md#setup-flow>>).
 Placeholder destination: [skill root]({skill-root}/README.md).
 Blocked external: [example](https://example.com/outside-policy).
 Broken file: [missing](missing.md).
@@ -39,9 +40,9 @@ if [[ $status -eq 0 ]]; then
 fi
 
 for expected in \
-  "$TMPDIR/docs/index.md:9: external URL host \"example.com\" is not allowlisted" \
-  "$TMPDIR/docs/index.md:10: target file does not exist: missing.md" \
-  "$TMPDIR/docs/index.md:11: anchor \"missing-heading\" not found in details.md"; do
+  "$TMPDIR/docs/index.md:10: external URL host \"example.com\" is not allowlisted" \
+  "$TMPDIR/docs/index.md:11: target file does not exist: missing.md" \
+  "$TMPDIR/docs/index.md:12: anchor \"missing-heading\" not found in details.md"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
     echo "--- output ---" >&2
