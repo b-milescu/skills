@@ -168,12 +168,68 @@ ci_guard="blocked"
 issue_state="not_checked"
 worktree_cleanup="not_requested"
 branch_cleanup="not_requested"
+finish_action="none"
+default_cleanup_safety="not_required"
+merged_sha_candidates=("$reviewed_sha")
 
 check_issue_state_if_requested() {
   if [[ -n "$issue_iid" && "$issue_state" == "not_checked" ]]; then
     issue_json="$(glab issue view "$issue_iid" -F json)"
     issue_state="$(json_value "$issue_json" state "unknown")"
   fi
+}
+
+add_merged_sha_candidate() {
+  local candidate="$1"
+  local existing
+  [[ -n "$candidate" && "$candidate" != "none" ]] || return 0
+  for existing in "${merged_sha_candidates[@]}"; do
+    [[ "$existing" != "$candidate" ]] || return 0
+  done
+  merged_sha_candidates+=("$candidate")
+}
+
+refresh_merged_sha_candidates() {
+  local refreshed_json merge_commit_sha squash_commit_sha
+  refreshed_json="$(glab mr view "$mr_iid" -F json)" || return 0
+  merge_commit_sha="$(json_value "$refreshed_json" merge_commit_sha "")"
+  squash_commit_sha="$(json_value "$refreshed_json" squash_commit_sha "")"
+  add_merged_sha_candidate "$merge_commit_sha"
+  add_merged_sha_candidate "$squash_commit_sha"
+}
+
+establish_local_default_cleanup_safety() {
+  local candidate_sha
+  default_cleanup_safety="blocked_default_not_verified"
+  git fetch origin
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "FINISH_MR default_update=blocked reason=dirty_checkout" >&2
+    return 1
+  fi
+  if ! git checkout "$default_branch"; then
+    echo "FINISH_MR default_update=blocked reason=checkout_failed branch=$default_branch" >&2
+    return 1
+  fi
+  if ! git pull --ff-only origin "$default_branch"; then
+    echo "FINISH_MR default_update=blocked reason=fast_forward_failed branch=$default_branch" >&2
+    return 1
+  fi
+  for candidate_sha in "${merged_sha_candidates[@]}"; do
+    if git merge-base --is-ancestor "$candidate_sha" "$default_branch"; then
+      default_cleanup_safety="verified:$candidate_sha"
+      return 0
+    fi
+  done
+  echo "FINISH_MR default_update=blocked reason=merged_sha_not_on_local_default branch=$default_branch" >&2
+  return 1
+}
+
+update_local_default_after_finish() {
+  git fetch origin
+  if [[ -z "$(git status --porcelain)" ]] && git checkout "$default_branch" && git pull --ff-only origin "$default_branch"; then
+    return 0
+  fi
+  echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
 }
 
 if [[ "$mr_state" != "opened" ]]; then
@@ -223,6 +279,7 @@ case "$caller_role:$merge_authority" in
       glab mr approve "$mr_iid" --sha "$reviewed_sha"
     fi
     glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false
+    refresh_merged_sha_candidates
     finish_action="merged"
     ;;
   reviewer:queue\ auto-merge|authorized-parent:queue\ auto-merge|human:queue\ auto-merge)
@@ -234,22 +291,30 @@ case "$caller_role:$merge_authority" in
     ;;
 esac
 
-git fetch origin
-if [[ -z "$(git status --porcelain)" ]] && git checkout "$default_branch"; then
-  git pull --ff-only origin "$default_branch"
+if [[ "$finish_action" == "merged" && ( -n "$worktree_path" || "$delete_local_source_branch" == "true" ) ]]; then
+  if ! establish_local_default_cleanup_safety; then
+    if [[ -n "$worktree_path" ]]; then
+      worktree_cleanup="blocked_default_not_verified"
+    fi
+    if [[ "$delete_local_source_branch" == "true" ]]; then
+      branch_cleanup="local_delete_blocked_default_not_verified"
+    fi
+  fi
 else
-  echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
+  update_local_default_after_finish
 fi
 
 check_issue_state_if_requested
 
-if [[ -n "$worktree_path" ]]; then
+if [[ -n "$worktree_path" && "$worktree_cleanup" != blocked_* ]]; then
   git worktree remove "$worktree_path"
   worktree_cleanup="removed"
 fi
 
 if [[ "$finish_action" == "merged" && "$delete_local_source_branch" == "true" ]]; then
-  if git branch -d "$source_branch"; then
+  if [[ "$branch_cleanup" == "local_delete_blocked_default_not_verified" ]]; then
+    :
+  elif git branch -d "$source_branch"; then
     branch_cleanup="local_deleted"
   else
     branch_cleanup="local_delete_blocked"

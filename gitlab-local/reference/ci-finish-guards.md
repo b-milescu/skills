@@ -72,14 +72,21 @@ Guard and authority order:
    and [`start-review/REVIEW-FLOW.md` CI & finish policy](../../start-review/REVIEW-FLOW.md#ci-and-open-question-decision-tables).
    A `builder` caller role always stops with a handoff and never approves,
    merges, queues, or deletes a remote branch.
-5. Fetch/pull the default branch only after a merge/queue action or when
-   producing a final status. Use `git fetch origin`, then fast-forward the local
-   default only in a clean checkout where that branch can be checked out safely.
+5. Fetch the default branch only after a merge/queue action or when producing a
+   final status. For any local cleanup after a merge, use `git fetch origin`,
+   then fast-forward the local default only in a clean checkout where that branch
+   can be checked out safely. Before removing local worktrees or deleting local
+   source branches, verify the reviewed SHA is an ancestor of the fast-forwarded
+   local default, or verify an equivalent MR `merge_commit_sha` /
+   `squash_commit_sha` is an ancestor when the project uses merge commits or
+   squash merges. If no SHA check passes, retain local cleanup targets and report
+   cleanup pending instead of emitting only a warning.
 6. Verify linked issue state with `glab issue view "$issue_iid" -F json` when an
    issue IID is known. Report `closure_pending` rather than force-closing unless
    the workflow explicitly told you to close the issue.
 7. Remove a worktree only when `git -C "$worktree_path" status --porcelain` is
-   empty and branch push/merge state is known. Delete local/remote source
+   empty, branch push/merge state is known, and the default-branch safety check
+   above has passed for post-merge local cleanup. Delete local/remote source
    branches only after merge or auto-merge policy permits it; prefer GitLab's
    remove-source-branch setting when available.
 8. Emit final status: MR IID/URL, reviewed SHA, CI status/SHA, action taken,
