@@ -21,13 +21,9 @@ require_text() {
 
 reject_text() {
   local file="$1" pattern="$2" label="$3"
-  local tmp="${TMPDIR:-/tmp}/start-review-mode-cards.$$"
-  if grep -En -- "$pattern" "$file" >"$tmp"; then
-    cat "$tmp" >&2
-    rm -f "$tmp"
+  if grep -En -- "$pattern" "$file" >&2; then
     fail "$file contains $label"
   fi
-  rm -f "$tmp"
 }
 
 require_card_contract() {

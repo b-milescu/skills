@@ -21,12 +21,9 @@ require_text() {
 
 reject_text() {
   local file="$1" pattern="$2" label="$3"
-  if grep -En -- "$pattern" "$file" >/tmp/gitlab-local-review-card-grep.$$; then
-    cat /tmp/gitlab-local-review-card-grep.$$ >&2
-    rm -f /tmp/gitlab-local-review-card-grep.$$
+  if grep -En -- "$pattern" "$file" >&2; then
     fail "$file contains $label"
   fi
-  rm -f /tmp/gitlab-local-review-card-grep.$$
 }
 
 require_card_contract() {
