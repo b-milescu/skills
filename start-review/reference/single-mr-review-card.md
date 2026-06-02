@@ -15,7 +15,7 @@ Compact pointer map for the default `/start-review` path: one MR, one fresh revi
 - Fail-closed coverage for `partial-review` and `secret-exposure-suspected`: [`../REVIEW-FLOW.md#fail-closed-review-coverage`](../REVIEW-FLOW.md#fail-closed-review-coverage).
 - CI policy: [`../REVIEW-FLOW.md#ci-decision-table`](../REVIEW-FLOW.md#ci-decision-table).
 - Open Question policy: [`../REVIEW-FLOW.md#open-question-decision-table`](../REVIEW-FLOW.md#open-question-decision-table).
-- Authority source precedence: [`../REVIEW-FLOW.md#authority-source-precedence`](../REVIEW-FLOW.md#authority-source-precedence).
+- Approval authority policy: [`../REVIEW-FLOW.md#approval-authority-policy`](../REVIEW-FLOW.md#approval-authority-policy); merge authority source precedence: [`../REVIEW-FLOW.md#merge-authority-source-precedence`](../REVIEW-FLOW.md#merge-authority-source-precedence).
 - Project binding rules: [`../REVIEW-FLOW.md#project-binding`](../REVIEW-FLOW.md#project-binding).
 - Child-builder boundary / builder claims are not review proof: [`../../start-build/reference/child-builder-card.md`](../../start-build/reference/child-builder-card.md) and [`../REVIEW-FLOW.md#context-firewall`](../REVIEW-FLOW.md#context-firewall).
 

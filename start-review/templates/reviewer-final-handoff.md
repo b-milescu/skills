@@ -86,10 +86,16 @@ agent_handoff:
       not_run_reason: "N/A"
       summary: "accepted builder gate evidence"
     authority:
-      value: "approval-only"
-      source: "parent task prompt: approval-only"
-      verified: true
-      conflicts: []
+      approval:
+        value: "default-after-pass"
+        source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
+        verified: true
+        restricted: false
+      merge:
+        value: "approval-only"
+        source: "parent task prompt: approval-only"
+        verified: true
+        conflicts: []
     actions:
       approval: "approved"
       finish: "approval-only stop"
@@ -145,6 +151,8 @@ agent_handoff:
     should_fix: []
     consider: []
   open_questions_addressed: []
+  approval_authority: "default-after-pass | restricted: reason/source"
+  approval_authority_source: "stable repo policy ref | parent task prompt | human/MR comment URL | rulebook path+section"
   merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
   merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   approval_action: "approved | not-approved | blocked | N/A"
@@ -187,15 +195,24 @@ agent_handoff:
   parent can route revisions.
 - `open_questions_addressed` lists every `OQ-N` answered, escalated, or
   downgraded in the Review Report.
-- `merge_authority` is copied as the quoted authority claim from the Review
-  Packet, project rulebook, parent, or human instruction.
+- `approval_authority` records the approval policy result. `default-after-pass`
+  means reviewer approval is allowed after a passing review unless explicitly
+  restricted; `restricted: ...` names the source/reason that blocks or limits
+  approval.
+- `approval_authority_source` records the stable repo/rulebook policy source or
+  explicit restriction source verified before approval. It is separate from
+  merge authority and does not grant merge, auto-merge, release, close, or
+  cleanup authority.
+- `merge_authority` is copied as the quoted finish-authority claim from the
+  Review Packet, project rulebook, parent, or human instruction.
 - `merge_authority_source` records the source the reviewer verified before any
-  approval/finish action. Missing or unverifiable source maps to
-  `action_blocker: missing-authority`; conflicting sources use the most
-  restrictive/no-action result unless a parent/human resolves them.
+  merge/auto-merge/release/close/cleanup or other finish action. Missing or
+  unverifiable merge source maps to a finish `action_blocker:
+  missing-authority`; conflicting sources use the most restrictive/no-action
+  finish result unless a parent/human resolves them.
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
-  safely take approval due to missing authority, SHA/CI/tool/preflight/permission
+  safely take approval due to restricted/missing approval authority, SHA/CI/tool/preflight/permission
   failures, partial-review, suspected secret exposure, or a required human
   decision. When the Review Report used intended
   action wording before a post-report approval attempt, this field records the

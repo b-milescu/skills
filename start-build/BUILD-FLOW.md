@@ -20,7 +20,7 @@ Build planning detail lives in [reference/context-and-planning.md §Build Plan P
 
 ## Builder invocation modes
 
-Mode boundaries are split across [reference/child-builder.md](reference/child-builder.md), [reference/standalone-gate.md](reference/standalone-gate.md), and [reference/parent-orchestrator.md](reference/parent-orchestrator.md): child builders stop at ready handoff, standalone builders own reviewer handoff after ready, and parents coordinate child builders/reviewers; in every mode builders quote authority instead of granting it, record `Merge authority source`, and cannot grant approval, merge, or auto-merge authority.
+Mode boundaries are split across [reference/child-builder.md](reference/child-builder.md), [reference/standalone-gate.md](reference/standalone-gate.md), and [reference/parent-orchestrator.md](reference/parent-orchestrator.md): child builders stop at ready handoff, standalone builders own reviewer handoff after ready, and parents coordinate child builders/reviewers; in every mode builders quote authority instead of granting it, record `Approval authority`/source and `Merge authority source`, and cannot grant approval, merge, or auto-merge authority.
 
 ## Compact mode cards
 

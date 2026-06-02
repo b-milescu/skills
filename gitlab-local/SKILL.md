@@ -292,12 +292,15 @@ Approval, direct merge, auto-merge queueing, and approval confirmation are
 separate actions. Choose exactly one action snippet for the authority you have.
 Never run a combined approval/merge block or paste multiple action snippets as
 one executable sequence. Stop or continue only when the workflow explicitly
-grants the next action.
+grants the next action. Reviewer approval authority is evaluated separately from
+merge authority by `start-review`; default approval after pass does not grant
+merge or auto-merge authority.
 
 ### Snippet: sha-bound-approval
 
-Use only when the reviewed SHA is current and explicit authority permits reviewer
-approval. For `approval-only` authority, this is the only approval/merge action.
+Use only when the reviewed SHA is current, approval authority permits reviewer
+approval, and no explicit approval restriction applies. For `approval-only`
+merge authority, this is the only approval/finish action.
 
 ```bash
 mr_iid="<id>"

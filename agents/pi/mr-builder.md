@@ -43,6 +43,8 @@ When the parent owns the gate, the final report MUST start with the approved mac
 - Decoupling proof
 - Reviewer focus
 - Open questions
+- Approval authority
+- Approval authority source
 - Merge authority
 - Merge authority source
 - Shared `delivery.handoff_contract` routing fields (`phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, `evidence_ready_for_next_actor`; use `blocking_question` only when a specific actionable blocker question remains)
@@ -135,7 +137,7 @@ Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pit
 - Use the smallest public layer that proves behavior without coupling to internals.
 - Run targeted tests during the red-green loop. Never use live product/runtime/operator systems as regression evidence.
 - Fill Builder metadata as `@builder — <model-id>`; omit model-id if unknown.
-- Fill `Merge authority` as a quoted claim and `Merge authority source` as verifiable provenance (parent task prompt, human MR comment URL, rulebook path+section, or project default source); builders cannot grant approval, merge, or auto-merge authority.
+- Fill `Approval authority` as `default-after-pass` with stable repo policy provenance, unless an explicit restriction source applies. Fill `Merge authority` as a quoted finish-authority claim and `Merge authority source` as verifiable provenance (parent task prompt, human MR comment URL, rulebook path+section, or project default source); builders cannot grant approval, merge, or auto-merge authority.
 
 ## Supervisor coordination
 

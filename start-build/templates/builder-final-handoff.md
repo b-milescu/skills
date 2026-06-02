@@ -86,10 +86,16 @@ agent_handoff:
       not_run_reason: "parent-owned"
       summary: "parent owns final local gate and ready transition"
     authority:
-      value: "approval-only"
-      source: "parent task prompt: approval-only"
-      verified: false
-      conflicts: []
+      approval:
+        value: "default-after-pass"
+        source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
+        verified: false
+        restricted: false
+      merge:
+        value: "approval-only"
+        source: "parent task prompt: approval-only"
+        verified: false
+        conflicts: []
     actions:
       approval: "N/A"
       finish: "none"
@@ -169,6 +175,8 @@ agent_handoff:
   reviewer_focus:
     - "path/one.md — boundary to inspect"
   open_questions: []
+  approval_authority: "default-after-pass"
+  approval_authority_source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
   merge_authority: "approval-only"
   merge_authority_source: "parent task prompt: approval-only"
   next_action: "parent-run-gate"
@@ -233,14 +241,23 @@ agent_handoff:
   match the MR description's Reviewer Lift values. `safety_surfaces` entries are
   `none`, `credentials`, `external-system`, `state`, `migration`, `gates`,
   `locks`, `deploy`, or `other`.
-- `merge_authority` records the quoted authority claim; it never grants the
-  child builder approval or merge authority. Valid claims are `approval-only`,
-  `reviewer may merge`, `queue auto-merge`, `human release`, or
-  `project default: <policy>`.
-- `merge_authority_source` records the verifiable provenance for that claim,
-  such as parent task prompt, human MR comment URL, rulebook path and section,
-  or project default source; missing, unverifiable, or conflicting source
-  information is a blocker for reviewer approval/finish actions.
+- `approval_authority` records the quoted approval policy claim. Use
+  `default-after-pass` when repo policy allows reviewer approval after a passing
+  review unless explicitly restricted; use `restricted: <reason/source>` when an
+  explicit source limits approval. Approval still requires exact reviewed SHA,
+  pass-eligible CI/local-gate/OQ state, and SHA-bound approval.
+- `approval_authority_source` records the stable repo/rulebook policy source or
+  explicit restriction source. It is separate from merge authority and does not
+  grant merge, auto-merge, release, deploy, close, or cleanup authority.
+- `merge_authority` records the quoted finish-authority claim; it never grants
+  the child builder approval or merge authority. Valid claims are
+  `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`,
+  or `project default: <policy>`.
+- `merge_authority_source` records the verifiable provenance for that finish
+  authority claim, such as parent task prompt, human MR comment URL, rulebook
+  path and section, or project default source; missing, unverifiable, or
+  conflicting source information is a blocker for finish actions, not for
+  default approval by itself.
 - `next_action` tells the parent whether to run the parent-owned gate, spawn
   review, make a human decision, or fix a blocker. Use `parent-run-gate`,
   `spawn-reviewer`, `human-decision`, or `fix-blocker`, and keep it equal to

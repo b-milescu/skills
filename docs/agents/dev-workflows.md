@@ -50,12 +50,25 @@ Use issue-referencing source branches for GitLab MRs, for example
 `issue-<iid>-<slug>`. Do not rename the delivery schema's `source_branch` or
 `target_branch` fields.
 
+### Review approval / merge policy
+
+Reviewer approval is allowed by default after a passing review unless an
+explicit human/parent instruction, MR or issue note, or project rulebook section
+restricts it. Use this section, or
+`start-review/REVIEW-FLOW.md#approval-authority-policy`, as the stable repo
+policy source for `Approval authority: default-after-pass`.
+
+Merge, auto-merge, release, deploy, close, and source-branch cleanup authority
+remain separate. They require an explicit `Merge authority` value and
+verifiable `Merge authority source`; approval never implies those finish
+actions.
+
 ### Release/deploy policy
 
 This skills repo has no product deploy path. Release actions for skill packages
 or installed skill surfaces require explicit human or workflow authority and must
-cite the authority source in the MR. Setup docs do not grant approval, merge,
-auto-merge, release, deploy, or operator authority by themselves.
+cite the authority source in the MR. This release/deploy policy does not grant
+merge, auto-merge, release, deploy, or operator authority by itself.
 
 ### Auxiliary project-index policy
 

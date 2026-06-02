@@ -27,6 +27,8 @@ builder_expected=(
   decoupling
   reviewer_focus
   open_questions
+  approval_authority
+  approval_authority_source
   merge_authority
   merge_authority_source
   next_action
@@ -46,6 +48,8 @@ reviewer_expected=(
   local_checks
   findings
   open_questions_addressed
+  approval_authority
+  approval_authority_source
   merge_authority
   merge_authority_source
   approval_action

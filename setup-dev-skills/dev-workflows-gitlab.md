@@ -54,11 +54,23 @@ Record the source branch convention for GitLab MRs here. A common pattern is
 `issue-<iid>-<slug>`. This is a project policy hook only; the delivery schema
 field names remain `source_branch` and `target_branch`.
 
+### Review approval / merge policy
+
+Reviewer approval is allowed by default after a passing review unless an
+explicit human/parent instruction, MR or issue note, or project rulebook section
+restricts it. When adapting this seed, keep a stable target-repo policy source
+for `Approval authority: default-after-pass`.
+
+Merge, auto-merge, release, deploy, close, and source-branch cleanup authority
+remain separate. They require an explicit `Merge authority` value and
+verifiable `Merge authority source`; approval never implies those finish
+actions.
+
 ### Release/deploy policy
 
 Record who can authorize release/deploy actions and which docs or manual
-validation rules must be cited. Setup docs must not grant approval, merge,
-auto-merge, release, deploy, or operator authority by themselves.
+validation rules must be cited. Setup docs must not grant merge, auto-merge,
+release, deploy, or operator authority by themselves.
 
 ### Auxiliary project-index policy
 
