@@ -59,6 +59,7 @@ require_card_contract() {
   require_text "$file" 'child-builder.*authority-boundary|child-builder-card\.md' 'child-builder boundary pointer'
   require_text "$file" 'Gate Receipt|gate-receipt' 'Gate Receipt pointer'
   require_text "$file" 'post-merge-verifier' 'post-merge verifier read-only pointer'
+  reject_text "$file" 'post-merge-verifier/SKILL[.]md' 'removed top-level verifier skill pointer'
 }
 
 child_card="start-build/reference/child-builder-card.md"

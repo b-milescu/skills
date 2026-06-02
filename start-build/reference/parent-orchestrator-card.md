@@ -20,7 +20,7 @@ Compact pointer map for parent/coordinator issue-to-MR loops. This card is a che
 | Launch reviewer | [`parent-orchestrator.md` minimal reviewer launch prompt](parent-orchestrator.md#minimal-reviewer-launch-prompt) and [`standalone-gate.md` reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol). | Fresh reviewer gets one bound MR, exact role/mode, stop condition, expected handoff schema, forbidden actions, minimum evidence pointers, and context-firewall instruction only. |
 | Route revisions | [`revision-card.md`](revision-card.md), [`revision-packet.md`](../templates/revision-packet.md), and [`parent-orchestrator.md` minimal revision prompt](parent-orchestrator.md#minimal-revision-prompt). | Request-changes means MR URL, reviewed SHA, Review Report URL, finding IDs, required fix acceptance criteria, gate owner, updated evidence, revision note, and a fresh reviewer on the new SHA. |
 | Enforce guards | `gitlab-local` [`ci-watch-sha-pinned`](../../gitlab-local/SKILL.md#snippet-ci-watch-sha-pinned), [`finish-mr-authority-aware`](../../gitlab-local/SKILL.md#snippet-finish-mr-authority-aware), and [`ci-finish-guards.md`](../../gitlab-local/reference/ci-finish-guards.md). | Final SHA guard, exact-SHA CI, authority/source, caller role, and local-default cleanup safety all pass before approval, merge, queue, cleanup, or handoff. |
-| Verify after finish | [`post-merge-verifier.md`](post-merge-verifier.md) and [`post-merge-verifier/SKILL.md`](../../post-merge-verifier/SKILL.md). | Verifier is read-only: no approve, merge, queue, force-close, branch delete, or mutating release/deploy/operator action. |
+| Verify after finish | [`post-merge-verifier.md`](post-merge-verifier.md) and `gitlab-local/scripts/gitlab-post-merge-snapshot.sh`. | Verifier is read-only: no approve, merge, queue, force-close, branch delete, or mutating release/deploy/operator action. |
 
 ## Safety and authority pointers
 
@@ -29,7 +29,7 @@ Compact pointer map for parent/coordinator issue-to-MR loops. This card is a che
 - Authority source verification: [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md), [`gitlab-delivery-schema.md` authority values](../templates/gitlab-delivery-schema.md#authority-values), and [`parent-orchestrator.md` finish by authority](parent-orchestrator.md#parent-loop).
 - Child-builder no-merge/no-review boundary: [`child-builder-card.md`](child-builder-card.md) and [`child-builder.md` authority boundary](child-builder.md#authority-boundary).
 - Gate Receipt procedure: [`parent-owned-gate-card.md`](parent-owned-gate-card.md) and [`gitlab-delivery-schema.md` Gate Receipt schema](../templates/gitlab-delivery-schema.md#gate-receipt-schema).
-- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md) and [`post-merge-verifier/SKILL.md`](../../post-merge-verifier/SKILL.md).
+- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md).
 
 ## Fallback to canonical docs
 

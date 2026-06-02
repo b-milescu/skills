@@ -89,15 +89,16 @@ for file in "${setup_docs[@]}"; do
   require_text "$file" 'project_profile|project-profile' 'project-profile setup hook'
 done
 
+removed_skill_surface='post-merge-verifier/SKILL'".md"
 copy_brittle_seed_links=(
   '](../issue-delivery-loop/'
-  '](../post-merge-verifier/'
+  "$removed_skill_surface"
   '](../start-build/'
 )
 
 for pattern in "${copy_brittle_seed_links[@]}"; do
   if grep -Fq -- "$pattern" "setup-dev-skills/dev-workflows-gitlab.md"; then
-    echo "project-profile-hooks: FAIL: setup-dev-skills/dev-workflows-gitlab.md contains copy-brittle link pattern: $pattern" >&2
+    echo "project-profile-hooks: FAIL: setup-dev-skills/dev-workflows-gitlab.md contains copy-brittle or removed-skill pattern: $pattern" >&2
     exit 1
   fi
 done
