@@ -206,7 +206,7 @@ function trimTrailingPunctuation(url) {
 }
 
 function checkDestination({ file, lineNumber, destination }) {
-  if (!destination || destination.startsWith('<') || destination.startsWith('{')) {
+  if (!destination || destination.startsWith('{')) {
     return;
   }
 
