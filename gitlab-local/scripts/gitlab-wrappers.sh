@@ -464,7 +464,6 @@ auto_merge_api_fallback() {
   if [[ "$api_status" -ne 0 ]]; then
     fail AUTO_MERGE 5 api_auto_merge_failed
   fi
-  : "$api_output"
   echo "AUTO_MERGE result=auto_merge_queued via=api mr=$mr_iid sha=$reviewed_sha ci=$pipeline_status authority_source=verified"
 }
 
