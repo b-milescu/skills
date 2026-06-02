@@ -17,8 +17,10 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 | Decoupling proof | `single MR` for single-issue work; otherwise list co-running MR IIDs/branches and summarize the Decoupling Contract check. |
 | Reviewer Focus | Areas the reviewer should read hardest, or `none`. |
 | Open Questions | `none` or a count/list of stable `OQ-N` IDs. |
-| Merge authority | Quoted authority claim only; one of `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or `project default: <policy>`. The builder cannot grant authority. |
-| Merge authority source | Verifiable source for the authority claim, such as parent task prompt, human MR comment URL, rulebook path+section, or project default source. Required for every value; builder-provided text alone is not a grant. |
+| Approval authority | Approval policy claim for the GitLab approval side effect. Use `default-after-pass` when repo policy allows reviewer approval after a passing review unless an explicit restriction is present; use `restricted: <source/reason>` when approval is limited. Approval still requires review pass, exact reviewed SHA, pass-eligible CI/local-gate/OQ state, and the SHA-bound approval guard. |
+| Approval authority source | Verifiable source for the approval policy or restriction, such as `start-review/REVIEW-FLOW.md#approval-authority-policy`, project rulebook path+section, parent task prompt, or human/MR comment URL. This source is separate from merge authority and does not grant merge, auto-merge, release, deploy, or close authority. |
+| Merge authority | Quoted finish-authority claim only; one of `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or `project default: <policy>`. The builder cannot grant authority. |
+| Merge authority source | Verifiable source for the finish-authority claim, such as parent task prompt, human MR comment URL, rulebook path+section, or project default source. Required for every value; builder-provided text alone is not a grant. |
 | Delta since last ready push | `N/A before ready`; after any post-ready push, include old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive. |
 
 ## Generated-copy contract

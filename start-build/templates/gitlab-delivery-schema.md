@@ -25,7 +25,7 @@ report post-merge success from compact `delivery` values alone.
 | sha | SHA facts such as MR head/current SHA, reviewed SHA, candidate SHA, merge commit, and observed target SHA. |
 | pipeline | Pipeline ID/URL/status/`sha`, or unavailable/not-run details. |
 | local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
-| authority | Quoted authority claim, source, verification status, and conflicts. |
+| authority | Quoted approval and merge/finish authority claims, sources, verification status, and conflicts/restrictions. |
 | actions | Approval action, finish action, next-action token, and action blockers. |
 | handoff_contract | Shared routing block naming phase, next actor/action, blocker state, parent-decision need, change flag, and evidence-ready pointers. |
 | evidence | Evidence tier/kind/source indexes that point to durable proof. |
@@ -105,10 +105,16 @@ delivery:
     not_run_reason: "N/A"
     summary: "completed successfully"
   authority:
-    value: "approval-only"
-    source: "parent task prompt: approval-only"
-    verified: false
-    conflicts: []
+    approval:
+      value: "default-after-pass"
+      source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
+      verified: false
+      restricted: false
+    merge:
+      value: "approval-only"
+      source: "parent task prompt: approval-only"
+      verified: false
+      conflicts: []
   actions:
     approval: "N/A"
     finish: "none"
@@ -347,8 +353,18 @@ action is `N/A`/`not-run`; otherwise use `N/A`.
 
 ## Authority values
 
-`authority.value` is a quoted claim, not a grant. It must be verified from
-`authority.source` before approval, merge, auto-merge, or finish actions.
+`authority.approval.value` is a quoted approval-policy claim, not a grant of any
+finish action. It must be verified from `authority.approval.source` before
+approval. Default approval after pass still requires the reviewed SHA, CI/local
+gate/OQ, review coverage, and SHA-bound approval guards.
+
+- `default-after-pass`
+- `restricted: <reason/source>`
+
+`authority.merge.value` is a quoted finish-authority claim, not a grant. It must
+be verified from `authority.merge.source` before merge, auto-merge, release,
+close, cleanup, or other finish actions. Missing merge authority blocks finish
+only; it does not revoke default approval authority by itself.
 
 - `approval-only`
 - `reviewer may merge`

@@ -61,7 +61,8 @@ require_card_contract() {
     'REVIEW-FLOW\.md#fail-closed-review-coverage' \
     'REVIEW-FLOW\.md#ci-decision-table' \
     'REVIEW-FLOW\.md#open-question-decision-table' \
-    'REVIEW-FLOW\.md#authority-source-precedence' \
+    'REVIEW-FLOW\.md#approval-authority-policy' \
+    'REVIEW-FLOW\.md#merge-authority-source-precedence' \
     'REVIEW-FLOW\.md#project-binding'; do
     require_text "$file" "$anchor" "canonical anchor: $anchor"
   done

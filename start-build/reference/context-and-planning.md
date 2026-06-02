@@ -40,8 +40,9 @@ Before marking ready or requesting review, validate the MR handoff:
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Local gate command/result is present, or N/A explains why only CI can provide it.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
+- Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.
 - Merge authority is explicit and treated as a quoted claim, not a builder grant.
-- Merge authority source is present and verifiable; missing or conflicting source information blocks approval/finish actions until a parent/human/rulebook source resolves it.
+- Merge authority source is present and verifiable; missing or conflicting source information blocks finish actions until a parent/human/rulebook source resolves it, but does not revoke default approval authority by itself.
 
 ## Compact packet eligibility
 

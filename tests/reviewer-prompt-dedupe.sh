@@ -71,6 +71,7 @@ for prompt in "${reviewer_prompts[@]}"; do
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Context Firewall' 'Context Firewall invariant'
   require_text "$prompt" 'Merge authority source' 'authority-source invariant'
+  require_text "$prompt" 'Approval authority|approval authority' 'approval-authority invariant'
   require_text "$prompt" 'partial-review' 'partial-review fail-closed token'
   require_text "$prompt" 'secret-exposure-suspected' 'secret-exposure fail-closed token'
   require_text "$prompt" 'Snippet: mr-note-create' 'MR note snippet pointer'

@@ -37,6 +37,8 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
+| Approval authority | `<default-after-pass / restricted: source-or-reason>` |
+| Approval authority source | `<stable repo policy ref, e.g. start-review/REVIEW-FLOW.md#approval-authority-policy / parent task prompt / human or MR comment URL / project rulebook path+section>` |
 | Merge authority | `<quoted claim: approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
 | Merge authority source | `<parent task prompt / human MR comment URL / rulebook path+section / project default source>` |
 | Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |

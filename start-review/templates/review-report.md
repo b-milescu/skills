@@ -16,11 +16,13 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 | CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing; pipeline SHA or N/A>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
+| Approval authority | `<verified default-after-pass or restricted: reason/source>` |
+| Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
-| Merge authority | `<verified value or blocked: missing-authority>` |
-| Merge authority source | `<verified source or blocked: missing-authority>` |
+| Merge authority | `<verified finish authority value or blocked: missing-authority>` |
+| Merge authority source | `<verified finish authority source or blocked: missing-authority>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Report link | `<this comment; final handoff contains URL when available>` |
 
@@ -38,7 +40,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 | Reviewed SHA | `<same SHA used for diff, local checks, CI classification, and action guards>` |
 | CI snapshot | `<pipeline URL/ID/status/SHA or N/A with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
-| Authority snapshot | `<Merge authority + Merge authority source verification>` |
+| Authority snapshot | `<Approval authority + source verification; Merge authority + source verification>` |
 | Decoupling verification | `<N/A / accepted as-stated / re-checked: result>` |
 | Time spent | `<duration>` |
 | Ran code? | `<no / yes: commands>` |
@@ -61,8 +63,10 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
 | Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
 | Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
-| Merge authority | `<copy quoted claim from Reviewer Lift; explicit value required; missing/ambiguous = blocker/no approval>` |
-| Merge authority source | `<copy from Reviewer Lift; verify source before approval/finish; missing/unverifiable = blocker/no approval>` |
+| Approval authority | `<copy approval policy claim; default-after-pass unless explicitly restricted; verify before approval>` |
+| Approval authority source | `<copy approval policy/restriction source; stable repo policy ref allowed; separate from merge authority>` |
+| Merge authority | `<copy quoted finish-authority claim from Reviewer Lift; explicit value required before merge/auto-merge/release/close>` |
+| Merge authority source | `<copy from Reviewer Lift; verify before finish action; missing/unverifiable blocks finish but does not override default approval authority>` |
 | Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
@@ -74,7 +78,7 @@ Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, n
 |---|---|---|---|
 | Repo | `<claimed host/project/repo/default or target branch; cross-repo choice if any>` | `<verified preflight + project binding result>` | `<repo command output / MR URL / rulebook path>` |
 | MR | `<claimed MR IID/URL/source/target/head/reviewed SHA/readiness>` | `<verified MR metadata, Reviewed SHA match, diff captured>` | `<mr-pickup output / MR URL / diff artifact>` |
-| Authority | `<claimed Merge authority and Merge authority source>` | `<verified source, precedence, conflicts/no-action result>` | `<Reviewer Lift row + parent/human/rulebook/project source>` |
+| Authority | `<claimed Approval authority/source and Merge authority/source>` | `<verified approval policy/restriction, merge source, precedence, conflicts/no-action result>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
 | CI | `<claimed pipeline/local gate/Gate Receipt>` | `<verified exact-SHA CI decision and local-gate or Gate Receipt status>` | `<MR pipeline metadata / ci snapshot / Gate Receipt MR comment / local command output>` |
 | Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / MR description / diff / rulebook>` |
 | Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<MR description/comment URL / artifact path / command transcript>` |
@@ -136,7 +140,7 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound MR URL/project, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
+Required. State the `Review verdict`, bound MR URL/project, verified Approval authority / Approval authority source, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing merge authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
 
 Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
 
@@ -144,6 +148,7 @@ Record the chosen value for each field; the full enums are defined once in the [
 |---|---|
 | Review verdict | `<chosen value>` |
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
+| Authority result | `<approval policy/source + merge authority/source summary>` |
 | Approval action | `<chosen value>` |
 | Finish action | `<chosen value>` |
 | Action blocker | `<chosen value>` |
