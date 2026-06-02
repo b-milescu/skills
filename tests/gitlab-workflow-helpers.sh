@@ -981,9 +981,9 @@ test_wrappers_create_and_update_mr_descriptions_with_control_validation() {
   assert_log_contains "$dir/glab.log" "glab mr update 59 -R git@gitlab.example.com:agents/skills.git --description <description-redacted>"
   assert_log_not_contains "$dir/glab.log" "$secret"
 
-  dir="$(make_wrapper_fixture_dir wrapper-mr-create-control)"
+  dir="$(make_wrapper_fixture_dir wrapper-mr-create-nul)"
   malformed_file="$dir/malformed-review-packet.md"
-  printf '# Review Packet\nsafe line\n\001%s\n' "$secret" > "$malformed_file"
+  printf '# Review Packet\nsafe line\n\000%s\n' "$secret" > "$malformed_file"
   run_wrapper_fixture "$dir" \
     draft_mr_create \
     --repo git@gitlab.example.com:agents/skills.git \

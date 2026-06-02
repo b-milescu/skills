@@ -24,7 +24,7 @@ The wrapper coverage also verifies fake MR description create/update, issue/MR
 notes, label updates, MR JSON, and auto-merge fallback paths without changing
 live labels or MRs; malformed packet diagnostics are asserted without logging the
 submitted body.
-in `../../tests/gitlab-local-split-snippets.sh` verifies `/gitlab-local` keeps
+Coverage in `../../tests/gitlab-local-split-snippets.sh` verifies `/gitlab-local` keeps
 stable snippet names while pointing long helper bodies here and to script
 sources.
 
