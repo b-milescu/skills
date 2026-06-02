@@ -25,7 +25,7 @@ Compact pointer map for the parent-owned local gate and ready transition. This c
 - CI decision policy: [`start-review/REVIEW-FLOW.md` CI decision table](../../start-review/REVIEW-FLOW.md#ci-decision-table).
 - Authority source verification: [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and [`gitlab-delivery-schema.md` authority values](../templates/gitlab-delivery-schema.md#authority-values).
 - Child boundary: [`child-builder-card.md`](child-builder-card.md) and [`child-builder.md` authority boundary](child-builder.md#authority-boundary).
-- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md) and [`post-merge-verifier/SKILL.md`](../../post-merge-verifier/SKILL.md); Gate Receipt and ready transition do not grant verifier or finish authority.
+- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md); Gate Receipt and ready transition do not grant verifier or finish authority.
 
 ## Fallback to canonical docs
 

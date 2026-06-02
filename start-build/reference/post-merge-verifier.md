@@ -1,6 +1,6 @@
 # Post-merge verifier recipe
 
-Detailed read-only verifier contract for `start-build`. The first-class entry point is [`/post-merge-verifier`](../../post-merge-verifier/SKILL.md); the stable compatibility anchor remains in [BUILD-FLOW.md](../BUILD-FLOW.md#post-merge-verifier-recipe).
+Canonical read-only post-merge verification recipe for `start-build`. This file is the public instruction owner for the verifier role; top-level skill discovery should not expose a separate verifier entry point. The stable compatibility anchor remains in [BUILD-FLOW.md](../BUILD-FLOW.md#post-merge-verifier-recipe).
 
 Use this recipe only after the independent review and authority-aware finish steps report that merge or protected auto-merge completed. The verifier is a read-only confirmation role, not another reviewer and not a finisher.
 

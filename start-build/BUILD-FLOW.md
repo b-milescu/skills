@@ -49,7 +49,7 @@ The parent loop lives in [reference/parent-orchestrator.md §Parent loop](refere
 
 ### Post-merge verifier recipe
 
-Post-merge verifier detail lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md) and the first-class [`/post-merge-verifier`](../post-merge-verifier/SKILL.md) skill: use it only after independent review plus authority-aware finish reports merge or protected auto-merge completion, and never use it to approve, reject, merge, queue auto-merge, delete remote branches, force-close issues, or run mutating release/deploy/operator validation without human authorization.
+Post-merge verifier detail lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md): use that recipe only after independent review plus authority-aware finish reports merge or protected auto-merge completion, prefer `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for repeatable read-only snapshot behavior, and never use verification to approve, reject, merge, queue auto-merge, delete remote branches, force-close issues, or run mutating release/deploy/operator validation without human authorization.
 
 ## Check gate discovery
 

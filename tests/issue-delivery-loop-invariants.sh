@@ -59,8 +59,8 @@ require_contains 'Metrics to report per batch'
 require_contains 'issues attempted'
 require_contains 'review rounds'
 
-# Post-merge handoff to the read-only verifier survives.
+# Post-merge handoff to the read-only verifier recipe survives.
 require_contains 'After merge or protected auto-merge'
-require_contains 'post-merge-verifier/SKILL.md'
+require_contains 'start-build/reference/post-merge-verifier.md'
 
 printf 'issue-delivery-loop-invariants: PASS\n'

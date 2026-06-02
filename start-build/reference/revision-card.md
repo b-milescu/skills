@@ -26,7 +26,7 @@ Compact pointer map for builder revision work after review feedback or a substan
 - Authority source verification: [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and [`parent-orchestrator.md` finish by authority](parent-orchestrator.md#parent-loop).
 - Child no-review/no-merge boundary: [`child-builder.md` authority boundary](child-builder.md#authority-boundary).
 - Gate Receipt procedure: [`parent-owned-gate-card.md`](parent-owned-gate-card.md) and [`gitlab-delivery-schema.md` Gate Receipt schema](../templates/gitlab-delivery-schema.md#gate-receipt-schema) when the parent owns the final gate.
-- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md) and [`post-merge-verifier/SKILL.md`](../../post-merge-verifier/SKILL.md); revision work never substitutes for verification or finish.
+- Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md); revision work never substitutes for verification or finish.
 
 ## Fallback to canonical docs
 

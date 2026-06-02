@@ -20,7 +20,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 2. Prove the [Decoupling Contract](docs/decoupling-contract.md) before any parallel work.
 3. Run the parent loop per [`../start-build/reference/parent-orchestrator.md`](../start-build/reference/parent-orchestrator.md), delegating builds to [`../start-build/reference/child-builder.md`](../start-build/reference/child-builder.md) and review to [`../start-review/REVIEW-FLOW.md`](../start-review/REVIEW-FLOW.md).
 4. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
-5. Hand merged work to [`/post-merge-verifier`](../post-merge-verifier/SKILL.md).
+5. Hand merged work to the `start-build/reference/post-merge-verifier.md` recipe.
 6. Report the per-batch metrics listed in the Operating contract.
 
 ## Use when
@@ -48,8 +48,8 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
   read-only boundaries, or help-first `glab` correctness.
 - Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
-- After merge or protected auto-merge, hand off read-only validation to `../post-merge-verifier/SKILL.md`.
-- Canonical sources: `../gitlab-local/SKILL.md`, `../start-build/BUILD-FLOW.md`, `../start-build/reference/parent-orchestrator.md`, `../start-build/reference/child-builder.md`, `../start-build/templates/reviewer-lift-schema.md`, `../start-build/templates/review-packet.md`, `../start-review/REVIEW-FLOW.md`, `../start-review/templates/review-report.md`, `../post-merge-verifier/SKILL.md`.
+- After merge or protected auto-merge, hand off read-only validation to the `start-build/reference/post-merge-verifier.md` recipe.
+- Canonical sources: `../gitlab-local/SKILL.md`, `../start-build/BUILD-FLOW.md`, `../start-build/reference/parent-orchestrator.md`, `../start-build/reference/child-builder.md`, `../start-build/reference/post-merge-verifier.md`, `../start-build/templates/reviewer-lift-schema.md`, `../start-build/templates/review-packet.md`, `../start-review/REVIEW-FLOW.md`, `../start-review/templates/review-report.md`.
 
 ## Handoff
 
