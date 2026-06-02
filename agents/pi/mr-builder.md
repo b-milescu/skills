@@ -31,7 +31,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 
 ## Final handoff contract
 
-When the parent owns the gate, the final report MUST start with the approved machine-readable builder handoff schema from `start-build/templates/builder-final-handoff.md` when that template is available. Keep its values synchronized with the MR description's Reviewer Lift block and then include concise command evidence for:
+Every child-builder final response MUST start with the approved machine-readable builder handoff schema from `start-build/templates/builder-final-handoff.md` when that template is available. Parent-owned gate is one status/mode inside that schema, not the trigger for using it. Keep its values synchronized with the MR description's Reviewer Lift block and then include concise command evidence for:
 
 - MR IID/URL
 - `head_sha`, `reviewed_sha`, and candidate SHA (same MR head commit; in parent-owned gate mode this is the SHA the parent must gate before review)
@@ -115,12 +115,8 @@ When the reviewer requests changes:
 
 ## Stuck protocol
 
-If blocked for more than 2 hours:
-1. Keep the MR in Draft.
-2. Post the stuck-packet template as an MR comment.
-3. Apply the project's unblock label if one exists.
-4. List ranked hypotheses.
-5. Park the branch or switch to a non-blocked issue.
+Detailed stuck handling lives in `start-build/reference/stuck-protocol.md`; do not copy its full procedure here.
+Launch-critical rule: if blocked for more than 2 hours, keep the MR in Draft, post the filled stuck-packet as an MR comment through `gitlab-local` **Snippet: mr-note-create**, apply only a documented unblock label, list ranked hypotheses, and park or switch only on a fresh branch/worktree.
 
 ## glab CLI
 
