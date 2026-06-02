@@ -309,22 +309,10 @@ agent_references_skill() {
   grep -Eq "(^skills:[[:space:]]*.*(^|[ ,])${skill}([ ,]|$)|\`${skill}\`|(^|[^[:alnum:]_-])${skill}([^[:alnum:]_-]|$))" "$agent_file"
 }
 
-external_skill_guidance() {
-  local skill="$1" skill_dir="$2"
-  case "$skill" in
-    tdd)
-      printf "Install external skill '%s' into %s/%s with a SKILL.md file (for example from the owning skill pack) before running behavior-touching build/review workflows." "$skill" "$skill_dir" "$skill"
-      ;;
-    *)
-      printf "Install external skill '%s' into %s/%s with a SKILL.md file from its owning skill pack." "$skill" "$skill_dir" "$skill"
-      ;;
-  esac
-}
-
 check_runtime_external_skills() {
   local label="$1" runtime_root="$2" agent_dir="$3" skill_dir="$4" source_agent_dir="$5"
   local required_external_skills=(tdd)
-  local skill agent needs_skill found_agent guidance scan_dir scan_label
+  local skill agent needs_skill found_agent scan_dir scan_label
 
   if [[ ! -d "$runtime_root" ]]; then
     info "$label runtime not installed at $runtime_root; external dependency check skipped for this runtime"
@@ -363,8 +351,7 @@ check_runtime_external_skills() {
     [[ "$needs_skill" -eq 1 ]] || continue
 
     if [[ ! -f "$skill_dir/$skill/SKILL.md" ]]; then
-      guidance="$(external_skill_guidance "$skill" "$skill_dir")"
-      error "$label $scan_label reference missing required external skill $skill in $skill_dir. $guidance"
+      error "$label $scan_label reference missing required external skill $skill in $skill_dir. Install external skill '$skill' into $skill_dir/$skill with a SKILL.md file (for example from the owning skill pack) before running behavior-touching build/review workflows."
     fi
   done
 }
