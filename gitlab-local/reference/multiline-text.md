@@ -4,9 +4,19 @@ This reference owns the detailed file-backed text patterns for `/gitlab-local`. 
 
 ## Safe multiline GitLab text
 
-Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes, and MR descriptions. Quoted heredocs (`<<'EOF'`) keep Markdown backticks, `$VARS`, and command substitutions literal while writing the local file.
+Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
+and MR descriptions, then submit those files through
+`gitlab-local/scripts/gitlab-wrappers.sh`. Quoted heredocs (`<<'EOF'`) keep
+Markdown backticks, `$VARS`, and command substitutions literal while writing the
+local file.
 
-Keep generated text files under temp/run directories, never commit review artifacts, and redact secrets before writing text that may be pasted to GitLab.
+The wrappers validate file bytes before calling `glab`: NUL, non-whitespace C0
+controls, and DEL are rejected locally, while tab/newline/carriage return remain
+valid for Markdown. Diagnostics do not print secrets or the malformed packet body;
+they name the failing file role and byte offset.
+
+Keep generated text files under temp/run directories, never commit review
+artifacts, and redact secrets before writing text that may be pasted to GitLab.
 
 ## MR note pattern
 
@@ -14,14 +24,15 @@ Keep generated text files under temp/run directories, never commit review artifa
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-note.XXXXXX")"
 message_file="$run_dir/mr-note.md"
 cat > "$message_file" <<'EOF'
-## Review Gate Summary
+## Revision Packet
 
 - Reviewed SHA: `abc123`
-- Result: approved
 - Literal example: `echo "$EXAMPLE_VAR"` is not executed.
 EOF
 
-glab mr note create "$mr_iid" --message "$(cat "$message_file")"
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" mr_note_create --repo "$repo_url" --mr-iid "$mr_iid" \
+  --message-file "$message_file"
 ```
 
 ## Issue note pattern
@@ -36,7 +47,9 @@ cat > "$message_file" <<'EOF'
 - Status: ready for review
 EOF
 
-glab issue note "$issue_iid" --message "$(cat "$message_file")"
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" issue_note_create --repo "$repo_url" --issue-iid "$issue_iid" \
+  --message-file "$message_file"
 ```
 
 ## MR description pattern
@@ -50,9 +63,12 @@ cat > "$description_file" <<'EOF'
 Generated from a local file so Markdown is not interpreted by the shell.
 EOF
 
-glab mr create --draft --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description "$(cat "$description_file")" --yes
-glab mr update "$mr_iid" --description "$(cat "$description_file")"
+gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+"$gitlab_wrappers_script" draft_mr_create --repo "$repo_url" \
+  --target-branch "$default_branch" --source-branch "$source_branch" \
+  --title "$title" --description-file "$description_file"
+"$gitlab_wrappers_script" mr_description_update --repo "$repo_url" --mr-iid "$mr_iid" \
+  --description-file "$description_file"
 ```
 
 ## Inline heredoc command-substitution hazard

@@ -55,12 +55,19 @@ label_reconcile_body="$(require_snippet label-reconcile)"
 safe_mr_json_body="$(require_snippet safe-mr-json)"
 auto_merge_api_body="$(require_snippet auto-merge-api-fallback)"
 
-assert_contains "$draft_create_body" 'glab mr create --draft' 'Draft MR create command'
-assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch flag'
+assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
+assert_contains "$draft_create_body" 'draft_mr_create' 'Draft MR create wrapper command'
+assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch input'
+assert_contains "$draft_create_body" '--description-file "$description_file"' 'Draft MR file-backed description'
+assert_not_contains "$draft_create_body" 'glab mr create --draft' 'raw Draft MR create command'
 assert_not_contains "$draft_create_body" 'glab mr update' 'MR update command in Draft MR create snippet'
 assert_not_contains "$draft_create_body" '--ready' 'ready flag in Draft MR create snippet'
 
-assert_contains "$mr_description_update_body" 'glab mr update <id> --description "$(cat "$description_file")"' 'MR description update command'
+assert_contains "$mr_description_update_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'MR description update wrapper path'
+assert_contains "$mr_description_update_body" 'mr_description_update' 'MR description update wrapper command'
+assert_contains "$mr_description_update_body" '--mr-iid "$mr_iid"' 'MR description explicit target'
+assert_contains "$mr_description_update_body" '--description-file "$description_file"' 'MR description file-backed input'
+assert_not_contains "$mr_description_update_body" 'glab mr update <id> --description "$(cat "$description_file")"' 'raw MR description update command'
 assert_not_contains "$mr_description_update_body" 'glab mr create' 'MR create command in description update snippet'
 assert_not_contains "$mr_description_update_body" '--ready' 'ready flag in description update snippet'
 
@@ -123,8 +130,11 @@ assert_contains "$auto_merge_api_body" 'auto_merge_api_fallback' 'auto-merge fal
 assert_contains "$auto_merge_api_body" '--authority-verified true' 'verified authority source input'
 assert_contains "$auto_merge_api_body" 'known `glab mr merge --auto-merge` 405 path' 'known 405 fallback docs'
 assert_not_contains "$auto_merge_api_body" 'glab api' 'raw API command in auto-merge fallback snippet'
+require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-create.*mr-description-update' 'wrappers README description contract reference'
 
 require_text "gitlab-local/SKILL.md" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
+require_text "gitlab-local/SKILL.md" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
+require_text "gitlab-local/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
 require_text "gitlab-local/SKILL.md" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
 
 require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
