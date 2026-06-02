@@ -12,6 +12,10 @@ cat > "$TMPDIR/docs/index.md" <<'MD'
 See [details](details.md#setup-flow), [local heading](#main-doc), and ![logo](../images/logo.png).
 
 Allowed external: [GitLab](https://gitlab.example.com/agents/skills/-/issues/52).
+Angle local: [details angle](<details.md#setup-flow>).
+Angle external: [GitLab angle](<https://gitlab.example.com/agents/skills/-/issues/52>).
+Malformed nested angle: [nested](<<details.md#setup-flow>>).
+Placeholder destination: [skill root]({skill-root}/README.md).
 Blocked external: [example](https://example.com/outside-policy).
 Broken file: [missing](missing.md).
 Broken anchor: [bad anchor](details.md#missing-heading).
@@ -36,9 +40,9 @@ if [[ $status -eq 0 ]]; then
 fi
 
 for expected in \
-  "$TMPDIR/docs/index.md:6: external URL host \"example.com\" is not allowlisted" \
-  "$TMPDIR/docs/index.md:7: target file does not exist: missing.md" \
-  "$TMPDIR/docs/index.md:8: anchor \"missing-heading\" not found in details.md"; do
+  "$TMPDIR/docs/index.md:10: external URL host \"example.com\" is not allowlisted" \
+  "$TMPDIR/docs/index.md:11: target file does not exist: missing.md" \
+  "$TMPDIR/docs/index.md:12: anchor \"missing-heading\" not found in details.md"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
     echo "--- output ---" >&2
@@ -47,7 +51,7 @@ for expected in \
   fi
 done
 
-if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* ]]; then
+if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* || "$output" == *"<details.md"* || "$output" == *"<https://gitlab.example.com"* || "$output" == *"{skill-root}/README.md"* ]]; then
   echo "valid file/image/anchor was reported as broken" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$output" >&2

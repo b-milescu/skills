@@ -137,8 +137,9 @@ function findInlineMarkdownLinks(line) {
       continue;
     }
 
-    const destination = parseMarkdownDestination(line.slice(destinationStart, destinationEnd));
-    if (destination) {
+    const rawDestination = line.slice(destinationStart, destinationEnd);
+    const destination = parseMarkdownDestination(rawDestination);
+    if (destination || rawDestination.trim().startsWith('<<')) {
       links.push({ start: offset, end: destinationEnd + 1, destination });
     }
     offset = destinationEnd + 1;
@@ -181,7 +182,8 @@ function parseMarkdownDestination(raw) {
   }
   if (trimmed.startsWith('<')) {
     const end = trimmed.indexOf('>');
-    return end === -1 ? trimmed.slice(1) : trimmed.slice(1, end);
+    const destination = end === -1 ? trimmed.slice(1) : trimmed.slice(1, end);
+    return destination.startsWith('<') ? '' : destination;
   }
   const match = trimmed.match(/^\S+/);
   return match ? match[0] : '';
@@ -206,7 +208,7 @@ function trimTrailingPunctuation(url) {
 }
 
 function checkDestination({ file, lineNumber, destination }) {
-  if (!destination || destination.startsWith('<') || destination.startsWith('{')) {
+  if (!destination || destination.startsWith('{')) {
     return;
   }
 
