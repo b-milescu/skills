@@ -36,6 +36,69 @@ and compares the ids it is handed (see the
    `caller_user_id == mr_author_id` for any non-`handoff` action with
    `reason=self_merge`.
 
+## Gate input surface
+
+[`scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh)
+accepts exactly seven inputs: five required named inputs plus two optional source
+inputs. The caller resolves and passes all of them; the gate only validates and
+compares the values it is handed.
+
+| Flag | Required | Meaning |
+| --- | --- | --- |
+| `--caller-role` | yes | Role taking the action: `builder`, `reviewer`, `authorized-parent`, or `human`. |
+| `--caller-user-id` | yes | GitLab account id acting now, from `get_current_user()` (see lifecycle above). |
+| `--mr-author-id` | yes | GitLab account id that opened the MR, from `get_merge_request.author.id`. |
+| `--merge-authority` | yes | `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`. |
+| `--action` | yes | Requested finish action: `handoff`, `approve`, `merge`, or `queue-auto-merge`. |
+| `--authority-source` | optional | The caller's **declared** provenance string for the `--merge-authority` it passed (where that authority claim came from). |
+| `--expected-authority-source` | optional | The provenance string the caller **requires** the declared source to equal before any non-`handoff` finish action is permitted. |
+
+The five required inputs are owned by the [authority matrix](authority-matrix.md)
+decision; this section adds only the two optional source inputs and their
+fail-closed contract below.
+
+## Authority-source mismatch contract
+
+`--authority-source` and `--expected-authority-source` let the caller pin the
+**provenance** of the merge authority it is acting on, separately from the
+role × merge-authority × action decision. They drive the
+`authority_source_mismatch` fail-closed reason.
+
+- **What each means.** `--authority-source` is the source the caller *declares*
+  the `--merge-authority` value came from (for example a stable repo policy
+  default, a quoted human MR-comment grant, or a parent-task instruction).
+  `--expected-authority-source` is the source the caller *requires* — the
+  provenance the merge-authority claim must match to be trustworthy.
+- **Who supplies them.** The same orchestrating caller that resolves the
+  identities supplies both. The declared source is whatever provenance the caller
+  recorded for the merge-authority claim (for example, the MR's Reviewer Lift
+  `Merge authority source`); the expected source is the provenance the caller
+  independently re-verified just before finishing. Builders never supply these to
+  obtain a finish action — the `builder` role is always blocked from
+  non-`handoff` actions regardless of source (see the
+  [authority matrix](authority-matrix.md)).
+- **When `authority_source_mismatch` fires.** The check runs only when
+  `--expected-authority-source` is non-empty. If an expected source is declared
+  and the passed `--authority-source` does not equal it exactly, the gate blocks
+  with exit code `8` and `reason=authority_source_mismatch`, **before** the
+  self-merge and role-authority checks. When `--expected-authority-source` is
+  omitted (empty), the gate performs no source comparison and proceeds to the
+  self-merge / authority checks. The comparison is an exact string match, so the
+  caller must normalize the declared and expected provenance strings to the same
+  form.
+- **How the caller fails closed / escalates.** On exit `8`
+  (`authority_source_mismatch`) the caller must make **no** finish mutation: do
+  not approve, merge, or queue auto-merge. Re-resolve the merge-authority
+  provenance from its canonical source, and re-run the gate only with a freshly
+  re-verified, matching `--authority-source`. If the provenance cannot be
+  reconciled, stop and escalate to the parent/human with the mismatch rather than
+  proceeding on an unverified authority claim.
+
+The `authority_source_mismatch` reason itself is enumerated alongside the gate's
+other fail-closed reasons in the [authority matrix](authority-matrix.md); this
+document owns the caller contract for the two source inputs, while the matrix owns
+the reason within the role × merge-authority × action decision.
+
 ## The git commit author is NOT the caller
 
 The self-merge check compares **GitLab account ids**, never the git commit author
