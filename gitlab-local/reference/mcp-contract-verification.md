@@ -53,9 +53,16 @@ Scope discipline for this reference:
 | `list_pipelines` | 20 | 100 |
 | `list_branches` | 20 | 100 |
 
-**Filter / search ordering.** `search=` and structured filters (state, labels, etc.) are applied **server-side before** the page cap: the server filters the full set, then returns at most one capped page of the already-filtered results. The cap is therefore a cap on *returned matches per page*, not a cap on the candidate set that gets filtered. A single call can still under-report when matches exceed the page size.
+**Filter / search ordering (documented expectation — not yet observed).** From the tool/API contract, `search=` and structured filters (state, labels, etc.) are expected to be applied **server-side before** the page cap: the server filters the full set, then returns at most one capped page of the already-filtered results. On that contract the cap is a cap on *returned matches per page*, not a cap on the candidate set that gets filtered, and a single call can still under-report when matches exceed the page size. This ordering was **not** confirmed by a live read in this environment; it is documented from the contract and carries a read-only procedure to confirm later (below). The required agent-side over-cap handling is conservative either way, so it does not depend on observing this ordering first.
 
-**Verification method.** `schema` for the default/max page-size bounds (the pagination parameters and their min/max in the tool input schema), plus `live-read` for the filter-before-cap ordering using read-only `list_*` calls with and without `search=`/filters and varied page sizes. No mutation.
+**Verification method.** `schema` for the default/max page-size bounds (the pagination parameters and their min/max in the tool input schema) and for the documented filter-then-cap contract. The filter-before-cap *ordering* is **not** tagged `live-read`: no read-only `gitlab-mcp` call was performed in this environment to observe it (only the §5 GitLab REST projection was available). It is recorded as a `sandbox-procedure` read-only check to run later (below), not asserted as a live result. No mutation.
+
+**Read-only ordering check** (`sandbox-procedure`; read-only `list_*` calls, no mutation — run later to confirm the documented ordering):
+
+1. Pick a `list_*` tool and a `search=`/filter value known to match more records than one page (or set a small page size so matches exceed it).
+2. Issue the filtered call and record the returned count and whether every returned item satisfies the filter.
+3. Issue the same call paginated to exhaustion; assert the total filtered matches exceed a single capped page (proving the cap bounds *returned matches per page*, not the pre-filter candidate set).
+4. Assert no returned item violates the filter (i.e. filtering was applied to the full set server-side, then capped — not cap-first). Record the observed counts in the test artifact. Any result where the cap appears to bound the pre-filter candidate set contradicts the documented ordering and must be surfaced.
 
 **Required agent-side over-cap handling.** Because any single list page can silently truncate at 100:
 
