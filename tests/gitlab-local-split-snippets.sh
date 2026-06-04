@@ -1,8 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Parallel-execution contract (issue #197):
+#   Phase 2 (snippet-body MCP migration) OWNS this file: tests/gitlab-local-split-snippets.sh.
+#   Phase 3 OWNS tests/gitlab-local-ci-finish-guards.sh.
+# These two test files are intentionally disjoint so Phase 2 and Phase 3 can run
+# in parallel without serializing on a shared test. If a future change must touch
+# both, merge test rows by ID without resequencing the existing assertions.
+#
+# Transport independence (issue #197):
+#   This test asserts BEHAVIOURAL invariants and MCP wording, NOT exact `glab`
+#   command strings. When Phase 2 swaps the snippet bodies from `glab` CLI calls
+#   to gitlab-mcp tool calls, the per-snippet action verbs below are matched in
+#   EITHER transport (legacy `glab ...` OR MCP tool call), so this test stays
+#   green across the migration. The load-bearing invariants it preserves are:
+#     - the 20 snippet NAMES are stable (transport-independent API),
+#     - one action per snippet (no snippet mixes two mutating verbs),
+#     - no combined approve+merge in any generic snippet (only the
+#       finish-mr-authority-aware facade may carry conditional approve+merge),
+#     - helper-script path contracts survive (skill:// URIs + scripts/README.md),
+#     - file-backed / explicit-target inputs survive for note + description flows,
+#     - retired combined snippets (approve-merge-sha-bound, note-comment-creation,
+#       draft-mr-create-update) stay gone.
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+
+SKILL="gitlab-local/SKILL.md"
 
 fail() {
   printf 'gitlab-local-split-snippets: FAIL: %s\n' "$*" >&2
@@ -25,8 +49,8 @@ extract_snippet() {
 
 require_snippet() {
   local name="$1" body
-  body="$(extract_snippet "gitlab-local/SKILL.md" "$name")"
-  [[ -n "$body" ]] || fail "gitlab-local/SKILL.md missing snippet $name"
+  body="$(extract_snippet "$SKILL" "$name")"
+  [[ -n "$body" ]] || fail "$SKILL missing snippet $name"
   printf '%s\n' "$body"
 }
 
@@ -39,6 +63,52 @@ assert_not_contains() {
   local text="$1" needle="$2" label="$3"
   [[ "$text" != *"$needle"* ]] || fail "unexpected $label: $needle"
 }
+
+# Behavioural matcher: a snippet "performs <verb>" if its body contains the verb
+# in EITHER transport — the legacy `glab` CLI form OR a gitlab-mcp tool call.
+# These regexes deliberately avoid pinning exact `glab` argument strings so the
+# assertions survive the Phase 2 MCP body swap.
+assert_performs() {
+  local text="$1" pattern="$2" label="$3"
+  printf '%s\n' "$text" | grep -Eiq -- "$pattern" || fail "snippet does not perform $label"
+}
+
+assert_not_performs() {
+  local text="$1" pattern="$2" label="$3"
+  if printf '%s\n' "$text" | grep -Eiq -- "$pattern"; then
+    fail "snippet unexpectedly performs $label"
+  fi
+}
+
+# SHA-pin invariant (transport-independent): the action line that performs the
+# mutating verb must bind reviewed_sha ON THE SAME LINE, so the action is pinned
+# to the reviewed head and cannot drift. This matches the legacy `glab ... --sha
+# "$reviewed_sha"` form and the planned MCP `tool(..., sha="$reviewed_sha")`
+# form, but rejects a body that merely declares reviewed_sha elsewhere without
+# binding it to the action.
+assert_action_sha_pinned() {
+  local text="$1" verb="$2" label="$3"
+  printf '%s\n' "$text" \
+    | grep -Ei -- "$verb" \
+    | grep -Eiq -- '(--sha[ =]|sha[ ]*[:=][ ]*)"?\$reviewed_sha' \
+    || fail "$label action line is not SHA-pinned to reviewed_sha"
+}
+
+# Transport-independent action-verb regexes. Each matches the current `glab`
+# wording and the planned MCP tool-call wording (the gitlab-mcp tool names the
+# refactor adopts, e.g. create_merge_request / update_merge_request /
+# approve_merge_request / merge_merge_request / get_merge_request /
+# list_pipelines / create_note).
+VERB_MR_CREATE='glab mr create|create_merge_request'
+VERB_MR_UPDATE='glab mr update|update_merge_request'
+VERB_MARK_READY='glab mr update[^|]*--ready|update_merge_request[^|]*ready|--ready|ready ?[:=] ?true'
+VERB_DESCRIPTION='--description|description'
+VERB_APPROVE='glab mr approve|approve_merge_request'
+VERB_MERGE='glab mr merge|merge_merge_request'
+VERB_AUTO_MERGE='--auto-merge|auto[_-]?merge'
+VERB_APPROVALS_ENDPOINT='/approvals|get_merge_request_approval|approval_state'
+VERB_MR_NOTE='glab mr note|create_note|mr_note_create'
+VERB_ISSUE_NOTE='glab issue note|create_issue_note|issue_note_create'
 
 draft_create_body="$(require_snippet draft-mr-create)"
 mr_description_update_body="$(require_snippet mr-description-update)"
@@ -55,43 +125,73 @@ label_reconcile_body="$(require_snippet label-reconcile)"
 safe_mr_json_body="$(require_snippet safe-mr-json)"
 auto_merge_api_body="$(require_snippet auto-merge-api-fallback)"
 
+# --- Snippet-name stability: the 20 stable snippet names exist ----------------
+# The names are the transport-independent API workflow skills depend on; they
+# must survive the MCP migration unchanged.
+for name in \
+  local-repo-preflight issue-pickup draft-mr-create mr-description-update \
+  draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
+  ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
+  safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
+  sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
+  finish-mr-authority-aware; do
+  grep -Fxq "### Snippet: $name" "$SKILL" || fail "missing stable snippet name $name"
+done
+snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
+[[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"
+
+# --- Draft MR create: creates an MR, file-backed description, no ready/update --
+# One action: it CREATES, it does not update an existing MR and does not mark ready.
 assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
 assert_contains "$draft_create_body" 'draft_mr_create' 'Draft MR create wrapper command'
 assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch input'
 assert_contains "$draft_create_body" '--description-file "$description_file"' 'Draft MR file-backed description'
-assert_not_contains "$draft_create_body" 'glab mr create --draft' 'raw Draft MR create command'
-assert_not_contains "$draft_create_body" 'glab mr update' 'MR update command in Draft MR create snippet'
-assert_not_contains "$draft_create_body" '--ready' 'ready flag in Draft MR create snippet'
+assert_performs "$draft_create_body" "$VERB_MR_CREATE" 'an MR-create action'
+assert_not_performs "$draft_create_body" "$VERB_MR_UPDATE" 'an MR-update action in the create snippet'
+assert_not_performs "$draft_create_body" "$VERB_MARK_READY" 'a mark-ready action in the create snippet'
 
+# --- MR description update: updates description, explicit target, no create/ready
 assert_contains "$mr_description_update_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'MR description update wrapper path'
 assert_contains "$mr_description_update_body" 'mr_description_update' 'MR description update wrapper command'
 assert_contains "$mr_description_update_body" '--mr-iid "$mr_iid"' 'MR description explicit target'
 assert_contains "$mr_description_update_body" '--description-file "$description_file"' 'MR description file-backed input'
-assert_not_contains "$mr_description_update_body" 'glab mr update <id> --description "$(cat "$description_file")"' 'raw MR description update command'
-assert_not_contains "$mr_description_update_body" 'glab mr create' 'MR create command in description update snippet'
-assert_not_contains "$mr_description_update_body" '--ready' 'ready flag in description update snippet'
+assert_performs "$mr_description_update_body" "$VERB_DESCRIPTION" 'a description action'
+assert_not_performs "$mr_description_update_body" "$VERB_MR_CREATE" 'an MR-create action in the description-update snippet'
+assert_not_performs "$mr_description_update_body" "$VERB_MARK_READY" 'a mark-ready action in the description-update snippet'
 
-assert_contains "$draft_mark_ready_body" 'glab mr update <id> --ready' 'Draft MR mark-ready command'
-assert_not_contains "$draft_mark_ready_body" 'glab mr create' 'MR create command in mark-ready snippet'
+# --- Draft MR mark-ready: marks ready only, no create/description -------------
+assert_performs "$draft_mark_ready_body" "$VERB_MARK_READY" 'a mark-ready action'
+assert_not_performs "$draft_mark_ready_body" "$VERB_MR_CREATE" 'an MR-create action in the mark-ready snippet'
 assert_not_contains "$draft_mark_ready_body" '--description' 'description update in mark-ready snippet'
 
-assert_contains "$approval_body" 'glab mr approve "$mr_iid" --sha "$reviewed_sha"' 'SHA-bound approval command'
-assert_not_contains "$approval_body" 'glab mr merge' 'merge command in approval snippet'
-assert_not_contains "$approval_body" 'glab api' 'approval confirmation command in approval snippet'
+# --- SHA-bound approval: approves, SHA-pinned, no merge / no approvals read ----
+# Authority-relevant invariant: approval is its own action, bound to reviewed_sha.
+assert_performs "$approval_body" "$VERB_APPROVE" 'an approve action'
+assert_action_sha_pinned "$approval_body" "$VERB_APPROVE" 'approval'
+assert_not_performs "$approval_body" "$VERB_MERGE" 'a merge action in the approval snippet'
+assert_not_performs "$approval_body" "$VERB_APPROVALS_ENDPOINT" 'an approvals-read action in the approval snippet'
 
-assert_contains "$merge_body" 'glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false' 'SHA-bound direct merge command'
-assert_not_contains "$merge_body" 'glab mr approve' 'approval command in merge snippet'
-assert_not_contains "$merge_body" 'glab mr merge "$mr_iid" --auto-merge --yes' 'auto-merge queueing in direct merge snippet'
-assert_not_contains "$merge_body" 'glab api' 'approval confirmation command in merge snippet'
+# --- SHA-bound direct merge: merges, SHA-pinned, not auto-merge, no approve ----
+assert_performs "$merge_body" "$VERB_MERGE" 'a merge action'
+assert_action_sha_pinned "$merge_body" "$VERB_MERGE" 'merge'
+assert_not_performs "$merge_body" "$VERB_APPROVE" 'an approve action in the merge snippet'
+assert_not_performs "$merge_body" "$VERB_APPROVALS_ENDPOINT" 'an approvals-read action in the merge snippet'
 
-assert_contains "$auto_merge_body" 'glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"' 'SHA-bound auto-merge queue command'
-assert_not_contains "$auto_merge_body" 'glab mr approve' 'approval command in auto-merge snippet'
-assert_not_contains "$auto_merge_body" 'glab api' 'approval confirmation command in auto-merge snippet'
+# --- SHA-bound auto-merge queue: queues auto-merge, SHA-pinned, no approve -----
+assert_performs "$auto_merge_body" "$VERB_MERGE" 'a merge action'
+assert_performs "$auto_merge_body" "$VERB_AUTO_MERGE" 'an auto-merge queue action'
+assert_action_sha_pinned "$auto_merge_body" "$VERB_MERGE" 'auto-merge queue'
+assert_not_performs "$auto_merge_body" "$VERB_APPROVE" 'an approve action in the auto-merge snippet'
+assert_not_performs "$auto_merge_body" "$VERB_APPROVALS_ENDPOINT" 'an approvals-read action in the auto-merge snippet'
 
-assert_contains "$confirmation_body" '/merge_requests/${mr_iid}/approvals' 'approval confirmation endpoint'
-assert_not_contains "$confirmation_body" 'glab mr approve' 'approval command in confirmation snippet'
-assert_not_contains "$confirmation_body" 'glab mr merge' 'merge command in confirmation snippet'
+# --- Approval confirmation: reads approvals only, no approve/merge -------------
+assert_performs "$confirmation_body" "$VERB_APPROVALS_ENDPOINT" 'an approvals-read action'
+assert_not_performs "$confirmation_body" "$VERB_APPROVE" 'an approve action in the confirmation snippet'
+assert_not_performs "$confirmation_body" "$VERB_MERGE" 'a merge action in the confirmation snippet'
 
+# --- CI watch + finish: keep helper-script path contracts + card link ---------
+# The bodies must point at the in-skill helper script + docs (path contracts that
+# survive transport changes), and must not re-inline the long relocated bodies.
 assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'CI watcher helper script pointer'
 assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"' 'CI watcher full skill URI helper path'
 assert_contains "$ci_watch_body" 'scripts/README.md' 'CI watcher helper docs pointer'
@@ -99,24 +199,24 @@ assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper scri
 assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
 assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
 assert_not_contains "$ci_watch_body" 'while [ "$SECONDS" -le "$deadline" ]; do' 'long CI watcher shell body'
-assert_not_contains "$ci_watch_body" 'branch_json="$(glab ci status --branch "$source_branch" -F json 2>/dev/null || true)"' 'inline branch CI status body'
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
 assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
 
+# --- MR note: posts an MR note via helper, file-backed, not an issue note ------
 assert_contains "$mr_note_body" 'scripts/gitlab-wrappers.sh' 'MR note wrapper script pointer'
 assert_contains "$mr_note_body" 'mr_note_create' 'MR note wrapper command'
 assert_contains "$mr_note_body" '--mr-iid "$mr_iid"' 'explicit MR target'
 assert_contains "$mr_note_body" '--message-file "$report_file"' 'file-backed MR message'
-assert_not_contains "$mr_note_body" 'glab issue note' 'issue-note command in MR-note snippet'
-assert_not_contains "$mr_note_body" 'glab mr note create' 'raw MR-note command in MR-note snippet'
+assert_not_performs "$mr_note_body" "$VERB_ISSUE_NOTE" 'an issue-note action in the MR-note snippet'
 
+# --- Issue note: posts an issue note via helper, file-backed, not an MR note ---
 assert_contains "$issue_note_body" 'scripts/gitlab-wrappers.sh' 'issue note wrapper script pointer'
 assert_contains "$issue_note_body" 'issue_note_create' 'issue note wrapper command'
 assert_contains "$issue_note_body" '--issue-iid "$issue_iid"' 'explicit issue target'
 assert_contains "$issue_note_body" '--message-file "$comment_file"' 'file-backed issue message'
-assert_not_contains "$issue_note_body" 'glab mr note create' 'MR-note command in issue-note snippet'
-assert_not_contains "$issue_note_body" 'glab issue note <id>' 'raw issue-note command in issue-note snippet'
+assert_not_performs "$issue_note_body" "$VERB_MR_NOTE" 'an MR-note action in the issue-note snippet'
 
+# --- Label reconcile / safe MR JSON / auto-merge fallback: wrapper contracts ---
 assert_contains "$label_reconcile_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'label reconcile self-contained wrapper script path'
 assert_contains "$label_reconcile_body" 'label_reconcile' 'label reconcile wrapper command'
 assert_contains "$label_reconcile_body" '--add-labels "$add_labels"' 'label reconcile add input'
@@ -128,29 +228,27 @@ assert_contains "$safe_mr_json_body" 'project binding, SHA, pipeline' 'safe MR J
 assert_contains "$auto_merge_api_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'auto-merge fallback self-contained wrapper script path'
 assert_contains "$auto_merge_api_body" 'auto_merge_api_fallback' 'auto-merge fallback wrapper command'
 assert_contains "$auto_merge_api_body" '--authority-verified true' 'verified authority source input'
-assert_contains "$auto_merge_api_body" 'known `glab mr merge --auto-merge` 405 path' 'known 405 fallback docs'
-assert_not_contains "$auto_merge_api_body" 'glab api' 'raw API command in auto-merge fallback snippet'
 require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-create.*mr-description-update' 'wrappers README description contract reference'
 
-require_text "gitlab-local/SKILL.md" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
-require_text "gitlab-local/SKILL.md" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
+# --- File-backed multiline + help-first guidance survive ----------------------
+require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
+require_text "$SKILL" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
 require_text "gitlab-local/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
-require_text "gitlab-local/SKILL.md" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
+require_text "$SKILL" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
 
 require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
 require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
 require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*auto-merge-api-fallback' 'wrappers README contract reference'
 require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
-if grep -Fq 'Snippet: approve-merge-sha-bound' gitlab-local/SKILL.md; then
+# --- Retired combined snippets stay gone (transport-independent names) ---------
+if grep -Fq 'Snippet: approve-merge-sha-bound' "$SKILL"; then
   fail 'retired combined approve-merge-sha-bound snippet still present'
 fi
-
-if grep -Fq 'Snippet: note-comment-creation' gitlab-local/SKILL.md; then
+if grep -Fq 'Snippet: note-comment-creation' "$SKILL"; then
   fail 'retired combined note-comment-creation snippet still present'
 fi
-
-if grep -Fq 'Snippet: draft-mr-create-update' gitlab-local/SKILL.md; then
+if grep -Fq 'Snippet: draft-mr-create-update' "$SKILL"; then
   fail 'retired combined draft-mr-create-update snippet still present'
 fi
 
@@ -199,17 +297,12 @@ for file in \
   fi
 done
 
-require_text "gitlab-local/SKILL.md" 'Snippet: issue-note-create' 'issue-note snippet reference'
+require_text "$SKILL" 'Snippet: issue-note-create' 'issue-note snippet reference'
 require_text "start-build/reference/post-merge-verifier.md" 'Snippet: issue-note-create' 'post-merge issue-note snippet reference'
 
-require_text \
-  "gitlab-local/SKILL.md" \
-  'Choose (exactly )?one action' \
-  'choose-one-action warning for approval/merge snippets'
-require_text \
-  "gitlab-local/SKILL.md" \
-  'Never run[^.]*combined[^.]*approval/merge block' \
-  'no combined approval/merge block warning'
+# --- No-combined-approve+merge warning survives (transport-independent prose) --
+require_text "$SKILL" 'Choose (exactly )?one action' 'choose-one-action warning for approval/merge snippets'
+require_text "$SKILL" 'Never run[^.]*combined[^.]*approval/merge block' 'no combined approval/merge block warning'
 
 for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
   if grep -Fq 'approve-merge-sha-bound' "$file"; then
@@ -220,78 +313,74 @@ for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
   require_text "$file" 'Snippet: sha-bound-auto-merge-queue' 'sha-bound auto-merge queue snippet reference'
 done
 
-# Keep executable action snippets isolated. The authority-aware finish helper is
-# intentionally allowed to contain conditional approve+merge logic; generic
-# snippet sections must not reintroduce a copy-paste block that performs both.
+# --- One-action-per-snippet (no combined approve+merge), transport-independent -
+# The authority-aware finish helper is intentionally allowed to carry conditional
+# approve+merge logic; every OTHER snippet section must not perform BOTH an
+# approve action and a merge action. The verb regexes match either the current
+# `glab` wording or the planned gitlab-mcp tool-call wording, so this fail-closed
+# guard survives the Phase 2 body swap.
 awk '
-  /^### Snippet:/ {
+  function flush() {
     if (snippet != "" && snippet != "finish-mr-authority-aware" && saw_approve && saw_merge) {
-      printf "snippet %s contains both glab mr approve and glab mr merge\n", snippet > "/dev/stderr"
+      printf "snippet %s performs both an approve and a merge action\n", snippet > "/dev/stderr"
       bad=1
     }
+  }
+  /^### Snippet:/ {
+    flush()
     snippet=$0
     sub(/^### Snippet: /, "", snippet)
     saw_approve=0
     saw_merge=0
     next
   }
-  snippet != "" && /^[[:space:]]*glab mr approve[[:space:]]/ { saw_approve=1 }
-  snippet != "" && /^[[:space:]]*glab mr merge[[:space:]]/ { saw_merge=1 }
-  END {
-    if (snippet != "" && snippet != "finish-mr-authority-aware" && saw_approve && saw_merge) {
-      printf "snippet %s contains both glab mr approve and glab mr merge\n", snippet > "/dev/stderr"
-      bad=1
-    }
-    exit bad ? 1 : 0
-  }
-' gitlab-local/SKILL.md || fail 'combined executable approve+merge snippet detected'
+  snippet != "" && (/glab mr approve/ || /approve_merge_request/) { saw_approve=1 }
+  snippet != "" && (/glab mr merge/ || /merge_merge_request/) { saw_merge=1 }
+  END { flush(); exit bad ? 1 : 0 }
+' "$SKILL" || fail 'combined approve+merge snippet detected'
 
+# --- One-action-per-snippet (no create+description+ready facade) ---------------
 awk '
-  /^### Snippet:/ {
-    if (snippet != "" && saw_create && saw_description_update && saw_ready) {
-      printf "snippet %s contains create, description update, and ready commands\n", snippet > "/dev/stderr"
+  function flush() {
+    if (snippet != "" && saw_create && saw_description && saw_ready) {
+      printf "snippet %s performs create, description update, and ready actions\n", snippet > "/dev/stderr"
       bad=1
     }
+  }
+  /^### Snippet:/ {
+    flush()
     snippet=$0
     sub(/^### Snippet: /, "", snippet)
     saw_create=0
-    saw_description_update=0
+    saw_description=0
     saw_ready=0
     next
   }
-  snippet != "" && /^[[:space:]]*glab mr create[[:space:]]/ { saw_create=1 }
-  snippet != "" && /^[[:space:]]*glab mr update[[:space:]].*--description/ { saw_description_update=1 }
-  snippet != "" && /^[[:space:]]*glab mr update[[:space:]].*--ready/ { saw_ready=1 }
-  END {
-    if (snippet != "" && saw_create && saw_description_update && saw_ready) {
-      printf "snippet %s contains create, description update, and ready commands\n", snippet > "/dev/stderr"
-      bad=1
-    }
-    exit bad ? 1 : 0
-  }
-' gitlab-local/SKILL.md || fail 'combined executable create+description-update+ready snippet detected'
+  snippet != "" && (/glab mr create/ || /create_merge_request/) { saw_create=1 }
+  snippet != "" && ((/glab mr update/ && /--description/) || (/update_merge_request/ && /description/)) { saw_description=1 }
+  snippet != "" && ((/glab mr update/ && /--ready/) || (/update_merge_request/ && /ready/)) { saw_ready=1 }
+  END { flush(); exit bad ? 1 : 0 }
+' "$SKILL" || fail 'combined create+description-update+ready snippet detected'
 
+# --- One-action-per-snippet (no combined MR-note + issue-note) -----------------
 awk '
-  /^### Snippet:/ {
+  function flush() {
     if (snippet != "" && saw_mr_note && saw_issue_note) {
-      printf "snippet %s contains both glab mr note create and glab issue note\n", snippet > "/dev/stderr"
+      printf "snippet %s performs both an MR-note and an issue-note action\n", snippet > "/dev/stderr"
       bad=1
     }
+  }
+  /^### Snippet:/ {
+    flush()
     snippet=$0
     sub(/^### Snippet: /, "", snippet)
     saw_mr_note=0
     saw_issue_note=0
     next
   }
-  snippet != "" && /^[[:space:]]*glab mr note create[[:space:]]/ { saw_mr_note=1 }
-  snippet != "" && /^[[:space:]]*glab issue note[[:space:]]/ { saw_issue_note=1 }
-  END {
-    if (snippet != "" && saw_mr_note && saw_issue_note) {
-      printf "snippet %s contains both glab mr note create and glab issue note\n", snippet > "/dev/stderr"
-      bad=1
-    }
-    exit bad ? 1 : 0
-  }
-' gitlab-local/SKILL.md || fail 'combined executable MR+issue note snippet detected'
+  snippet != "" && (/glab mr note/ || /create_note/) { saw_mr_note=1 }
+  snippet != "" && (/glab issue note/ || /create_issue_note/) { saw_issue_note=1 }
+  END { flush(); exit bad ? 1 : 0 }
+' "$SKILL" || fail 'combined MR+issue note snippet detected'
 
 printf 'gitlab-local-split-snippets: PASS\n'

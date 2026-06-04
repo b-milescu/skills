@@ -1,13 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Guards the #147 relocation: the load-bearing CI polling/SHA mechanics and the
-# finish guard/authority mechanics moved out of gitlab-local/SKILL.md into the
-# reference card gitlab-local/reference/ci-finish-guards.md, while each SKILL.md
-# snippet keeps its heading + Inputs + helper-invocation block + scripts pointers
-# and links to the card. Verdict-classification and authority-matrix policy must
-# become accurate pointers to the canonical owners (REVIEW-FLOW.md / SAFETY.md),
-# not restated prose.
+# Parallel-execution contract (issue #197):
+#   Phase 3 OWNS this file: tests/gitlab-local-ci-finish-guards.sh.
+#   Phase 2 OWNS tests/gitlab-local-split-snippets.sh.
+# The two test files are intentionally disjoint so Phase 2 and Phase 3 can run in
+# parallel without serializing on a shared test. If a future change must touch
+# both, merge test rows by ID without resequencing the existing assertions.
+#
+# Transport independence (issue #197):
+#   This test asserts the CONCEPTUAL CI-watch + finish-guard invariants and their
+#   MCP wording, NOT exact `glab` command strings. When Phase 3 swaps the card's
+#   relocated mechanics from `glab` CLI calls to gitlab-mcp tool calls, the
+#   per-poll re-read and pipeline-lookup mechanics below are matched in EITHER
+#   transport (legacy `glab mr view` / `glab ci status --branch` OR MCP
+#   `get_merge_request` / `list_pipelines(sha=)`), so this test stays green
+#   across the migration. The load-bearing invariants it preserves are:
+#     - per-poll re-read of MR head (no stale list data for decision-grade),
+#     - SHA-pin EVERY poll iteration against reviewed_sha,
+#     - the forbidden whole-MR CI status shortcut stays a do-not-use mechanic,
+#     - authority-gate-BEFORE-mutation (no approve/merge/queue before the gate),
+#     - exactly-one-finish-action,
+#     - fetch-ONLY-AFTER the finish action,
+#     - worktree-removal precondition,
+#     - closure_pending instead of force-closing,
+#     - demoted verdict/authority policy points to the canonical owners,
+#     - the relocated 7 polling/SHA rules + 8 guard/authority steps survive,
+#     - SKILL.md stays under its post-relocation line budget.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
@@ -27,12 +46,12 @@ require_file() {
 
 require_text() {
   local file="$1" pattern="$2" label="$3"
-  grep -Eq -- "$pattern" "$file" || fail "$file missing $label"
+  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
 }
 
 reject_text() {
   local file="$1" pattern="$2" label="$3"
-  if grep -Eq -- "$pattern" "$file"; then
+  if grep -Eiq -- "$pattern" "$file"; then
     fail "$file unexpectedly contains $label"
   fi
 }
@@ -63,18 +82,30 @@ assert_not_contains() {
   [[ "$text" != *"$needle"* ]] || fail "unexpected $label still inline: $needle"
 }
 
+# Transport-independent mechanic regexes. Each matches the current `glab` wording
+# and the planned gitlab-mcp tool-call wording the refactor adopts.
+#   - MR head re-read: `glab mr view` OR `get_merge_request`.
+#   - pipeline lookup for a SHA: `glab ci status --branch` / MR `.pipeline`
+#     OR `list_pipelines(sha=...)` / `get_pipeline`.
+#   - the forbidden whole-MR CI shortcut: `glab ci status --mr` OR an MCP
+#     pipelines-for-MR-without-SHA form.
+MECH_MR_VIEW='glab mr view|get_merge_request'
+MECH_MR_LIST='glab mr list|list_merge_requests'
+MECH_PIPELINE_FOR_SHA='glab ci status --branch|list_pipelines|get_pipeline|\.pipeline'
+MECH_CI_MR_FORBIDDEN='glab ci status --mr|list_pipelines_for_mr|pipelines_for_merge_request'
+
 # ---------------------------------------------------------------------------
-# (a) The new card exists and carries the relocated mechanics tokens.
+# (a) The relocation card exists and carries the relocated mechanics.
 # ---------------------------------------------------------------------------
 require_file "$CARD"
 
-# CI verdict mechanics (from ci-watch-sha-pinned) — verbatim glab mechanics.
-require_text "$CARD" 'glab mr view' 'per-poll MR view re-read mechanic'
+# CI verdict mechanics (from ci-watch-sha-pinned) — transport-independent.
+require_text "$CARD" "$MECH_MR_VIEW" 'per-poll MR head re-read mechanic'
 require_text "$CARD" 'every poll' 'per-poll re-read wording'
-require_text "$CARD" 'glab mr list' 'reference to glab mr list (as not-for-decision-grade)'
-require_text "$CARD" 'do not rely on|never|not for decision-grade|decision-grade data' 'no glab mr list for decision-grade data wording'
-require_text "$CARD" 'glab ci status --branch' 'branch CI fallback mechanic'
-require_text "$CARD" 'glab ci status --mr' 'reference to the forbidden ci status --mr'
+require_text "$CARD" "$MECH_MR_LIST" 'reference to the not-for-decision-grade list mechanic'
+require_text "$CARD" 'do not rely on|never|not for decision-grade|decision-grade data' 'no list for decision-grade data wording'
+require_text "$CARD" "$MECH_PIPELINE_FOR_SHA" 'pipeline-for-SHA lookup mechanic'
+require_text "$CARD" "$MECH_CI_MR_FORBIDDEN" 'reference to the forbidden whole-MR CI shortcut'
 require_text "$CARD" 'stale_ci' 'stale_ci fail-closed token'
 require_text "$CARD" 'timeout' 'timeout fail-closed token'
 require_text "$CARD" 'expected_sha' 'expected_sha machine field'
@@ -82,33 +113,50 @@ require_text "$CARD" 'observed_sha' 'observed_sha machine field'
 require_text "$CARD" 'pipeline_id' 'pipeline_id machine field'
 require_text "$CARD" 'reviewed_sha' 'reviewed_sha SHA-pin token'
 
-# The forbidden ci status --mr must appear only as a do-not-use mechanic.
-require_text "$CARD" '(not|never|Do not)[^.]*glab ci status --mr' 'do-not-use ci status --mr mechanic'
+# SHA-pin EVERY poll iteration: the card must require a fail/abort when the
+# observed MR head differs from reviewed_sha during polling (the per-iteration
+# pin, not just the one-time finish-gate equality check). Anchor to a
+# fail-on-mismatch statement so dropping the polling-time pin fails closed even
+# though reviewed_sha also appears in the finish section.
+require_text "$CARD" '(fail|abort|stop|reject)[^;]*(differs?|mismatch|!=|not equal)[^;]*reviewed_sha|(differs?|mismatch|!=|not equal)[^;]*reviewed_sha[^.]*(stale|new review|fail)' 'per-iteration fail-on-SHA-mismatch against reviewed_sha'
+
+# The forbidden whole-MR CI shortcut must appear only as a do-not-use mechanic.
+require_text "$CARD" "(not|never|do not)[^.]*($MECH_CI_MR_FORBIDDEN)" 'do-not-use whole-MR CI shortcut mechanic'
 
 # Finish guard/authority mechanics (from finish-mr-authority-aware).
-require_text "$CARD" '\.sha.*reviewed_sha|reviewed_sha.*\.sha|SHA-bound' 'SHA-bound finish guard mechanic'
+require_text "$CARD" '\.sha.*reviewed_sha|reviewed_sha.*\.sha|sha[ =]"?\$?reviewed_sha|SHA-bound' 'SHA-bound finish guard mechanic'
 require_text "$CARD" 'exactly one (finish )?action|one finish action' 'exactly-one-finish-action mechanic'
 require_text "$CARD" 'closure_pending' 'closure_pending report token'
-require_text "$CARD" '[Ff]etch|fast-forward' 'fetch/fast-forward default branch mechanic'
+require_text "$CARD" 'fetch|fast-forward' 'fetch/fast-forward default branch mechanic'
 require_text "$CARD" 'only after' 'fetch only after the action sequencing'
 require_text "$CARD" 'worktree' 'worktree-removal precondition mechanic'
 
-# (c) Demoted policy became accurate pointers to the canonical owners (not dangling).
+# Authority-gate-BEFORE-mutation: the card must require the current SHA / CI / and
+# caller-role+merge-authority gate to be satisfied BEFORE approve/merge/auto-merge.
+require_text "$CARD" 'before (approval|approve|merge|auto-merge)|require current.*before' 'authority/SHA gate-before-mutation ordering'
+# The caller-role + merge-authority matrix must be APPLIED as the gate (anchor to
+# the matrix-application phrase so deleting the gate fails closed, not just any
+# incidental "caller" mention).
+require_text "$CARD" 'caller-role and merge-authority matrix|apply the caller-role|caller-role.*merge-authority matrix' 'caller-role + merge-authority gate application'
+# A builder caller must always stop at handoff and never finish (anchor to the
+# builder-stops-with-handoff co-occurrence, not generic never-approve prose).
+require_text "$CARD" 'builder[^.]*(always )?stops[^.]*handoff|builder[^.]*handoff[^.]*never (approve|merge)' 'builder-stops-at-handoff authority floor'
+
+# (c) Demoted policy became accurate pointers to the canonical owners.
 require_text "$CARD" 'REVIEW-FLOW\.md#ci-decision-table' 'CI decision table pointer to REVIEW-FLOW.md'
 require_text "$CARD" 'SAFETY\.md' 'authority pointer to start-build/SAFETY.md'
 
-# The card must NOT restate the canonical verdict classification / authority matrix
-# as owned policy. The numbered authority matrix bullets must not be re-vendored.
+# The card must NOT re-vendor the canonical authority matrix as owned policy.
 reject_text "$CARD" '`queue auto-merge`: authorized caller may queue auto-merge' 'restated auto-merge authority policy'
 
 # ---------------------------------------------------------------------------
 # (b) Each SKILL.md snippet keeps heading + Inputs + helper block + scripts
-#     pointers, and links to the new card.
+#     pointers, and links to the relocation card.
 # ---------------------------------------------------------------------------
 ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
 finish_body="$(require_snippet finish-mr-authority-aware)"
 
-# ci-watch-sha-pinned structure preserved inline.
+# ci-watch-sha-pinned structure preserved inline (helper-path contracts survive).
 assert_contains "$ci_watch_body" 'Inputs:' 'ci-watch Inputs list'
 assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'ci-watch helper script pointer'
 assert_contains "$ci_watch_body" 'scripts/README.md' 'ci-watch helper docs pointer'
@@ -133,12 +181,10 @@ assert_not_contains "$finish_body" 'gitlab_local_skill_dir/scripts/gitlab-finish
 assert_contains "$finish_body" 'reference/ci-finish-guards.md' 'finish link to relocation card'
 
 # The verbose relocated narrative must no longer live inline in the snippets.
-# The 7-rule "Polling and SHA rules:" header and the 8-step "Guard and authority
-# order:" header were the relocation targets.
 assert_not_contains "$ci_watch_body" 'Polling and SHA rules:' '7-rule polling list header'
 assert_not_contains "$finish_body" 'Guard and authority order:' '8-step authority order header'
 
-# The relocated lists themselves must now be in the card (relocated, not lost).
+# The relocated lists themselves must now live in the card (relocated, not lost).
 require_text "$CARD" 'Polling and SHA rules' 'relocated polling/SHA rules section'
 require_text "$CARD" 'Guard and authority order' 'relocated guard/authority order section'
 
@@ -160,11 +206,11 @@ authority_steps="$(awk '
 [[ "$authority_steps" -ge 8 ]] || fail "expected >=8 relocated guard/authority steps, found $authority_steps"
 
 # ---------------------------------------------------------------------------
-# SKILL.md must surface the new card for discoverability.
+# SKILL.md must surface the relocation card for discoverability.
 # ---------------------------------------------------------------------------
-require_text "$SKILL" 'reference/ci-finish-guards\.md' 'SKILL.md discoverability link to new card'
+require_text "$SKILL" 'reference/ci-finish-guards\.md' 'SKILL.md discoverability link to relocation card'
 
-# Line-count budget: the relocation must materially shrink SKILL.md below 409.
+# Line-count budget: the relocation must keep SKILL.md materially smaller.
 skill_lines="$(wc -l < "$SKILL")"
 [[ "$skill_lines" -lt 409 ]] || fail "SKILL.md must be shorter than 409 lines after relocation, found $skill_lines"
 
