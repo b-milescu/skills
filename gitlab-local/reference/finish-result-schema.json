@@ -1,0 +1,335 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "gitlab-local/reference/finish-result-schema.json",
+  "title": "finish_result",
+  "description": "Machine-readable result the agent-driven finish flow emits and the parent orchestrator gates on. Replaces the old shell result=/exit contract. Phase 1 ships the contract only; wiring emission into the finish flow and parent cleanup_verified gating is Phase 3 and out of scope here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "result",
+    "action",
+    "sha",
+    "blocker",
+    "ci_guard",
+    "issue_state",
+    "worktree_cleanup",
+    "branch_cleanup",
+    "authority_verification_source",
+    "caller_user_id_verification_source",
+    "cleanup_verified",
+    "cleanup_failure_reason",
+    "override_recorded",
+    "conflict_type",
+    "retry_count"
+  ],
+  "properties": {
+    "result": {
+      "description": "Terminal outcome class of the finish attempt.",
+      "type": "string",
+      "enum": ["merged", "auto_merge_queued", "handoff", "held", "escalated"]
+    },
+    "action": {
+      "description": "Finish action actually taken (or none for handoff/held/escalated).",
+      "type": "string",
+      "enum": ["approve", "merge", "auto_merge", "none"]
+    },
+    "sha": {
+      "description": "Reviewed/merged commit SHA the finish attempt was bound to. 40-char lowercase hex, or empty string when no SHA was bound (e.g. an early mcp_unavailable hold).",
+      "type": "string",
+      "pattern": "^([0-9a-f]{40})?$"
+    },
+    "blocker": {
+      "description": "Why the finish could not complete the merge (none when it did).",
+      "type": "string",
+      "enum": [
+        "none",
+        "mcp_unavailable",
+        "identity_unavailable",
+        "identity_changed",
+        "authority",
+        "head_changed",
+        "ci_not_green",
+        "not_mergeable",
+        "description_lost",
+        "cleanup_failed"
+      ]
+    },
+    "ci_guard": {
+      "description": "State of the exact-SHA CI guard at finish time.",
+      "type": "string",
+      "enum": ["green", "pending", "stale", "missing"]
+    },
+    "issue_state": {
+      "description": "Observed state of the closing issue after the finish attempt.",
+      "type": "string",
+      "enum": ["closed", "closure_pending", "n/a"]
+    },
+    "worktree_cleanup": {
+      "description": "State of local worktree cleanup.",
+      "type": "string",
+      "enum": ["done", "pending", "n/a"]
+    },
+    "branch_cleanup": {
+      "description": "State of source-branch cleanup.",
+      "type": "string",
+      "enum": ["done", "pending", "retained_by_policy"]
+    },
+    "authority_verification_source": {
+      "description": "How merge authority was verified for this finish.",
+      "type": "string",
+      "enum": [
+        "description-verified",
+        "description-mismatch",
+        "parameter-assumed",
+        "parameter-verified"
+      ]
+    },
+    "caller_user_id_verification_source": {
+      "description": "How the caller user id (for no-self-merge) was obtained.",
+      "type": "string",
+      "enum": ["fresh-call", "cached", "unknown"]
+    },
+    "cleanup_verified": {
+      "description": "Whether local cleanup was verified. Tri-state: true, false, or the string \"pending\".",
+      "type": ["boolean", "string"],
+      "enum": [true, false, "pending"]
+    },
+    "cleanup_failure_reason": {
+      "description": "Why cleanup failed (none when it did not).",
+      "type": "string",
+      "enum": ["none", "dirty_worktree", "git_error", "other"]
+    },
+    "override_recorded": {
+      "description": "Whether a documented human/authority override was recorded for this finish.",
+      "type": "boolean"
+    },
+    "conflict_type": {
+      "description": "Merge-time conflict classification.",
+      "type": "string",
+      "enum": ["none", "already_merged", "stale_head", "merge_blocked"]
+    },
+    "retry_count": {
+      "description": "Number of finish retries attempted before this result.",
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "examples": [
+    {
+      "_label": "success: merged",
+      "result": "merged",
+      "action": "merge",
+      "sha": "0123456789abcdef0123456789abcdef01234567",
+      "blocker": "none",
+      "ci_guard": "green",
+      "issue_state": "closed",
+      "worktree_cleanup": "done",
+      "branch_cleanup": "done",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": true,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "success: auto_merge_queued",
+      "result": "auto_merge_queued",
+      "action": "auto_merge",
+      "sha": "1111111111111111111111111111111111111111",
+      "blocker": "none",
+      "ci_guard": "pending",
+      "issue_state": "closure_pending",
+      "worktree_cleanup": "pending",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": "pending",
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "handoff: builder stops for parent",
+      "result": "handoff",
+      "action": "none",
+      "sha": "2222222222222222222222222222222222222222",
+      "blocker": "none",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "parameter-assumed",
+      "caller_user_id_verification_source": "unknown",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: mcp_unavailable",
+      "result": "held",
+      "action": "none",
+      "sha": "",
+      "blocker": "mcp_unavailable",
+      "ci_guard": "missing",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "parameter-assumed",
+      "caller_user_id_verification_source": "unknown",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: identity_unavailable",
+      "result": "held",
+      "action": "none",
+      "sha": "3333333333333333333333333333333333333333",
+      "blocker": "identity_unavailable",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "parameter-assumed",
+      "caller_user_id_verification_source": "unknown",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: identity_changed",
+      "result": "held",
+      "action": "none",
+      "sha": "4444444444444444444444444444444444444444",
+      "blocker": "identity_changed",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "parameter-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: authority",
+      "result": "held",
+      "action": "none",
+      "sha": "5555555555555555555555555555555555555555",
+      "blocker": "authority",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-mismatch",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: head_changed",
+      "result": "held",
+      "action": "none",
+      "sha": "6666666666666666666666666666666666666666",
+      "blocker": "head_changed",
+      "ci_guard": "stale",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "stale_head",
+      "retry_count": 1
+    },
+    {
+      "_label": "held: ci_not_green",
+      "result": "held",
+      "action": "none",
+      "sha": "7777777777777777777777777777777777777777",
+      "blocker": "ci_not_green",
+      "ci_guard": "pending",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "held: not_mergeable",
+      "result": "held",
+      "action": "none",
+      "sha": "8888888888888888888888888888888888888888",
+      "blocker": "not_mergeable",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "merge_blocked",
+      "retry_count": 0
+    },
+    {
+      "_label": "escalated: description_lost",
+      "result": "escalated",
+      "action": "none",
+      "sha": "9999999999999999999999999999999999999999",
+      "blocker": "description_lost",
+      "ci_guard": "green",
+      "issue_state": "n/a",
+      "worktree_cleanup": "n/a",
+      "branch_cleanup": "retained_by_policy",
+      "authority_verification_source": "description-mismatch",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "none",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    },
+    {
+      "_label": "escalated: cleanup_failed",
+      "result": "escalated",
+      "action": "merge",
+      "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "blocker": "cleanup_failed",
+      "ci_guard": "green",
+      "issue_state": "closed",
+      "worktree_cleanup": "pending",
+      "branch_cleanup": "pending",
+      "authority_verification_source": "description-verified",
+      "caller_user_id_verification_source": "fresh-call",
+      "cleanup_verified": false,
+      "cleanup_failure_reason": "dirty_worktree",
+      "override_recorded": false,
+      "conflict_type": "none",
+      "retry_count": 0
+    }
+  ]
+}
