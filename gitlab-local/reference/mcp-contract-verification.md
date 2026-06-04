@@ -5,7 +5,7 @@ Phase-0 foundation reference for the **gitlab-mcp transport refactor** of `/gitl
 Scope discipline for this reference:
 
 - **Evidence is read-only / schema-level only.** No live mutation was performed against any real issue or merge request to produce this doc.
-- Each area below states the **fact**, the **verification method**, and — where a claim can only be confirmed by a mutation — a **sandbox test procedure** to run later against a maintainer-provided sandbox MR (or the Phase-1/2 fake harnesses), not an asserted live result.
+- Each area below states the **fact**, the **verification method**, and — where a claim is not confirmed in this environment (whether it would need a mutation or only a read-only call to confirm) — a **deferred procedure** to run later against a maintainer-provided sandbox MR or real server (or the Phase-1/2 fake harnesses), not an asserted live result.
 - Command-syntax and flag ownership for the legacy `glab` path stays in [`gitlab-local/SKILL.md`](../SKILL.md); this reference owns only the MCP tool-contract facts.
 
 ## Verification status legend
@@ -14,7 +14,7 @@ Scope discipline for this reference:
 | --- | --- |
 | `live-read` | Confirmed by a read-only call against the real server (no mutation). |
 | `schema` | Confirmed from the tool input/output JSON schema (client-side validation), no network mutation. |
-| `sandbox-procedure` | Requires a mutation to confirm; recorded here as a procedure to run against a sandbox MR or fake harness, **not** asserted as a live result. |
+| `sandbox-procedure` | Not confirmed in this environment; recorded here as a deferred procedure (read-only or mutating) to run later against a sandbox/real server or fake harness, **not** asserted as a live result. |
 
 ## 1. `confirm:true` enforcement (schema-level)
 
