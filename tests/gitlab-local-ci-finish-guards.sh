@@ -127,9 +127,29 @@ require_text "$CARD" "(not|never|do not)[^.]*($MECH_CI_MR_FORBIDDEN)" 'do-not-us
 require_text "$CARD" '\.sha.*reviewed_sha|reviewed_sha.*\.sha|sha[ =]"?\$?reviewed_sha|SHA-bound' 'SHA-bound finish guard mechanic'
 require_text "$CARD" 'exactly one (finish )?action|one finish action' 'exactly-one-finish-action mechanic'
 require_text "$CARD" 'closure_pending' 'closure_pending report token'
-require_text "$CARD" 'fetch|fast-forward' 'fetch/fast-forward default branch mechanic'
-require_text "$CARD" 'only after' 'fetch only after the action sequencing'
-require_text "$CARD" 'worktree' 'worktree-removal precondition mechanic'
+
+# fetch-only-after-action: the default-branch fetch/fast-forward must be SEQUENCED
+# strictly AFTER the finish action. Anchor to the co-occurrence of the
+# fetch/fast-forward mechanic with the "only after" ordering and the finish
+# action, so reordering, negating ("before"/"prior to"), or dropping the
+# after-action sequencing fails closed — not just deleting the word "fetch".
+# Transport-independent: matches git/sequencing wording, no exact `glab` string.
+require_text "$CARD" '(fetch|fast-forward)[^.]*only after[^.]*(merge|queue|auto-merge|finish|action)|only after[^.]*(merge|queue|auto-merge|finish|action)[^.]*(fetch|fast-forward)' 'fetch/fast-forward sequenced only-after the finish action'
+
+# worktree-precondition: worktree removal must be GATED on a precondition (clean
+# `status --porcelain` and/or the default-branch safety check passing) BEFORE the
+# worktree is removed. Anchor to the co-occurrence of "worktree" with a
+# remove/removal verb and a conditional ("only when"/"before"/"verify"/
+# "clean status"/"clean checkout"/"status --porcelain"/"safety check"), so making
+# removal unconditional or dropping the precondition fails closed — not just
+# deleting the word "worktree".
+# NOTE: the precondition alternation deliberately uses the word-anchored
+# `clean status`/`clean checkout` rather than a bare `clean`. A bare `clean` is a
+# substring of `cleanup` (used pervasively in this card's step-7 post-merge
+# cleanup language), so a bare token fails OPEN: an UNCONDITIONAL worktree-removal
+# rewrite that still says "cleanup" would spuriously match. The anchored forms
+# only match the genuine clean-state precondition this guard must protect (#206).
+require_text "$CARD" '(remove|removal|removing|delete)[^.]*worktree[^.]*(only when|only after|before|verify|clean status|clean checkout|status --porcelain|safety check|has passed)|worktree[^.]*(remove|removal|removing|delete)[^.]*(only when|only after|before|verify|clean status|clean checkout|status --porcelain|safety check|has passed)|worktree only when[^.]*(status --porcelain|clean status|clean checkout|safety check|empty)' 'worktree-removal gated on a clean-status / safety-check precondition'
 
 # Authority-gate-BEFORE-mutation: the card must require the current SHA / CI / and
 # caller-role+merge-authority gate to be satisfied BEFORE approve/merge/auto-merge.
