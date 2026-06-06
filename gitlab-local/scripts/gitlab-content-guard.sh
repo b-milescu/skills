@@ -7,9 +7,9 @@
 # and carriage return (0x0d) remain valid because Markdown bodies use them.
 #
 # Diagnostics name the failing role and the offending byte offset and NEVER print
-# the body, so a malformed or secret-bearing payload is not echoed back. This is
-# the standalone extraction of the byte rule that lives inside
-# gitlab-local/scripts/gitlab-wrappers.sh validate_text_file().
+# the body, so a malformed or secret-bearing payload is not echoed back.
+# gitlab-local/scripts/gitlab-wrappers.sh delegates file-backed fallback bodies
+# here, so this script owns the shared Safe GitLab Text byte rule.
 #
 # Makes NO network call: it only reads the local input body.
 #

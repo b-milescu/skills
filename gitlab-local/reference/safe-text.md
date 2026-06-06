@@ -17,12 +17,13 @@ non-whitespace C0 control character, and no DEL (`0x7f`). Tab (`0x09`), newline
 (`0x0a`), and carriage return (`0x0d`) stay valid because Markdown bodies use
 them. Reject the body before any GitLab write when it violates this rule.
 
-The standalone guard `gitlab-local/scripts/gitlab-content-guard.sh` enforces
-exactly this rule. It reads a body from `--file <path>` or stdin, exits 0 when the
-body is safe, and exits non-zero when it finds a NUL byte, a non-whitespace C0
-control, or DEL. Diagnostics name the failing role and the offending byte offset
-and **never print the body**, so a malformed or secret-bearing payload is not
-echoed back. The guard makes no network call.
+The adapter `gitlab-local/scripts/gitlab-content-guard.sh` owns exactly this
+rule for both MCP-body-style strings and file-backed fallback bodies. It reads a
+body from `--file <path>` or stdin, exits 0 when the body is safe, and exits
+non-zero when it finds a NUL byte, a non-whitespace C0 control, or DEL.
+Diagnostics name the failing role and the offending byte offset and **never
+print the body**, so a malformed or secret-bearing payload is not echoed back.
+The guard makes no network call.
 
 ```bash
 # stdin
@@ -32,12 +33,12 @@ printf '%s' "$body" | gitlab-local/scripts/gitlab-content-guard.sh --role descri
 gitlab-local/scripts/gitlab-content-guard.sh --file "$description_file" --role description
 ```
 
-The same byte rule lives inside `gitlab-local/scripts/gitlab-wrappers.sh`
-`validate_text_file`, which runs before file-backed fallback `glab mr create`,
-`glab mr update`, and note submission. MCP callers that pass a `body` or
-`description` string must run `gitlab-content-guard.sh` (or the same byte rule in
-process) before the MCP mutation; `gitlab-content-guard.sh` is the slim
-standalone extraction for transports that do not go through those wrappers.
+`gitlab-local/scripts/gitlab-wrappers.sh` delegates file-backed fallback
+validation to `gitlab-content-guard.sh` before `glab mr create`, `glab mr
+update`, and note submission. MCP callers that pass a `body` or `description`
+string must run `gitlab-content-guard.sh` (or the exact same byte rule in
+process) before the MCP mutation, so every GitLab text mutation shares the same
+role/offset-only diagnostic contract.
 
 ## Inline heredoc command-substitution hazard
 

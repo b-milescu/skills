@@ -51,11 +51,11 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 - `glab ci status --mr` is unreliable; prefer MCP `get_merge_request`/`list_pipelines` exact-SHA reads, or fallback branch CI / MR `.pipeline` only as contract allows.
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
-- Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption before `glab`, never print bodies, and never receive secrets.
+- Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `gitlab-content-guard.sh` before `glab`, never print bodies, and never receive secrets.
 
 ## Safe multiline GitLab text
 
-Validate every MR/issue body before mutation, whether it will be sent as an MCP `body`/`description` string or through a fallback file-backed wrapper. Use temp/run-dir files plus quoted heredocs for MR/issue notes and MR descriptions when building text in shell. `scripts/gitlab-wrappers.sh` and `scripts/gitlab-content-guard.sh` reject hidden malformed bytes; diagnostics name the file/body role without printing the packet body. Detailed patterns: [`reference/safe-text.md`](reference/safe-text.md) and [`reference/multiline-text.md`](reference/multiline-text.md#safe-multiline-gitlab-text).
+Validate every MR/issue body before mutation, whether it will be sent as an MCP `body`/`description` string or through a fallback file-backed wrapper. Use temp/run-dir files plus quoted heredocs for MR/issue notes and MR descriptions when building text in shell. `scripts/gitlab-content-guard.sh` is the shared adapter for both MCP-body-style and file-backed fallback validation; `scripts/gitlab-wrappers.sh` delegates to it before `glab`. Diagnostics name the file/body role and offending offset without printing the packet body. Detailed patterns: [`reference/safe-text.md`](reference/safe-text.md) and [`reference/multiline-text.md`](reference/multiline-text.md#safe-multiline-gitlab-text).
 
 ## Canonical snippets
 
