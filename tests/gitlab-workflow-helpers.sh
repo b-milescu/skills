@@ -636,6 +636,7 @@ test_finish_builder_handoff_never_approves_or_merges() {
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=handoff"
   assert_contains "$CAPTURE_OUTPUT" "builder_no_approve_or_merge"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
   assert_log_not_contains "$dir/glab.log" "approve"
   assert_log_not_contains "$dir/glab.log" "merge"
 }
@@ -659,6 +660,7 @@ test_finish_reports_issue_state_on_handoff_when_issue_iid_is_supplied() {
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=handoff"
   assert_contains "$CAPTURE_OUTPUT" "issue_state=opened"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
   assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"
   assert_log_not_contains "$dir/glab.log" "approve"
   assert_log_not_contains "$dir/glab.log" "merge"
@@ -682,6 +684,7 @@ test_finish_yaml_format_reports_structured_handoff() {
   assert_status 0
   assert_yaml_field result handoff
   assert_yaml_field action handoff
+  assert_yaml_field transport glab-fallback
   assert_yaml_field mr 59
   assert_yaml_field reviewed_sha abc123
   assert_yaml_field ci_guard green
@@ -711,6 +714,7 @@ test_finish_authorized_paths_are_sha_bound() {
   assert_status 0
   assert_log_contains "$dir/glab.log" "glab mr approve 59 --sha abc123"
   assert_log_contains "$dir/glab.log" "glab mr merge 59 --yes --sha abc123 --auto-merge=false"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
 
   dir="$(make_fixture_dir finish-auto-merge)"
   write_mr_json "$dir/mr.json" opened abc123 running abc123
@@ -726,6 +730,7 @@ test_finish_authorized_paths_are_sha_bound() {
 
   assert_status 0
   assert_log_contains "$dir/glab.log" "glab mr merge 59 --auto-merge --yes --sha abc123"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
 }
 
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
@@ -748,6 +753,7 @@ test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
 
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
   assert_contains "$CAPTURE_OUTPUT" "issue_state=closed"
   assert_contains "$CAPTURE_OUTPUT" "branch=local_deleted,remote_deleted"
   assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"

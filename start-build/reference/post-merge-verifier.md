@@ -18,10 +18,12 @@ policy pointers; they must not mutate GitLab/project state or update/copy
 auxiliary index artifacts unless a different authorized workflow explicitly
 switches roles.
 
-Prefer `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` when the verifier has
-MR IID, reviewed SHA, repo, and optional issue IID/validation inputs. The helper
-emits `post_merge_snapshot.kind=post-merge-snapshot` using read-only GitLab/git
-checks, reports pending items, and does not take review or finish authority.
+Use `/gitlab-local` MCP-first transport for read-only MR, issue, branch, and file
+checks. Prefer `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` only when the
+verifier needs the documented guarded helper/fallback behavior and has MR IID,
+reviewed SHA, repo, and optional issue IID/validation inputs. The helper emits
+`post_merge_snapshot.kind=post-merge-snapshot` using read-only GitLab/git checks,
+reports pending items, and does not take review or finish authority.
 
 Allowed checks:
 

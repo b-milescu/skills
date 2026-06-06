@@ -19,7 +19,8 @@ Project-profile hooks may specialize gate policy, labels, branch naming, CI
 jobs, domain docs, release/deploy policy, manual validation, language families,
 and auxiliary indexes. They must not weaken reviewed-SHA binding, exact-SHA CI,
 explicit authority source, independent review, this child-builder boundary, the
-verifier read-only boundary, or help-first `glab` correctness.
+verifier read-only boundary, or MCP-first transport correctness plus help-first
+`glab` fallback correctness.
 
 Auxiliary project-index policy defaults to parent/coordinator ownership. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child, and child worktrees must not copy index artifacts between worktrees.
 
@@ -31,7 +32,7 @@ Avoid parent-orchestrator and standalone-gate detail while building: do not load
 
 ## Child checklist
 
-1. Run `gitlab-local` **Snippet: local-repo-preflight** and verify `glab`, `jq`, cwd, repo URL, and default branch.
+1. Run `gitlab-local` **Snippet: local-repo-preflight** and verify MCP project binding, guarded fallback `glab`/`jq` availability, cwd, repo URL, and default branch.
 2. Resolve the supplied issue, or use the issue-pickup flow when no issue was supplied. Read issue description, comments, labels, linked MRs, dependency notes, and merge-authority instructions.
 3. Start from a clean checkout on the latest default branch: empty `git status --porcelain`, `git fetch origin`, fast-forward default branch, and branch from `origin/<default>` using an issue-referencing name.
 4. Write a concise Build Plan Packet before edits: intended behavior, affected surfaces, test plan, risk, non-goals, and loaded context sources with relevance.

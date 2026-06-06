@@ -33,8 +33,10 @@ gitlab-local/scripts/gitlab-content-guard.sh --file "$description_file" --role d
 ```
 
 The same byte rule lives inside `gitlab-local/scripts/gitlab-wrappers.sh`
-`validate_text_file`, which runs before file-backed `glab mr create`,
-`glab mr update`, and note submission; `gitlab-content-guard.sh` is the slim
+`validate_text_file`, which runs before file-backed fallback `glab mr create`,
+`glab mr update`, and note submission. MCP callers that pass a `body` or
+`description` string must run `gitlab-content-guard.sh` (or the same byte rule in
+process) before the MCP mutation; `gitlab-content-guard.sh` is the slim
 standalone extraction for transports that do not go through those wrappers.
 
 ## Inline heredoc command-substitution hazard

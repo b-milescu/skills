@@ -24,7 +24,7 @@ Mode boundaries are split across [reference/child-builder.md](reference/child-bu
 
 ## Compact mode cards
 
-Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; fall back to the full reference docs and `/gitlab-local` help-first snippets on ambiguity, missing fields, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
+Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; fall back to the full reference docs and `/gitlab-local` transport/fallback snippets on ambiguity, missing fields, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
 
 ### Standalone `/start-build` mode
 
@@ -64,7 +64,8 @@ project gate policy, labels, branch naming, CI jobs, domain docs,
 release/deploy policy, manual validation, language families, and auxiliary
 indexes. They must not weaken reviewed-SHA binding, exact-SHA CI, explicit
 authority source, independent review, the child-builder boundary, the verifier
-read-only boundary, or help-first `glab` correctness.
+read-only boundary, or MCP-first transport correctness plus help-first `glab`
+fallback correctness.
 
 ## Implementation flow
 

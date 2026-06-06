@@ -17,7 +17,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 
 ## Core procedure
 
-1. Load `gitlab-local` and run **Snippet: local-repo-preflight** (verify `glab`/`jq` installed/authenticated, cwd is the intended repo).
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** (verify MCP project binding plus guarded fallback `glab`/`jq` availability/authentication, cwd is the intended repo).
 2. Resolve the issue: use the supplied ID/URL, or pick from open triaged issues.
 3. Read the issue description, linked MRs, and project rulebook before writing code.
 4. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch current.
@@ -118,9 +118,9 @@ When the reviewer requests changes:
 Detailed stuck handling lives in `start-build/reference/stuck-protocol.md`; do not copy its full procedure here.
 Launch-critical rule: if blocked for more than 2 hours, keep the MR in Draft, post the filled stuck-packet as an MR comment through `gitlab-local` **Snippet: mr-note-create**, apply only a documented unblock label, list ranked hypotheses, and park or switch only on a fresh branch/worktree.
 
-## glab CLI
+## GitLab transport
 
-Use the `gitlab-local` skill for all command syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here — the skill is the single source of truth.
+Use the `gitlab-local` skill for MCP-first transport contracts, guarded `glab` fallback syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here — the skill is the single source of truth.
 
 ## Working rules
 

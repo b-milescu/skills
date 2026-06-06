@@ -29,4 +29,4 @@ Compact pointer map for the parent-owned local gate and ready transition. This c
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` help-first snippets on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live CLI help win over this card; never infer ready, approval, merge, cleanup, or review completion from this compact checklist alone.
+Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live fallback help win over this card; never infer ready, approval, merge, cleanup, or review completion from this compact checklist alone.

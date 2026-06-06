@@ -5,15 +5,15 @@ This reference owns the detailed file-backed text patterns for `/gitlab-local`. 
 ## Safe multiline GitLab text
 
 Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
-and MR descriptions, then submit those files through
-`gitlab-local/scripts/gitlab-wrappers.sh`. Quoted heredocs (`<<'EOF'`) keep
-Markdown backticks, `$VARS`, and command substitutions literal while writing the
-local file.
+and MR descriptions. For fallback/helper paths, submit those files through
+`gitlab-local/scripts/gitlab-wrappers.sh`; for MCP paths, read the same file into
+the MCP `body`/`description` only after the content-byte guard passes. Quoted
+heredocs (`<<'EOF'`) keep Markdown backticks, `$VARS`, and command substitutions
+literal while writing the local file.
 
-The wrappers validate file bytes before calling `glab`: NUL, non-whitespace C0
-controls, and DEL are rejected locally, while tab/newline/carriage return remain
-valid for Markdown. Diagnostics do not print secrets or the malformed packet body;
-they name the failing file role and byte offset.
+The wrappers and standalone content guard validate file bytes before a GitLab
+mutation: NUL, non-whitespace C0 controls, and DEL are rejected locally, while
+tab/newline/carriage return remain valid for Markdown. Diagnostics do not print secrets or the malformed packet body; they name the failing file role and byte offset.
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
@@ -76,11 +76,11 @@ gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
 Avoid inline heredoc command substitution such as:
 
 ```bash
-# Do not use: backticks and $() in the body can execute before glab sees them.
+# Do not use: backticks and $() in the body can execute before the transport sees them.
 glab mr note create "$mr_iid" --message "$(cat <<EOF
 Danger: `date` and $(whoami) may run in the parent shell.
 EOF
 )"
 ```
 
-Use the file-backed patterns above instead so Markdown remains literal until `glab` reads the file content.
+Use the file-backed patterns above instead so Markdown remains literal until the MCP or fallback transport reads the file content.

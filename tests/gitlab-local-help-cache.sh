@@ -13,8 +13,8 @@ require_text() {
   }
 }
 
-require_text 'Before any flagged `glab` command, run exact command help and verify every flag'
-require_text 'Help-first remains mandatory'
+require_text 'Before any flagged fallback `glab` command, run exact command help and verify every flag'
+require_text 'Help-first remains mandatory for fallback `glab`'
 require_text 'run-dir help cache'
 require_text 'records the exact `glab <command> --help` output'
 require_text 'verification status'

@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Parallel-execution contract (issue #197):
-#   Phase 2 (snippet-body MCP migration) OWNS this file: tests/gitlab-local-split-snippets.sh.
-#   Phase 3 OWNS tests/gitlab-local-ci-finish-guards.sh.
-# These two test files are intentionally disjoint so Phase 2 and Phase 3 can run
-# in parallel without serializing on a shared test. If a future change must touch
+# Parallel-execution contract (issue #197/#210):
+#   Snippet body/stability assertions live here.
+#   CI/finish guard mechanics live in tests/gitlab-local-ci-finish-guards.sh.
+# These two test files are intentionally disjoint so future changes can update
+# snippet inventory separately from CI/finish mechanics.
 # both, merge test rows by ID without resequencing the existing assertions.
 #
-# Transport independence (issue #197):
-#   This test asserts BEHAVIOURAL invariants and MCP wording, NOT exact `glab`
-#   command strings. When Phase 2 swaps the snippet bodies from `glab` CLI calls
-#   to gitlab-mcp tool calls, the per-snippet action verbs below are matched in
-#   EITHER transport (legacy `glab ...` OR MCP tool call), so this test stays
-#   green across the migration. The load-bearing invariants it preserves are:
+# MCP-first transport contract (issue #210):
+#   This test asserts BEHAVIOURAL invariants, stable snippet names, and guarded
+#   fallback/helper contracts, NOT unconditional primary `glab` command strings.
+#   Per-snippet MCP primary tool/input/output/fail-closed/fallback details live
+#   in gitlab-local/reference/snippet-transports.md; inline SKILL shell blocks
+#   are accepted fallback/helper examples.
 #     - the 20 snippet NAMES are stable (transport-independent API),
 #     - one action per snippet (no snippet mixes two mutating verbs),
 #     - no combined approve+merge in any generic snippet (only the
@@ -65,9 +65,9 @@ assert_not_contains() {
 }
 
 # Behavioural matcher: a snippet "performs <verb>" if its body contains the verb
-# in EITHER transport — the legacy `glab` CLI form OR a gitlab-mcp tool call.
-# These regexes deliberately avoid pinning exact `glab` argument strings so the
-# assertions survive the Phase 2 MCP body swap.
+# in EITHER transport — a guarded `glab` fallback/helper form OR an MCP tool call.
+# These regexes deliberately avoid pinning exact fallback arguments so the
+# assertions stay green across MCP/fallback implementation changes.
 assert_performs() {
   local text="$1" pattern="$2" label="$3"
   printf '%s\n' "$text" | grep -Eiq -- "$pattern" || fail "snippet does not perform $label"
@@ -82,10 +82,9 @@ assert_not_performs() {
 
 # SHA-pin invariant (transport-independent): the action line that performs the
 # mutating verb must bind reviewed_sha ON THE SAME LINE, so the action is pinned
-# to the reviewed head and cannot drift. This matches the legacy `glab ... --sha
-# "$reviewed_sha"` form and the planned MCP `tool(..., sha="$reviewed_sha")`
-# form, but rejects a body that merely declares reviewed_sha elsewhere without
-# binding it to the action.
+# to the reviewed head and cannot drift. This matches guarded `glab ... --sha
+# "$reviewed_sha"` and MCP `tool(..., sha="$reviewed_sha")` forms, but rejects
+# a body that merely declares reviewed_sha elsewhere without binding it to the action.
 assert_action_sha_pinned() {
   local text="$1" verb="$2" label="$3"
   printf '%s\n' "$text" \
@@ -94,11 +93,10 @@ assert_action_sha_pinned() {
     || fail "$label action line is not SHA-pinned to reviewed_sha"
 }
 
-# Transport-independent action-verb regexes. Each matches the current `glab`
-# wording and the planned MCP tool-call wording (the gitlab-mcp tool names the
-# refactor adopts, e.g. create_merge_request / update_merge_request /
-# approve_merge_request / merge_merge_request / get_merge_request /
-# list_pipelines / create_note).
+# Transport-independent action-verb regexes. Each matches the guarded `glab`
+# fallback wording and the gitlab-mcp tool-call wording used by the primary
+# contracts (create_merge_request / update_merge_request / approve_merge_request /
+# merge_merge_request / get_merge_request / list_pipelines / create_note).
 VERB_MR_CREATE='glab mr create|create_merge_request'
 VERB_MR_UPDATE='glab mr update|update_merge_request'
 VERB_MARK_READY='glab mr update[^|]*--ready|update_merge_request[^|]*ready|--ready|ready ?[:=] ?true'
@@ -127,7 +125,7 @@ auto_merge_api_body="$(require_snippet auto-merge-api-fallback)"
 
 # --- Snippet-name stability: the 20 stable snippet names exist ----------------
 # The names are the transport-independent API workflow skills depend on; they
-# must survive the MCP migration unchanged.
+# must remain stable across MCP primary and fallback/helper implementations.
 for name in \
   local-repo-preflight issue-pickup draft-mr-create mr-description-update \
   draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
@@ -140,6 +138,23 @@ done
 snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
 [[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"
 
+
+CONTRACT="gitlab-local/reference/snippet-transports.md"
+[[ -f "$CONTRACT" ]] || fail "missing snippet transport contract $CONTRACT"
+require_text "$SKILL" 'reference/snippet-transports\.md' 'snippet transport contract link'
+require_text "$CONTRACT" 'MCP primary tool' 'MCP primary tools column'
+require_text "$CONTRACT" 'Fail-closed checks' 'fail-closed checks column'
+require_text "$CONTRACT" 'Fallback condition' 'fallback condition column'
+require_text "$CONTRACT" 'Post-mutation MCP re-read' 'post-mutation re-read column'
+for name in \
+  local-repo-preflight issue-pickup draft-mr-create mr-description-update \
+  draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
+  ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
+  safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
+  sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
+  finish-mr-authority-aware; do
+  require_text "$CONTRACT" "\`$name\`" "transport contract for $name"
+done
 # --- Draft MR create: creates an MR, file-backed description, no ready/update --
 # One action: it CREATES, it does not update an existing MR and does not mark ready.
 assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
@@ -234,7 +249,7 @@ require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-cre
 require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
 require_text "$SKILL" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
 require_text "gitlab-local/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
-require_text "$SKILL" 'Before any flagged `glab` command, run exact command help' 'help-first rule'
+require_text "$SKILL" 'Before any flagged fallback `glab` command, run exact command help' 'fallback help-first rule'
 
 require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
 require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
@@ -316,9 +331,9 @@ done
 # --- One-action-per-snippet (no combined approve+merge), transport-independent -
 # The authority-aware finish helper is intentionally allowed to carry conditional
 # approve+merge logic; every OTHER snippet section must not perform BOTH an
-# approve action and a merge action. The verb regexes match either the current
-# `glab` wording or the planned gitlab-mcp tool-call wording, so this fail-closed
-# guard survives the Phase 2 body swap.
+# approve action and a merge action. The verb regexes match either guarded
+# fallback `glab` wording or gitlab-mcp tool-call wording, so this fail-closed
+# guard survives transport implementation changes.
 awk '
   function flush() {
     if (snippet != "" && snippet != "finish-mr-authority-aware" && saw_approve && saw_merge) {

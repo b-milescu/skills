@@ -41,8 +41,9 @@ Minimize duplicated operational bodies:
   and parent-owned review-gate policy.
 - `start-review` owns reviewer flow, Review Report format, authority handling,
   and SHA/CI guard policy.
-- `gitlab-local` owns GitLab CLI syntax, JSON flag caveats, snippets, and
-  SHA-guarding. Agent files should point to it instead of copying commands.
+- `gitlab-local` owns MCP-first GitLab transport contracts, guarded `glab`
+  fallback syntax, JSON flag caveats, snippets, and SHA-guarding. Agent files
+  should point to it instead of copying commands.
 - `issue-delivery-loop` owns batch delivery coordination, WIP limits, parent
   spot-checks, revision routing, and batch metrics. Agent files should point
   to it instead of copying coordinator-loop bodies.

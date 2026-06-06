@@ -54,7 +54,7 @@ schema_assert() {
 }
 
 # required fields present in schema.required
-for required_field in result action sha blocker ci_guard issue_state \
+for required_field in result action transport sha blocker ci_guard issue_state \
   worktree_cleanup branch_cleanup authority_verification_source \
   caller_user_id_verification_source cleanup_verified cleanup_failure_reason \
   override_recorded conflict_type retry_count; do
@@ -67,6 +67,7 @@ done
 
 schema_assert result merged auto_merge_queued handoff held escalated
 schema_assert action approve merge auto_merge none
+schema_assert transport mcp glab-fallback n/a
 schema_assert blocker none mcp_unavailable identity_unavailable identity_changed \
   authority head_changed ci_not_green not_mergeable description_lost cleanup_failed
 schema_assert ci_guard green pending stale missing
@@ -120,9 +121,16 @@ for b in none mcp_unavailable identity_unavailable identity_changed authority \
   head_changed ci_not_green not_mergeable description_lost cleanup_failed; do
   [[ ",$covered_blockers," == *",$b,"* ]] || fail "examples do not cover blocker=$b"
 done
+covered_transports="$(SCHEMA_PATH="$SCHEMA" node -e '
+  const s = require(process.env.SCHEMA_PATH);
+  process.stdout.write([...new Set(s.examples.map((e) => e.transport))].sort().join(","));
+')"
+for t in mcp glab-fallback n/a; do
+  [[ ",$covered_transports," == *",$t,"* ]] || fail "examples do not cover transport=$t"
+done
 
 # === A minimal, fully valid object validates from stdin and from a file. ===
-VALID='{"result":"merged","action":"merge","sha":"0123456789abcdef0123456789abcdef01234567","blocker":"none","ci_guard":"green","issue_state":"closed","worktree_cleanup":"done","branch_cleanup":"done","authority_verification_source":"description-verified","caller_user_id_verification_source":"fresh-call","cleanup_verified":true,"cleanup_failure_reason":"none","override_recorded":false,"conflict_type":"none","retry_count":0}'
+VALID='{"result":"merged","action":"merge","transport":"mcp","sha":"0123456789abcdef0123456789abcdef01234567","blocker":"none","ci_guard":"green","issue_state":"closed","worktree_cleanup":"done","branch_cleanup":"done","authority_verification_source":"description-verified","caller_user_id_verification_source":"fresh-call","cleanup_verified":true,"cleanup_failure_reason":"none","override_recorded":false,"conflict_type":"none","retry_count":0}'
 run_validator "$VALID"
 assert_status 0
 
@@ -166,6 +174,7 @@ bad_enum_case() {
 
 bad_enum_case result '"bogus"'
 bad_enum_case action '"delete"'
+bad_enum_case transport '"raw-api"'
 bad_enum_case blocker '"identity_gone"'
 bad_enum_case ci_guard '"red"'
 bad_enum_case issue_state '"open"'

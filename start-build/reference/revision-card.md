@@ -30,4 +30,4 @@ Compact pointer map for builder revision work after review feedback or a substan
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` help-first snippets on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live CLI help win over this card; never treat a revision packet, parent summary, or compact handoff as independent review evidence.
+Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live fallback help win over this card; never treat a revision packet, parent summary, or compact handoff as independent review evidence.

@@ -1,6 +1,6 @@
 # Start Review Flow
 
-Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, rejecting, or reporting a blocked review. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `gitlab-local` for direct `glab` command syntax and flag pitfalls.
+Detailed workflow for `start-review`. Read before selecting MR(s), commenting, approving, merging, requesting changes, rejecting, or reporting a blocked review. Assumes you've already read [SKILL.md](SKILL.md) for purpose and GitLab handoff, plus the host project's issue-tracker guide or `gitlab-local` for MCP-first transport contracts, guarded `glab` fallback syntax, and flag pitfalls.
 
 ## Review modes
 
@@ -59,8 +59,8 @@ policy, labels, branch naming, CI jobs, domain docs, release/deploy policy,
 manual validation, language families, and auxiliary indexes. They are routing
 claims only: reviewers still enforce reviewed-SHA binding, exact-SHA CI,
 explicit authority source, independent review, child-builder boundaries,
-verifier read-only boundaries, and help-first `glab` correctness from Tier 1 or
-Tier 2 evidence.
+verifier read-only boundaries, and MCP-first transport correctness plus
+help-first `glab` fallback correctness from Tier 1 or Tier 2 evidence.
 
 ## Fail-closed review coverage
 
@@ -94,15 +94,15 @@ Use these tables as the canonical approval/finish policy for CI and reviewer Ope
 | human/product/security decision | blocked/no approval. | Use `Action blocker: human-decision-needed`, `Next action: human-escalation`, and do not approve until the decision source is recorded. Do not rewrite the missing decision as builder revision work. |
 | non-blocking | `C-N` / follow-up with rationale; pass may still proceed when other guards pass. | Downgrade explicitly in `Open Questions Addressed`, explain why it is non-blocking, and link/create a follow-up when it must survive merge. |
 
-## GitLab tooling reference
+## GitLab transport reference
 
-Reviewers load the small `gitlab-local` review cards before the full command reference where possible:
+Reviewers load the small `gitlab-local` review cards before the full transport reference where possible:
 
 - [`review-read`](../gitlab-local/reference/review-read.md) — preflight, issue/MR metadata, project binding reads, and artifact capture.
 - [`ci`](../gitlab-local/reference/ci.md) — CI snapshots, exact-SHA CI waiting, and fail-closed CI verdict rules.
 - [`review-actions`](../gitlab-local/reference/review-actions.md) — MR notes, issue-note target split, SHA guards, approval, merge, auto-merge queueing, approval confirmation, and authority-aware finish.
 
-The cards carry snippet names, inputs/outputs, and fail-closed rules without copying raw command bodies. Full command ownership still lives in the host project's issue-tracker guide or [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md): fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card is missing/ambiguous, live CLI help or JSON shape drifts, a needed command is not carded, non-review issue/MR operations are required, or helper behavior needs troubleshooting. This flow names commands only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at action points.
+The cards carry snippet names, inputs/outputs, and fail-closed rules without copying raw command bodies. Full transport ownership still lives in the host project's issue-tracker guide or [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md): fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card is missing/ambiguous, MCP/fallback shape drifts, a needed command is not carded, non-review issue/MR operations are required, or helper behavior needs troubleshooting. This flow names snippets only where sequencing matters, and keeps SHA-bound approval, merge, auto-merge queueing, and approval confirmation choices visible at action points.
 
 
 ## Compact review cards
@@ -123,9 +123,9 @@ The cards do not replace this file's Context Firewall, Review Context Capsule,
 fail-closed coverage, CI decision table, Open Question decision table, authority
 source precedence, project binding rules, final snapshot order, or SHA-guarded
 action rules. Fall back to this full flow and `gitlab-local/SKILL.md` on
-ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch,
-cross-project binding, partial review, suspected secret exposure, grouped action
-pressure, or any mutation action.
+ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI
+mismatch, cross-project binding, partial review, suspected secret exposure,
+grouped action pressure, or any mutation action.
 
 ## Project binding
 
@@ -149,16 +149,16 @@ Bound fields:
 Resolution rules:
 
 1. For a full MR URL, parse host, project path, and IID from the URL, then
-   re-read MR metadata through the full MR URL or `-R "$bound_repo_url"`.
+   re-read MR metadata through MCP using the bound project/MR, or through the full MR URL / `-R "$bound_repo_url"` when a guarded fallback path is in use.
 2. For a bare IID/ID or branch, bind it to the preflight repo only, then
-   re-read MR metadata with `-R "$bound_repo_url"` before trusting it.
+   re-read MR metadata through MCP with the bound project path, or with `-R "$bound_repo_url"` before trusting fallback output.
 3. Compare `bound_host` and `bound_project_path` to the preflight repo. A mismatch blocks unless the user explicitly chooses the cross-repo review target; record that choice in the Review Report and final handoff before any GitLab mutation.
-4. Command rule: every decision-grade MR read and every GitLab mutation uses an
-   explicit repo target or full MR URL. Prefer the bound MR IID plus
-   `bound_repo_url`; use the full MR URL when a URL was supplied or repo
-   inference remains uncertain. Never use cwd-inferred bare IID action guidance
-   for notes, approvals, merges, auto-merge queueing, or close-equivalent
-   actions.
+4. Transport rule: every decision-grade MR read and every GitLab mutation uses an
+   explicit project/repo target or full MR URL. Prefer the bound MR IID plus
+   `bound_project_path`/`bound_repo_url`; use the full MR URL when a URL was
+   supplied or repo inference remains uncertain. Never use cwd-inferred bare IID
+   action guidance for notes, approvals, merges, auto-merge queueing, or
+   close-equivalent actions.
 
 This binding rule is compatible with file-backed Review Reports and action-result
 notes; use `gitlab-local` **Snippet: mr-note-create** for MR notes after binding
@@ -174,10 +174,10 @@ parent/harness fanout into one fresh reviewer session per MR/worktree, or enter
 explicit serialized mode only after the set satisfies the shared
 [Decoupling Contract](skill://start-review/docs/decoupling-contract.md):
 
-1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm `glab` resolves to the cwd repo. If preflight fails, post/report `Review verdict: blocked` with `Action blocker: preflight-failure` when an MR context exists; otherwise stop and ask.
+1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm MCP/fallback project binding resolves to the cwd repo. If preflight fails, post/report `Review verdict: blocked` with `Action blocker: preflight-failure` when an MR context exists; otherwise stop and ask.
 2. Bind supplied MR references to the preflight repo, or block on cross-repo mismatch until the user explicitly chooses the cross-repo review target.
 3. If the current branch has an MR (use `gitlab-local` **Snippet: mr-pickup**), prefer it when the user says "this branch" or the branch is clearly under review.
-4. Otherwise list open non-draft MRs with `gitlab-local` **Snippet: mr-pickup**. Narrow with `-l/--label`, `-a/--assignee=@me`, `-r/--reviewer=@me`, `-t/--target-branch` as needed. Prefer MRs labeled with the project's ready-for-review equivalent, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
+4. Otherwise list open non-draft MRs with `gitlab-local` **Snippet: mr-pickup**. Narrow with MCP filters for label, assignee, reviewer, and target branch where available; guarded fallback may use the equivalent live-help-verified flags. Prefer MRs labeled with the project's ready-for-review equivalent, assigned/requested to `@me`, targeting main/default, with linked issues and passing or pending CI.
 5. Deprioritize drafts, blocked MRs, MRs labeled with the project's revision/unblock/WIP equivalent, and obviously red-CI MRs unless the user asked for failure triage.
 6. Inspect the selected candidate, or 3-5 candidates when selecting among MRs. For multiple requested MRs, inspect enough to validate coupling. Don't dump raw JSON; summarize MR ID, title, author, labels, CI state, linked issue, suitability, coupling risk.
 7. If one MR is clearly suitable, announce and proceed. If multiple are plausible or ambiguous, ask the user or parent to choose between separate reviewer-session fanout and explicit serialized mode.

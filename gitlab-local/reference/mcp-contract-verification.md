@@ -1,127 +1,111 @@
 # gitlab-mcp contract verification reference
 
-Phase-0 foundation reference for the **gitlab-mcp transport refactor** of `/gitlab-local` and `/gitlab-to-issues` (MCP-first; `glab` being dropped per maintainer decision). It records the verified behaviour of the `gitlab-mcp` tools the refactor depends on so Phase 1+ can rely on these contracts instead of re-deriving them.
+Reference for the MCP-first GitLab workflow transport used by `/gitlab-local` and `/gitlab-to-issues`. MCP is the primary path for normal GitLab API actions; guarded `glab` fallback remains documented for known gaps, helper-only safe-text paths, and troubleshooting.
 
 Scope discipline for this reference:
 
-- **Evidence is read-only / schema-level only.** No live mutation was performed against any real issue or merge request to produce this doc.
-- Each area below states the **fact**, the **verification method**, and — where a claim is not confirmed in this environment (whether it would need a mutation or only a read-only call to confirm) — a **deferred procedure** to run later against a maintainer-provided sandbox MR or real server (or the Phase-1/2 fake harnesses), not an asserted live result.
-- Command-syntax and flag ownership for the legacy `glab` path stays in [`gitlab-local/SKILL.md`](../SKILL.md); this reference owns only the MCP tool-contract facts.
+- **Evidence is read-only / schema-level unless explicitly marked as smoke-test evidence.** Do not infer unobserved mutation behavior from this doc.
+- Each area states the fact, verification method, and any deferred procedure needed for sandbox/fake-harness confirmation.
+- Fallback command syntax and flag ownership remain in [`gitlab-local/SKILL.md`](../SKILL.md); per-snippet MCP/fallback contracts live in [`snippet-transports.md`](snippet-transports.md).
 
 ## Verification status legend
 
 | Status | Meaning |
 | --- | --- |
 | `live-read` | Confirmed by a read-only call against the real server (no mutation). |
-| `schema` | Confirmed from the tool input/output JSON schema (client-side validation), no network mutation. |
-| `sandbox-procedure` | Not confirmed in this environment; recorded here as a deferred procedure (read-only or mutating) to run later against a sandbox/real server or fake harness, **not** asserted as a live result. |
+| `live-smoke` | Confirmed by maintainer smoke testing against normal fixture records. |
+| `schema` | Confirmed from tool input/output JSON schema, no network mutation. |
+| `sandbox-procedure` | Not confirmed in this environment; recorded as a deferred procedure, not asserted as a live result. |
 
 ## 1. `confirm:true` enforcement (schema-level)
 
-**Fact.** The destructive tools `approve_merge_request` and `merge_merge_request` declare `confirm` in their input schema as a **required** property constrained to `const: true` (equivalently `enum: [true]`). A call that omits `confirm`, or sends `confirm:false`/any non-`true` value, therefore fails **client-side JSON-schema validation before any network request is issued**. The schema is the enforcement point; server-side rejection is a second line of defence, not the first.
+**Fact.** The destructive tools `approve_merge_request` and `merge_merge_request` declare `confirm` in their input schema as a required property constrained to `const: true` (or `enum: [true]`). A call that omits `confirm`, or sends `confirm:false`, fails client-side JSON-schema validation before any network request is issued.
 
-**Verification method.** `schema` — inspect the tool input schema (`tools/list` MCP listing or the published tool definition). Confirm for each destructive tool that `required` contains `"confirm"` and that the `confirm` property carries `const: true` (or `enum: [true]`). No call is sent.
+**Verification method.** `schema` — inspect the tool input schema (`tools/list` MCP listing or the published tool definition). Confirm for each destructive tool that `required` contains `confirm` and that the property permits only `true`.
 
-**Refactor consequence.** Agent code must pass `confirm: true` explicitly on every `approve_merge_request` / `merge_merge_request` call. The missing-`confirm` failure is a **local validation error**, not a network/authorization error, and must be classified as a programming bug (fix the call site), never retried.
+**Workflow consequence.** Agent code must pass `confirm: true` explicitly on every `approve_merge_request` / `merge_merge_request` call. Missing `confirm` is a programming bug, not a retryable GitLab/API failure.
 
-## 2. `update_merge_request` atomicity (designed contract + test procedure)
+## 2. Normal-path MCP parity smoke findings
+
+**Fact.** Maintainer smoke testing found the MCP read/list/comment/diff/approval/pipeline/branch/file endpoints matched `glab`/GitLab API behavior for normal fixtures. This supports MCP as the primary transport for issue pickup, MR pickup, notes, diffs, approval confirmation/action, pipeline reads, branch checks, and file reads in ordinary delivery flows.
+
+**Verification method.** `live-smoke` — cited in issue #210. This doc records the finding; it does not replay live mutations.
+
+**Workflow consequence.** `/gitlab-local` snippets should name MCP primary tools first and reserve `glab` for explicit fallback/helper/troubleshooting conditions. Normal issue/MR/review delivery should not instruct unconditional primary `glab` use.
+
+## 3. `update_merge_request` atomicity (designed contract + test procedure)
 
 **Designed contract.**
 
-- A single `update_merge_request` call that sends both `description` (new body) and `draft:false` toggles the MR to ready **and** sets the body in one atomic server-side update — the body is not lost.
-- A call that sends `draft:false` **alone** (no `description` field) must **preserve the existing description**. Omitting `description` means "leave unchanged"; it must never be treated as "set body to empty".
+- A single `update_merge_request` call that sends both `description` and `draft:false` toggles the MR to ready and sets the body in one server-side update.
+- A call that sends `draft:false` alone preserves the existing description. Omit `description` to leave it unchanged; never send an empty placeholder body merely to toggle draft state.
 
-**Verification method.** `schema` for the shape (confirm `description` and `draft` are independent optional fields and that omission means unchanged), plus `sandbox-procedure` for the live atomicity/preservation behaviour. The live mutation check is verified later via the Phase-1/2 fake harnesses, not asserted here.
+**Verification method.** `schema` for independent optional `description`/`draft` fields, plus `sandbox-procedure` for live atomicity/preservation behavior.
 
-**Sandbox test procedure** (run against a maintainer-provided sandbox MR only):
+**Sandbox test procedure.**
 
-1. Read the current state: `get_merge_request` → record `description` (call it `body0`) and `draft` (expect `true`).
-2. **Combined-toggle case.** Call `update_merge_request` with `description: <body1>` and `draft: false` in one call. Re-read `get_merge_request`; assert `draft == false` **and** `description == <body1>` (body present, equals what was sent).
-3. **Preserve-on-toggle case.** On a fresh sandbox MR still in draft with a known `description` (`body0`), call `update_merge_request` with `draft: false` and **no** `description` field. Re-read `get_merge_request`; assert `draft == false` **and** `description == body0` (unchanged — not emptied).
-4. Record both observed bodies in the test artifact. Any divergence (body emptied, body partially applied, draft not toggled) is a contract violation and blocks the refactor's ready-toggle path.
+1. Read the current state with `get_merge_request`; record `description` and `draft`.
+2. Call `update_merge_request` with `description: <body1>` and `draft: false`; re-read `get_merge_request` and assert both fields match.
+3. On a fresh draft MR with known `description`, call `update_merge_request` with `draft: false` and no `description`; re-read and assert the body is unchanged.
+4. Any emptied, partially-applied, or missing body blocks the ready-toggle path.
 
-**Refactor consequence.** The "mark ready" path may safely combine a final description refresh with `draft:false` in one call. It must **never** send an empty/placeholder `description` merely to toggle draft state; omit the field instead.
+## 4. Known MCP gaps
 
-## 3. `list_*` pagination and limits
+### Merge robustness / error normalization
 
-**Fact.** The list tools `list_issues`, `list_merge_requests`, `list_pipelines`, and `list_branches` use a page-size of **20 by default** and **100 maximum**. A request for more than 100 items in one call is capped at 100; the remainder is only reachable by paginating.
+**Fact.** One observed fixture had `merge_merge_request` return a robustness/error-normalization failure (`Branch cannot be merged`) where the equivalent SHA-bound `glab mr merge --sha ...` succeeded.
 
-| Tool | Default page size | Max page size |
-| --- | --- | --- |
-| `list_issues` | 20 | 100 |
-| `list_merge_requests` | 20 | 100 |
-| `list_pipelines` | 20 | 100 |
-| `list_branches` | 20 | 100 |
+**Verification method.** `live-smoke` finding from issue #210; exact fixture details are not copied here.
 
-**Filter / search ordering (documented expectation — not yet observed).** From the tool/API contract, `search=` and structured filters (state, labels, etc.) are expected to be applied **server-side before** the page cap: the server filters the full set, then returns at most one capped page of the already-filtered results. On that contract the cap is a cap on *returned matches per page*, not a cap on the candidate set that gets filtered, and a single call can still under-report when matches exceed the page size. This ordering was **not** confirmed by a live read in this environment; it is documented from the contract and carries a read-only procedure to confirm later (below). The required agent-side over-cap handling is conservative either way, so it does not depend on observing this ordering first.
+**Workflow consequence.** Merge fallback is allowed only as a guarded exception. Before fallback, re-read the MR through MCP, verify current head SHA equals the reviewed SHA, verify exact-SHA CI and merge authority/source, verify caller identity/no-self-merge, run help-first for the exact fallback command, execute exactly one fallback action, re-read through MCP, and record `via=glab-fallback`. Do not fallback on stale head, red/missing/stale CI, missing authority, permission uncertainty, or self-merge risk.
 
-**Verification method.** `schema` for the default/max page-size bounds (the pagination parameters and their min/max in the tool input schema) and for the documented filter-then-cap contract. The filter-before-cap *ordering* is **not** tagged `live-read`: no read-only `gitlab-mcp` call was performed in this environment to observe it (only the §5 GitLab REST projection was available). It is recorded as a `sandbox-procedure` read-only check to run later (below), not asserted as a live result. No mutation.
+### List pagination limitations
 
-**Read-only ordering check** (`sandbox-procedure`; read-only `list_*` calls, no mutation — run later to confirm the documented ordering):
+**Fact.** Exposed `list_*` MCP tools do not show reliable pagination controls to the agent. Broad list calls can under-report when more records exist than the returned page.
 
-1. Pick a `list_*` tool and a `search=`/filter value known to match more records than one page (or set a small page size so matches exceed it).
-2. Issue the filtered call and record the returned count and whether every returned item satisfies the filter.
-3. Issue the same call paginated to exhaustion; assert the total filtered matches exceed a single capped page (proving the cap bounds *returned matches per page*, not the pre-filter candidate set).
-4. Assert no returned item violates the filter (i.e. filtering was applied to the full set server-side, then capped — not cap-first). Record the observed counts in the test artifact. Any result where the cap appears to bound the pre-filter candidate set contradicts the documented ordering and must be surfaced.
+**Verification method.** `live-smoke`/tool-surface observation cited in issue #210.
 
-**Required agent-side over-cap handling.** Because any single list page can silently truncate at 100:
+**Workflow consequence.** Never treat a broad single `list_*` page as exhaustive. For decision-grade selection, narrow the query enough to identify a bounded candidate set, re-read each candidate with `get_issue`/`get_merge_request`, or use guarded fallback for exhaustive selection. List data is candidate data; single-record reads decide.
 
-- Never treat a single `list_*` page as authoritative for "all matching" records. Treat a full page (page size == returned count == requested limit) as "possibly more".
-- For decision-grade enumeration (for example, "is there an open MR for this branch?"), either pass an explicit narrow filter that bounds the result under the page size, or paginate until a short/empty page is returned.
-- When a precise count or exhaustive set is required, paginate explicitly (advance the page parameter) rather than raising the page size beyond 100, which the server ignores past the max.
-
-## 4. Idempotency and partial-failure contract
+## 5. Idempotency and partial-failure contract
 
 **Designed rules.**
 
-- **Re-read after every mutation.** After any mutating tool call (`update_merge_request`, `approve_merge_request`, `merge_merge_request`, label/assignee changes), immediately call `get_merge_request` and re-check the SHA pin before trusting the local view. The mutation response alone is not authoritative; the re-read is.
+- **Re-read after every mutation.** After any mutating MCP tool call (`update_merge_request`, `approve_merge_request`, `merge_merge_request`, notes, label/assignee changes), immediately re-read through MCP (`get_merge_request`, `get_issue`, approval state, or notes/discussions as applicable) and re-check the SHA pin before trusting local state.
 - **SHA-pin re-check.** Compare the re-read head SHA against the reviewed/expected SHA. A mismatch means the head moved under the operation and the action must not be assumed applied to the intended commit.
+- **Transport evidence.** Report `via=mcp` for successful MCP actions and `via=glab-fallback` for guarded fallback actions.
 
-**Conflict classification.** When a mutation does not produce the expected state, classify the outcome from the re-read before retrying:
+**Conflict classification.** When a mutation does not produce the expected state, classify from the re-read before retrying:
 
 | Classification | Detected by | Meaning / action |
 | --- | --- | --- |
-| `already_merged` | re-read shows a merge or squash commit present / MR state `merged` | The MR is already merged (this op or a prior one succeeded). Treat as success-equivalent; do **not** retry the merge. |
-| `stale_head` | re-read head SHA differs from the pinned/expected SHA | The head moved (new push or rebase). Fail closed; the action targeted a SHA that is no longer current. Re-evaluate against the new SHA rather than blindly retrying. |
-| `merge_blocked` | re-read MR state is not `opened` (closed, or otherwise not mergeable) and no merge commit is present | The MR is not in a mergeable open state. Fail closed; do not retry the merge. Surface for human/parent decision. |
+| `already_merged` | Re-read shows MR state `merged` or a merge/squash commit. | Treat as success-equivalent; do not retry merge. |
+| `stale_head` | Re-read head SHA differs from pinned/expected SHA. | Fail closed; re-evaluate against the new SHA. |
+| `merge_blocked` | Re-read MR state is not mergeable/open and no merge commit is present. | Fail closed; surface for parent/human decision. |
 
-**Retry guard / fail-closed rule.** A mutation retry loop caps attempts at a small fixed bound (for example, a handful of attempts) and then **fails closed** — it stops, reports the last classification, and does **not** continue retrying. The guard exists so a transient classification (such as a brief `stale_head`) cannot turn into an unbounded retry storm against a live record. `already_merged` short-circuits the loop as success-equivalent; `stale_head` and `merge_blocked` exit the loop into the fail-closed report.
+**Retry guard.** A retry loop must cap attempts at a small fixed bound, then fail closed and report the last classification. `already_merged` short-circuits; `stale_head` and `merge_blocked` exit to a blocker report.
 
-**Verification method.** `schema` for the `get_merge_request` re-read shape (state, head SHA, merge-commit presence) used by the classifier, plus `sandbox-procedure` for the live conflict transitions. The live mutation transitions are verified via the Phase-1/2 fake harnesses, not asserted here.
+## 6. Project-path and default-branch validation
 
-**Sandbox test procedure** (sandbox MR / fake harness only):
-
-1. `already_merged`: merge a sandbox MR, then re-issue the merge; assert the classifier returns `already_merged` and the retry loop short-circuits without a second merge.
-2. `stale_head`: pin a SHA, push a new commit to the source branch, then attempt a SHA-pinned mutation; assert the re-read reports `stale_head` and the loop fails closed.
-3. `merge_blocked`: close a sandbox MR, attempt a merge; assert `merge_blocked` and fail-closed (no retry).
-4. Retry-guard bound: drive a repeatable `stale_head` and assert the loop stops at the configured attempt cap and reports the last classification.
-
-## 5. Project-path and default-branch validation
-
-**Fact (live-verified, read-only).** `get_project` for `agents/skills` returns, among other fields:
+**Fact (live-read).** `get_project` for `agents/skills` returns, among other fields:
 
 - `pathWithNamespace: "agents/skills"`
 - `defaultBranch: "main"`
 - `httpUrlToRepo: "https://gitlab.example.com/agents/skills.git"`
 - `sshUrlToRepo: "git@gitlab.example.com:agents/skills.git"`
 
-**Verification method.** `live-read` — confirmed read-only against the real server. The same fields are exposed by the underlying GitLab Projects API projection that `get_project` wraps (`path_with_namespace`, `default_branch`, `http_url_to_repo`, `ssh_url_to_repo`); the MCP tool returns them under the camelCase names above. No mutation.
+**Verification method.** `live-read` — confirmed read-only against the real server.
 
 **Validation rule.**
 
-1. Derive the candidate project path from `git remote get-url origin` (strip the scheme/host and the trailing `.git`; for an SSH remote `git@<host>:group/sub/project.git` and an HTTPS remote `https://<host>/group/sub/project.git`, the project path is `group/.../project`).
+1. Derive the candidate project path from `git remote get-url origin` (strip scheme/host and trailing `.git`; for SSH, parse `git@<host>:group/project.git`).
 2. Call `get_project(<candidate-path>)` and compare `pathWithNamespace` to the candidate.
-3. **The server is authoritative on mismatch.** If `pathWithNamespace` differs from the locally derived path, trust the server's value and stop to surface the discrepancy rather than acting on the local guess.
-4. Resolve the default branch from `get_project().defaultBranch` — **never** assume `main`/`master`. Use the server's `defaultBranch` as the MR target branch and the base for new source branches.
-
-**Failure modes to handle.**
-
-- **Shallow clone.** A shallow/partial clone can lack remote refs and a reliable `origin/HEAD`; do not infer the default branch from local refs. Resolve it from `get_project().defaultBranch`.
-- **Default branch renamed on the server.** The server may have renamed the default branch (for example `master` → `main`) since the clone. `get_project().defaultBranch` is authoritative; a stale local assumption must not override it.
-- **Stale `origin/HEAD`.** A locally cached `origin/HEAD` can point at an old default branch. Re-derive from the server rather than from `git symbolic-ref refs/remotes/origin/HEAD`.
-- **Nested `group/subgroup/project` encoding.** Nested namespaces produce multi-segment paths (`group/subgroup/project`). When a call requires a URL-encoded path identifier, encode `/` as `%2F` (`group%2Fsubgroup%2Fproject`); when the tool accepts a plain path, pass the unencoded `group/subgroup/project`. Validate the full multi-segment `pathWithNamespace`, not just the final `path` segment.
+3. If `pathWithNamespace` differs, trust the server and stop to surface the discrepancy.
+4. Resolve the default branch from `get_project().defaultBranch`; never assume `main`/`master` or stale `origin/HEAD`.
+5. Preserve local `git` worktree/ref safety for branch creation, fetch, checkout, `rev-parse`, and `ls-remote`; MCP does not replace those local checks.
 
 ## Cross-references
 
-- Legacy `glab` command mechanics, help-first discipline, and SHA-pinning syntax: [`gitlab-local/SKILL.md`](../SKILL.md#help-first-rule).
-- Canonical workflow snippets (preflight, MR read/update, finish guards) the MCP refactor will replace: [`gitlab-local/SKILL.md` canonical snippets](../SKILL.md#canonical-snippets).
+- Stable snippet transport contracts: [`snippet-transports.md`](snippet-transports.md).
+- Safe text/content-byte rule for MCP and fallback bodies: [`safe-text.md`](safe-text.md).
+- Guarded fallback help-first discipline: [`gitlab-local/SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule).

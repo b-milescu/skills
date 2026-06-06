@@ -22,10 +22,10 @@ Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
 and `manual_validation_rules.ref`. Record the exact full local gate, targeted
 checks, CI job requirements, and allowed manual validation evidence here.
 
-Project-profile hooks may specialize gate policy, but they must not weaken
+Project-profile hooks may specialize project policy, but they must not weaken
 reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
 review, the child-builder boundary, the verifier read-only boundary, or
-help-first `glab` correctness.
+MCP-first transport correctness plus help-first `glab` fallback correctness.
 
 ## Targeted checks
 

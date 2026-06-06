@@ -40,7 +40,7 @@ require_card_contract() {
   for trigger in \
     'ambiguity' \
     'missing field' \
-    'CLI/help drift' \
+    'transport/help drift' \
     'authority uncertainty' \
     'SHA/CI mismatch' \
     'cross-project binding' \

@@ -2,7 +2,7 @@
 
 Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. The stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../BUILD-FLOW.md#parent-orchestrator-recipe). Project rulebooks and `project_profile` hooks may specialize labels, local gates, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, auxiliary indexes, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
 
-Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and exact-SHA CI results stay bound to the MR head before approval or merge; explicit authority source stays required; help-first `glab` correctness is preserved; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
+Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and exact-SHA CI results stay bound to the MR head before approval or merge; explicit authority source stays required; MCP-first transport correctness plus help-first `glab` fallback correctness is preserved; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
 ## Durable child outputs
 

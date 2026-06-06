@@ -175,7 +175,8 @@ agent_handoff:
   labels, branches, CI jobs, domain docs, auxiliary indexes, release/deploy
   policy, and manual validation. Reviewers still enforce reviewed-SHA binding,
   exact-SHA CI, explicit authority source, independent review, child-builder
-  boundaries, verifier read-only boundaries, and help-first `glab` correctness.
+  boundaries, verifier read-only boundaries, and MCP-first transport correctness
+  plus help-first `glab` fallback correctness.
 - `review_verdict` is the review judgment: `pass`, `request-changes`, `reject`,
   or `blocked`, matching the Review Report. `pass` means the review judgment
   passed; it does not imply a GitLab approval, merge, or auto-merge action was

@@ -33,4 +33,4 @@ Compact pointer map for parent/coordinator issue-to-MR loops. This card is a che
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` help-first snippets on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live CLI help win over this card; never infer review completion, approval, merge authority, or verifier success from the compact card alone.
+Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live fallback help win over this card; never infer review completion, approval, merge authority, or verifier success from the compact card alone.

@@ -6,7 +6,8 @@ Use this file as `project_profile.label_profile_ref` for this repo. The profile
 may point to this label vocabulary, but it must not create live labels, rely on
 lazy label creation, or weaken reviewed-SHA binding, exact-SHA CI, explicit
 authority source, independent review, child-builder boundaries, verifier
-read-only boundaries, or help-first `glab` correctness.
+read-only boundaries, or MCP-first transport correctness plus help-first `glab`
+fallback correctness.
 
 Verified on 2026-05-27 with `glab label list`:
 

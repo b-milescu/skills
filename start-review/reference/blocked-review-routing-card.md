@@ -45,4 +45,4 @@ Compact pointer map for fail-closed review outcomes. This card is a checklist, n
 
 ## Fallback to canonical docs
 
-Fall back to the full [`../REVIEW-FLOW.md`](../REVIEW-FLOW.md) and [`../../gitlab-local/SKILL.md`](../../gitlab-local/SKILL.md) on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, suspected secret exposure, grouped action pressure, security uncertainty, or any mutation action. The full references plus live CLI help win over this card.
+Fall back to the full [`../REVIEW-FLOW.md`](../REVIEW-FLOW.md) and [`../../gitlab-local/SKILL.md`](../../gitlab-local/SKILL.md) on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, suspected secret exposure, grouped action pressure, security uncertainty, or any mutation action. The full references plus live fallback help win over this card.
