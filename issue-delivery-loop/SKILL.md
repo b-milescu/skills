@@ -17,7 +17,7 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 Act immediately — this skill drives the batch, it is not passive reference. Follow the Operating contract below; this ramp just orders the first actions:
 
 1. Preflight (`../gitlab-local/SKILL.md`) and read the ready queue.
-2. Prove the [Decoupling Contract](docs/decoupling-contract.md) before any parallel work.
+2. Prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work.
 3. Run the parent loop per [`../start-build/reference/parent-orchestrator.md`](../start-build/reference/parent-orchestrator.md), delegating builds to [`../start-build/reference/child-builder.md`](../start-build/reference/child-builder.md) and review to [`../start-review/REVIEW-FLOW.md`](../start-review/REVIEW-FLOW.md).
 4. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
 5. Hand merged work to the `start-build/reference/post-merge-verifier.md` recipe.
@@ -38,7 +38,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
 - Child/reviewer prompts pass one target issue/MR, exact role/mode, stop condition, expected handoff schema, forbidden actions, and minimum evidence pointers only. Do not restate broad parent reasoning unless a specific risk requires narrow extra context.
 - Event-driven waiting: you are notified when a child build/review completes — do not poll, re-read, or re-invoke children mid-run; act on their returned handoffs. Read `delivery.handoff_contract` first for routing, but still verify compact claims from Tier 1/Tier 2 evidence before acting. Canonical: `../start-build/reference/timeout-handling.md`.
-- Scale ceremony to risk and blast radius (`docs/effort-scaling.md`): trivial/docs/mechanical issues take the compact path with light verification; behavior/safety changes take the full path with adversarial verification. The mandatory independent review gate never scales away, and when merge authority is granted up front the approving reviewer finishes in-session rather than spawning a separate finisher.
+- Scale ceremony to risk and blast radius (`skill://issue-delivery-loop/docs/effort-scaling.md`): trivial/docs/mechanical issues take the compact path with light verification; behavior/safety changes take the full path with adversarial verification. The mandatory independent review gate never scales away, and when merge authority is granted up front the approving reviewer finishes in-session rather than spawning a separate finisher.
 - Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `pi-worktree-*`; GitLab MR descriptions/comments remain canonical.
 - Project-profile hooks are coordinator inputs, not safety overrides. They may
   specialize gate policy, labels, branch naming, CI jobs, domain docs,

@@ -27,7 +27,8 @@ home_dir="$TMP_ROOT/home"
 foreign_project="$TMP_ROOT/foreign-project"
 output_file="$TMP_ROOT/install.out"
 bad_refs="$TMP_ROOT/bad-refs.out"
-
+workflow_bad_refs="$TMP_ROOT/workflow-bad-refs.out"
+bad_shared_resource_ref_pattern='(^|[^A-Za-z0-9_:/.-])((\./)|(\.\./))*docs/(decoupling-contract|effort-scaling)\.md'
 mkdir -p \
   "$home_dir/.claude" \
   "$home_dir/.pi/agent" \
@@ -65,21 +66,40 @@ fi
   done
 )
 
-# Agent prompts run with the target project as cwd. A prompt-level instruction such
-# as `read docs/decoupling-contract.md` therefore resolves to the target project
-# and fails. Agents should load the workflow skill and follow its skill-relative
-# Decoupling Contract links instead of naming this cwd-relative path directly.
+# Agent prompts run with the target project as cwd. A prompt-level instruction
+# such as `read docs/decoupling-contract.md` or `read docs/effort-scaling.md`
+# therefore resolves to the target project and fails. Agents should load the
+# workflow skill and follow explicit skill:// URIs instead.
 : > "$bad_refs"
 find -L \
   "$home_dir/.claude/agents" \
   "$home_dir/.pi/agent/agents" \
   -type f -name '*.md' -print0 |
-  xargs -0 grep -nF 'docs/decoupling-contract.md' >"$bad_refs" || true
-
+  xargs -0 grep -nE "$bad_shared_resource_ref_pattern" >"$bad_refs" || true
 if [[ -s "$bad_refs" ]]; then
-  echo "agent prompt(s) contain cwd-relative Decoupling Contract path(s):" >&2
+  echo "agent prompt(s) contain cwd-relative shared resource path(s):" >&2
   cat "$bad_refs" >&2
-  echo "Use the start-build/start-review skill-relative Decoupling Contract links instead." >&2
+  echo "Use explicit skill://... URIs for Decoupling Contract and Effort Scaling shared resources." >&2
+  exit 1
+fi
+
+# Workflow skill docs can also be read while cwd is a target project. Shared
+# resource pointers there must be explicit skill:// URIs; repo-local docs/agents
+# links stay local and are intentionally outside this shared-resource pattern.
+: > "$workflow_bad_refs"
+find \
+  "$REPO_ROOT/gitlab-to-issues" \
+  "$REPO_ROOT/issue-delivery-loop" \
+  "$REPO_ROOT/start-build" \
+  "$REPO_ROOT/start-review" \
+  -path '*/docs' -prune -o \
+  -type f -name '*.md' -print0 |
+  xargs -0 grep -nE "$bad_shared_resource_ref_pattern" >"$workflow_bad_refs" || true
+
+if [[ -s "$workflow_bad_refs" ]]; then
+  echo "workflow doc(s) contain cwd-relative shared resource path(s):" >&2
+  cat "$workflow_bad_refs" >&2
+  echo "Use explicit skill://<skill>/docs/... URIs for shared Decoupling Contract and Effort Scaling reads." >&2
   exit 1
 fi
 
