@@ -30,4 +30,4 @@ Compact pointer map for child `mr-builder` sessions. This card is a checklist, n
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` help-first snippets on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action beyond the child builder's assigned Draft MR update path. The full references plus live CLI help win over this card.
+Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action beyond the child builder's assigned Draft MR update path. The full references plus live fallback help win over this card.

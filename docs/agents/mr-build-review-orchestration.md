@@ -17,20 +17,21 @@ skills and child agents:
 - Fresh `mr-reviewer` sessions own independent diff review, one durable GitLab
   Review Report, one parseable final handoff, and one SHA-bound
   approval/request-changes/reject decision.
-- `/gitlab-local` owns `glab` syntax, flag pitfalls, file-backed GitLab writes,
-  SHA guards, CI snapshots/watchers, and authority-aware finish snippets.
+- `/gitlab-local` owns MCP-first GitLab transport contracts, guarded `glab`
+  fallback syntax/flag pitfalls, file-backed GitLab writes, SHA guards, CI
+  snapshots/watchers, and authority-aware finish snippets.
 - Repo-local docs point at active skills instead of copying workflow bodies.
 
 Durable rationale: keep review independence visible, bind decisions to exact
-MR head SHAs, keep GitLab command syntax in one place, and avoid parent prompts
-needing to restate every builder/reviewer safety boundary.
+MR head SHAs, keep GitLab transport syntax/guards in one place, and avoid parent
+prompts needing to restate every builder/reviewer safety boundary.
 
 ## Active sources of truth
 
 For the canonical routing table to active workflow skills, schemas, templates,
-and GitLab command references, see [Dev Workflows](dev-workflows.md). This brief
-does not duplicate that pointer table; `docs/agents/dev-workflows.md` owns repo
-workflow routing per the `CLAUDE.md` doc ownership map.
+and GitLab transport references, see [Dev Workflows](dev-workflows.md). This
+brief does not duplicate that pointer table; `docs/agents/dev-workflows.md`
+owns repo workflow routing per the `CLAUDE.md` doc ownership map.
 
 ## Historical outcome
 
@@ -52,7 +53,7 @@ This file intentionally no longer includes:
 | --- | --- |
 | Parent loop lives in `/start-build` | Build flow already owns issue pickup, Draft MR creation, Review Packet upkeep, local gate evidence, ready-marking, and handoff to the mandatory review gate. |
 | Review decisions live in `/start-review` | Reviewer flow owns fresh-session review, Review Report shape, finding IDs, SHA-bound approval decisions, and merge-authority limits. |
-| GitLab command details live in `/gitlab-local` | `glab` flags and JSON shapes drift by version; one command reference avoids stale snippets in repo docs and prompts. |
+| GitLab transport details live in `/gitlab-local` | MCP tools and fallback `glab` flags/JSON shapes drift by version; one transport reference avoids stale snippets in repo docs and prompts. |
 | Machine handoff templates live beside producer flows | Builders/reviewers produce those blocks, while parent orchestrators consume them opportunistically and fall back to MR descriptions/comments. |
 | Repo docs stay pointer-first | `docs/agents/dev-workflows.md` can route agents to canonical skill docs without becoming another policy copy. |
 | Post-merge verification stays separate from review | Read-only verification after merge should not grant reviewer, builder, or verifier extra approval/merge authority. |

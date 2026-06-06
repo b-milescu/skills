@@ -199,7 +199,7 @@ agent_handoff:
   policy, and manual validation. These hooks specialize project policy only; they
   do not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
   independent review, child-builder boundaries, verifier read-only boundaries, or
-  help-first `glab` correctness.
+  MCP-first transport correctness plus help-first `glab` fallback correctness.
 - The YAML block above is a concrete synthetic example, not a schema literal:
   replace every value with verified values for the current MR before sending a
   final handoff. Do not leave placeholder alternatives in copied output.

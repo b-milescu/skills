@@ -1,21 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Parallel-execution contract (issue #197):
-#   Phase 3 OWNS this file: tests/gitlab-local-ci-finish-guards.sh.
-#   Phase 2 OWNS tests/gitlab-local-split-snippets.sh.
-# The two test files are intentionally disjoint so Phase 2 and Phase 3 can run in
-# parallel without serializing on a shared test. If a future change must touch
-# both, merge test rows by ID without resequencing the existing assertions.
+# Parallel-execution contract (issue #197/#210):
+#   CI/finish guard mechanics live here.
+#   Snippet body/stability assertions live in tests/gitlab-local-split-snippets.sh.
+# The two test files are intentionally disjoint so future changes can update
+# CI/finish mechanics separately from snippet inventory.
 #
-# Transport independence (issue #197):
+# MCP-first transport contract (issue #210):
 #   This test asserts the CONCEPTUAL CI-watch + finish-guard invariants and their
-#   MCP wording, NOT exact `glab` command strings. When Phase 3 swaps the card's
-#   relocated mechanics from `glab` CLI calls to gitlab-mcp tool calls, the
-#   per-poll re-read and pipeline-lookup mechanics below are matched in EITHER
-#   transport (legacy `glab mr view` / `glab ci status --branch` OR MCP
-#   `get_merge_request` / `list_pipelines(sha=)`), so this test stays green
-#   across the migration. The load-bearing invariants it preserves are:
+#   MCP wording, NOT exact `glab` fallback command strings. Per-poll re-read and
+#   pipeline-lookup mechanics are matched in EITHER transport (guarded fallback
+#   `glab mr view` / `glab ci status --branch` OR MCP `get_merge_request` /
+#   `list_pipelines(sha=)`), so fallback helpers remain testable without making
+#   `glab` the primary transport. The load-bearing invariants it preserves are:
 #     - per-poll re-read of MR head (no stale list data for decision-grade),
 #     - SHA-pin EVERY poll iteration against reviewed_sha,
 #     - the forbidden whole-MR CI status shortcut stays a do-not-use mechanic,
@@ -82,8 +80,8 @@ assert_not_contains() {
   [[ "$text" != *"$needle"* ]] || fail "unexpected $label still inline: $needle"
 }
 
-# Transport-independent mechanic regexes. Each matches the current `glab` wording
-# and the planned gitlab-mcp tool-call wording the refactor adopts.
+# Transport-independent mechanic regexes. Each matches guarded `glab` fallback
+# wording and gitlab-mcp tool-call wording.
 #   - MR head re-read: `glab mr view` OR `get_merge_request`.
 #   - pipeline lookup for a SHA: `glab ci status --branch` / MR `.pipeline`
 #     OR `list_pipelines(sha=...)` / `get_pipeline`.
@@ -128,6 +126,9 @@ require_text "$CARD" '\.sha.*reviewed_sha|reviewed_sha.*\.sha|sha[ =]"?\$?review
 require_text "$CARD" 'exactly one (finish )?action|one finish action' 'exactly-one-finish-action mechanic'
 require_text "$CARD" 'closure_pending' 'closure_pending report token'
 
+require_text "$CARD" 'via=mcp|via=glab-fallback' 'finish transport evidence token'
+require_text "$CARD" 'caller identity|caller_user_id|no-self-merge' 'caller identity / no-self-merge fresh check'
+require_text "$CARD" 'fresh MCP re-read|Re-read `get_merge_request`|re-read through MCP' 'fresh MCP re-read before finish/fallback'
 # fetch-only-after-action: the default-branch fetch/fast-forward must be SEQUENCED
 # strictly AFTER the finish action. Anchor to the co-occurrence of the
 # fetch/fast-forward mechanic with the "only after" ordering and the finish

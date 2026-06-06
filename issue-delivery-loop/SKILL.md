@@ -45,7 +45,8 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
   release/deploy policy, manual validation, language families, and auxiliary
   indexes, but they must not weaken reviewed-SHA binding, exact-SHA CI, explicit
   authority source, independent review, child-builder boundaries, verifier
-  read-only boundaries, or help-first `glab` correctness.
+  read-only boundaries, or MCP-first transport correctness plus help-first
+  `glab` fallback correctness.
 - Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
 - After merge or protected auto-merge, hand off read-only validation to the `start-build/reference/post-merge-verifier.md` recipe.
@@ -53,4 +54,4 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 
 ## Handoff
 
-Use this skill as coordinator-only guidance. Keep live GitLab command syntax in `/gitlab-local`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.
+Use this skill as coordinator-only guidance. Keep live GitLab transport syntax and fallback conditions in `/gitlab-local`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.

@@ -36,11 +36,11 @@ Use this first-screen matrix before expanding context. Load the required files/s
 
 ## Compact mode cards
 
-Use the compact cards as pointer-map checklists only after the active mode is known: [`reference/child-builder-card.md`](reference/child-builder-card.md), [`reference/parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`reference/revision-card.md`](reference/revision-card.md), and [`reference/parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Canonical policy stays in the mode reference docs, `SAFETY.md`, templates, and `/gitlab-local`; fall back there on ambiguity, missing field, CLI/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
+Use the compact cards as pointer-map checklists only after the active mode is known: [`reference/child-builder-card.md`](reference/child-builder-card.md), [`reference/parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`reference/revision-card.md`](reference/revision-card.md), and [`reference/parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Canonical policy stays in the mode reference docs, `SAFETY.md`, templates, and `/gitlab-local`; fall back there on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
 
 ## Quick start
 
-1. Load `gitlab-local` and run **Snippet: local-repo-preflight** to verify `glab`/`jq` are installed, authenticated, and the cwd is the intended GitLab repo.
+1. Load `gitlab-local` and run **Snippet: local-repo-preflight** to verify MCP project binding plus guarded fallback `glab`/`jq` availability, authentication, and the cwd is the intended GitLab repo.
 2. Read [SAFETY.md](SAFETY.md) before changing files.
 3. Read the [BUILD-FLOW.md](BUILD-FLOW.md) router plus the active mode-specific reference doc from the matrix before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Child builders use [reference/child-builder.md](reference/child-builder.md) instead of parent/standalone gate detail.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.
@@ -71,7 +71,7 @@ See [SAFETY.md](SAFETY.md) for non-negotiables, refactor rules, quality rules, e
 
 - `templates/reviewer-lift-schema.md` — canonical Reviewer Lift field names, order, and required semantics.
 - `templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, `project_profile` extension hooks, evidence taxonomy, action/authority enums, and generated-copy drift contract.
-- `templates/gitlab-delivery-schema.md` also defines `gate_receipt.kind=gate-receipt` for parent-owned local gate evidence before ready-marking. Project-profile hooks may specialize gate policy, labels, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, language families, and auxiliary indexes, but must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, the child-builder boundary, the verifier read-only boundary, or help-first `glab` correctness.
+- `templates/gitlab-delivery-schema.md` also defines `gate_receipt.kind=gate-receipt` for parent-owned local gate evidence before ready-marking. Project-profile hooks may specialize gate policy, labels, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, language families, and auxiliary indexes, but must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, the child-builder boundary, the verifier read-only boundary, or MCP-first transport correctness plus help-first `glab` fallback correctness.
 - `templates/builder-final-handoff.md` — machine-readable child-builder final response block for parent-orchestrator parsing.
 - `templates/review-packet.md` — full MR description.
 - `templates/review-packet-compact.md` — compact MR description for simple changes.

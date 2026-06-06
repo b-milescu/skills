@@ -68,7 +68,7 @@ for file in "${invariant_docs[@]}"; do
   require_text "$file" 'independent review' 'independent review invariant'
   require_text "$file" 'child-builder' 'child-builder boundary invariant'
   require_text "$file" 'verifier read-only' 'verifier read-only invariant'
-  require_text "$file" 'help-first `glab` correctness|help-first rule' 'help-first glab invariant'
+  require_text "$file" 'MCP-first transport correctness plus help-first `glab` fallback correctness|fallback help-first rule' 'MCP-first plus help-first fallback invariant'
 done
 
 setup_docs=(

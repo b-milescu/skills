@@ -6,7 +6,8 @@ Use this file as the default `project_profile.label_profile_ref`. Project-profil
 hooks may specialize label vocabulary by pointing here, but they must not create
 live labels, rely on lazy label creation, or weaken reviewed-SHA binding,
 exact-SHA CI, explicit authority source, independent review, child-builder
-boundaries, verifier read-only boundaries, or help-first `glab` correctness.
+boundaries, verifier read-only boundaries, or MCP-first transport correctness
+plus help-first `glab` fallback correctness.
 
 ## Live label inventory
 

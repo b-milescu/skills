@@ -20,13 +20,14 @@ labels, branch naming, CI jobs, domain docs, release/deploy policy, manual
 validation, language families, and auxiliary indexes. They are routing context,
 not authority or proof, and must not weaken reviewed-SHA binding, exact-SHA CI,
 explicit authority source, independent review, child-builder boundaries,
-verifier read-only boundaries, or help-first `glab` correctness.
+verifier read-only boundaries, or MCP-first transport correctness plus
+help-first `glab` fallback correctness.
 
 ## Quick start
 
 > **Invocation modes.** The reviewer may be spawned by a human, by a parent orchestrator after child `mr-builder` final handoff, by a separate builder session, or via the [Mandatory review gate](../start-build/BUILD-FLOW.md#mandatory-review-gate) by a standalone builder running `/start-build`. When invoked via the Mandatory review gate, the task prompt contains a structured handoff: MR URL, pointer to the Reviewer Lift block in the MR description, and the project rulebook path. The review procedure is identical regardless of invocation method — the reviewer reads the diff fresh, runs its own tests, and makes its own judgment.
 
-1. Load review-scoped GitLab command cards first: [`review-read`](../gitlab-local/reference/review-read.md), [`review-actions`](../gitlab-local/reference/review-actions.md), and [`ci`](../gitlab-local/reference/ci.md). Use them for snippet names, inputs/outputs, and fail-closed rules; fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card says to, when flag/JSON drift appears, or when a needed command is not carded. Then run **Snippet: local-repo-preflight** to verify `glab`/`jq` are installed, authenticated, and the cwd is the intended GitLab repo.
+1. Load review-scoped GitLab transport cards first: [`review-read`](../gitlab-local/reference/review-read.md), [`review-actions`](../gitlab-local/reference/review-actions.md), and [`ci`](../gitlab-local/reference/ci.md). Use them for snippet names, inputs/outputs, and fail-closed rules; fall back to [`gitlab-local/SKILL.md`](../gitlab-local/SKILL.md) when a card says to, when MCP/fallback transport drift appears, or when a needed command is not carded. Then run **Snippet: local-repo-preflight** to verify MCP project binding plus guarded fallback `glab`/`jq` availability, authentication, and the cwd is the intended GitLab repo.
 2. Read [REVIEW-FLOW.md](REVIEW-FLOW.md) before selecting MR(s), commenting, approving, merging, requesting changes, or rejecting; use its [CI and Open Question decision tables](REVIEW-FLOW.md#ci-and-open-question-decision-tables) as the canonical CI/OQ policy.
 3. Resolve and project-bind the MR: supplied ID/URL/branch, current-branch MR, or one open non-draft MR (see [REVIEW-FLOW.md §Project binding](REVIEW-FLOW.md#project-binding) and [§MR pickup](REVIEW-FLOW.md#mr-pickup)). Bound fields are host, project path, repo URL, IID, source branch, target branch, and current SHA; compare them to the preflight repo and block mismatches unless the user explicitly chooses the cross-repo review target.
 4. If multiple MRs are supplied/requested, keep single-MR as the default and preferred path: ask the parent/harness for separate reviewer sessions/worktrees, or use explicit serialized mode only when [§Multiple MR worktree mode](REVIEW-FLOW.md#multiple-mr-worktree-mode) allows it. Decoupling Contract proof remains required before parent parallel fanout.
@@ -50,9 +51,10 @@ Use compact cards as pointer-map checklists after the active review path is know
 [`finish-action-card.md`](reference/finish-action-card.md), and
 [`blocked-review-routing-card.md`](reference/blocked-review-routing-card.md).
 Canonical policy stays in [`REVIEW-FLOW.md`](REVIEW-FLOW.md), templates, and
-`/gitlab-local`; fall back there on ambiguity, missing field, CLI/help drift,
-authority uncertainty, SHA/CI mismatch, cross-project binding, partial review,
-suspected secret exposure, grouped action pressure, or any mutation action.
+`/gitlab-local`; fall back there on ambiguity, missing field, transport/help
+drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial
+review, suspected secret exposure, grouped action pressure, or any mutation
+action.
 
 ## MR pickup summary
 

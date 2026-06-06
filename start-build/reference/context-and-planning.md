@@ -34,7 +34,7 @@ Before marking ready or requesting review, validate the MR handoff:
   language families, and auxiliary indexes. They specialize policy only; they
   must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
   independent review, child-builder boundaries, verifier read-only boundaries, or
-  help-first `glab` correctness.
+  MCP-first transport correctness plus help-first `glab` fallback correctness.
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.

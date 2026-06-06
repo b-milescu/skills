@@ -17,7 +17,7 @@ Turn an approved plan into GitLab issues for the current target GitLab repositor
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.
 8. Draft vertical slices; ask the user to approve the breakdown before publishing.
-9. Publish approved slices to GitLab using `/gitlab-local` command syntax only after explicit publish approval.
+9. Publish approved slices to GitLab using `/gitlab-local` MCP-first transport contracts only after explicit publish approval; use guarded `glab` fallback only when `/gitlab-local` names the fallback condition.
 
 ## Slice rules
 
@@ -55,7 +55,7 @@ Publish approved issues in dependency order so later issues can reference real b
 
 Before publishing, show the user the detected GitLab target, labels to apply, issue count, and issue titles, then ask for explicit approval to publish. If approval is not explicit, do not create issues.
 
-Use `/gitlab-local` for all `glab` command syntax, flags, comments, labels, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<repo-root>/docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
+Use `/gitlab-local` for MCP primary tools, guarded `glab` fallback syntax, comments, labels, safe-text rules, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<repo-root>/docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
 
 For generated AFK issues, preserve the `## Agent Readiness` section from the issue body template. If any readiness field lacks durable context and no maintainer waiver exists, publish the slice as HITL or Needs info instead of applying an AFK-ready label.
 

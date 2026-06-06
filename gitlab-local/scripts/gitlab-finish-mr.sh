@@ -37,6 +37,7 @@ approve_as_reviewer=false
 delete_local_source_branch=false
 delete_remote_source_branch=false
 output_format="human"
+transport="glab-fallback"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -129,6 +130,7 @@ emit_yaml() {
   printf 'result: %s\n' "$(yaml_escape "$result")"
   [[ -z "$blocker" ]] || printf 'blocker: %s\n' "$(yaml_escape "$blocker")"
   printf 'action: %s\n' "$(yaml_escape "$action")"
+  printf 'transport: %s\n' "$(yaml_escape "$transport")"
   printf 'mr: %s\n' "$(yaml_escape "$mr_iid")"
   printf 'reviewed_sha: %s\n' "$(yaml_escape "$reviewed_sha")"
   printf 'ci_guard: %s\n' "$(yaml_escape "$ci_guard")"
@@ -150,9 +152,9 @@ finish_exit() {
     emit_yaml "$result" "$blocker" "$action" "$ci_guard_value" "${pipeline_status:-none}" "${pipeline_sha:-none}" "${pipeline_url:-none}" "$issue_state_value" "$worktree_value" "$branch_value"
   else
     if [[ "$code" -eq 0 ]]; then
-      echo "$message"
+      echo "$message transport=$transport via=$transport"
     else
-      echo "$message" >&2
+      echo "$message transport=$transport via=$transport" >&2
     fi
   fi
   exit "$code"

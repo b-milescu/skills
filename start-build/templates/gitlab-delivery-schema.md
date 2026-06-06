@@ -153,7 +153,7 @@ for those fields.
 |---|---|
 | `host` | GitLab host used for project binding. |
 | `project_path` | GitLab namespace/project path used for repo/MR/issue binding. |
-| `repo_url` | Git remote URL used for local preflight and GitLab CLI operations. |
+| `repo_url` | Git remote URL used for local preflight and guarded fallback/helper operations. |
 | `default_branch` | Target branch used for source/target binding and exact-SHA comparisons. |
 | `profile_id` | Stable project-profile identifier such as `default`, `regulated`, or a target-repo slug. |
 | `profile_path` | Repo-local doc path that owns the profile declaration. |
@@ -170,7 +170,8 @@ for those fields.
 Project-profile hooks may specialize project policy, but they must not weaken
 reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
 review, the child-builder boundary, the verifier read-only boundary, or
-help-first `glab` correctness. Compact delivery values, including
+MCP-first transport correctness plus help-first `glab` fallback correctness.
+Compact delivery values, including
 `project_profile`, remain routing indexes until verified from Tier 1/Tier 2
 evidence.
 
