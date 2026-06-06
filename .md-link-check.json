@@ -1,7 +1,7 @@
 {
   "externalLinks": {
     "network": "disabled",
-    "allowedSchemes": ["http:", "https:", "mailto:"],
+    "allowedSchemes": ["http:", "https:", "mailto:", "skill:"],
     "allowedHosts": ["gitlab.example.com", "code.claude.com"]
   }
 }

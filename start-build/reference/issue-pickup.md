@@ -9,7 +9,7 @@ Detailed issue-resolution procedure for `start-build`. The stable compatibility 
 3. Inspect enough candidates to validate fit and coupling. For a normal queue, inspect 3-5 candidates; for a supplied issue, inspect that issue, its comments, and linked MRs.
 4. Prefer open issues that are unassigned or assigned to you, ready/triaged, clear, unblocked, non-confidential, and sized for one MR.
 5. Deprioritize blocked issues, issues with information-needed or human-decision equivalents, WIP/in-progress issues, and confidential/security-sensitive issues unless the user explicitly supplied them.
-6. For multiple issues, select only a set that satisfies the shared [Decoupling Contract](../docs/decoupling-contract.md). If any contract item is false, unknown, or contradicted, do not parallelize.
+6. For multiple issues, select only a set that satisfies the shared [Decoupling Contract](skill://start-build/docs/decoupling-contract.md). If any contract item is false, unknown, or contradicted, do not parallelize.
 7. Summarize each inspected candidate with ID, title, labels, assignee, suitability, and coupling risk before proceeding when there is a real choice.
 8. Claim issues only when the target project's rulebook documents that convention. Do not create labels or mutate assignment casually.
 9. Immediately before starting work, re-read the chosen issue's assignee and state; if it changed since selection or is already assigned to another active session, stop and ask rather than opening a competing branch or Draft MR.
