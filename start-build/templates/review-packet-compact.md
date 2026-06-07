@@ -25,8 +25,11 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 |---|---|
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
+| Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
+| Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |
+| Gate coverage rationale | `<policy source + required CI mapping; unmapped CI-only jobs or none; stale/wrong-SHA evidence invalid after push>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
-| Local gate | `<PASS before ready/review / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending> — <exact command>` |
+| Local gate | `<PASS before ready/review when Gate coverage is full-local / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; hybrid/ci-only needs exact-SHA CI for uncovered required jobs or waiver> — <exact command>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |

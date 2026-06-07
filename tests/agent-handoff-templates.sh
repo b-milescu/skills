@@ -21,6 +21,7 @@ builder_expected=(
   pipeline
   local_gate
   gate_ownership
+  gate_coverage
   tdd
   changed_files
   safety_surfaces

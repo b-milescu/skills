@@ -57,7 +57,7 @@ Check-gate discovery detail lives in [reference/context-and-planning.md §Check 
 
 ## Handoff integrity checklist
 
-Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, `delivery.handoff_contract` must carry the required routing fields and only use `blocking_question` for specific actionable blockers, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, and local gate evidence must be `PASS`/`N/A` or parent-owned per [reference/parent-owned-gate.md](reference/parent-owned-gate.md).
+Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, `delivery.handoff_contract` must carry the required routing fields and only use `blocking_question` for specific actionable blockers, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, Gate owner/coverage/rationale must be recorded, CI evidence must be SHA-bound before counting green, and local gate evidence must be `PASS`/`N/A` or parent-owned per [reference/parent-owned-gate.md](reference/parent-owned-gate.md).
 
 Project-profile hooks in `templates/gitlab-delivery-schema.md` may specialize
 project gate policy, labels, branch naming, CI jobs, domain docs,
@@ -69,7 +69,7 @@ fallback correctness.
 
 ## Implementation flow
 
-Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, and mark ready with **Snippet: draft-mr-mark-ready** only after the full local gate passes and Reviewer Lift names the current head SHA. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
+Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, classify exact-SHA Gate coverage, and mark ready with **Snippet: draft-mr-mark-ready** only after the builder-owned ready coverage rule passes and Reviewer Lift names the current head SHA. Parent-owned gate mode leaves the MR Draft for the parent Gate Receipt / ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Compact packet eligibility
 
