@@ -42,6 +42,11 @@ const PI_ALLOWED_FIELDS = new Set([
 const PI_ONLY_FIELDS = new Set([...PI_ALLOWED_FIELDS].filter((field) => !CLAUDE_ALLOWED_FIELDS.has(field)));
 const CLAUDE_ONLY_FIELDS = new Set(['effort', 'color']);
 
+const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools-mcp__*']);
+const PI_MCP_SELECTIONS = new Set(['mcp:gitlab-mcp', 'mcp:wowtools-mcp']);
+const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
+const ALLOWED_PI_MCP_SELECTIONS = [...PI_MCP_SELECTIONS].join(', ');
+
 const CLAUDE_TOOLS = new Set([
   'AskUserQuestion',
   'Bash',
@@ -66,7 +71,6 @@ const PI_TOOLS = new Set([
   'grep',
   'intercom',
   'ls',
-  'mcp',
   'read',
   'subagent',
   'write',
@@ -362,7 +366,7 @@ function splitList(value) {
 }
 
 function validateClaudeTool(file, fieldLines, tool) {
-  if (CLAUDE_TOOLS.has(tool)) {
+  if (CLAUDE_TOOLS.has(tool) || CLAUDE_MCP_SELECTORS.has(tool)) {
     return;
   }
 
@@ -372,11 +376,20 @@ function validateClaudeTool(file, fieldLines, tool) {
     return;
   }
 
+  if (isClaudeMcpSelector(tool)) {
+    addDiagnostic(
+      file,
+      lineFor(fieldLines, 'tools'),
+      `Claude MCP selector "${tool}" is not approved; allowed selectors: ${ALLOWED_CLAUDE_MCP_SELECTORS}`,
+    );
+    return;
+  }
+
   addDiagnostic(file, lineFor(fieldLines, 'tools'), `Claude tool "${tool}" is not a Claude Code tool`);
 }
 
 function validatePiTool(file, fieldLines, tool) {
-  if (PI_TOOLS.has(tool) || isPiMcpDirectSelection(tool)) {
+  if (PI_TOOLS.has(tool) || PI_MCP_SELECTIONS.has(tool)) {
     return;
   }
 
@@ -386,17 +399,24 @@ function validatePiTool(file, fieldLines, tool) {
     return;
   }
 
+  if (isPiMcpDirectSelection(tool)) {
+    addDiagnostic(
+      file,
+      lineFor(fieldLines, 'tools'),
+      `pi MCP selection "${tool}" is not approved; allowed selections: ${ALLOWED_PI_MCP_SELECTIONS}`,
+    );
+    return;
+  }
+
   addDiagnostic(file, lineFor(fieldLines, 'tools'), `pi tool "${tool}" is not a pi tool`);
 }
 
-function isPiMcpDirectSelection(tool) {
-  if (!tool.startsWith('mcp:')) {
-    return false;
-  }
+function isClaudeMcpSelector(tool) {
+  return tool === 'mcp' || tool.startsWith('mcp__');
+}
 
-  const selection = tool.slice(4);
-  const normalized = selection.replace(/\/+$/u, '');
-  return normalized.length > 0 && !selection.startsWith('/') && !/[\s,]/u.test(selection);
+function isPiMcpDirectSelection(tool) {
+  return tool === 'mcp' || tool.startsWith('mcp:');
 }
 
 function validateBody(file, lines, frontmatterEndLine) {

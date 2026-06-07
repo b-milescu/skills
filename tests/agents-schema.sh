@@ -10,7 +10,7 @@ cat > "$TMPDIR/good/agents/claude/mr-worker.md" <<'MD'
 ---
 name: mr-worker
 description: Claude worker fixture
-tools: Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
 skills: start-build, tdd, gitlab-local
 model: inherit
 effort: high
@@ -24,7 +24,7 @@ cat > "$TMPDIR/good/agents/pi/mr-worker.md" <<'MD'
 ---
 name: mr-worker
 description: pi worker fixture
-tools: read, bash, edit, write, intercom, mcp:chrome-devtools, mcp:github/search_repositories
+tools: "read, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
@@ -47,6 +47,16 @@ thinking: high
 Claude body mentions contact_supervisor and intercom.
 MD
 
+cat > "$TMPDIR/bad/agents/claude/mr-reviewer.md" <<'MD'
+---
+name: mr-reviewer
+description: Claude MCP bad fixture
+tools: "Bash, mcp__, mcp__github__*, mcp__*"
+---
+
+Claude MCP selectors must stay on the approved server scopes.
+MD
+
 cat > "$TMPDIR/bad/agents/claude/missing-description.md" <<'MD'
 ---
 name: missing-description
@@ -66,6 +76,16 @@ color: green
 ---
 
 Pi bad fixture.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/mr-builder.md" <<'MD'
+---
+name: mr-builder
+description: pi MCP bad fixture
+tools: "read, mcp, mcp:chrome-devtools"
+---
+
+Pi MR agents must not use bare or non-approved MCP selections.
 MD
 
 cat > "$TMPDIR/bad/agents/pi/bad-yaml.md" <<'MD'
@@ -100,7 +120,12 @@ for expected in \
   "Claude-only frontmatter field \"color\" is not allowed in pi agent" \
   "pi tool \"Bash\" must use lowercase pi casing \"bash\"" \
   "pi tool \"Read\" must use lowercase pi casing \"read\"" \
-  "pi tool \"mcp:\" is not a pi tool" \
+  "pi MCP selection \"mcp:\" is not approved; allowed selections: mcp:gitlab-mcp, mcp:wowtools-mcp" \
+  "Claude MCP selector \"mcp__\" is not approved; allowed selectors: mcp__gitlab-mcp__*, mcp__wowtools-mcp__*" \
+  "Claude MCP selector \"mcp__github__*\" is not approved; allowed selectors: mcp__gitlab-mcp__*, mcp__wowtools-mcp__*" \
+  "Claude MCP selector \"mcp__*\" is not approved; allowed selectors: mcp__gitlab-mcp__*, mcp__wowtools-mcp__*" \
+  "pi MCP selection \"mcp\" is not approved; allowed selections: mcp:gitlab-mcp, mcp:wowtools-mcp" \
+  "pi MCP selection \"mcp:chrome-devtools\" is not approved; allowed selections: mcp:gitlab-mcp, mcp:wowtools-mcp" \
   "frontmatter YAML does not parse"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
