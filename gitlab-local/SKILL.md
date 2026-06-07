@@ -14,7 +14,7 @@ Use from the GitLab-backed worktree. GitLab API actions use this transport order
 2. **Guarded `glab` fallback second.** Use `glab` only when the snippet contract names an explicit fallback/helper/troubleshooting condition, after re-checking SHA, CI, authority, caller identity, and project binding as applicable.
 3. **Local `git` remains local.** Worktree, branch, fetch, rev-parse, and ls-remote safety checks stay in `git`; do not replace local git worktree safety with GitLab API calls.
 
-Known MCP gaps: `merge_merge_request` has an observed robustness/error-normalization gap for one `Branch cannot be merged` case where SHA-bound `glab` merge succeeded, and exposed `list_*` tools do not provide reliable pagination controls for exhaustive lists. Treat those as documented fallback conditions only; never weaken reviewed-SHA binding, exact-SHA CI, authority, caller-identity/no-self-merge, or content-byte safeguards to use a fallback.
+Known MCP gaps: `merge_merge_request` has an observed robustness/error-normalization gap for one `Branch cannot be merged` case where SHA-bound `glab` merge succeeded, and exposed `list_*` tools do not provide reliable pagination controls for exhaustive lists. Treat those as documented fallback conditions only; never weaken reviewed-SHA binding, exact-SHA CI, authority, caller-identity/token-stability, context-firewall, or content-byte safeguards to use a fallback.
 
 ## Guarded glab fallback and help-first rule
 
@@ -248,7 +248,7 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 [ "$current_sha" = "$reviewed_sha" ] || { echo "MR head changed: current=$current_sha reviewed=$reviewed_sha" >&2; exit 1; }
 ```
 
-Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, perform a fresh MCP re-read of MR head SHA, exact-SHA CI, approval/merge authority source, and caller identity/no-self-merge. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, or self-merge risk. After any action, re-read through MCP and record transport evidence such as `via=mcp` or `via=glab-fallback`. Reviewer approval authority is separate from merge authority by `start-review`; default approval after pass does not grant merge or auto-merge authority.
+Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, perform a fresh MCP re-read of MR head SHA, exact-SHA CI, approval/merge authority source, caller identity/token stability, and context-firewall eligibility. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, or same-session review/finish risk. Same GitLab account/PAT is not by itself a self-approval or self-merge blocker for a fresh gate-eligible reviewer. After any action, re-read through MCP and record transport evidence such as `via=mcp` or `via=glab-fallback`. Reviewer approval authority is separate from merge authority by `start-review`; default approval after pass does not grant merge or auto-merge authority.
 
 ### Snippet: sha-bound-approval
 

@@ -35,24 +35,27 @@ run_gate --caller-role builder --caller-user-id 7 --mr-author-id 9 \
 assert_status 4
 assert_contains "reason=authority"
 
+# same GitLab identity does not relax the builder boundary
+run_gate --caller-role builder --caller-user-id 7 --mr-author-id 7 \
+  --merge-authority "reviewer may merge" --action merge
+assert_status 4
+assert_contains "reason=authority"
+
 # builder handoff is allowed
 run_gate --caller-role builder --caller-user-id 7 --mr-author-id 9 \
   --merge-authority "reviewer may merge" --action handoff
 assert_status 0
 
-# --- self_merge: caller == author blocks any non-handoff action, even human ---
-run_gate --caller-role human --caller-user-id 5 --mr-author-id 5 \
+# --- same GitLab identity does not block a clean-context reviewer ---
+run_gate --caller-role reviewer --caller-user-id 5 --mr-author-id 5 \
   --merge-authority "reviewer may merge" --action merge
-assert_status 6
-assert_contains "reason=self_merge"
+assert_status 0
 
-# self_merge is enforced for authorized-parent too
-run_gate --caller-role authorized-parent --caller-user-id 42 --mr-author-id 42 \
-  --merge-authority "queue auto-merge" --action queue-auto-merge
-assert_status 6
-assert_contains "reason=self_merge"
+run_gate --caller-role reviewer --caller-user-id 5 --mr-author-id 5 \
+  --merge-authority "approval-only" --action approve
+assert_status 0
 
-# handoff is allowed even when caller == author (stopping is never self_merge)
+# handoff is allowed even when caller == author (stopping is always permitted)
 run_gate --caller-role reviewer --caller-user-id 3 --mr-author-id 3 \
   --merge-authority "approval-only" --action handoff
 assert_status 0
@@ -168,7 +171,7 @@ for role in "${roles[@]}"; do
     cell="$(matrix_cell "$role" "$authority")"
     [[ -n "$cell" ]] || fail "matrix has no cell for role=$role authority=$authority"
     for action in "${actions[@]}"; do
-      # Use distinct, valid ids so self_merge never interferes with authority probing.
+      # Use valid ids; same GitLab identity is permitted for gate-eligible roles.
       run_gate --caller-role "$role" --caller-user-id 100 --mr-author-id 200 \
         --merge-authority "$authority" --action "$action"
       if cell_allows "$cell" "$action"; then

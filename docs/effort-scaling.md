@@ -15,7 +15,7 @@ Match the ceremony of a change to its **risk × blast radius**. Spend tokens, ag
 ## Hard floors (never scaled away)
 
 - The **mandatory independent review gate** applies to every behavior-touching change regardless of tier; only discovery, packet, design, and verification *depth* scale.
-- TDD for behavior-touching work, the safety non-negotiables, the SHA/CI/authority guards, and the no-self-merge rule hold at every tier.
+- TDD for behavior-touching work, the safety non-negotiables, the SHA/CI/authority guards, and the builder/context-firewall finish boundaries hold at every tier.
 - Scaling down is a claim, not a default: record the chosen tier and why in the packet so a reviewer can challenge it.
 
 ## Token economy
