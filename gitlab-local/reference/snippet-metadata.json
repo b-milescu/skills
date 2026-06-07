@@ -1,0 +1,721 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skill://gitlab-local/reference/snippet-metadata.json",
+  "kind": "gitlab-snippet-metadata",
+  "version": "1",
+  "owner": "gitlab-local",
+  "description": "Machine-readable source of truth for stable GitLab workflow snippet transport contracts. The human-readable Markdown table in gitlab-local/reference/snippet-transports.md is checked against this metadata.",
+  "machine_resource": "skill://gitlab-local/reference/snippet-metadata.json",
+  "markdown_contract": "gitlab-local/reference/snippet-transports.md",
+  "stable_snippet_count": 20,
+  "via_evidence_requirement": {
+    "required": true,
+    "mcp_token": "via=mcp",
+    "fallback_token": "via=glab-fallback",
+    "not_applicable_token": "via=n/a",
+    "summary": "Reports that rely on GitLab API transport evidence must state via=mcp for MCP primary transport or via=glab-fallback for guarded fallback/helper transport; via=n/a is reserved for no-action handoffs."
+  },
+  "required_snippet_fields": [
+    "name",
+    "mcp_primary_tools",
+    "input_category",
+    "output_category",
+    "allowed_mutations",
+    "required_guards",
+    "fallback_conditions",
+    "post_mutation_reread",
+    "via_evidence",
+    "markdown"
+  ],
+  "snippets": [
+    {
+      "name": "local-repo-preflight",
+      "mcp_primary_tools": ["get_project"],
+      "local_tools": ["git"],
+      "input_category": "worktree/project-binding",
+      "output_category": "project-binding/default-branch/local-repo-root",
+      "allowed_mutations": [],
+      "required_guards": [
+        "non-git cwd must stop",
+        "project binding must match the remote URL-derived project path",
+        "default branch must be known",
+        "local default ref must exist and be current",
+        "authentication must succeed"
+      ],
+      "fallback_conditions": [
+        "glab repo view only when MCP is unavailable during bootstrap",
+        "glab repo view for flag or JSON troubleshooting after help-first verification"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when preflight evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_project`; local `git` for cwd, remote URL, branch/ref state.",
+        "inputs": "Current worktree, remote URL-derived project path.",
+        "outputs": "Verified project path, repo URLs, default branch, local repo root.",
+        "required_guards": "Stop on non-git cwd, project mismatch, missing default branch, stale/missing local default ref, or auth failure.",
+        "fallback_conditions": "`glab repo view` only when MCP is unavailable during bootstrap or for flag/JSON troubleshooting; run help-first first.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "issue-pickup",
+      "mcp_primary_tools": ["list_issues", "get_issue", "issue_notes_or_discussions"],
+      "input_category": "issue-selection/project-binding",
+      "output_category": "issue-metadata/comments",
+      "allowed_mutations": ["issue_close", "issue_label_update"],
+      "required_guards": [
+        "list results are candidate data unless narrowly scoped",
+        "stop on confidential issue ambiguity",
+        "stop on blocked issue ambiguity",
+        "stop on wrong-project ambiguity",
+        "maintenance mutations require an owning workflow step"
+      ],
+      "fallback_conditions": [
+        "glab issue list/view when MCP list pagination blocks selection",
+        "glab issue list/view when MCP read is unavailable",
+        "exact glab help must be verified first"
+      ],
+      "post_mutation_reread": {
+        "mode": "conditional",
+        "expectation": "N/A for reads; after issue update/close fallback, re-read `get_issue`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used for issue pickup evidence and any maintenance mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`list_issues`, `get_issue`, issue notes/list discussions tool when comments are required.",
+        "inputs": "Issue IID/URL or selection filters (`ready-for-agent`, assignee, state); project path.",
+        "outputs": "Issue IID/title/state/labels/assignees/URL/description and comments.",
+        "required_guards": "Treat list results as candidate data; do not assume exhaustive lists when a list page may be truncated. Stop on confidential/blocked/wrong-project ambiguity.",
+        "fallback_conditions": "`glab issue list/view` fallback when MCP list pagination gap blocks selection or MCP read is unavailable; use exact help.",
+        "post_mutation_reread": "N/A for reads; after issue update/close fallback, re-read `get_issue`."
+      }
+    },
+    {
+      "name": "draft-mr-create",
+      "mcp_primary_tools": ["create_merge_request", "get_merge_request"],
+      "input_category": "merge-request-create",
+      "output_category": "draft-mr-metadata",
+      "allowed_mutations": ["merge_request_create"],
+      "required_guards": [
+        "source branch must exist remotely",
+        "description must pass content-byte guard",
+        "target branch must be server default or explicit policy target"
+      ],
+      "fallback_conditions": [
+        "file-backed draft_mr_create helper when MCP create is unavailable",
+        "file-backed draft_mr_create helper when safe-text wrapper is required by runtime"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: `get_merge_request` and verify draft=true, source/target, description present, and head SHA."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the MR create mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`create_merge_request`, then `get_merge_request`.",
+        "inputs": "Project path, source branch, target branch, title, validated description, draft=true, `Closes #<iid>`.",
+        "outputs": "Draft MR IID/URL/source/target/head/draft state.",
+        "required_guards": "Source branch must exist remotely; description passes content-byte guard; target branch is server default or explicit policy target.",
+        "fallback_conditions": "File-backed `draft_mr_create` helper only when MCP create is unavailable or the helper's safe-text wrapper is required by runtime.",
+        "post_mutation_reread": "Required: `get_merge_request` and verify draft=true, source/target, description present, and head SHA."
+      }
+    },
+    {
+      "name": "mr-description-update",
+      "mcp_primary_tools": ["update_merge_request", "get_merge_request"],
+      "input_category": "merge-request-description-update",
+      "output_category": "updated-mr-description",
+      "allowed_mutations": ["merge_request_description_update"],
+      "required_guards": [
+        "MR/project binding must match",
+        "description must pass content-byte guard",
+        "do not combine ready unless workflow chooses mark-ready path"
+      ],
+      "fallback_conditions": [
+        "file-backed mr_description_update helper when MCP update is unavailable",
+        "file-backed mr_description_update helper when helper body validation is required"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: verify description changed and MR head still equals expected/reviewed SHA when one is in force."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the description update mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`update_merge_request(description=...)`, then `get_merge_request`.",
+        "inputs": "Bound MR IID/URL, project path, validated description.",
+        "outputs": "Updated MR description with unchanged draft/ready state.",
+        "required_guards": "Bound MR/project must match; description passes content-byte guard; do not combine ready unless the workflow explicitly chooses the mark-ready path.",
+        "fallback_conditions": "File-backed `mr_description_update` helper when MCP update is unavailable or helper body validation is required.",
+        "post_mutation_reread": "Required: verify description changed and MR head still equals expected/reviewed SHA when one is in force."
+      }
+    },
+    {
+      "name": "draft-mr-mark-ready",
+      "mcp_primary_tools": ["update_merge_request", "get_merge_request"],
+      "input_category": "ready-transition",
+      "output_category": "ready-mr-state",
+      "allowed_mutations": ["merge_request_mark_ready"],
+      "required_guards": [
+        "local gate must be PASS or N/A",
+        "parent-owned Gate Receipt must pass when parent owns ready transition",
+        "never ready a stale head",
+        "never ready an empty description"
+      ],
+      "fallback_conditions": [
+        "glab mr update --ready only when MCP update is unavailable",
+        "fresh MCP read before and after fallback"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: verify `draft=false`, description intact, and head SHA still equals reviewed SHA."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the ready-state mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`update_merge_request(draft=false)`, optionally same call with final `description`, then `get_merge_request`.",
+        "inputs": "Bound MR IID, expected head SHA, final Reviewer Lift, local-gate or parent Gate Receipt evidence.",
+        "outputs": "MR draft=false/ready state for the same head SHA.",
+        "required_guards": "Local gate must be PASS/N/A, or parent-owned Gate Receipt must pass; never ready a stale head or empty description.",
+        "fallback_conditions": "`glab mr update --ready` only when MCP update is unavailable; run fresh MCP read before fallback and after fallback.",
+        "post_mutation_reread": "Required: verify `draft=false`, description intact, and head SHA still equals reviewed SHA."
+      }
+    },
+    {
+      "name": "mr-pickup",
+      "mcp_primary_tools": ["get_merge_request", "list_merge_requests", "merge_request_notes_or_discussions"],
+      "input_category": "merge-request-selection/project-binding",
+      "output_category": "mr-metadata/comments",
+      "allowed_mutations": [],
+      "required_guards": [
+        "do not approve or finish from list-only data",
+        "bind host/project/path before action"
+      ],
+      "fallback_conditions": [
+        "glab mr view/list when MCP read is unavailable",
+        "glab mr view/list when list pagination blocks selection",
+        "help-first verification"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when MR pickup evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request`; `list_merge_requests` only for candidate selection; MR notes/discussions tool for comments.",
+        "inputs": "MR IID/full URL/current branch filters, project path.",
+        "outputs": "Decision-grade MR metadata: IID, state, draft, branches, author id, URL, head SHA, pipeline, merge status.",
+        "required_guards": "Do not approve/finish from list-only data; bind host/project/path before action.",
+        "fallback_conditions": "`glab mr view/list` fallback when MCP read is unavailable or list pagination gap blocks selection; help-first.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "artifact-capture",
+      "mcp_primary_tools": ["get_merge_request", "merge_request_diff_or_changes", "merge_request_notes_or_discussions"],
+      "input_category": "mr-artifact-capture",
+      "output_category": "redacted-local-artifacts",
+      "allowed_mutations": [],
+      "required_guards": [
+        "stop on unavailable diff",
+        "stop on wrong project",
+        "stop on stale metadata",
+        "stop on unredacted sensitive body risk"
+      ],
+      "fallback_conditions": [
+        "glab mr diff/view when MCP diff endpoint is unavailable",
+        "glab mr diff/view for numstat helper compatibility"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when artifact-capture evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request`, MR diff/changes MCP tool, MR notes/discussions tool.",
+        "inputs": "Bound MR IID, project path, run directory.",
+        "outputs": "Redacted local MR metadata/comments/diff/numstat artifacts.",
+        "required_guards": "Stop on diff unavailable, wrong project, stale metadata, or unredacted sensitive body risk.",
+        "fallback_conditions": "`glab mr diff/view` fallback when MCP diff endpoint is unavailable or for numstat helper compatibility.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "ci-decision-snapshot",
+      "mcp_primary_tools": ["get_merge_request", "list_pipelines", "get_pipeline"],
+      "input_category": "ci-snapshot/exact-sha",
+      "output_category": "mr-head-pipeline-merge-status",
+      "allowed_mutations": [],
+      "required_guards": [
+        "green counts only when pipeline SHA equals reviewed SHA",
+        "missing CI is not approval evidence",
+        "red CI is not approval evidence",
+        "stale CI is not approval evidence",
+        "skipped or canceled CI is not approval evidence"
+      ],
+      "fallback_conditions": [
+        "glab ci status --branch fallback only when MCP pipeline read is unavailable",
+        "MR .pipeline fallback only when MCP pipeline read is unavailable",
+        "never use whole-MR CI without SHA"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when CI snapshot evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request`, `list_pipelines(sha=reviewed_sha)` or `get_pipeline`.",
+        "inputs": "Bound MR IID, source branch, reviewed/candidate SHA.",
+        "outputs": "MR head SHA, pipeline id/url/status/sha, merge status.",
+        "required_guards": "Green counts only when pipeline SHA equals reviewed SHA; missing/red/stale/skipped/canceled is not approval evidence.",
+        "fallback_conditions": "`glab ci status --branch` / MR `.pipeline` fallback only when MCP pipeline read is unavailable; never use whole-MR CI without SHA.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "ci-watch-sha-pinned",
+      "mcp_primary_tools": ["get_merge_request", "list_pipelines", "get_pipeline"],
+      "input_category": "ci-watch/exact-sha",
+      "output_category": "ci-verdict",
+      "allowed_mutations": [],
+      "required_guards": [
+        "every poll fails closed if MR head differs from reviewed SHA",
+        "every poll fails closed when pipeline SHA is stale",
+        "every poll fails closed when pipeline is red, canceled, skipped, missing past timeout"
+      ],
+      "fallback_conditions": [
+        "gitlab-ci-watch.sh helper when MCP polling is unavailable",
+        "help-first glab fallback when MCP polling is unavailable",
+        "helper must preserve exact-SHA rules"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when CI watch evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Repeated `get_merge_request` plus exact-SHA `list_pipelines`/`get_pipeline`.",
+        "inputs": "MR IID, source branch for progress/fallback only, reviewed SHA, timeout, poll interval.",
+        "outputs": "Human or machine CI verdict with observed SHA, pipeline id/url/status, stale/timeout blockers.",
+        "required_guards": "Every poll fails closed if MR head differs from reviewed SHA or pipeline SHA is stale/red/canceled/skipped/missing past timeout.",
+        "fallback_conditions": "`gitlab-ci-watch.sh` helper / help-first `glab` fallback when MCP polling is unavailable; helper must preserve exact-SHA rules.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "mr-note-create",
+      "mcp_primary_tools": ["create_note", "merge_request_notes_or_discussions"],
+      "input_category": "mr-note-create",
+      "output_category": "mr-note",
+      "allowed_mutations": ["merge_request_note_create"],
+      "required_guards": [
+        "body must pass content-byte guard",
+        "never post Review Reports to issue notes",
+        "project binding must be explicit"
+      ],
+      "fallback_conditions": [
+        "mr_note_create helper when MCP note creation is unavailable",
+        "mr_note_create helper when file-backed validation is needed"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read MR notes/discussions and verify a note exists without printing the body."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the MR note mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "MR note/comment creation tool (`create_note` scoped to merge request), then MR notes/discussions read.",
+        "inputs": "Bound MR IID, project path, validated report body.",
+        "outputs": "One MR note on the bound MR.",
+        "required_guards": "Body passes content-byte guard; never post Review Reports to issue notes; project binding must be explicit.",
+        "fallback_conditions": "`mr_note_create` helper when MCP note creation is unavailable or file-backed validation is needed.",
+        "post_mutation_reread": "Required: re-read MR notes/discussions and verify a note exists without printing the body."
+      }
+    },
+    {
+      "name": "issue-note-create",
+      "mcp_primary_tools": ["create_issue_note", "create_note", "issue_notes"],
+      "input_category": "issue-note-create",
+      "output_category": "issue-note",
+      "allowed_mutations": ["issue_note_create"],
+      "required_guards": [
+        "body must pass content-byte guard",
+        "never use for Review Reports",
+        "never use for MR action reports"
+      ],
+      "fallback_conditions": [
+        "issue_note_create helper when MCP issue-note creation is unavailable",
+        "issue_note_create helper when file-backed validation is needed"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read issue notes and verify a note exists without printing the body."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the issue note mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Issue note/comment creation tool (`create_issue_note` or issue-scoped `create_note`), then issue notes read.",
+        "inputs": "Bound issue IID, project path, validated comment body.",
+        "outputs": "One issue note on the bound issue.",
+        "required_guards": "Body passes content-byte guard; never use for Review Reports or MR action reports.",
+        "fallback_conditions": "`issue_note_create` helper when MCP issue-note creation is unavailable or file-backed validation is needed.",
+        "post_mutation_reread": "Required: re-read issue notes and verify a note exists without printing the body."
+      }
+    },
+    {
+      "name": "label-reconcile",
+      "mcp_primary_tools": ["update_issue", "get_issue"],
+      "input_category": "issue-label-reconcile",
+      "output_category": "final-issue-labels",
+      "allowed_mutations": ["issue_label_update"],
+      "required_guards": [
+        "reject add/remove overlap before mutation",
+        "reject final state/category conflicts before mutation"
+      ],
+      "fallback_conditions": [
+        "label_reconcile helper when MCP label semantics are unavailable",
+        "label_reconcile helper when label conflict helper is needed"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: `get_issue` final labels match requested reconcile result."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the label mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Issue label update tool (`update_issue` label add/remove semantics), then `get_issue`.",
+        "inputs": "Issue IID, add labels, remove labels, allowed state/category label sets.",
+        "outputs": "Final issue labels.",
+        "required_guards": "Reject add/remove overlap and final state/category conflicts before mutation.",
+        "fallback_conditions": "`label_reconcile` helper when MCP label semantics are unavailable or label conflict helper is needed.",
+        "post_mutation_reread": "Required: `get_issue` final labels match requested reconcile result."
+      }
+    },
+    {
+      "name": "safe-mr-json",
+      "mcp_primary_tools": ["get_merge_request", "get_project"],
+      "input_category": "safe-mr-json-read/project-binding",
+      "output_category": "decision-grade-mr-json",
+      "allowed_mutations": [],
+      "required_guards": [
+        "fail on project binding drift",
+        "fail on SHA drift",
+        "fail on pipeline drift",
+        "fail on merge-status drift",
+        "fail on branch drift",
+        "fail on JSON/control-char drift"
+      ],
+      "fallback_conditions": [
+        "safe_mr_json helper when MCP read is unavailable",
+        "safe_mr_json helper when wrapper validation is required"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when safe MR JSON evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request` plus project read; no list-only data.",
+        "inputs": "MR IID, project path, repo URL/project binding.",
+        "outputs": "Decision-grade MR JSON-equivalent metadata.",
+        "required_guards": "Fail on project binding, SHA, pipeline, merge-status, branch, JSON/control-char drift.",
+        "fallback_conditions": "`safe_mr_json` helper when MCP read is unavailable or wrapper validation is required.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "auto-merge-api-fallback",
+      "mcp_primary_tools": ["merge_merge_request", "get_merge_request"],
+      "input_category": "auto-merge-queue-fallback",
+      "output_category": "auto-merge-queue-result-or-blocker",
+      "allowed_mutations": ["merge_request_auto_merge_queue"],
+      "required_guards": [
+        "fresh MCP re-read of SHA before action",
+        "exact-SHA CI/protected policy before action",
+        "authority/source before action",
+        "caller identity/token-stability before action",
+        "context-firewall eligibility before action"
+      ],
+      "fallback_conditions": [
+        "only the known glab mr merge --auto-merge 405 path for authorized non-builders",
+        "preserve SHA/CI/authority guards"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read MR and record `via=mcp` or `via=glab-fallback`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the auto-merge queue mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Prefer `merge_merge_request(auto_merge=true, sha=reviewed_sha, confirm=true)`, then `get_merge_request`.",
+        "inputs": "Bound MR, reviewed SHA, source/target branches, queue authority/source, caller role/identity.",
+        "outputs": "Auto-merge queued or blocked handoff.",
+        "required_guards": "Fresh MCP re-read of SHA, exact-SHA CI/protected policy, authority/source, caller identity/token-stability, and context-firewall eligibility before action.",
+        "fallback_conditions": "Only the known `glab mr merge --auto-merge` 405 path for authorized non-builders; preserve SHA/CI/authority guards.",
+        "post_mutation_reread": "Required: re-read MR and record `via=mcp` or `via=glab-fallback`."
+      }
+    },
+    {
+      "name": "sha-guard",
+      "mcp_primary_tools": ["get_merge_request"],
+      "input_category": "sha-guard",
+      "output_category": "head-sha-equality-result",
+      "allowed_mutations": [],
+      "required_guards": [
+        "any head SHA mismatch is stale review",
+        "no approval on mismatch",
+        "no merge on mismatch",
+        "no queue on mismatch"
+      ],
+      "fallback_conditions": [
+        "glab mr view only when MCP read unavailable",
+        "bind explicit repo/full URL"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when SHA guard evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request`.",
+        "inputs": "Bound MR IID/URL, reviewed SHA.",
+        "outputs": "Pass/fail head SHA equality.",
+        "required_guards": "Any mismatch is stale review; no approval/merge/queue.",
+        "fallback_conditions": "`glab mr view` fallback only when MCP read unavailable; still bind explicit repo/full URL.",
+        "post_mutation_reread": "N/A — read-only."
+      }
+    },
+    {
+      "name": "sha-bound-approval",
+      "mcp_primary_tools": ["approve_merge_request", "approval_state", "get_merge_request"],
+      "input_category": "sha-bound-approval",
+      "output_category": "approval-result",
+      "allowed_mutations": ["merge_request_approval"],
+      "required_guards": [
+        "fresh MCP re-read of MR head before action",
+        "approval authority before action",
+        "caller identity/token-stability before action",
+        "context-firewall eligibility before action",
+        "exact target before action"
+      ],
+      "fallback_conditions": [
+        "glab mr approve --sha only when MCP approval unavailable",
+        "help-first verification",
+        "same guards as MCP"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read approval state/MR and record `via=mcp` or `via=glab-fallback`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the approval mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`approve_merge_request(sha=reviewed_sha, confirm=true)`, then approval state/MR read.",
+        "inputs": "Bound MR, reviewed SHA, approval authority/source, caller identity.",
+        "outputs": "Approval for reviewed SHA or blocked action result.",
+        "required_guards": "Fresh MCP re-read of MR head, approval authority, caller identity/token-stability, context-firewall eligibility, and exact target before action.",
+        "fallback_conditions": "`glab mr approve --sha` only when MCP approval unavailable; help-first and same guards.",
+        "post_mutation_reread": "Required: re-read approval state/MR and record `via=mcp` or `via=glab-fallback`."
+      }
+    },
+    {
+      "name": "sha-bound-merge",
+      "mcp_primary_tools": ["merge_merge_request", "get_merge_request"],
+      "input_category": "sha-bound-direct-merge",
+      "output_category": "direct-merge-result-or-blocker",
+      "allowed_mutations": ["merge_request_merge"],
+      "required_guards": [
+        "fresh MCP re-read of head SHA before action",
+        "exact-SHA green CI before action",
+        "merge authority/source before action",
+        "caller identity/token-stability before action",
+        "context-firewall eligibility before action",
+        "project binding before action"
+      ],
+      "fallback_conditions": [
+        "glab mr merge --sha --auto-merge=false only for documented MCP merge robustness gap",
+        "glab mr merge --sha --auto-merge=false when MCP unavailable",
+        "do not fallback on stale/red/missing/authority uncertainty"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read MR; classify merged/already_merged/stale_head/merge_blocked; record `via=...`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the merge mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`merge_merge_request(sha=reviewed_sha, confirm=true, auto_merge=false)`, then `get_merge_request`.",
+        "inputs": "Bound MR, reviewed SHA, exact-SHA green CI, direct-merge authority/source, caller identity.",
+        "outputs": "Direct merge result or blocked handoff.",
+        "required_guards": "Fresh MCP re-read of head SHA, exact-SHA CI, merge authority/source, caller identity/token-stability, context-firewall eligibility, and project binding before action.",
+        "fallback_conditions": "`glab mr merge --sha --auto-merge=false` only for documented MCP merge robustness gap or MCP unavailable; do not fallback on stale/red/missing/authority uncertainty.",
+        "post_mutation_reread": "Required: re-read MR; classify merged/already_merged/stale_head/merge_blocked; record `via=...`."
+      }
+    },
+    {
+      "name": "sha-bound-auto-merge-queue",
+      "mcp_primary_tools": ["merge_merge_request", "get_merge_request"],
+      "input_category": "sha-bound-auto-merge-queue",
+      "output_category": "auto-merge-queue-result-or-blocker",
+      "allowed_mutations": ["merge_request_auto_merge_queue"],
+      "required_guards": [
+        "fresh MCP re-read of head before action",
+        "exact-SHA pending/green protected policy before action",
+        "queue authority/source before action",
+        "caller identity/token-stability before action",
+        "context-firewall eligibility before action"
+      ],
+      "fallback_conditions": [
+        "glab mr merge --auto-merge --sha only for documented MCP/CLI 405 gap after all guards",
+        "auto_merge_api_fallback only for documented MCP/CLI 405 gap after all guards"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required: re-read MR; record queue state and `via=...`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record via=mcp or via=glab-fallback for the auto-merge queue mutation."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`merge_merge_request(sha=reviewed_sha, confirm=true, auto_merge=true)`, then `get_merge_request`.",
+        "inputs": "Bound MR, reviewed SHA, protected auto-merge policy, queue authority/source, caller identity.",
+        "outputs": "Auto-merge queued or blocked handoff.",
+        "required_guards": "Fresh MCP re-read of head, exact-SHA pending/green protected policy, queue authority/source, caller identity/token-stability, and context-firewall eligibility.",
+        "fallback_conditions": "`glab mr merge --auto-merge --sha` or `auto_merge_api_fallback` only for documented MCP/CLI 405 gap after all guards.",
+        "post_mutation_reread": "Required: re-read MR; record queue state and `via=...`."
+      }
+    },
+    {
+      "name": "approval-confirmation",
+      "mcp_primary_tools": ["get_merge_request_approval", "approval_state", "get_merge_request"],
+      "input_category": "approval-confirmation-read",
+      "output_category": "approval-record",
+      "allowed_mutations": [],
+      "required_guards": [
+        "do not claim approval from laggy MR metadata alone",
+        "stop if endpoint/read unavailable"
+      ],
+      "fallback_conditions": [
+        "glab api approvals fallback when MCP approval-state read unavailable"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only confirmation."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback"],
+        "requirement": "Record the transport used when approval confirmation evidence is reported."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Approval state tool (`get_merge_request_approval` / `approval_state`) plus `get_merge_request`.",
+        "inputs": "Bound MR IID/project path, approved/reviewed SHA.",
+        "outputs": "Approval record tied to MR and caller.",
+        "required_guards": "Do not claim approval from laggy MR metadata alone; stop if endpoint/read unavailable.",
+        "fallback_conditions": "`glab api .../approvals` fallback when MCP approval-state read unavailable.",
+        "post_mutation_reread": "N/A — read-only confirmation."
+      }
+    },
+    {
+      "name": "finish-mr-authority-aware",
+      "mcp_primary_tools": ["get_merge_request", "list_pipelines", "get_pipeline", "caller_identity", "authority_matrix_helper", "approve_merge_request", "merge_merge_request"],
+      "input_category": "authority-aware-finish",
+      "output_category": "finish-result-or-handoff",
+      "allowed_mutations": ["merge_request_approval", "merge_request_merge", "merge_request_auto_merge_queue"],
+      "required_guards": [
+        "builder always stops at handoff",
+        "stop on stale head",
+        "stop on stale/red/missing CI",
+        "stop on missing authority/source",
+        "stop on identity drift",
+        "stop on same-session review/finish",
+        "stop on unsupported action",
+        "stop on dirty worktree cleanup"
+      ],
+      "fallback_conditions": [
+        "gitlab-finish-mr.sh helper only when its guarded fallback model exactly fits",
+        "raw glab fallback only under snippet-specific conditions after MCP re-read"
+      ],
+      "post_mutation_reread": {
+        "mode": "required",
+        "expectation": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": ["via=mcp", "via=glab-fallback", "via=n/a"],
+        "requirement": "Record via=mcp or via=glab-fallback for any finish mutation; via=n/a is allowed only for no-action handoff/held results."
+      },
+      "markdown": {
+        "mcp_primary_tools": "Fresh `get_merge_request`, exact-SHA pipeline read, caller identity read, authority matrix helper, then one of approval/merge/auto-merge MCP actions as authorized.",
+        "inputs": "MR IID, reviewed SHA, merge authority/source, caller role/id, source/target branch, default branch, optional issue/worktree.",
+        "outputs": "`finish_result`/handoff with action, blocker, sha, CI, issue, cleanup, identity, and `via`.",
+        "required_guards": "Builder always stops at handoff; stop on stale head, stale/red/missing CI, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup.",
+        "fallback_conditions": "`gitlab-finish-mr.sh` helper only when its guarded fallback model exactly fits; raw `glab` fallback only under snippet-specific conditions after MCP re-read.",
+        "post_mutation_reread": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
+      }
+    }
+  ]
+}

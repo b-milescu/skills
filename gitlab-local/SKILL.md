@@ -10,7 +10,7 @@ description: >-
 
 Use from the GitLab-backed worktree. GitLab API actions use this transport order:
 
-1. **MCP first.** Use the gitlab-mcp tool(s) named by the stable snippet contract in [`reference/snippet-transports.md`](reference/snippet-transports.md).
+1. **MCP first.** Use the gitlab-mcp tool(s) named by the stable snippet metadata (`skill://gitlab-local/reference/snippet-metadata.json`) and its human-readable contract in [`reference/snippet-transports.md`](reference/snippet-transports.md).
 2. **Guarded `glab` fallback second.** Use `glab` only when the snippet contract names an explicit fallback/helper/troubleshooting condition, after re-checking SHA, CI, authority, caller identity, and project binding as applicable.
 3. **Local `git` remains local.** Worktree, branch, fetch, rev-parse, and ls-remote safety checks stay in `git`; do not replace local git worktree safety with GitLab API calls.
 
@@ -59,7 +59,7 @@ Validate every MR/issue body before mutation, whether it will be sent as an MCP 
 
 ## Canonical snippets
 
-Names below are stable API for workflow skills. The MCP primary tools, inputs, outputs, fail-closed checks, fallback conditions, and required post-mutation MCP re-reads for every snippet live in [`reference/snippet-transports.md`](reference/snippet-transports.md). Inline shell blocks below are guarded `glab` fallback/helper examples, not the primary transport. Long helper bodies live in `scripts/` with tests; this skill keeps contracts, safety rules, and pointers authoritative.
+Names below are stable API for workflow skills. The machine-actionable source of truth for snippet names, MCP primary tools, inputs, outputs, allowed mutations, guards, fallback conditions, post-mutation re-reads, and via evidence is `skill://gitlab-local/reference/snippet-metadata.json`; the human-readable table lives in [`reference/snippet-transports.md`](reference/snippet-transports.md) and is checked against that metadata. Inline shell blocks below are guarded `glab` fallback/helper examples, not the primary transport. Long helper bodies live in `scripts/` with tests; this skill keeps contracts, safety rules, and pointers authoritative.
 
 Review-focused cards for `/start-review` live in [`reference/review-read.md`](reference/review-read.md), [`reference/review-actions.md`](reference/review-actions.md), and [`reference/ci.md`](reference/ci.md). The cards are pointer maps for snippet names, inputs/outputs, fail-closed rules, and fallback conditions; this `SKILL.md` remains the full owner for transport order, fallback help-first discipline, and flag drift.
 
