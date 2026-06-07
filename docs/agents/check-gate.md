@@ -29,6 +29,22 @@ reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
 review, the child-builder boundary, the verifier read-only boundary, or
 MCP-first transport correctness plus help-first `glab` fallback correctness.
 
+## Gate coverage for ready handoff
+
+This repo's default `Gate coverage` is `full-local` when `npm run check` passes
+on the exact MR head SHA. Required CI mapping:
+
+| Required CI job | Local coverage | Notes |
+| --- | --- | --- |
+| `check` | `npm run check` | CI adds `npm ci` first, then runs the same canonical local Check Gate. Dependency-install failures are CI evidence, not a separate local gate command. |
+
+`Gate coverage rationale` should cite this section and
+[`CI parity`](#ci-parity): required CI jobs = `check`; locally covered jobs =
+`check`; unmapped CI-only jobs = `none`. If a future MR changes CI so required
+jobs are no longer locally covered, classify that MR as `hybrid` or `ci-only`
+and wait for exact-SHA CI success, or record an authorized CI waiver, before
+ready/review handoff.
+
 ## Executable-bit policy
 
 Only directly invoked entrypoints keep executable bits: `install.sh`,
@@ -120,7 +136,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/start-build-mode-cards.sh` | `start-build` compact mode cards for child-builder, parent-owned-gate, revision, and parent-orchestrator stay pointer-map-only, preserve fallback triggers and canonical safety anchors, link accepted `/gitlab-local` snippet names, and remain discoverable from `start-build/SKILL.md` / `BUILD-FLOW.md`. |
 | `tests/start-build-secret-invariant.sh` | Builder credential/secret-handling tokens survive: `start-build/SAFETY.md` never-paste-secrets and strip-secrets-from-logs tokens, and both `agents/*/mr-builder.md` never-touch/print/paste credential token. |
 | `tests/start-build-done-criteria.sh` | `start-build` done criteria stays mode-tiered (builder-ready / review-gate-complete / finish-merge / post-merge-verified) with reference-flow pointers, no builder self-approve/self-merge wording, and a mode-specific `SKILL.md` note. |
-| `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, ready-marking local gate boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
+| `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, exact-SHA Gate coverage ready handoff (full-local vs hybrid/ci-only), parent-owned child no-pass/fail boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
 | `tests/start-build-simplicity-bar.sh` | `start-build/SAFETY.md` within-diff simplicity bar, blast-radius firewall anchors, preserved scope anti-pattern, and `SAFETY.md`/`SKILL.md` no-vendoring regressions. |
 | `tests/start-build-stale-reviewer-control.sh` | `start-build` stale reviewer control, status/activity observation, runtime interrupt/escalation, and no blind duplicate-reviewer retry regressions. |
 | `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, and issue-driven no-extra-approval prompt regressions. |

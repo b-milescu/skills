@@ -54,8 +54,11 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 |---|---|
 | Reviewed SHA | `<copy from Reviewer Lift; must equal MR head sha at approve-time>` |
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
+| Gate owner | `<copy from Reviewer Lift; verify builder vs parent ownership and parent-owned child boundary when applicable>` |
+| Gate coverage | `<copy from Reviewer Lift; verify full-local / hybrid / ci-only; parent-owned is invalid coverage>` |
+| Gate coverage rationale | `<copy from Reviewer Lift; verify policy source, required CI mapping, unmapped CI-only jobs or none, and exact-SHA freshness>` |
 | CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
-| Local gate | `<copy from Reviewer Lift; PASS before ready/review, N/A with rationale, or not-run parent-owned with Gate Receipt verification per ../../start-build/reference/parent-owned-gate.md; otherwise blocker>` |
+| Local gate | `<copy from Reviewer Lift; PASS before ready/review is sufficient only for full-local coverage, N/A with rationale, or not-run parent-owned with Gate Receipt verification per ../../start-build/reference/parent-owned-gate.md; hybrid/ci-only requires exact-SHA CI success for uncovered required jobs or waiver; otherwise blocker>` |
 | RED | `<copy from Reviewer Lift; evaluate behavior-touching implementation RED evidence or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy from Reviewer Lift; verify against diff>` |

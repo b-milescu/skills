@@ -10,6 +10,10 @@ parent coordinator owns the final local Check Gate and Draft-to-ready transition
 The child leaves the MR Draft and hands the parent a candidate SHA; the parent
 runs the repo Check Gate on that exact SHA, posts one Gate Receipt MR comment,
 and only then performs the ready transition.
+As gate evidence, the child records only the parent-owned/not-run contract and
+candidate SHA; that candidate SHA is the only child-provided gate evidence. It may point at the project Gate coverage mapping as a routing
+claim, but it must not claim local gate `PASS`/`FAIL`, Gate Receipt success, or
+uncovered CI satisfaction.
 
 ## Resource addressing
 
@@ -48,6 +52,10 @@ Semantics:
   handoff from missing evidence.
 - `ready_transition_owner: "parent"` means the child must leave the MR Draft; the
   parent posts the Gate Receipt and marks ready after the receipt passes.
+- The child handoff's gate evidence is limited to `local_gate_owner: "parent"`,
+  `builder_gate_status.status: "not-run"`, `not_run_reason: "parent-owned"`,
+  `ready_transition_owner: "parent"`, and the exact candidate SHA. Any Gate
+  coverage row remains a policy/routing claim until the parent verifies it.
 
 This contract must appear in the Reviewer Lift / MR description and in the child
 builder final handoff when a compact `delivery.kind=gitlab-delivery` block is
@@ -108,15 +116,20 @@ A single parent ready-transition check is enough when every item below is true:
    candidate SHA.
 5. The command from target `docs/agents/check-gate.md` runs on that exact checkout
    SHA and returns `PASS`.
-6. A post-gate status check shows tracked files unchanged. If tracked files
+6. Gate coverage is classified as `full-local`, `hybrid`, or `ci-only` (never `parent-owned`). For `hybrid`/`ci-only`, every uncovered required CI job has
+   exact-SHA success for `checkout_sha`, or an authorized CI waiver is recorded;
+   failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks the
+   ready transition.
+7. A post-gate status check shows tracked files unchanged. If tracked files
    changed during preflight or the gate, block ready/merge unless those changes
    are committed to the MR head and the gate reruns on the new SHA, or an
    explicit parent/human waiver is recorded in the Gate Receipt and MR discussion.
-7. The Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
-   every required field above.
-8. Immediately before marking ready, the MR head still equals the receipt
+8. The Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
+   every required field above, including `result: "PASS"` and `checkout_sha` for
+   the exact candidate SHA.
+9. Immediately before marking ready, the MR head still equals the receipt
    `checkout_sha`; if it changed, block and rerun the checklist on the new SHA.
-9. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
+10. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
    confirms the expected MR state.
 
 ## Evidence-ready handoff tokens

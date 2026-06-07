@@ -35,6 +35,9 @@ require_text "$canonical" 'protected merge checks[^|.]*green CI|green CI[^|.]*pr
 require_text "$canonical" 'queue auto-merge[^|.]*authority|authority[^|.]*queue auto-merge' 'pending CI queue auto-merge authority condition'
 require_text "$canonical" 'authorized human waiver[^|.]*source/comment|source/comment[^|.]*authorized human waiver' 'human-waived CI source/comment requirement'
 require_text "$canonical" 'reviewer[^|.]*cannot self-waive|cannot self-waive[^|.]*reviewer' 'reviewer cannot self-waive CI'
+require_text "$canonical" 'Builder readiness and Gate coverage do not authorize approval, merge, or auto-merge' 'builder readiness not approval/merge authority'
+require_text "$canonical" 'CI approval/finish eligibility remains exclusively governed by the \[CI decision table\]' 'canonical CI table remains approval/finish owner'
+require_text "$canonical" 'Gate coverage.*full-local.*/.*hybrid.*/.*ci-only.*never.*parent-owned|parent-owned.*invalid coverage' 'reviewer Gate coverage enum validation'
 
 for oq_state in \
   'answered from evidence' \

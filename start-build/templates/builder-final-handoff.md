@@ -130,6 +130,10 @@ agent_handoff:
           status: "not-run"
           not_run_reason: "parent-owned"
         ready_transition_owner: "parent"
+      gate_coverage:
+        owner: "parent"
+        coverage: "full-local"
+        rationale: "docs/agents/check-gate.md#gate-coverage-for-ready-handoff; required CI check covered by npm run check; unmapped CI-only jobs none"
   # GITLAB-DELIVERY-SCHEMA:END
   status: "candidate-for-parent-gate"
   issue:
@@ -162,6 +166,10 @@ agent_handoff:
       status: "not-run"
       not_run_reason: "parent-owned"
     ready_transition_owner: "parent"
+  gate_coverage:
+    owner: "parent"
+    coverage: "full-local"
+    rationale: "docs/agents/check-gate.md#gate-coverage-for-ready-handoff; required CI check covered by npm run check; unmapped CI-only jobs none"
   tdd:
     red: "N/A with rationale — docs/config/mechanical work"
     green: "N/A with rationale — targeted invariant checks only"
@@ -231,6 +239,10 @@ agent_handoff:
 - `gate_ownership` records the parent-owned ownership contract from
   `start-build/reference/parent-owned-gate.md`: `local_gate_owner`,
   `builder_gate_status`, and `ready_transition_owner`.
+- `gate_coverage` records the Reviewer Lift Gate owner/coverage/rationale values.
+  `coverage` is `full-local`, `hybrid`, or `ci-only`; never `parent-owned`.
+  Parent-owned mode may include policy/routing coverage, but the child still does
+  not claim local gate pass/fail or Gate Receipt success.
 - `delivery.handoff_contract` is the shared routing contract. Keep it aligned
   with `status`, `next_action`, blockers, and the parent-owned gate contract.
   Use `required_parent_decision: "none"` when no extra parent choice is still
