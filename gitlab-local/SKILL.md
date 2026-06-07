@@ -85,7 +85,8 @@ default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')
 ### Snippet: issue-pickup
 
 ```bash
-glab issue list --label ready-for-agent -O json --per-page 50 | jq '.[] | {iid,title,labels,assignees,web_url}'
+ready_label="<live label mapped to the AFK-ready Triage Role in project_profile.label_profile_ref>"
+glab issue list --label "$ready_label" -O json --per-page 50 | jq '.[] | {iid,title,labels,assignees,web_url}'
 glab issue view <id> --comments
 glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
 ```

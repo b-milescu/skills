@@ -44,7 +44,7 @@ agent_handoff:
       ci_jobs:
         ref: "docs/agents/check-gate.md#ci-parity"
         required:
-          - "validation"
+          - "check"
       domain_docs:
         ref: "docs/agents/domain.md"
         context: "CONTEXT.md"
@@ -60,7 +60,7 @@ agent_handoff:
       url: "https://gitlab.example/group/project/-/issues/57"
       state: "opened"
       labels:
-        - "ready-for-agent"
+        - "target-afk-ready-label"
     mr:
       iid: "123"
       url: "https://gitlab.example/group/project/-/merge_requests/123"

@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Scaffold or reconcile Agent Setup Docs: issue tracker, triage labels, project-profile hooks, domain docs, check gate, coding guardrails, and dev workflows. Human-confirmed flow: explore, present findings, confirm with user, then write.
 
+Canonical project-profile facts live in `reference/project-profile-facts.json` (`skill://setup-dev-skills/reference/project-profile-facts.json`). Use that file as the machine-readable source for default Agent Setup Doc paths, tracker fields, Triage Role mapping, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs; target repo findings instantiate or override those facts.
+
 ## Invocation mode
 
 Manual invocation only. `disable-model-invocation: true` is intentional because this Setup Skill explores target repo state, asks setup decisions, and writes Agent Setup Docs. Agents must not run it automatically.
@@ -24,6 +26,7 @@ Read current repo state; don't assume:
 - `docs/agents/`, especially prior setup output and `docs/agents/check-gate.md`
 - Existing coding guidance in root rulebooks, `CONTRIBUTING.md`, or `docs/agents/coding-guardrails.md`; pasted generic behavioral-guidance blocks
 - Existing project-profile declarations: gate policy, label vocabulary, branch naming, CI job requirements, domain/ADR locations, release/deploy policy, manual validation rules, and auxiliary index tooling such as `graphify-out/`
+- Canonical project-profile facts in `setup-dev-skills/reference/project-profile-facts.json`; compare existing docs against the fact source before copying defaults such as `docs/agents/...` or any label string
 - Older setup markers: `/setup-matt-pocock-skills`, `Label in mattpocock/skills`, canonical-five label tables, lazy-label-creation prose, stale skill names
 - `.scratch/` — local markdown issue tracker convention?
 - Existing tracker labels when safe: `glab label list`, `gh label list`, or local docs
@@ -64,16 +67,17 @@ Explain these guardrails reduce common agent coding mistakes: hidden assumptions
 ### F — Project-profile hooks and dev workflows
 
 Explain that GitLab workflow skills keep global names GitLab-specific (`issue`,
-`MR`, `pipeline`, `source branch`, `target branch`, `SHA`) while target repos
-declare project-specific policy through bounded `project_profile` hooks. Record
-where the repo declares gate policy (`docs/agents/check-gate.md`), label
-vocabulary (`docs/agents/triage-labels.md`), branch naming and release/deploy
-policy (`docs/agents/dev-workflows.md`), CI job requirements and manual
-validation rules (`docs/agents/check-gate.md`), domain/ADR locations
-(`docs/agents/domain.md`), language families, and auxiliary project-index
-tooling. Auxiliary indexes default to parent/coordinator ownership; child
-worktrees treat index reports as read-only unless explicitly assigned and must
-not copy index artifacts between worktrees.
+`MR`, `pipeline`, `source branch`, `target branch`, and `SHA`) while target repos
+declare project-specific policy through bounded `project_profile` facts. Read
+`reference/project-profile-facts.json`, then record the target repo's selected
+fact values: tracker docs, label vocabulary / Triage Role mapping, Check Gate
+path, Dev Workflow path, branch naming and release/deploy policy, CI job
+requirements, manual validation rules, domain/ADR locations, language families,
+runtime skill-resource URIs, and auxiliary index tooling. Repo-local docs stay
+repo-relative to the target checkout; reusable skill resources use explicit
+`skill://<skill>/...` URIs. Auxiliary indexes default to parent/coordinator
+ownership; child worktrees treat index reports as read-only unless explicitly
+assigned and must not copy index artifacts between worktrees.
 
 Then explain generated docs should tell future agents which workflow skill to
 load. If tracker is GitLab, reference `/gitlab-local`, `/gitlab-to-issues`,
@@ -83,31 +87,38 @@ manually.
 
 ## 3. Confirm draft
 
-Show draft contents before writing: `## Agent skills` block plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, `coding-guardrails.md`, and `dev-workflows.md`. If upgrading, include markers found, keep/update/regenerate decisions per section, and rationale. Include the project-profile hook map: gate policy, label vocabulary, branch naming, CI jobs, domain/ADR locations, release/deploy policy, manual validation rules, language families, and auxiliary index tooling. Let user edit.
+Show draft contents before writing: `## Agent skills` block plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, `coding-guardrails.md`, and `dev-workflows.md` or the target-specific paths from `reference/project-profile-facts.json`. If upgrading, include markers found, keep/update/regenerate decisions per section, and rationale. Include the project-profile fact map: tracker, labels / Triage Role mapping, gate policy, branch naming, CI jobs, domain/ADR locations, release/deploy policy, manual validation rules, language families, runtime skill resources, and auxiliary index tooling. Let user edit.
 
 ## 4. Write
 
 Pick file: if `CLAUDE.md` exists, edit it; else if `AGENTS.md` exists, edit it; if neither exists, ask which one to create. Never create one when the other already exists. If `## Agent skills` exists, update it in place without touching surrounding sections; if multiple or legacy blocks exist, ask which block to keep and remove/merge duplicates only after confirmation.
 
-Block shape:
+Block shape (substitute Agent Setup Doc paths from the target project profile
+before writing; the default profile may resolve these placeholders to
+`docs/agents/...` paths):
 
 ```md
 ## Agent skills
 ### Issue tracker
-[summary]. See `docs/agents/issue-tracker.md`.
+[summary]. See `<agent_setup_docs.issue_tracker>`.
 ### Triage labels
-[summary]. See `docs/agents/triage-labels.md`.
+[summary]. See `<agent_setup_docs.triage_labels>`.
 ### Domain docs
-[summary]. See `docs/agents/domain.md`.
+[summary]. See `<agent_setup_docs.domain>`.
 ### Check gate
-[summary]. See `docs/agents/check-gate.md`.
+[summary]. See `<agent_setup_docs.check_gate>`.
 ### Coding guardrails
-[summary]. See `docs/agents/coding-guardrails.md`.
+[summary]. See `<agent_setup_docs.coding_guardrails>`.
 ### Dev workflows
-[summary]. See `docs/agents/dev-workflows.md`.
+[summary]. See `<agent_setup_docs.dev_workflows>`.
 ```
 
-Use seed files in this skill folder for docs. Adapt host/project names, live tracker labels, local gate commands, branch naming, CI job requirements, language families, auxiliary index tooling, release/deploy policy, manual validation rules, and existing coding guidance from repo inspection. Reconcile older output in place: keep valid project-specific prose, replace stale generated claims, and do not blindly overwrite user additions. Do not leave default or placeholder labels in `triage-labels.md` unless the user explicitly chose to create/migrate to them. Use `dev-workflows-gitlab.md` for GitLab and `dev-workflows-generic.md` otherwise.
+Substitute each `<agent_setup_docs.*>` placeholder from the selected
+`project_profile.agent_setup_docs` values in `reference/project-profile-facts.json`
+or from live target-repo findings. Do not copy the default `docs/agents/...`
+paths into repos with a non-default Agent Setup Doc root.
+
+Use seed files in this skill folder as generated-doc templates backed by `reference/project-profile-facts.json`. Adapt host/project names, target Agent Setup Doc paths, live tracker labels, local gate commands, branch naming, CI job requirements, language families, auxiliary index tooling, release/deploy policy, manual validation rules, and existing coding guidance from repo inspection. Reconcile older output in place: keep valid project-specific prose, replace stale generated claims, and do not blindly overwrite user additions. Do not leave default or placeholder labels in `triage-labels.md` unless the user explicitly chose to create/migrate to them. Use `dev-workflows-gitlab.md` for GitLab and `dev-workflows-generic.md` otherwise.
 
 ## 5. Done
 

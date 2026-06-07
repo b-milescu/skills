@@ -1,11 +1,13 @@
 # Domain Docs
 
-How dev skills should consume this repo's domain documentation when exploring the codebase.
+How dev skills should consume the target repo's domain documentation when exploring the codebase.
 
-Use this file as the default `project_profile.domain_docs` reference. Record the
-repo's context and ADR layout here so project-specific hooks can point agents to
-the right domain language without changing GitLab delivery schema field names or
-workflow safety invariants.
+Use this file, or the target-specific replacement path recorded in
+`setup-dev-skills/reference/project-profile-facts.json`, as the default
+`project_profile.domain_docs` reference. Record the repo's context and ADR layout
+here so project-specific hooks can point agents to the right domain language
+without changing GitLab delivery schema field names or workflow safety
+invariants.
 
 ## Before exploring, read these
 
