@@ -57,6 +57,9 @@ assert(schema.human_resource === docResource, 'schema human_resource must use sk
 assert(doc.includes(schemaResource), 'human doc must point at machine schema skill URI');
 assert(doc.includes('GitLab Mutation Guard'), 'human doc must place Authority Verification inside the Mutation Guard');
 assert(/transport evidence/i.test(doc) && /Authority Verification evidence/i.test(doc), 'human doc must keep authority and transport evidence separate');
+assert(/source_evidence:[\s\S]*grants_authority: true/.test(doc), 'human input shape must document source_evidence grants_authority');
+assert(/source_precedence\[\]\.granted_actions/.test(doc), 'human doc must describe action-scoped source precedence grants');
+assert(/Repo defaults do not imply merge\/auto-merge\/release\/cleanup authority/.test(doc), 'human doc must keep repo defaults from implying finish authority');
 
 for (const field of [
   'requested_action',
@@ -90,6 +93,23 @@ sameList('source precedence', schema.source_precedence.map((entry) => entry.sour
   'builder-claim'
 ]);
 assert(schema.source_precedence.find((entry) => entry.source_type === 'builder-claim').grants_authority === false, 'builder-claim must not grant authority');
+const sourceEvidence = schema.$defs.sourceEvidence;
+sameList('source evidence required fields', sourceEvidence.required, [
+  'source_type',
+  'source',
+  'value',
+  'grants_authority'
+]);
+for (const entry of schema.source_precedence) {
+  assert(Array.isArray(entry.granted_actions), `${entry.source_type} must declare granted_actions`);
+}
+const repoDefaultSource = schema.source_precedence.find((entry) => entry.source_type === 'repo-default');
+assert(repoDefaultSource.grants_authority === true, 'repo-default may grant approval authority only');
+sameList('repo-default granted actions', repoDefaultSource.granted_actions, ['approve']);
+assert(!repoDefaultSource.granted_actions.includes('merge'), 'repo-default must not grant merge authority');
+assert(!repoDefaultSource.granted_actions.includes('queue-auto-merge'), 'repo-default must not grant auto-merge authority');
+const builderClaimSource = schema.source_precedence.find((entry) => entry.source_type === 'builder-claim');
+sameList('builder-claim granted actions', builderClaimSource.granted_actions, []);
 sameList('result states', schema.result_states, ['verified', 'restricted', 'conflict', 'missing', 'handoff', 'blocked']);
 sameList('action decisions', schema.action_decisions, ['proceed', 'must-handoff', 'ask-human', 'blocked']);
 for (const token of [
@@ -126,7 +146,17 @@ requireExample('self approval block', {requested_action: 'approve', result: 'blo
 requireExample('self merge block', {requested_action: 'merge', result: 'blocked', decision: 'blocked', blocker: 'self_merge_risk'});
 
 const defaultApproval = examples.get('approval default after pass');
+const defaultApprovalRepoEvidence = defaultApproval.source_evidence.find((entry) => entry.source_type === 'repo-default');
 assert(defaultApproval.approval.value === 'default-after-pass', 'default approval example must use default-after-pass');
+assert(defaultApprovalRepoEvidence?.grants_authority === true, 'default approval example must include repo-default source_evidence grant');
+const missingMerge = examples.get('missing merge authority');
+assert(missingMerge.merge.source_type === 'builder-claim' && missingMerge.merge.verified === false, 'missing merge example must not infer finish authority');
+for (const example of schema.examples) {
+  if (example.requested_action === 'merge' || example.requested_action === 'queue-auto-merge') {
+    const hasRepoDefaultFinishGrant = example.source_evidence.some((entry) => entry.source_type === 'repo-default' && entry.grants_authority === true);
+    assert(!hasRepoDefaultFinishGrant, `${example._label} must not use repo-default as finish-action grant`);
+  }
+}
 const conflict = examples.get('conflicting authority sources');
 assert(conflict.conflicts.length === 1 && conflict.conflicts[0].resolution === 'human-required', 'conflict example must require human resolution');
 const selfMerge = examples.get('self merge block');

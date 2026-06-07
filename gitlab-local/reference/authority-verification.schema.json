@@ -177,12 +177,12 @@
     }
   },
   "source_precedence": [
-    {"source_type": "human-explicit", "rank": 1, "grants_authority": true},
-    {"source_type": "parent-explicit", "rank": 2, "grants_authority": true},
-    {"source_type": "mr-or-issue-policy", "rank": 3, "grants_authority": true},
-    {"source_type": "project-rulebook", "rank": 4, "grants_authority": true},
-    {"source_type": "repo-default", "rank": 5, "grants_authority": true},
-    {"source_type": "builder-claim", "rank": 6, "grants_authority": false}
+    {"source_type": "human-explicit", "rank": 1, "grants_authority": true, "granted_actions": ["approve", "merge", "queue-auto-merge"]},
+    {"source_type": "parent-explicit", "rank": 2, "grants_authority": true, "granted_actions": ["approve", "merge", "queue-auto-merge"]},
+    {"source_type": "mr-or-issue-policy", "rank": 3, "grants_authority": true, "granted_actions": ["approve", "merge", "queue-auto-merge"]},
+    {"source_type": "project-rulebook", "rank": 4, "grants_authority": true, "granted_actions": ["approve", "merge", "queue-auto-merge"]},
+    {"source_type": "repo-default", "rank": 5, "grants_authority": true, "granted_actions": ["approve"]},
+    {"source_type": "builder-claim", "rank": 6, "grants_authority": false, "granted_actions": []}
   ],
   "result_states": ["verified", "restricted", "conflict", "missing", "handoff", "blocked"],
   "action_decisions": ["proceed", "must-handoff", "ask-human", "blocked"],

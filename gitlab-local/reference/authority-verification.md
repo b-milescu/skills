@@ -56,6 +56,7 @@ authority_verification_input:
     - source_type: "repo-default"
       source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
       value: "default-after-pass"
+      grants_authority: true
 ```
 
 ### Source types and precedence
@@ -68,6 +69,8 @@ authority_verification_input:
 | `project-rulebook` | yes | Stable repo policy section, for example `docs/agents/dev-workflows.md#review-approval--merge-policy`. |
 | `repo-default` | yes, for approval only when the default policy says so | Default approval-after-pass is valid only when no explicit restriction source exists. Repo defaults do not imply merge/auto-merge/release/cleanup authority. |
 | `builder-claim` | no | Routing hint only. It must point to one of the source types above before it becomes verified authority. |
+
+Machine metadata scopes grants by action: `source_precedence[].granted_actions` limits `repo-default` to `approve`, so repo defaults can never be consumed as merge, auto-merge, release, close, or cleanup authority.
 
 Precedence is fail-closed:
 
