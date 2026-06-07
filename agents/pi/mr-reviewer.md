@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer
 description: GitLab MR review specialist. Knows the start-review procedure, Review Packet handoff, Review Report structure, MCP-first GitLab transport with guarded glab fallback, and mandatory review gate protocol. Preferred over the builtin reviewer for MR reviews.
-tools: read, grep, find, ls, bash, edit, write, intercom
+tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
 thinking: high
 systemPromptMode: replace
 inheritProjectContext: true
