@@ -22,6 +22,8 @@ and `manual_validation_rules.ref` for this repo. The full local gate is
 `npm run check`; the CI job requirements are in [CI parity](#ci-parity); manual
 validation rules are in [Manual validation rules](#manual-validation-rules).
 
+This repo's Check Gate facts are verified against `setup-dev-skills/reference/project-profile-facts.json`: `gate_policy_ref`, `ci_jobs.ref`, `manual_validation_rules.ref`, command, runtime, and required CI jobs.
+
 Project-profile hooks may specialize project policy, but they must not weaken
 reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
 review, the child-builder boundary, the verifier read-only boundary, or
@@ -90,6 +92,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
 | `tests/post-merge-verifier-read-only.sh` | Canonical post-merge verifier recipe read-only invariant keeps the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator), `issue_closure_pending` / `source_branch_cleanup_pending` report tokens, helper wiring, and removed top-level skill absence check, and keeps the post-#152 dropped "promised docs/ADR/follow-ups" check absent. |
 | `tests/project-profile-hooks.sh` | `project_profile` extension fields stay documented in the GitLab delivery schema and generated handoff copies; setup-dev-skills seeds/generated docs declare gate, labels, branch naming, CI jobs, domain/ADR, release/deploy, manual validation, language, and auxiliary index hooks; GitLab-specific schema names and safety invariants remain intact. |
+| `tests/project-profile-facts.sh` | `setup-dev-skills/reference/project-profile-facts.json` remains the canonical project-profile fact source for Agent Setup Doc paths, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, skill resource URIs, and a non-default docs/labels fixture; setup seeds/live docs and GitLab issue pickup avoid globally hardcoded labels. |
 | `tests/review-authority-explicit.sh` | Reviewer workflow docs default approval after pass unless explicitly restricted, keep approval authority separate from merge authority, and prevent missing merge authority from defaulting to approval-only finish authority. |
 | `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require approval and merge authority provenance, precedence, stable repo policy references, and builder-claim-not-grant semantics. |
 | `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class, synchronizes Review Report/final handoff verdict and action-blocker enums, and routes non-code blockers through explicit action fields. |

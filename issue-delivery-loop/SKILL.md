@@ -25,7 +25,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 
 ## Use when
 
-- process ready-for-agent queue
+- process a queue carrying the target repo's AFK-ready Triage Role label
 - batch delivery
 - issue-to-MR loop
 

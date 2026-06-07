@@ -18,6 +18,17 @@ Verified on 2026-05-27 with `glab label list`:
 | `ready-for-agent` | triage role | Fully specified and safe for AFK agent implementation without new human decisions; requires an Agent Readiness pass or maintainer waiver. |
 | `refactor` | kind | Refactoring or structure-improvement work. |
 
+
+## Triage Role map
+
+| Triage Role | Live label | Notes |
+| --- | --- | --- |
+| `afk_ready` | `ready-for-agent` | Fully specified and safe for AFK agent implementation without new human decisions; requires an Agent Readiness pass or maintainer waiver. |
+| `needs_info` | `N/A` | No live label exists; record the need for information in issue/MR prose. |
+| `human_decision` | `N/A` | No live label exists; record the maintainer decision request in issue/MR prose. |
+
+These values are this repo's project-specific vocabulary and match `setup-dev-skills/reference/project-profile-facts.json`; reusable skills must read `project_profile.label_profile_ref` instead of assuming these label strings globally.
+
 ## Agent rules
 
 - Apply only labels listed above. Do not rely on GitLab lazy label creation.

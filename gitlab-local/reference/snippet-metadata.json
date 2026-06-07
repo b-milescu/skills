@@ -116,7 +116,7 @@
       },
       "markdown": {
         "mcp_primary_tools": "`list_issues`, `get_issue`, issue notes/list discussions tool when comments are required.",
-        "inputs": "Issue IID/URL or selection filters (`ready-for-agent`, assignee, state); project path.",
+        "inputs": "Issue IID/URL or selection filters (target repo AFK-ready label from `project_profile.label_profile_ref`, assignee, state); project path.",
         "outputs": "Issue IID/title/state/labels/assignees/URL/description and comments.",
         "required_guards": "Treat list results as candidate data; do not assume exhaustive lists when a list page may be truncated. Stop on confidential/blocked/wrong-project ambiguity.",
         "fallback_conditions": "`glab issue list/view` fallback when MCP list pagination gap blocks selection or MCP read is unavailable; use exact help.",

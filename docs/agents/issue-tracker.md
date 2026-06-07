@@ -4,6 +4,8 @@ Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab in
 
 Use `/gitlab-local` from inside this repository clone so GitLab API actions follow MCP-first transport order. Guarded `glab` fallback is second and only for documented fallback/helper/troubleshooting conditions; before fallback issue, MR, CI, note, approval, or merge commands, follow `/gitlab-local` for help-first flag checks, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate transport snippets in this guide.
 
+This repo's tracker path, host, project path, and label-profile ref are verified against `setup-dev-skills/reference/project-profile-facts.json`; generated target repos may use different repo-relative Agent Setup Doc paths.
+
 ## Repo conventions
 
 - GitLab issues are the tracker items for tasks and PRDs.

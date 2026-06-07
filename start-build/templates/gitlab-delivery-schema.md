@@ -80,7 +80,7 @@ delivery:
     iid: "57"
     url: "https://gitlab.example/group/project/-/issues/57"
     state: "opened"
-    labels: ["ready-for-agent"]
+    labels: ["target-afk-ready-label"]
   mr:
     iid: "123"
     url: "https://gitlab.example/group/project/-/merge_requests/123"

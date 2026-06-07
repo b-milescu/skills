@@ -16,6 +16,7 @@ This repo uses GitLab-backed dev workflows.
 - `start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `start-build/reference/post-merge-verifier.md`; the stable compatibility anchor remains `start-build/BUILD-FLOW.md#parent-orchestrator-recipe`.
 - `start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` and `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets here.
 - `start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
+- `setup-dev-skills/reference/project-profile-facts.json` — canonical Setup Skill fact source used to verify this repo's Agent Setup Doc paths, live label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs.
 - `start-build/reference/parent-owned-gate.md` — canonical parent-owned Check Gate / Gate Receipt seam for child handoff ownership fields, receipt schema, parent verification checklist, ready-transition conditions, and evidence-ready tokens. Cross-project invocations use `skill://start-build/reference/parent-owned-gate.md`; target repo Check Gate policy stays repo-relative at `docs/agents/check-gate.md`.
 - `gitlab-local/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab-local/reference/mutation-guard.md`, `skill://gitlab-local/reference/mutation-guard.schema.json`, and `skill://gitlab-local/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
 - `gitlab-local/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab-local/reference/authority-verification.md` and `skill://gitlab-local/reference/authority-verification.schema.json`.
@@ -27,6 +28,8 @@ GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,
 project-specific policy through bounded `project_profile` extension fields in
 [`start-build/templates/gitlab-delivery-schema.md`](../../start-build/templates/gitlab-delivery-schema.md);
 do not invent provider-neutral aliases for the GitLab records.
+
+This repo uses the default profile from `setup-dev-skills/reference/project-profile-facts.json`: repo-local policy docs stay under `docs/agents/...`, while reusable cross-project resources use explicit `skill://...` URIs.
 
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
@@ -40,6 +43,8 @@ do not invent provider-neutral aliases for the GitLab records.
 | `release_deploy_policy` | This doc's [Release/deploy policy](#releasedeploy-policy) section. |
 | `manual_validation_rules` | [`docs/agents/check-gate.md`](check-gate.md) manual validation rules section. |
 | `auxiliary_index_policy` | This doc's [Auxiliary project-index policy](#auxiliary-project-index-policy) section. |
+
+Triage Role names map through this repo's live label vocabulary in `docs/agents/triage-labels.md`; reusable skills must read that mapping instead of assuming a global label string.
 
 Project-profile hooks may specialize this repo's policy, but they must not
 weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,

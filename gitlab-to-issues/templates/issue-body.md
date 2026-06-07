@@ -24,7 +24,7 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 ## Agent Readiness
 
-Fill this before applying an AFK-ready label such as `ready-for-agent`. If a field is intentionally missing, name the maintainer waiver and reason; otherwise set Type to HITL or Needs info instead of AFK.
+Fill this before applying the target repo's AFK-ready label from its triage-labels doc. If a field is intentionally missing, name the maintainer waiver and reason; otherwise set Type to HITL or Needs info instead of AFK.
 
 | Field | Value |
 | --- | --- |

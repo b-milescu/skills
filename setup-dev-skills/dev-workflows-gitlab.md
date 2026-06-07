@@ -1,11 +1,11 @@
 # Dev Workflows
 
-This repo uses GitLab-backed dev workflows.
+This target repo uses GitLab-backed dev workflows.
 
 ## Skills
 
 - **`/gitlab-local`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
-- **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using vertical slices and this repo's triage labels.
+- **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using the target repo's triage labels.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
 - **`/issue-delivery-loop`** — coordinate bounded ready-issue batches and issue-to-MR loops; keep Decoupling Contract proof, parent spot-checks, revision routing, delivery metrics, and post-merge verifier recipe handoff in one place. See `issue-delivery-loop/SKILL.md`.
@@ -16,8 +16,9 @@ This repo uses GitLab-backed dev workflows.
 - `start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for GitLab issue-to-MR work: issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `start-build/reference/post-merge-verifier.md`; the stable compatibility anchor remains `start-build/BUILD-FLOW.md#parent-orchestrator-recipe`.
 - `start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` and `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets into generated setup docs.
 - `start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, `project_profile` hook field list, evidence/action taxonomy, and generated-copy drift contract.
+- `setup-dev-skills/reference/project-profile-facts.json` — canonical Setup Skill fact source for target Agent Setup Doc paths, tracker fields, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs.
 
-When adapting this seed into `docs/agents/dev-workflows.md`, keep these active recipe pointers conceptually aligned with the target repo's workflow docs while leaving project-specific design briefs, labels, gate commands, branch naming, CI jobs, release/deploy policy, manual validation rules, and merge authority in the target repo's own setup docs.
+When adapting this seed into the target repo's Dev Workflow doc, instantiate the target-specific paths, labels, gate command, branch naming, CI jobs, and skill-resource refs from `setup-dev-skills/reference/project-profile-facts.json` plus live repo inspection. Keep active recipe pointers conceptually aligned with the target repo's workflow docs while leaving project-specific design briefs, labels, gate commands, branch naming, CI jobs, release/deploy policy, manual validation rules, and merge authority in the target repo's own setup docs.
 
 ## Project-profile hooks
 
@@ -26,6 +27,8 @@ GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,
 project-specific policy through the bounded `project_profile` extension fields
 documented in `start-build/templates/gitlab-delivery-schema.md`; do not invent
 provider-neutral aliases for the GitLab records.
+
+Use the Setup Skill fact source (`skill://setup-dev-skills/reference/project-profile-facts.json`) to distinguish default seed paths from target-selected paths. The table below names the default doc locations; generated target docs substitute the target profile's paths when they differ.
 
 Declare project policy in these setup docs:
 
@@ -41,6 +44,8 @@ Declare project policy in these setup docs:
 | `release_deploy_policy` | This doc's release/deploy policy section. |
 | `manual_validation_rules` | `docs/agents/check-gate.md` manual validation rules section. |
 | `auxiliary_index_policy` | This doc's auxiliary project-index policy section. |
+
+Triage Role names map to live labels through the target repo's label vocabulary. Do not hardcode this repo's label strings into generated docs unless the target profile's live label inventory records those exact strings.
 
 Project-profile hooks may specialize target-repo policy, but they must not
 weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
@@ -78,6 +83,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 ## Usage rules
 
 - Before any GitLab API action, load `/gitlab-local` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- Use `setup-dev-skills/reference/project-profile-facts.json` as the generation/verification source for target-specific docs, label vocabulary, Check Gate refs, Dev Workflow refs, and skill-resource addressing.
 - Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
 - Before implementation from GitLab issues, load `/start-build`.
 - Before MR review, load `/start-review`.

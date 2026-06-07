@@ -18,8 +18,10 @@ If no full local gate exists, write:
 
 ## Project-profile refs
 
-Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
-and `manual_validation_rules.ref`. Record the exact full local gate, targeted
+Use this file, or the target-specific replacement path recorded in
+`setup-dev-skills/reference/project-profile-facts.json`, as the
+`project_profile.gate_policy_ref`, `ci_jobs.ref`, and
+`manual_validation_rules.ref`. Record the exact full local gate, targeted
 checks, CI job requirements, and allowed manual validation evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
