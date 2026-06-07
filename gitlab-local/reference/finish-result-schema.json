@@ -123,7 +123,7 @@
       ]
     },
     "caller_user_id_verification_source": {
-      "description": "How the caller user id (for no-self-merge) was obtained.",
+      "description": "How the caller user id (for audit/token-stability) was obtained.",
       "type": "string",
       "enum": [
         "fresh-call",

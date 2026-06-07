@@ -57,7 +57,7 @@ Scope discipline for this reference:
 
 **Verification method.** `live-smoke` finding from issue #210; exact fixture details are not copied here.
 
-**Workflow consequence.** Merge fallback is allowed only as a guarded exception. Before fallback, re-read the MR through MCP, verify current head SHA equals the reviewed SHA, verify exact-SHA CI and merge authority/source, verify caller identity/no-self-merge, run help-first for the exact fallback command, execute exactly one fallback action, re-read through MCP, and record `via=glab-fallback`. Do not fallback on stale head, red/missing/stale CI, missing authority, permission uncertainty, or self-merge risk.
+**Workflow consequence.** Merge fallback is allowed only as a guarded exception. Before fallback, re-read the MR through MCP, verify current head SHA equals the reviewed SHA, verify exact-SHA CI and merge authority/source, verify caller identity/token stability and context-firewall eligibility, run help-first for the exact fallback command, execute exactly one fallback action, re-read through MCP, and record `via=glab-fallback`. Do not fallback on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, or same-session review/finish risk.
 
 ### List pagination limitations
 

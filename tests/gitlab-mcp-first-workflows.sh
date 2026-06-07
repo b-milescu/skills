@@ -80,7 +80,7 @@ done
 require_text gitlab-local/reference/ci-finish-guards.md 'fresh MCP re-read|Re-read `get_merge_request`|re-read through MCP' 'fresh MCP re-read before finish/fallback'
 require_text gitlab-local/reference/ci-finish-guards.md 'exact-SHA CI|list_pipelines\(sha=reviewed_sha\)|get_pipeline' 'exact-SHA CI guard'
 require_text gitlab-local/reference/ci-finish-guards.md 'authority.*source|authority/source' 'authority/source guard'
-require_text gitlab-local/reference/ci-finish-guards.md 'caller identity|caller_user_id|no-self-merge' 'caller identity / no-self-merge guard'
+require_text gitlab-local/reference/ci-finish-guards.md 'caller identity|caller_user_id|token-stability|context-firewall' 'caller identity / context guard'
 require_text gitlab-local/reference/ci-finish-guards.md 'via=mcp|via=glab-fallback' 'finish transport evidence'
 require_text gitlab-local/reference/finish-result-schema.json '"transport"' 'finish_result transport field'
 require_text gitlab-local/reference/finish-result-schema.json 'glab-fallback' 'finish_result fallback transport enum'

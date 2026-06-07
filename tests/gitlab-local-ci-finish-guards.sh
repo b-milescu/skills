@@ -127,7 +127,7 @@ require_text "$CARD" 'exactly one (finish )?action|one finish action' 'exactly-o
 require_text "$CARD" 'closure_pending' 'closure_pending report token'
 
 require_text "$CARD" 'via=mcp|via=glab-fallback' 'finish transport evidence token'
-require_text "$CARD" 'caller identity|caller_user_id|no-self-merge' 'caller identity / no-self-merge fresh check'
+require_text "$CARD" 'caller identity|caller_user_id|token-stability|context-firewall' 'caller identity / context fresh check'
 require_text "$CARD" 'fresh MCP re-read|Re-read `get_merge_request`|re-read through MCP' 'fresh MCP re-read before finish/fallback'
 # fetch-only-after-action: the default-branch fetch/fast-forward must be SEQUENCED
 # strictly AFTER the finish action. Anchor to the co-occurrence of the

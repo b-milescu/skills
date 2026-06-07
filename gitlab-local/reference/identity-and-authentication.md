@@ -2,10 +2,11 @@
 
 The deterministic finish gate
 [`scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh)
-decides role authority from two identities: the **caller** taking the finish
-action and the **author** of the MR being finished. This document defines how the
-orchestrating agent obtains, re-verifies, and passes those identities, and why the
-git commit author is never used for the self-merge check.
+decides role authority from the caller role, merge-authority claim, action, and
+two GitLab identities: the **caller** taking the finish action and the **author**
+of the MR being finished. This document defines how the orchestrating agent
+obtains, re-verifies, and passes those identities, and why GitLab identity is an
+audit/token-stability input rather than the review-independence boundary.
 
 The gate itself is pure-local and makes no network call. Resolving identities is
 the **caller's** responsibility before invoking the gate; the gate only validates
@@ -32,9 +33,9 @@ and compares the ids it is handed (see the
    account that opened the MR.
 5. **Pass both ids to the gate.** Invoke
    `gitlab-finish-authority.sh --caller-user-id <id> --mr-author-id <id> ...`.
-   The gate blocks empty/missing ids with `reason=invalid_user_id` and blocks
-   `caller_user_id == mr_author_id` for any non-`handoff` action with
-   `reason=self_merge`.
+   The gate blocks empty/missing ids with `reason=invalid_user_id`. Equal
+   `caller_user_id` / `mr_author_id` values are permitted for gate-eligible
+   roles; review independence is enforced by the role and Context Firewall.
 
 ## Gate input surface
 
@@ -81,11 +82,10 @@ role × merge-authority × action decision. They drive the
   `--expected-authority-source` is non-empty. If an expected source is declared
   and the passed `--authority-source` does not equal it exactly, the gate blocks
   with exit code `8` and `reason=authority_source_mismatch`, **before** the
-  self-merge and role-authority checks. When `--expected-authority-source` is
-  omitted (empty), the gate performs no source comparison and proceeds to the
-  self-merge / authority checks. The comparison is an exact string match, so the
-  caller must normalize the declared and expected provenance strings to the same
-  form.
+  role-authority checks. When `--expected-authority-source` is omitted (empty),
+  the gate performs no source comparison and proceeds to the authority checks.
+  The comparison is an exact string match, so the caller must normalize the
+  declared and expected provenance strings to the same form.
 - **How the caller fails closed / escalates.** On exit `8`
   (`authority_source_mismatch`) the caller must make **no** finish mutation: do
   not approve, merge, or queue auto-merge. Re-resolve the merge-authority
@@ -99,24 +99,23 @@ other fail-closed reasons in the [authority matrix](authority-matrix.md); this
 document owns the caller contract for the two source inputs, while the matrix owns
 the reason within the role × merge-authority × action decision.
 
-## The git commit author is NOT the caller
+## GitLab identity is not the review-independence boundary
 
-The self-merge check compares **GitLab account ids**, never the git commit author
-or committer recorded in the branch history. Reasons:
+The finish gate compares **roles and authority**, not whether two role executions
+share a GitLab account. Reasons:
 
+- Agentic review independence comes from fresh session/context separation plus
+  the Context Firewall. A builder, parent, planner, or reviser session cannot
+  provide gate-eligible review for its own MR, even if it uses a different token.
+- A fresh reviewer session may use the same GitLab account/PAT as the builder
+  because the GitLab account is a transport identity, not the review context.
 - Commit author/committer come from local `git config user.email` / `user.name`
   and can be set to anything; they are not authenticated GitLab identities.
-- A single MR can contain commits from several authors, or commits authored by
-  someone other than the MR opener. The authority decision is about who **opened**
-  the MR (`mr_author_id`) versus who is **acting now** (`caller_user_id`), not who
-  typed the commits.
-- Using the commit author would let a caller bypass no-self-merge by rewriting
-  commit author metadata, or trip falsely when a co-author's email appears in
-  history.
 
 So `mr_author_id` always comes from `get_merge_request.author.id`, and
-`caller_user_id` always comes from `get_current_user()`. The git author is
-irrelevant to the self-merge guard.
+`caller_user_id` always comes from `get_current_user()` for audit and token
+stability. Those ids must be present and stable, but equality between them is not
+an approval or merge blocker for a gate-eligible role.
 
 ## Escalation tokens
 
@@ -125,6 +124,5 @@ irrelevant to the self-merge guard.
   entry-time `caller_user_id`.
 
 Both are caller-side escalations raised before the gate runs. The gate's own
-fail-closed reasons (`invalid_user_id`, `self_merge`, `authority`,
-`authority_source_mismatch`) are documented in the
-[authority matrix](authority-matrix.md).
+fail-closed reasons (`invalid_user_id`, `authority_source_mismatch`, and
+`authority`) are documented in the [authority matrix](authority-matrix.md).

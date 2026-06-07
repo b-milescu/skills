@@ -53,13 +53,17 @@ Notes:
 - `handoff` is always allowed for any role × authority pair: stopping is never
   blocked by authority.
 
-## Self-merge / self-approval guard
+## Identity and context guard
 
-Independently of the table above, the gate blocks **any** non-`handoff` action
-when `caller_user_id == mr_author_id` with `reason=self_merge`. This enforces the
-no-self-merge / no-self-approval rule unconditionally: even an `authorized-parent`
-or `human` caller cannot approve or merge an MR they authored. Empty or missing
-`--caller-user-id` / `--mr-author-id` is blocked with `reason=invalid_user_id`.
+The gate still requires non-empty `--caller-user-id` and `--mr-author-id` with
+`reason=invalid_user_id` on missing values, but GitLab account equality is not an
+authority blocker by itself. Review independence is a session/context boundary:
+a fresh gate-eligible reviewer may approve or merge even when the authenticated
+GitLab account is the same account that opened the MR. Builder self-approval and
+self-merge remain impossible because the `builder` role is `handoff` only, and a
+same-session builder/parent/planner/reviser review is advisory-only under the
+Context Firewall.
 
 See [`identity-and-authentication.md`](identity-and-authentication.md) for how
-`caller_user_id` and `mr_author_id` are obtained and re-verified.
+`caller_user_id` and `mr_author_id` are obtained and re-verified for audit and
+token-stability checks.

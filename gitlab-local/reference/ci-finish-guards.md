@@ -27,7 +27,7 @@ Finish performs at most one action after fresh MCP re-reads. Approval, direct me
 1. Re-read `get_merge_request`; require current `.sha` to equal `reviewed_sha` before approval, merge, auto-merge, or fallback.
 2. Re-read exact-SHA CI with `list_pipelines(sha=reviewed_sha)` / `get_pipeline`; classify with `REVIEW-FLOW.md#ci-decision-table`.
 3. Verify approval/merge authority and source before the specific action; missing or contradictory source blocks the affected action.
-4. Verify caller identity before the gate. Apply the caller-role and merge-authority matrix, including unconditional no-self-merge (`caller_user_id != mr_author_id`).
+4. Verify caller identity before the gate and re-check it immediately before mutation so token drift is caught. Apply the caller-role and merge-authority matrix; GitLab account equality is not a finish blocker for a fresh gate-eligible reviewer.
 5. Builder callers always stop at handoff and never approve or merge; a builder handoff may report candidate inputs only.
 6. Execute exactly one finish action: approval, direct merge, auto-merge queue, or handoff/no-action. Do not paste multiple action snippets together.
 7. For fallback, run help-first for every flagged `glab` command, execute exactly one fallback action, then re-read through MCP and record `via=glab-fallback`.
@@ -37,4 +37,4 @@ Finish performs at most one action after fresh MCP re-reads. Approval, direct me
 
 ## Fallback and troubleshooting
 
-Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) and live `--help` when MCP tooling is unavailable, the documented merge robustness gap is hit, helper behavior needs diagnosis, or project-specific policy requires a variant. Fallback is blocked on stale head, stale/red/missing CI, missing authority, permission uncertainty, caller identity mismatch, no-self-merge risk, or unsafe cleanup preconditions.
+Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) and live `--help` when MCP tooling is unavailable, the documented merge robustness gap is hit, helper behavior needs diagnosis, or project-specific policy requires a variant. Fallback is blocked on stale head, stale/red/missing CI, missing authority, permission uncertainty, caller identity drift, same-session review/finish risk, or unsafe cleanup preconditions.

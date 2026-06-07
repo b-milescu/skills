@@ -11,7 +11,7 @@ Builder and reviewer may share the same GitLab account/PAT — review independen
 
 ## Approval authority policy
 
-Reviewer approval is allowed by default after a passing review unless explicitly restricted by a human/parent instruction, MR or issue policy note, project rulebook, or repository policy. The default approval source for this repo is this section (`start-review/REVIEW-FLOW.md#approval-authority-policy`), and projects may cite an equivalent stable rulebook section. Approval still requires all normal guards: complete review coverage, no Must Fix, exact reviewed SHA, pass-eligible CI/local-gate/OQ state, no partial-review or secret-exposure blocker, and a fresh SHA-bound approval guard. This approval policy does not grant merge, auto-merge, release, deploy, close, or cleanup authority.
+Reviewer approval is allowed by default after a passing review unless explicitly restricted by a human/parent instruction, MR or issue policy note, project rulebook, or repository policy. The default approval source for this repo is this section (`start-review/REVIEW-FLOW.md#approval-authority-policy`), and projects may cite an equivalent stable rulebook section. Approval still requires all normal guards: complete review coverage, no Must Fix, exact reviewed SHA, pass-eligible CI/local-gate/OQ state, no partial-review or secret-exposure blocker, and a fresh SHA-bound approval guard. A reviewer using the same GitLab account/PAT as the MR author may still approve when the review session is fresh and gate-eligible; same-session builder/parent/planner/reviser review remains advisory-only under the Context Firewall. This approval policy does not grant merge, auto-merge, release, deploy, close, or cleanup authority.
 
 ## Merge authority source precedence
 

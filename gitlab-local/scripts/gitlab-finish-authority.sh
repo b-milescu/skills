@@ -4,20 +4,19 @@
 # Decides role authority for a finish action: extracts the role × merge-authority
 # × action case logic from gitlab-local/scripts/gitlab-finish-mr.sh (the inline
 # finish authority switch) so authority is enforced deterministically rather than
-# in prose. Makes NO network call: it only validates and compares the ids and
-# strings it is handed. Transport-layer confirm/sha guards enforce intent and
-# head-binding; this gate enforces role authority and no-self-merge.
+# in prose. Makes NO network call: it only validates ids and compares the strings
+# it is handed. Transport-layer confirm/sha guards enforce intent and
+# head-binding; the context firewall enforces review independence.
 #
 # Canonical decision table: gitlab-local/reference/authority-matrix.md
 # Identity lifecycle:        gitlab-local/reference/identity-and-authentication.md
 #
-# Exit 0 only if BOTH:
+# Exit 0 only if:
 #   (a) the role × merge-authority × action combo is allowed by the matrix, AND
-#   (b) caller_user_id != mr_author_id (for any non-handoff action).
+#   (b) caller_user_id / mr_author_id are present for audit and token-stability checks.
 # Otherwise non-zero with reason= in:
 #   invalid_user_id          (empty/missing caller or author id)
 #   authority_source_mismatch (declared authority source != expected, when checked)
-#   self_merge               (caller_user_id == mr_author_id, non-handoff action)
 #   authority                (role × authority does not permit the action)
 
 set -euo pipefail
@@ -33,9 +32,8 @@ Merge authorities: approval-only | reviewer may merge | queue auto-merge | human
 Actions:       handoff | approve | merge | queue-auto-merge
 
 Exit codes:
-  0   action permitted (and caller != author)
+  0   action permitted
   4   reason=authority                role x authority does not permit the action
-  6   reason=self_merge               caller_user_id == mr_author_id
   7   reason=invalid_user_id          empty/missing caller or author id
   8   reason=authority_source_mismatch declared source != expected source
   64  usage / argument error
@@ -106,14 +104,7 @@ if [[ -n "$expected_authority_source" && "$authority_source" != "$expected_autho
   block 8 authority_source_mismatch
 fi
 
-# 3. self_merge: caller must not finish their own MR for any non-handoff action.
-#    Enforced UNCONDITIONALLY, independent of role or authority. handoff (stop)
-#    is never a self-merge.
-if [[ "$action" != "handoff" && "$caller_user_id" == "$mr_author_id" ]]; then
-  block 6 self_merge
-fi
-
-# 4. authority: role x merge-authority x action matrix. Mirrors the inline switch
+# 3. authority: role x merge-authority x action matrix. Mirrors the inline switch
 #    in gitlab-finish-mr.sh and gitlab-local/reference/authority-matrix.md.
 #    handoff is always allowed (stopping is never blocked by authority).
 if [[ "$action" == "handoff" ]]; then

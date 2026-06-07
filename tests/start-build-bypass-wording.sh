@@ -68,24 +68,24 @@ require_text "$canonical" 'MR comment' \
 
 # Bypass never grants builder self-approval/self-merge.
 require_text "$canonical" 'self-approval' \
-  "$canonical missing no-self-approval-under-bypass guard"
+  "$canonical missing builder-self-approval-under-bypass guard"
 
 # --- Pointer-only owners: SAFETY.md and BUILD-FLOW.md ---
 
 # Point, don't copy: neither pointer doc may restate the strict accepted-phrase
-# rule. They must point at the canonical owner and preserve no-self-approval.
+# rule. They must point at the canonical owner and preserve builder self-approval.
 require_text "$safety" 'reference/standalone-gate.md#human-bypass-protocol' \
   "$safety missing pointer to canonical human bypass protocol"
 reject_text "$safety" 'accepted bypass phrase' \
   "$safety restates the strict accepted-phrase rule instead of pointing to the canonical owner"
 require_text "$safety" 'self-approval' \
-  "$safety lost the no-self-approval safety invariant"
+  "$safety lost the builder self-approval safety invariant"
 
 require_text "$router" 'reference/standalone-gate.md#human-bypass-protocol' \
   "$router missing pointer to canonical human bypass protocol"
 reject_text "$router" 'accepted bypass phrase' \
   "$router restates the strict accepted-phrase rule instead of pointing to the canonical owner"
 require_text "$router" 'self-approval' \
-  "$router lost the no-self-approval safety invariant"
+  "$router lost the builder self-approval safety invariant"
 
 printf 'start-build-bypass-wording: PASS\n'
