@@ -1,6 +1,8 @@
 # GitLab snippet transport contracts
 
-Stable `/gitlab-local` snippet names are the workflow API. This file owns the transport contract for each snippet: MCP primary tool(s), required inputs, outputs, fail-closed checks, guarded `glab` fallback conditions, and post-mutation MCP re-read requirements. Inline `glab` examples in `../SKILL.md` are fallback/helper examples, not the primary transport.
+Stable `/gitlab-local` snippet names are the workflow API. This file is the human-readable transport contract view for each snippet: MCP primary tool(s), required inputs, outputs, fail-closed checks, guarded `glab` fallback conditions, and post-mutation MCP re-read requirements. Inline `glab` examples in `../SKILL.md` are fallback/helper examples, not the primary transport.
+
+Machine-actionable source of truth: `skill://gitlab-local/reference/snippet-metadata.json`. This Markdown table is the human-readable view and is checked against this metadata by `tests/gitlab-snippet-metadata.sh`.
 
 ## Global rules
 
