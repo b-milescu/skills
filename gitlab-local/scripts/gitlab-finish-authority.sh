@@ -8,7 +8,8 @@
 # it is handed. Transport-layer confirm/sha guards enforce intent and
 # head-binding; the context firewall enforces review independence.
 #
-# Canonical decision table: gitlab-local/reference/authority-matrix.md
+# Canonical authority seam: gitlab-local/reference/authority-verification.md
+# Finish decision table:     gitlab-local/reference/authority-matrix.md
 # Identity lifecycle:        gitlab-local/reference/identity-and-authentication.md
 #
 # Exit 0 only if:

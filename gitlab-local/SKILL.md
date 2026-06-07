@@ -252,7 +252,7 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 [ "$current_sha" = "$reviewed_sha" ] || { echo "MR head changed: current=$current_sha reviewed=$reviewed_sha" >&2; exit 1; }
 ```
 
-Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the GitLab Mutation Guard in [`reference/mutation-guard.md`](reference/mutation-guard.md): fresh target re-read, reviewed SHA, exact-SHA CI when relevant, approval/merge authority source, caller identity/token stability, context-firewall eligibility, Safe GitLab Text when relevant, fallback eligibility, one mutation, then post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` evidence. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, content-byte failure, or same-session review/finish risk. Same GitLab account/PAT is not by itself a self-approval or self-merge blocker for a fresh gate-eligible reviewer.
+Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the GitLab Mutation Guard in [`reference/mutation-guard.md`](reference/mutation-guard.md): fresh target re-read, reviewed SHA, exact-SHA CI when relevant, canonical Authority Verification from [`reference/authority-verification.md`](reference/authority-verification.md), caller identity/token stability, context-firewall eligibility, Safe GitLab Text when relevant, fallback eligibility, one mutation, then post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` evidence. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, same-session/self-finish risk, or fallback-ineligible states.
 
 ### Snippet: sha-bound-approval
 
@@ -296,7 +296,7 @@ glab api "projects/${project_path}/merge_requests/${mr_iid}/approvals"
 
 ### Snippet: finish-mr-authority-aware
 
-Role eligibility (who may call) lives in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware) and the shared mutation sequence lives in [`reference/mutation-guard.md`](reference/mutation-guard.md).
+Role eligibility (who may call) lives in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware), authority claim/source semantics live in [`reference/authority-verification.md`](reference/authority-verification.md), and the shared mutation sequence lives in [`reference/mutation-guard.md`](reference/mutation-guard.md).
 
 Inputs:
 
@@ -307,7 +307,7 @@ Inputs:
 - `source_branch`, `default_branch`, and optional `worktree_path`.
 - Optional `issue_iid` when it is not obvious from `Closes #...`.
 
-Finish is a SHA-bound Mutation Guard specialization: the guard order lives in [`reference/mutation-guard.md`](reference/mutation-guard.md), while finish-specific field mapping, exact-SHA CI handling, `via=mcp` / `via=glab-fallback` result evidence, post-action fetch/cleanup sequencing, `closure_pending` issue reporting, and the canonical merge/authority matrix pointer live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
+Finish is a SHA-bound Mutation Guard specialization: the guard order lives in [`reference/mutation-guard.md`](reference/mutation-guard.md), authority claim/source precedence and no-self routing live in [`reference/authority-verification.md`](reference/authority-verification.md), while finish-specific field mapping, exact-SHA CI handling, `via=mcp` / `via=glab-fallback` result evidence, post-action fetch/cleanup sequencing, `closure_pending` issue reporting, and the canonical merge/authority matrix pointer live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
 
 Implementation body lives inside this skill:
 

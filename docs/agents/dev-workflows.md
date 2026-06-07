@@ -18,6 +18,7 @@ This repo uses GitLab-backed dev workflows.
 - `start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
 - `start-build/reference/parent-owned-gate.md` — canonical parent-owned Check Gate / Gate Receipt seam for child handoff ownership fields, receipt schema, parent verification checklist, ready-transition conditions, and evidence-ready tokens. Cross-project invocations use `skill://start-build/reference/parent-owned-gate.md`; target repo Check Gate policy stays repo-relative at `docs/agents/check-gate.md`.
 - `gitlab-local/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab-local/reference/mutation-guard.md`, `skill://gitlab-local/reference/mutation-guard.schema.json`, and `skill://gitlab-local/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
+- `gitlab-local/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab-local/reference/authority-verification.md` and `skill://gitlab-local/reference/authority-verification.schema.json`.
 
 ## Project-profile hooks
 

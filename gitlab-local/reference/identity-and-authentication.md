@@ -11,9 +11,12 @@ audit/token-stability input rather than the review-independence boundary.
 The gate itself is pure-local and makes no network call. Resolving identities is
 the **caller's** responsibility before invoking the gate; the gate only validates
 and compares the ids it is handed (see the
-[authority matrix](authority-matrix.md)).
+[authority matrix](authority-matrix.md)) while the broader
+[Authority Verification](authority-verification.md) seam combines those ids with
+caller role/context, authority sources, restrictions, conflicts, and action
+routing.
 
-The caller lifecycle feeds the Caller identity and context phase of the [GitLab Mutation Guard](mutation-guard.md); the guard owns where that phase sits relative to SHA/CI, authority, fallback, mutation, and post-mutation re-read.
+The caller lifecycle feeds the Caller identity and context phase of the [GitLab Mutation Guard](mutation-guard.md); the guard owns where that phase sits relative to SHA/CI, Authority Verification, fallback, mutation, and post-mutation re-read.
 
 ## Identity lifecycle
 
@@ -103,7 +106,11 @@ the reason within the role × merge-authority × action decision.
 
 ## GitLab identity is not the review-independence boundary
 
-The finish gate compares **roles and authority**, not whether two role executions
+The [Authority Verification](authority-verification.md) no-self check compares
+roles, sources, and session/context. It does not block solely because two role
+executions share a GitLab account.
+
+The deterministic finish gate compares **roles and authority**, not whether two role executions
 share a GitLab account. Reasons:
 
 - Agentic review independence comes from fresh session/context separation plus

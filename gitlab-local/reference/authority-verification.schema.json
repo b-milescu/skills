@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skill://gitlab-local/reference/authority-verification.schema.json",
+  "kind": "gitlab-authority-verification-schema",
+  "version": "1",
+  "owner": "gitlab-local",
+  "human_resource": "skill://gitlab-local/reference/authority-verification.md",
+  "summary": "Canonical contract for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source handling, caller-context no-self checks, and action routing. It is the Authority Verification phase of the GitLab Mutation Guard; transport evidence is recorded separately.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "requested_action",
+    "caller",
+    "approval",
+    "merge",
+    "source_evidence",
+    "result",
+    "decision",
+    "blocker",
+    "next_actor",
+    "next_action",
+    "conflicts",
+    "evidence"
+  ],
+  "properties": {
+    "requested_action": {
+      "type": "string",
+      "enum": ["handoff", "approve", "merge", "queue-auto-merge"]
+    },
+    "caller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "caller_user_id", "mr_author_id", "identity_status", "context_relation"],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": ["builder", "reviewer", "authorized-parent", "human"]
+        },
+        "caller_user_id": {
+          "type": "string"
+        },
+        "mr_author_id": {
+          "type": "string"
+        },
+        "identity_status": {
+          "type": "string",
+          "enum": ["verified-stable", "unavailable", "changed"]
+        },
+        "context_relation": {
+          "type": "string",
+          "enum": ["fresh-reviewer", "builder-session", "parent-session", "reviser-session", "human", "unknown"]
+        }
+      }
+    },
+    "approval": {
+      "$ref": "#/$defs/approvalClaim"
+    },
+    "merge": {
+      "$ref": "#/$defs/mergeClaim"
+    },
+    "source_evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceEvidence"
+      }
+    },
+    "result": {
+      "type": "string",
+      "enum": ["verified", "restricted", "conflict", "missing", "handoff", "blocked"]
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["proceed", "must-handoff", "ask-human", "blocked"]
+    },
+    "blocker": {
+      "type": "string",
+      "enum": [
+        "none",
+        "missing_authority",
+        "authority_source_mismatch",
+        "restricted_authority",
+        "permission_uncertain",
+        "self_merge_risk",
+        "identity_unavailable",
+        "identity_changed"
+      ]
+    },
+    "next_actor": {
+      "type": "string",
+      "enum": ["reviewer", "authorized-parent", "parent", "human", "none"]
+    },
+    "next_action": {
+      "type": "string",
+      "enum": ["proceed", "handoff", "ask-human", "fix-authority-source", "rerun-with-fresh-identity"]
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "value", "conflicts_with", "resolution"],
+        "properties": {
+          "source": {"type": "string"},
+          "value": {"type": "string"},
+          "conflicts_with": {"type": "string"},
+          "resolution": {"type": "string", "enum": ["most-restrictive", "human-required"]}
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority_verification_source", "source_refs"],
+      "properties": {
+        "authority_verification_source": {
+          "type": "string",
+          "enum": ["description-verified", "description-mismatch", "parameter-verified", "parameter-assumed"]
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sourceType": {
+      "type": "string",
+      "enum": [
+        "human-explicit",
+        "parent-explicit",
+        "mr-or-issue-policy",
+        "project-rulebook",
+        "repo-default",
+        "builder-claim"
+      ]
+    },
+    "approvalClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source", "source_type", "verified", "restricted"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": ["default-after-pass", "restricted"]
+        },
+        "source": {"type": "string"},
+        "source_type": {"$ref": "#/$defs/sourceType"},
+        "verified": {"type": "boolean"},
+        "restricted": {"type": "boolean"}
+      }
+    },
+    "mergeClaim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source", "source_type", "verified"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": ["approval-only", "reviewer may merge", "queue auto-merge", "human release", "project default"]
+        },
+        "source": {"type": "string"},
+        "source_type": {"$ref": "#/$defs/sourceType"},
+        "verified": {"type": "boolean"}
+      }
+    },
+    "sourceEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_type", "source", "value", "grants_authority"],
+      "properties": {
+        "source_type": {"$ref": "#/$defs/sourceType"},
+        "source": {"type": "string"},
+        "value": {"type": "string"},
+        "grants_authority": {"type": "boolean"}
+      }
+    }
+  },
+  "source_precedence": [
+    {"source_type": "human-explicit", "rank": 1, "grants_authority": true},
+    {"source_type": "parent-explicit", "rank": 2, "grants_authority": true},
+    {"source_type": "mr-or-issue-policy", "rank": 3, "grants_authority": true},
+    {"source_type": "project-rulebook", "rank": 4, "grants_authority": true},
+    {"source_type": "repo-default", "rank": 5, "grants_authority": true},
+    {"source_type": "builder-claim", "rank": 6, "grants_authority": false}
+  ],
+  "result_states": ["verified", "restricted", "conflict", "missing", "handoff", "blocked"],
+  "action_decisions": ["proceed", "must-handoff", "ask-human", "blocked"],
+  "blocker_tokens": [
+    "none",
+    "missing_authority",
+    "authority_source_mismatch",
+    "restricted_authority",
+    "permission_uncertain",
+    "self_merge_risk",
+    "identity_unavailable",
+    "identity_changed"
+  ],
+  "examples": [
+    {
+      "_label": "approval default after pass",
+      "requested_action": "approve",
+      "caller": {"role": "reviewer", "caller_user_id": "7", "mr_author_id": "7", "identity_status": "verified-stable", "context_relation": "fresh-reviewer"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "approval-only", "source": "parent task prompt: finish authority for ready work", "source_type": "parent-explicit", "verified": true},
+      "source_evidence": [
+        {"source_type": "repo-default", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "value": "default-after-pass", "grants_authority": true}
+      ],
+      "result": "verified",
+      "decision": "proceed",
+      "blocker": "none",
+      "next_actor": "reviewer",
+      "next_action": "proceed",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "description-verified", "source_refs": ["start-review/REVIEW-FLOW.md#approval-authority-policy"]}
+    },
+    {
+      "_label": "missing merge authority",
+      "requested_action": "merge",
+      "caller": {"role": "reviewer", "caller_user_id": "7", "mr_author_id": "9", "identity_status": "verified-stable", "context_relation": "fresh-reviewer"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "approval-only", "source": "", "source_type": "builder-claim", "verified": false},
+      "source_evidence": [],
+      "result": "missing",
+      "decision": "must-handoff",
+      "blocker": "missing_authority",
+      "next_actor": "parent",
+      "next_action": "fix-authority-source",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "parameter-assumed", "source_refs": []}
+    },
+    {
+      "_label": "conflicting authority sources",
+      "requested_action": "queue-auto-merge",
+      "caller": {"role": "authorized-parent", "caller_user_id": "7", "mr_author_id": "9", "identity_status": "verified-stable", "context_relation": "parent-session"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "queue auto-merge", "source": "parent task prompt: queue auto-merge", "source_type": "parent-explicit", "verified": false},
+      "source_evidence": [
+        {"source_type": "parent-explicit", "source": "parent task prompt: queue auto-merge", "value": "queue auto-merge", "grants_authority": true},
+        {"source_type": "human-explicit", "source": "human MR comment: approval-only", "value": "approval-only", "grants_authority": true}
+      ],
+      "result": "conflict",
+      "decision": "ask-human",
+      "blocker": "authority_source_mismatch",
+      "next_actor": "human",
+      "next_action": "ask-human",
+      "conflicts": [
+        {"source": "parent task prompt: queue auto-merge", "value": "queue auto-merge", "conflicts_with": "human MR comment: approval-only", "resolution": "human-required"}
+      ],
+      "evidence": {"authority_verification_source": "description-mismatch", "source_refs": ["parent task prompt: queue auto-merge", "human MR comment: approval-only"]}
+    },
+    {
+      "_label": "restricted approval authority",
+      "requested_action": "approve",
+      "caller": {"role": "reviewer", "caller_user_id": "7", "mr_author_id": "9", "identity_status": "verified-stable", "context_relation": "fresh-reviewer"},
+      "approval": {"value": "restricted", "source": "human MR comment: no approval until release owner reviews", "source_type": "human-explicit", "verified": true, "restricted": true},
+      "merge": {"value": "human release", "source": "human MR comment: release owner only", "source_type": "human-explicit", "verified": true},
+      "source_evidence": [
+        {"source_type": "human-explicit", "source": "human MR comment: no approval until release owner reviews", "value": "restricted", "grants_authority": true}
+      ],
+      "result": "restricted",
+      "decision": "blocked",
+      "blocker": "restricted_authority",
+      "next_actor": "human",
+      "next_action": "ask-human",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "description-verified", "source_refs": ["human MR comment: no approval until release owner reviews"]}
+    },
+    {
+      "_label": "reviewer approval-only",
+      "requested_action": "approve",
+      "caller": {"role": "reviewer", "caller_user_id": "7", "mr_author_id": "9", "identity_status": "verified-stable", "context_relation": "fresh-reviewer"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "approval-only", "source": "parent task prompt: approval-only", "source_type": "parent-explicit", "verified": true},
+      "source_evidence": [
+        {"source_type": "parent-explicit", "source": "parent task prompt: approval-only", "value": "approval-only", "grants_authority": true}
+      ],
+      "result": "verified",
+      "decision": "proceed",
+      "blocker": "none",
+      "next_actor": "reviewer",
+      "next_action": "proceed",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "description-verified", "source_refs": ["parent task prompt: approval-only"]}
+    },
+    {
+      "_label": "parent merge authority",
+      "requested_action": "merge",
+      "caller": {"role": "authorized-parent", "caller_user_id": "7", "mr_author_id": "9", "identity_status": "verified-stable", "context_relation": "parent-session"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "reviewer may merge", "source": "parent task prompt: reviewer may merge", "source_type": "parent-explicit", "verified": true},
+      "source_evidence": [
+        {"source_type": "parent-explicit", "source": "parent task prompt: reviewer may merge", "value": "reviewer may merge", "grants_authority": true}
+      ],
+      "result": "verified",
+      "decision": "proceed",
+      "blocker": "none",
+      "next_actor": "authorized-parent",
+      "next_action": "proceed",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "description-verified", "source_refs": ["parent task prompt: reviewer may merge"]}
+    },
+    {
+      "_label": "builder always handoff",
+      "requested_action": "handoff",
+      "caller": {"role": "builder", "caller_user_id": "7", "mr_author_id": "7", "identity_status": "verified-stable", "context_relation": "builder-session"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": false, "restricted": false},
+      "merge": {"value": "reviewer may merge", "source": "parent task prompt: reviewer may merge", "source_type": "parent-explicit", "verified": false},
+      "source_evidence": [
+        {"source_type": "builder-claim", "source": "Reviewer Lift", "value": "reviewer may merge", "grants_authority": false}
+      ],
+      "result": "handoff",
+      "decision": "must-handoff",
+      "blocker": "none",
+      "next_actor": "parent",
+      "next_action": "handoff",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "parameter-assumed", "source_refs": ["Reviewer Lift"]}
+    },
+    {
+      "_label": "self approval block",
+      "requested_action": "approve",
+      "caller": {"role": "builder", "caller_user_id": "7", "mr_author_id": "7", "identity_status": "verified-stable", "context_relation": "builder-session"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "approval-only", "source": "parent task prompt: approval-only", "source_type": "parent-explicit", "verified": true},
+      "source_evidence": [],
+      "result": "blocked",
+      "decision": "blocked",
+      "blocker": "self_merge_risk",
+      "next_actor": "parent",
+      "next_action": "handoff",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "parameter-verified", "source_refs": ["start-review/REVIEW-FLOW.md#approval-authority-policy"]}
+    },
+    {
+      "_label": "self merge block",
+      "requested_action": "merge",
+      "caller": {"role": "reviewer", "caller_user_id": "7", "mr_author_id": "7", "identity_status": "verified-stable", "context_relation": "builder-session"},
+      "approval": {"value": "default-after-pass", "source": "start-review/REVIEW-FLOW.md#approval-authority-policy", "source_type": "repo-default", "verified": true, "restricted": false},
+      "merge": {"value": "reviewer may merge", "source": "parent task prompt: reviewer may merge", "source_type": "parent-explicit", "verified": true},
+      "source_evidence": [],
+      "result": "blocked",
+      "decision": "blocked",
+      "blocker": "self_merge_risk",
+      "next_actor": "parent",
+      "next_action": "handoff",
+      "conflicts": [],
+      "evidence": {"authority_verification_source": "parameter-verified", "source_refs": ["parent task prompt: reviewer may merge"]}
+    }
+  ]
+}

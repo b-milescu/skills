@@ -170,7 +170,8 @@ agent_handoff:
 - `delivery` follows `../../start-build/templates/gitlab-delivery-schema.md`.
   It is a compact routing index, not proof; parents/verifiers must verify its
   claims from Tier 1/Tier 2 evidence before relying on them for finish,
-  post-merge, or blocker routing.
+  post-merge, or blocker routing. Authority claims are verified through
+  `../../gitlab-local/reference/authority-verification.md`.
 - `delivery.project_profile` is a project-specific routing index for gate,
   labels, branches, CI jobs, domain docs, auxiliary indexes, release/deploy
   policy, and manual validation. Reviewers still enforce reviewed-SHA binding,
@@ -199,7 +200,8 @@ agent_handoff:
 - `approval_authority` records the approval policy result. `default-after-pass`
   means reviewer approval is allowed after a passing review unless explicitly
   restricted; `restricted: ...` names the source/reason that blocks or limits
-  approval.
+  approval. Authority Verification (`../../gitlab-local/reference/authority-verification.md`)
+  owns the restricted result and source precedence.
 - `approval_authority_source` records the stable repo/rulebook policy source or
   explicit restriction source verified before approval. It is separate from
   merge authority and does not grant merge, auto-merge, release, close, or
@@ -210,7 +212,9 @@ agent_handoff:
   merge/auto-merge/release/close/cleanup or other finish action. Missing or
   unverifiable merge source maps to a finish `action_blocker:
   missing-authority`; conflicting sources use the most restrictive/no-action
-  finish result unless a parent/human resolves them.
+  finish result unless a parent/human resolves them. Authority Verification owns
+  this conflict/restriction/missing-source classification and the no-self
+  approval/merge context check.
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
   safely take approval due to restricted/missing approval authority, SHA/CI/tool/preflight/permission

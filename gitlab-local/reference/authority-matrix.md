@@ -1,8 +1,11 @@
 # Finish authority matrix
 
 Canonical, human-readable decision table for the role × merge-authority × action
-finish gate. It is sourced from
-[`start-build/SAFETY.md` non-negotiables](../../start-build/SAFETY.md#non-negotiables)
+finish gate. It is the finish-action sub-decision inside
+[`authority-verification.md`](authority-verification.md), which owns the broader
+approval/merge authority claim shape, source precedence, conflict/restricted
+results, action routing, and no-self relationship to caller context. This table is
+sourced from [`start-build/SAFETY.md` non-negotiables](../../start-build/SAFETY.md#non-negotiables)
 (no builder self-approval or self-merge; finish actions belong only to an
 authorized reviewer, parent, or human after independent review) and it mirrors,
 case-for-case, the inline finish authority switch in
@@ -15,7 +18,7 @@ head-binding, **not** role authority. The matrix-match regression test in
 [`tests/gitlab-finish-authority.sh`](../../tests/gitlab-finish-authority.sh)
 parses this table and asserts the gate agrees with it cell-for-cell.
 
-This matrix feeds the Authority Verification phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering.
+This matrix feeds the canonical [Authority Verification](authority-verification.md) phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own approval authority defaults, source precedence, project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering.
 
 ## Actions
 
@@ -66,6 +69,7 @@ self-merge remain impossible because the `builder` role is `handoff` only, and a
 same-session builder/parent/planner/reviser review is advisory-only under the
 Context Firewall.
 
-See [`identity-and-authentication.md`](identity-and-authentication.md) for how
-`caller_user_id` and `mr_author_id` are obtained and re-verified for audit and
-token-stability checks.
+See [`identity-and-authentication.md`](identity-and-authentication.md) and
+[`authority-verification.md`](authority-verification.md)
+for how `caller_user_id`, `mr_author_id`, and same-session context are obtained,
+re-verified, and classified for audit/token-stability and no-self checks.

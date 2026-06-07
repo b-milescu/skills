@@ -47,7 +47,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 
 ## Reviewer Lift (builder handoff)
 
-Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`; parent-owned Gate Receipt verification is canonical in `../../start-build/reference/parent-owned-gate.md`. Treat copied values, Gate Receipt comments, and any compact `delivery.kind=gitlab-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
+Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`; authority verification is canonical in `../../gitlab-local/reference/authority-verification.md`; parent-owned Gate Receipt verification is canonical in `../../start-build/reference/parent-owned-gate.md`. Treat copied values, Gate Receipt comments, and any compact `delivery.kind=gitlab-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
@@ -78,7 +78,7 @@ Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, n
 |---|---|---|---|
 | Repo | `<claimed host/project/repo/default or target branch; cross-repo choice if any>` | `<verified preflight + project binding result>` | `<repo command output / MR URL / rulebook path>` |
 | MR | `<claimed MR IID/URL/source/target/head/reviewed SHA/readiness>` | `<verified MR metadata, Reviewed SHA match, diff captured>` | `<mr-pickup output / MR URL / diff artifact>` |
-| Authority | `<claimed Approval authority/source and Merge authority/source>` | `<verified approval policy/restriction, merge source, precedence, conflicts/no-action result>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
+| Authority | `<claimed Approval authority/source and Merge authority/source>` | `<verified through ../../gitlab-local/reference/authority-verification.md: approval policy/restriction, merge source, precedence, conflicts/no-action result, and no-self context>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
 | CI | `<claimed pipeline/local gate/Gate Receipt>` | `<verified exact-SHA CI decision and local-gate or canonical Gate Receipt status>` | `<MR pipeline metadata / ci snapshot / Gate Receipt MR comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
 | Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / MR description / diff / rulebook>` |
 | Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<MR description/comment URL / artifact path / command transcript>` |
@@ -140,7 +140,7 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound MR URL/project, verified Approval authority / Approval authority source, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing merge authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
+Required. State the `Review verdict`, bound MR URL/project, verified Approval authority / Approval authority source, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Verify authority through `../../gitlab-local/reference/authority-verification.md`: use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing merge authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
 
 Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
 
