@@ -11,45 +11,31 @@ copies=(
   "start-review/templates/review-report.md"
 )
 
+TEST_NAME="reviewer-lift-schema"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
+
+# shellcheck source=tests/lib/schema-sync.sh
+source "$REPO_ROOT/tests/lib/schema-sync.sh"
 
 list_prompt_drift_markdown_files() {
   bash "$REPO_ROOT/scripts/list-prompt-drift-markdown.sh" "$REPO_ROOT"
 }
 
 extract_schema_fields() {
-  awk -F'|' '
-    /^\|/ {
-      field=$2
-      gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
-      if (field != "Field" && field !~ /^-+$/ && field != "") print field
-    }
-  ' "$schema"
+  extract_markdown_table_fields "$schema"
 }
 
 extract_copy_fields() {
   local file="$1"
-  awk -F'|' '
-    /REVIEWER-LIFT-SCHEMA:BEGIN/ { in_block=1; next }
-    /REVIEWER-LIFT-SCHEMA:END/ { in_block=0; next }
-    in_block && /^\|/ {
-      field=$2
-      gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
-      if (field != "Field" && field !~ /^-+$/ && field != "") print field
-    }
-  ' "$file"
+  extract_markdown_table_fields "$file" 'REVIEWER-LIFT-SCHEMA:BEGIN' 'REVIEWER-LIFT-SCHEMA:END'
 }
 
 extract_schema_fields > "$tmpdir/schema.fields"
 
 for copy in "${copies[@]}"; do
   extract_copy_fields "$copy" > "$tmpdir/$(basename "$copy").fields"
-  diff -u "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" >/dev/null || {
-    echo "Reviewer Lift schema drift: $copy does not match $schema" >&2
-    diff -u "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" >&2 || true
-    exit 1
-  }
+  assert_files_match "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" "Reviewer Lift schema drift: $copy does not match $schema"
   if [ ! -s "$tmpdir/$(basename "$copy").fields" ]; then
     echo "Reviewer Lift schema drift: $copy has no generated-copy block" >&2
     exit 1

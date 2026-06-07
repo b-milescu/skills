@@ -10,40 +10,24 @@ copies=(
   "start-review/templates/reviewer-final-handoff.md"
 )
 
+TEST_NAME="gitlab-delivery-schema"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
+# shellcheck source=tests/lib/schema-sync.sh
+source "$REPO_ROOT/tests/lib/schema-sync.sh"
+
+require_text() {
+  require_text_case_sensitive "$@"
+}
+
 extract_schema_fields() {
-  awk -F'|' '
-    /GITLAB-DELIVERY-FIELDS:BEGIN/ { in_block=1; next }
-    /GITLAB-DELIVERY-FIELDS:END/ { in_block=0; next }
-    in_block && /^\|/ {
-      field=$2
-      gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
-      if (field != "Field" && field !~ /^-+$/ && field != "") print field
-    }
-  ' "$schema"
+  extract_markdown_table_fields "$schema" 'GITLAB-DELIVERY-FIELDS:BEGIN' 'GITLAB-DELIVERY-FIELDS:END'
 }
 
 extract_copy_fields() {
   local file="$1"
-  awk '
-    /GITLAB-DELIVERY-SCHEMA:BEGIN/ { in_block=1; next }
-    /GITLAB-DELIVERY-SCHEMA:END/ { in_block=0; next }
-    in_block && /^    [a-z_]+:/ {
-      field=$1
-      sub(/:$/, "", field)
-      print field
-    }
-  ' "$file"
-}
-
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eq -- "$pattern" "$file" || {
-    echo "gitlab-delivery-schema: FAIL: $file missing $label" >&2
-    exit 1
-  }
+  extract_yaml_keys_from_marked_block "$file" 'GITLAB-DELIVERY-SCHEMA:BEGIN' 'GITLAB-DELIVERY-SCHEMA:END'
 }
 
 extract_schema_fields > "$tmpdir/schema.fields"
@@ -59,11 +43,7 @@ for copy in "${copies[@]}"; do
     echo "GitLab Delivery schema drift: $copy has no generated-copy block" >&2
     exit 1
   fi
-  diff -u "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" >/dev/null || {
-    echo "GitLab Delivery schema drift: $copy does not match $schema" >&2
-    diff -u "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" >&2 || true
-    exit 1
-  }
+  assert_files_match "$tmpdir/schema.fields" "$tmpdir/$(basename "$copy").fields" "GitLab Delivery schema drift: $copy does not match $schema"
 done
 
 for copy in "${copies[@]}"; do
