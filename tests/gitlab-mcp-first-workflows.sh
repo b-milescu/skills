@@ -64,6 +64,9 @@ require_text "$contract" 'Post-mutation MCP re-read' 'post-mutation MCP re-read 
 require_text "$contract" 'via=mcp' 'MCP transport evidence token'
 require_text "$contract" 'via=glab-fallback' 'fallback transport evidence token'
 
+require_text gitlab-local/reference/mutation-guard.md 'GitLab Mutation Guard' 'canonical Mutation Guard document'
+require_text gitlab-local/reference/mutation-guard.schema.json 'mcp_merge_robustness_gap' 'Mutation Guard MCP merge robustness gap token'
+require_text gitlab-local/reference/mutation-guard.schema.json 'mcp_pagination_gap' 'Mutation Guard MCP pagination gap token'
 snippet_count="$(grep -cE '^### Snippet:' gitlab-local/SKILL.md)"
 [[ "$snippet_count" -eq 20 ]] || fail "expected 20 stable snippet names, found $snippet_count"
 for name in \

@@ -13,6 +13,8 @@ the **caller's** responsibility before invoking the gate; the gate only validate
 and compares the ids it is handed (see the
 [authority matrix](authority-matrix.md)).
 
+The caller lifecycle feeds the Caller identity and context phase of the [GitLab Mutation Guard](mutation-guard.md); the guard owns where that phase sits relative to SHA/CI, authority, fallback, mutation, and post-mutation re-read.
+
 ## Identity lifecycle
 
 1. **At entry.** When the agent begins a finish flow it calls

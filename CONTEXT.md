@@ -24,6 +24,10 @@ _Avoid_: AI workflow
 A documented set of local commands that provides readiness evidence before review.
 _Avoid_: test script, CI
 
+**GitLab Mutation Guard**:
+The ordered seam every GitLab-backed **Dev Workflow** mutation uses before and after writing: bind project, re-read target, check reviewed SHA/CI/authority/caller/text as relevant, choose MCP or guarded fallback, mutate once, and re-read through MCP for evidence.
+_Avoid_: fallback checklist, merge guard
+
 **Triage Role**:
 An issue state that may be mapped to the target tracker's actual label string when that live label exists.
 _Avoid_: label, status
@@ -35,6 +39,7 @@ _Avoid_: label, status
 - A **Dev Workflow** depends on the selected issue tracker.
 - GitLab-backed **Dev Workflows** use GitLab issues and merge requests.
 - A **Check Gate** records the repo-specific commands builders and reviewers use as local evidence.
+- A **GitLab Mutation Guard** preserves mutation safety across MCP primary transport and guarded fallback helpers.
 
 ## Example dialogue
 
