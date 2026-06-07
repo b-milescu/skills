@@ -16,6 +16,7 @@ This repo uses GitLab-backed dev workflows.
 - `start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `start-build/reference/post-merge-verifier.md`; the stable compatibility anchor remains `start-build/BUILD-FLOW.md#parent-orchestrator-recipe`.
 - `start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` and `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets here.
 - `start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
+- `gitlab-local/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab-local/reference/mutation-guard.md`, `skill://gitlab-local/reference/mutation-guard.schema.json`, and `skill://gitlab-local/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
 
 ## Project-profile hooks
 
@@ -80,6 +81,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 ## Usage rules
 
 - Before any GitLab API action, load `/gitlab-local` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab-local/reference/mutation-guard.md`; do not replace this repo's `docs/agents/...` policy references with `skill://gitlab-local/docs/agents/...` when working from another project.
 - Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
 - Before implementation from GitLab issues, load `/start-build`.
 - Before MR review, load `/start-review`.

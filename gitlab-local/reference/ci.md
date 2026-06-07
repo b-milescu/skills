@@ -2,6 +2,8 @@
 
 Small transport-context card for `/start-review` CI reads and exact-SHA CI waiting. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab-local/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
 
+CI reads feed the exact-SHA CI phase of the **GitLab Mutation Guard** in [`mutation-guard.md`](mutation-guard.md); this card stays read-only and never marks a mutation safe by itself.
+
 ## Use this card when
 
 - verifying the builder's Reviewer Lift CI row against current MR metadata;

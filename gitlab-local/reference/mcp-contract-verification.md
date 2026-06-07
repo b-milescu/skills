@@ -6,7 +6,7 @@ Scope discipline for this reference:
 
 - **Evidence is read-only / schema-level unless explicitly marked as smoke-test evidence.** Do not infer unobserved mutation behavior from this doc.
 - Each area states the fact, verification method, and any deferred procedure needed for sandbox/fake-harness confirmation.
-- Fallback command syntax and flag ownership remain in [`gitlab-local/SKILL.md`](../SKILL.md); per-snippet MCP/fallback contracts live in [`snippet-transports.md`](snippet-transports.md).
+- Fallback command syntax and flag ownership remain in [`gitlab-local/SKILL.md`](../SKILL.md); per-snippet MCP/fallback contracts live in [`snippet-transports.md`](snippet-transports.md), and mutating-action ordering lives in the [GitLab Mutation Guard](mutation-guard.md).
 
 ## Verification status legend
 
@@ -57,7 +57,7 @@ Scope discipline for this reference:
 
 **Verification method.** `live-smoke` finding from issue #210; exact fixture details are not copied here.
 
-**Workflow consequence.** Merge fallback is allowed only as a guarded exception. Before fallback, re-read the MR through MCP, verify current head SHA equals the reviewed SHA, verify exact-SHA CI and merge authority/source, verify caller identity/token stability and context-firewall eligibility, run help-first for the exact fallback command, execute exactly one fallback action, re-read through MCP, and record `via=glab-fallback`. Do not fallback on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, or same-session review/finish risk.
+**Workflow consequence.** Merge fallback is allowed only as a guarded `mcp_merge_robustness_gap` exception in the [GitLab Mutation Guard](mutation-guard.md). Before fallback, re-read the MR through MCP, verify current head SHA equals the reviewed SHA, verify exact-SHA CI and merge authority/source, verify caller identity/token stability and context-firewall eligibility, run help-first for the exact fallback command, execute exactly one fallback action, re-read through MCP, and record `via=glab-fallback`. Do not fallback on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, content-byte failure, or same-session review/finish risk.
 
 ### List pagination limitations
 
@@ -65,7 +65,7 @@ Scope discipline for this reference:
 
 **Verification method.** `live-smoke`/tool-surface observation cited in issue #210.
 
-**Workflow consequence.** Never treat a broad single `list_*` page as exhaustive. For decision-grade selection, narrow the query enough to identify a bounded candidate set, re-read each candidate with `get_issue`/`get_merge_request`, or use guarded fallback for exhaustive selection. List data is candidate data; single-record reads decide.
+**Workflow consequence.** Never treat a broad single `list_*` page as exhaustive. Treat this as `mcp_pagination_gap` when it blocks exhaustive selection. For decision-grade selection, narrow the query enough to identify a bounded candidate set, re-read each candidate with `get_issue`/`get_merge_request`, or use guarded fallback for exhaustive selection. List data is candidate data; single-record reads decide before any Mutation Guard action can mutate.
 
 ## 5. Idempotency and partial-failure contract
 
@@ -74,6 +74,7 @@ Scope discipline for this reference:
 - **Re-read after every mutation.** After any mutating MCP tool call (`update_merge_request`, `approve_merge_request`, `merge_merge_request`, notes, label/assignee changes), immediately re-read through MCP (`get_merge_request`, `get_issue`, approval state, or notes/discussions as applicable) and re-check the SHA pin before trusting local state.
 - **SHA-pin re-check.** Compare the re-read head SHA against the reviewed/expected SHA. A mismatch means the head moved under the operation and the action must not be assumed applied to the intended commit.
 - **Transport evidence.** Report `via=mcp` for successful MCP actions and `via=glab-fallback` for guarded fallback actions.
+- **Mutation Guard evidence.** The canonical guard schema (`skill://gitlab-local/reference/mutation-guard.schema.json`) owns shared blocker and gap tokens including `mcp_unavailable`, `mcp_merge_robustness_gap`, and `mcp_pagination_gap`.
 
 **Conflict classification.** When a mutation does not produce the expected state, classify from the re-read before retrying:
 
@@ -107,5 +108,6 @@ Scope discipline for this reference:
 ## Cross-references
 
 - Stable snippet transport contracts: [`snippet-transports.md`](snippet-transports.md).
+- GitLab Mutation Guard seam and schema: [`mutation-guard.md`](mutation-guard.md), [`mutation-guard.schema.json`](mutation-guard.schema.json).
 - Safe text/content-byte rule for MCP and fallback bodies: [`safe-text.md`](safe-text.md).
 - Guarded fallback help-first discipline: [`gitlab-local/SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule).

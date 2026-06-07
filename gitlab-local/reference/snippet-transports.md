@@ -11,6 +11,7 @@ Machine-actionable source of truth: `skill://gitlab-local/reference/snippet-meta
 - **Decision-grade reads:** Prefer single-record MCP reads (`get_project`, `get_issue`, `get_merge_request`, `get_pipeline`) over list data. `list_*` results are candidate data unless the call is narrow enough and not full/truncated.
 - **Post-mutation re-read:** After every MCP or fallback mutation, re-read through MCP and check project, target IID, head SHA when applicable, and the intended state before reporting success.
 - **Fallback evidence:** When fallback is used, record transport evidence as `via=glab-fallback`; MCP primary actions record `via=mcp`. Fallback never bypasses SHA, CI, authority, caller identity/token-stability, context-firewall eligibility, or content-byte guards.
+- **GitLab Mutation Guard:** Every snippet with non-empty `allowed_mutations` in `skill://gitlab-local/reference/snippet-metadata.json` runs the ordered guard in `skill://gitlab-local/reference/mutation-guard.md` / `skill://gitlab-local/reference/mutation-guard.schema.json` before exactly one mutation. Read-only snippets provide decision-grade inputs to that guard. First-class MCP gap states are `mcp_unavailable`, `mcp_merge_robustness_gap`, and `mcp_pagination_gap`; they never override stale head, red/missing/stale CI, missing authority, permission uncertainty, self-merge risk, or content-byte blockers.
 
 ## Snippet contracts
 
@@ -39,5 +40,5 @@ Machine-actionable source of truth: `skill://gitlab-local/reference/snippet-meta
 
 ## Known MCP gaps and fallback limits
 
-- **Merge robustness:** one live smoke fixture observed `merge_merge_request` report/error-normalization weakness for `Branch cannot be merged` while equivalent SHA-bound `glab mr merge` succeeded. Use fallback only after fresh MCP re-read and the exact SHA/CI/authority/caller checks above.
-- **List pagination:** exposed `list_*` tools currently do not show reliable pagination controls to the agent. Treat full or broad list results as incomplete; narrow filters, single-record reads, or guarded `glab` fallback are required for exhaustive selection.
+- **Merge robustness (`mcp_merge_robustness_gap`):** one live smoke fixture observed `merge_merge_request` report/error-normalization weakness for `Branch cannot be merged` while equivalent SHA-bound `glab mr merge` succeeded. Use fallback only after the Mutation Guard's fresh target re-read, reviewed SHA, exact-SHA CI, authority, caller, and fallback-eligibility phases pass.
+- **List pagination (`mcp_pagination_gap`):** exposed `list_*` tools currently do not show reliable pagination controls to the agent. Treat full or broad lists as incomplete; narrow filters, single-record reads, or guarded fallback may identify candidates, but a single-record re-read must decide before any mutation.

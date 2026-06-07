@@ -15,6 +15,29 @@
     "not_applicable_token": "via=n/a",
     "summary": "Reports that rely on GitLab API transport evidence must state via=mcp for MCP primary transport or via=glab-fallback for guarded fallback/helper transport; via=n/a is reserved for no-action handoffs."
   },
+  "mutation_guard": {
+    "resource": "skill://gitlab-local/reference/mutation-guard.md",
+    "schema": "skill://gitlab-local/reference/mutation-guard.schema.json",
+    "applies_to": "all snippets with non-empty allowed_mutations; read-only snippets feed decision-grade evidence into the guard before later mutations",
+    "gap_states": [
+      "mcp_unavailable",
+      "mcp_merge_robustness_gap",
+      "mcp_pagination_gap"
+    ],
+    "fallback_forbidden_when": [
+      "head_changed",
+      "stale_ci",
+      "red_ci",
+      "missing_ci",
+      "missing_authority",
+      "authority_source_mismatch",
+      "permission_uncertain",
+      "identity_unavailable",
+      "identity_changed",
+      "self_merge_risk",
+      "content_byte_failure"
+    ]
+  },
   "required_snippet_fields": [
     "name",
     "mcp_primary_tools",

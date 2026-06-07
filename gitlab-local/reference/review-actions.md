@@ -2,6 +2,8 @@
 
 Small transport-context card for `/start-review` GitLab notes, SHA guards, approval actions, and finish handoff/finish actions. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab-local/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
 
+Before any mutating review action, apply the **GitLab Mutation Guard** in [`mutation-guard.md`](mutation-guard.md) (`skill://gitlab-local/reference/mutation-guard.md`). This card maps review snippets to the guard; it does not replace the guard order.
+
 ## Use this card when
 
 - posting a Review Report, unblock response, revision response check, or action-result note;
@@ -24,10 +26,10 @@ Small transport-context card for `/start-review` GitLab notes, SHA guards, appro
 
 ## Fallback to full gitlab-local
 
-Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) when:
+Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) and the Mutation Guard when:
 
-- an action snippet listed here needs exact fallback syntax or flag verification;
-- MCP approval/merge/note tooling is unavailable or the documented merge robustness/API fallback gap is hit;
+- an action snippet listed here needs exact fallback syntax, flag verification, or `mcp_gap_state` classification;
+- MCP approval/merge/note tooling is unavailable or the documented `mcp_merge_robustness_gap` / API fallback gap is hit;
 - authority/source, CI waiver, caller identity, or project policy needs a variant not covered by this card;
-- GitLab permission errors, approval endpoint drift, or merge-state drift need troubleshooting;
+- GitLab permission errors, approval endpoint drift, post-mutation re-read, or merge-state drift need troubleshooting;
 - you need issue or MR mutations outside review reports, SHA guards, approval, merge, auto-merge, or issue-note target split clarification.

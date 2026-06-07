@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Thin fail-closed wrappers for fragile gitlab-local workflow snippets.
+# Thin fail-closed fallback wrappers for GitLab Mutation Guard body/metadata snippets.
 
 set -euo pipefail
 

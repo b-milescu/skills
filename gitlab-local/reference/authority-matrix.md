@@ -15,6 +15,8 @@ head-binding, **not** role authority. The matrix-match regression test in
 [`tests/gitlab-finish-authority.sh`](../../tests/gitlab-finish-authority.sh)
 parses this table and asserts the gate agrees with it cell-for-cell.
 
+This matrix feeds the Authority Verification phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering.
+
 ## Actions
 
 The gate evaluates one requested `--action`:

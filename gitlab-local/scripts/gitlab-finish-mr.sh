@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Authority-aware GitLab MR finish helper.
-# Convenience wrapper for gitlab-local's accepted finish-mr-authority-aware snippet.
+# Authority-aware GitLab MR finish fallback/helper.
+# Implements the fallback side of finish-mr-authority-aware; callers still own
+# the GitLab Mutation Guard in skill://gitlab-local/reference/mutation-guard.md.
 
 set -euo pipefail
 

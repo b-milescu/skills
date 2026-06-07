@@ -10,6 +10,8 @@ transport. This reference owns two durable concerns:
    redaction rule, no-secrets rule) migrated here from `multiline-text.md` so the
    knowledge survives that file's later deletion.
 
+The [`GitLab Mutation Guard`](mutation-guard.md) calls this the **Safe GitLab Text** phase; a content-byte failure blocks both MCP and fallback before any body-bearing GitLab mutation.
+
 ## Content-byte rule
 
 A GitLab text body is byte-safe only when it contains no NUL byte, no

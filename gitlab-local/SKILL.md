@@ -57,13 +57,17 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 
 Validate every MR/issue body before mutation, whether it will be sent as an MCP `body`/`description` string or through a fallback file-backed wrapper. Use temp/run-dir files plus quoted heredocs for MR/issue notes and MR descriptions when building text in shell. `scripts/gitlab-content-guard.sh` is the shared adapter for both MCP-body-style and file-backed fallback validation; `scripts/gitlab-wrappers.sh` delegates to it before `glab`. Diagnostics name the file/body role and offending offset without printing the packet body. Detailed patterns: [`reference/safe-text.md`](reference/safe-text.md) and [`reference/multiline-text.md`](reference/multiline-text.md#safe-multiline-gitlab-text).
 
+## GitLab Mutation Guard
+
+Every GitLab mutation uses the ordered **GitLab Mutation Guard** seam in [`reference/mutation-guard.md`](reference/mutation-guard.md) (`skill://gitlab-local/reference/mutation-guard.md`) and its machine schema at `skill://gitlab-local/reference/mutation-guard.schema.json`: project binding, current target re-read, reviewed SHA when relevant, exact-SHA CI when relevant, Authority Verification, caller identity/context, Safe GitLab Text when relevant, fallback eligibility, one mutation, and post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` / `via=n/a` evidence. Fallback is never a bypass for stale head, red/missing/stale CI, missing authority, permission uncertainty, self-finish risk, or content-byte failure.
+
 ## Canonical snippets
 
 Names below are stable API for workflow skills. The machine-actionable source of truth for snippet names, MCP primary tools, inputs, outputs, allowed mutations, guards, fallback conditions, post-mutation re-reads, and via evidence is `skill://gitlab-local/reference/snippet-metadata.json`; the human-readable table lives in [`reference/snippet-transports.md`](reference/snippet-transports.md) and is checked against that metadata. Inline shell blocks below are guarded `glab` fallback/helper examples, not the primary transport. Long helper bodies live in `scripts/` with tests; this skill keeps contracts, safety rules, and pointers authoritative.
 
 Review-focused cards for `/start-review` live in [`reference/review-read.md`](reference/review-read.md), [`reference/review-actions.md`](reference/review-actions.md), and [`reference/ci.md`](reference/ci.md). The cards are pointer maps for snippet names, inputs/outputs, fail-closed rules, and fallback conditions; this `SKILL.md` remains the full owner for transport order, fallback help-first discipline, and flag drift.
 
-The relocated polling/SHA mechanics for `ci-watch-sha-pinned` and the finish guard/authority mechanics for `finish-mr-authority-aware` live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md); each snippet below links to that card and points verdict-classification/authority policy to the canonical owners in `start-review/REVIEW-FLOW.md` and `start-build/SAFETY.md`.
+The shared mutation sequence lives in [`reference/mutation-guard.md`](reference/mutation-guard.md). CI/finish-specific mappings for `ci-watch-sha-pinned` and `finish-mr-authority-aware` live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md); each snippet below links to that card and points verdict-classification/authority policy to the canonical owners in `start-review/REVIEW-FLOW.md` and `start-build/SAFETY.md`.
 
 ### Snippet: local-repo-preflight
 
@@ -165,7 +169,7 @@ Inputs:
 - `timeout_seconds` and `poll_seconds`: caller-selected wait budget.
 - Optional output mode: human summary or machine-readable YAML.
 
-Polling/SHA mechanics, fail-closed output shape, and the pointer to the canonical CI verdict classification live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
+Polling/SHA mechanics feed the GitLab Mutation Guard exact-SHA CI phase; CI/finish-specific output shape and the pointer to the canonical CI verdict classification live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
 
 Implementation body lives inside this skill:
 
@@ -186,7 +190,7 @@ gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"
   --format human
 ```
 
-For raw-command adaptation (keeping every polling/SHA rule, fail-closed output, and machine fields), see [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
+For raw-command adaptation (keeping the per-poll SHA rules as read-only evidence for the Mutation Guard), see [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned) and [`reference/mutation-guard.md`](reference/mutation-guard.md).
 
 Wrapper bodies for the next five snippets also live in [`scripts/gitlab-wrappers.sh`](scripts/gitlab-wrappers.sh); helper docs/tests: [`scripts/README.md`](scripts/README.md#gitlab-workflow-helpers) / [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh).
 
@@ -248,7 +252,7 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 [ "$current_sha" = "$reviewed_sha" ] || { echo "MR head changed: current=$current_sha reviewed=$reviewed_sha" >&2; exit 1; }
 ```
 
-Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, perform a fresh MCP re-read of MR head SHA, exact-SHA CI, approval/merge authority source, caller identity/token stability, and context-firewall eligibility. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, or same-session review/finish risk. Same GitLab account/PAT is not by itself a self-approval or self-merge blocker for a fresh gate-eligible reviewer. After any action, re-read through MCP and record transport evidence such as `via=mcp` or `via=glab-fallback`. Reviewer approval authority is separate from merge authority by `start-review`; default approval after pass does not grant merge or auto-merge authority.
+Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the GitLab Mutation Guard in [`reference/mutation-guard.md`](reference/mutation-guard.md): fresh target re-read, reviewed SHA, exact-SHA CI when relevant, approval/merge authority source, caller identity/token stability, context-firewall eligibility, Safe GitLab Text when relevant, fallback eligibility, one mutation, then post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` evidence. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, content-byte failure, or same-session review/finish risk. Same GitLab account/PAT is not by itself a self-approval or self-merge blocker for a fresh gate-eligible reviewer.
 
 ### Snippet: sha-bound-approval
 
@@ -292,7 +296,7 @@ glab api "projects/${project_path}/merge_requests/${mr_iid}/approvals"
 
 ### Snippet: finish-mr-authority-aware
 
-Role eligibility (who may call) lives in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
+Role eligibility (who may call) lives in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware) and the shared mutation sequence lives in [`reference/mutation-guard.md`](reference/mutation-guard.md).
 
 Inputs:
 
@@ -303,7 +307,7 @@ Inputs:
 - `source_branch`, `default_branch`, and optional `worktree_path`.
 - Optional `issue_iid` when it is not obvious from `Closes #...`.
 
-The full guard order (fresh MCP re-read of SHA/CI/authority/caller identity, SHA-bound finish, exactly one finish action, `via=mcp`/`via=glab-fallback` result evidence, fetch/fast-forward only after the action, `closure_pending` issue reporting, worktree-removal preconditions) and the pointer to the canonical merge/authority matrix live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
+Finish is a SHA-bound Mutation Guard specialization: the guard order lives in [`reference/mutation-guard.md`](reference/mutation-guard.md), while finish-specific field mapping, exact-SHA CI handling, `via=mcp` / `via=glab-fallback` result evidence, post-action fetch/cleanup sequencing, `closure_pending` issue reporting, and the canonical merge/authority matrix pointer live in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
 
 Implementation body lives inside this skill:
 
@@ -327,7 +331,7 @@ gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"
 
 Add `--issue-iid`, `--worktree-path`, `--approve-as-reviewer`, or source-branch cleanup flags only when the workflow and authority explicitly allow them.
 
-For raw-command adaptation (keeping the guard order, exactly one finish action, SHA-bound approval/merge, builder handoff semantics, and machine output fields), see [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-guardauthority-mechanics-finish-mr-authority-aware).
+For raw-command adaptation, keep the Mutation Guard order from [`reference/mutation-guard.md`](reference/mutation-guard.md) plus the finish field mapping in [`reference/ci-finish-guards.md`](reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
 
 ## Optional helper scripts
 
