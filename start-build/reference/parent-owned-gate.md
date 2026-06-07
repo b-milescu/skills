@@ -1,0 +1,145 @@
+# Parent-owned Check Gate and Gate Receipt
+
+This is the canonical seam for parent-owned Check Gate mode. Other build,
+review, delivery-loop, and template docs point here instead of redefining the
+ownership fields, Gate Receipt schema, parent verification checklist, or
+ready-transition evidence.
+
+Use this mode when a child builder has completed the implementation but the
+parent coordinator owns the final local Check Gate and Draft-to-ready transition.
+The child leaves the MR Draft and hands the parent a candidate SHA; the parent
+runs the repo Check Gate on that exact SHA, posts one Gate Receipt MR comment,
+and only then performs the ready transition.
+
+## Resource addressing
+
+When this workflow runs from another target repo, reference skill-owned resources
+with `skill://start-build/...`:
+
+- `skill://start-build/reference/parent-owned-gate.md`
+- `skill://start-build/templates/gitlab-delivery-schema.md`
+- `skill://start-build/templates/reviewer-lift-schema.md`
+- `skill://start-build/templates/builder-final-handoff.md`
+- `skill://start-build/templates/review-packet.md`
+
+Target-repo policy remains repo-relative. The full project Check Gate command and
+policy are read from `docs/agents/check-gate.md` in the target repo, not from a
+`skill://start-build/...` resource.
+
+## Ownership contract
+
+Child builders must not claim gate pass/fail in this mode; they record this contract when the parent owns the Check Gate:
+
+```yaml
+local_gate_owner: "parent"
+builder_gate_status:
+  status: "not-run"
+  not_run_reason: "parent-owned"
+ready_transition_owner: "parent"
+```
+
+Semantics:
+
+- `local_gate_owner: "parent"` means the parent, not the child, must run the full
+  local Check Gate before ready/review.
+- `builder_gate_status.status: "not-run"` means the child intentionally did not
+  run or claim the parent-owned gate.
+- `builder_gate_status.not_run_reason: "parent-owned"` distinguishes this valid
+  handoff from missing evidence.
+- `ready_transition_owner: "parent"` means the child must leave the MR Draft; the
+  parent posts the Gate Receipt and marks ready after the receipt passes.
+
+This contract must appear in the Reviewer Lift / MR description and in the child
+builder final handoff when a compact `delivery.kind=gitlab-delivery` block is
+present. It does not make the Gate Receipt a substitute for the full project
+Check Gate.
+
+## Gate Receipt schema
+
+Anchor: `gate_receipt.kind=gate-receipt`. The parent posts this as an MR comment
+for the exact candidate SHA before the MR is handed to review.
+
+```yaml
+gate_receipt:
+  kind: "gate-receipt"
+  version: "1"
+  owner: "parent"
+  mr_iid: "123"
+  issue_iid: "57"
+  checkout_path: "/absolute/path/to/verified/checkout"
+  checkout_sha: "1111111111111111111111111111111111111111"
+  status_before: "draft"
+  status_after: "ready"
+  command: "npm run check"
+  result: "PASS"
+  summary: "full project Check Gate completed successfully"
+  preflight_checks:
+    - name: "clean-status-before"
+      command: "git status --porcelain"
+      result: "PASS"
+      summary: "empty"
+    - name: "tracked-files-unchanged-after"
+      command: "git status --porcelain"
+      result: "PASS"
+      summary: "empty; no tracked files changed during preflight/gate"
+  evidence:
+    - tier: "tier-1"
+      kind: "local-gate"
+      source: "MR comment or run artifact URL/path"
+      summary: "command, checkout SHA, and result"
+  observed_at: "2026-06-01T00:00:00Z"
+```
+
+`observed_at` is optional. Every other field is required so the parent, reviewer,
+and finisher can bind the receipt to the exact MR, issue, checkout, SHA, command,
+status transition, preflight state, and evidence.
+
+## Parent verification checklist
+
+A single parent ready-transition check is enough when every item below is true:
+
+1. Project binding is verified through `/gitlab-local` for the target repo, MR,
+   source branch, target branch, issue IID, and default branch.
+2. The MR is Draft, links the intended issue with `Closes #<iid>`, and targets the
+   expected default branch.
+3. The child handoff, Reviewer Lift `Reviewed SHA`, MR head SHA, and remote source
+   branch all name the same candidate SHA.
+4. The candidate checkout is clean before the gate and `checkout_sha` equals the
+   candidate SHA.
+5. The command from target `docs/agents/check-gate.md` runs on that exact checkout
+   SHA and returns `PASS`.
+6. A post-gate status check shows tracked files unchanged. If tracked files
+   changed during preflight or the gate, block ready/merge unless those changes
+   are committed to the MR head and the gate reruns on the new SHA, or an
+   explicit parent/human waiver is recorded in the Gate Receipt and MR discussion.
+7. The Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
+   every required field above.
+8. Immediately before marking ready, the MR head still equals the receipt
+   `checkout_sha`; if it changed, block and rerun the checklist on the new SHA.
+9. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
+   confirms the expected MR state.
+
+## Evidence-ready handoff tokens
+
+These pointers make the next actor safe to proceed without another
+parent/builder/reviewer clarification loop:
+
+- `mr-description-reviewer-lift-current` — Reviewer Lift is present, current, and
+  names the candidate SHA plus the ownership contract.
+- `candidate-sha-pushed` — `git rev-parse HEAD`, MR head metadata, and
+  `git ls-remote origin <source_branch>` agree on the candidate SHA.
+- `gate-receipt-exact-sha-pass` — the Gate Receipt is present, required fields are
+  filled, `result: "PASS"`, and `checkout_sha` equals the reviewed SHA.
+- `ready-transition-post-reread` — after ready-marking, a post-mutation re-read
+  confirms the MR state and unchanged head SHA.
+
+Before the Gate Receipt exists, a child builder handoff should route to
+`phase: "parent-gate"`, `expected_next_actor: "parent"`,
+`expected_next_action: "parent-run-gate"`, `blocked: false`,
+`required_parent_decision: "none"`, and evidence pointers such as
+`mr-description-reviewer-lift-current` and `candidate-sha-pushed`.
+
+After the Gate Receipt and ready transition, the parent can route review with the
+Gate Receipt comment as a Tier 1/Tier 2 source pointer. Reviewers still treat the
+receipt as a claim/source pointer and independently verify SHA, CI/local-gate,
+authority, scope, and diff evidence before approval or finish actions.

@@ -47,7 +47,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 
 ## Reviewer Lift (builder handoff)
 
-Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`. Treat copied values, Gate Receipt comments, and any compact `delivery.kind=gitlab-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
+Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`; parent-owned Gate Receipt verification is canonical in `../../start-build/reference/parent-owned-gate.md`. Treat copied values, Gate Receipt comments, and any compact `delivery.kind=gitlab-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
@@ -55,7 +55,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Reviewed SHA | `<copy from Reviewer Lift; must equal MR head sha at approve-time>` |
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
 | CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
-| Local gate | `<copy from Reviewer Lift; PASS before ready/review, N/A with rationale, or not-run parent-owned with Gate Receipt verification; otherwise blocker>` |
+| Local gate | `<copy from Reviewer Lift; PASS before ready/review, N/A with rationale, or not-run parent-owned with Gate Receipt verification per ../../start-build/reference/parent-owned-gate.md; otherwise blocker>` |
 | RED | `<copy from Reviewer Lift; evaluate behavior-touching implementation RED evidence or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy from Reviewer Lift; verify against diff>` |
@@ -72,14 +72,14 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 
 ## Review Context Capsule
 
-Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, not truth. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
+Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, not truth. Parent-owned Gate Receipt verification uses `../../start-build/reference/parent-owned-gate.md`. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|
 | Repo | `<claimed host/project/repo/default or target branch; cross-repo choice if any>` | `<verified preflight + project binding result>` | `<repo command output / MR URL / rulebook path>` |
 | MR | `<claimed MR IID/URL/source/target/head/reviewed SHA/readiness>` | `<verified MR metadata, Reviewed SHA match, diff captured>` | `<mr-pickup output / MR URL / diff artifact>` |
 | Authority | `<claimed Approval authority/source and Merge authority/source>` | `<verified approval policy/restriction, merge source, precedence, conflicts/no-action result>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
-| CI | `<claimed pipeline/local gate/Gate Receipt>` | `<verified exact-SHA CI decision and local-gate or Gate Receipt status>` | `<MR pipeline metadata / ci snapshot / Gate Receipt MR comment / local command output>` |
+| CI | `<claimed pipeline/local gate/Gate Receipt>` | `<verified exact-SHA CI decision and local-gate or canonical Gate Receipt status>` | `<MR pipeline metadata / ci snapshot / Gate Receipt MR comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
 | Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / MR description / diff / rulebook>` |
 | Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<MR description/comment URL / artifact path / command transcript>` |
 | Context expansion | `<Tier 2 or Tier 3 context used/considered>` | `<verified trigger, bounded read, and Tier 3 human/necessity rationale>` | `<path:line / finding ID / CI log / human instruction / rulebook section>` |

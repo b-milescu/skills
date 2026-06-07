@@ -23,7 +23,7 @@ Compact pointer map for child `mr-builder` sessions. This card is a checklist, n
 ## Safety and authority pointers
 
 - Child no-review/no-merge boundary: [`child-builder.md` authority boundary](child-builder.md#authority-boundary) and [`BUILD-FLOW.md` mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate).
-- Parent-owned gate contract: [`parent-owned-gate-card.md`](parent-owned-gate-card.md) and [`parent-orchestrator.md` Gate Receipt mode](parent-orchestrator.md#parent-owned-gate-receipt-mode).
+- Parent-owned gate contract: [`parent-owned-gate.md`](parent-owned-gate.md) and [`parent-owned-gate-card.md`](parent-owned-gate-card.md).
 - CI decision policy: [`start-review/REVIEW-FLOW.md` CI decision table](../../start-review/REVIEW-FLOW.md#ci-decision-table).
 - Authority source verification: [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and [`context-and-planning.md` handoff checklist](context-and-planning.md#handoff-integrity-checklist).
 - Post-merge verifier read-only boundary: [`post-merge-verifier.md`](post-merge-verifier.md); child builders never perform verifier, cleanup, or finish mutations.

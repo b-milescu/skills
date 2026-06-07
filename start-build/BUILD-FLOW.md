@@ -24,7 +24,7 @@ Mode boundaries are split across [reference/child-builder.md](reference/child-bu
 
 ## Compact mode cards
 
-Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; fall back to the full reference docs and `/gitlab-local` transport/fallback snippets on ambiguity, missing fields, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
+Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; parent-owned Check Gate / Gate Receipt detail lives in [`reference/parent-owned-gate.md`](reference/parent-owned-gate.md). Fall back to the full reference docs and `/gitlab-local` transport/fallback snippets on ambiguity, missing fields, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
 
 ### Standalone `/start-build` mode
 
@@ -32,7 +32,7 @@ Standalone builders follow [reference/implementation-flow.md](reference/implemen
 
 ### Child `mr-builder` mode
 
-Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, and either run/own the local gate before ready or, in parent-owned gate mode, report `local_gate_owner: parent` with builder gate status `not-run` / `not_run_reason: parent-owned` and leave the MR Draft for the parent Gate Receipt and ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
+Child builders follow the smaller [reference/child-builder.md](reference/child-builder.md) path: implement one issue, open/update the Draft MR, keep Reviewer Lift current, and either run/own the local gate before ready or, in parent-owned gate mode, record the ownership contract from [reference/parent-owned-gate.md](reference/parent-owned-gate.md#ownership-contract) and leave the MR Draft for the parent Gate Receipt and ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Parent-orchestrator recipe
 
@@ -57,7 +57,7 @@ Check-gate discovery detail lives in [reference/context-and-planning.md §Check 
 
 ## Handoff integrity checklist
 
-Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, `delivery.handoff_contract` must carry the required routing fields and only use `blocking_question` for specific actionable blockers, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, local gate evidence or N/A rationale must be present, open questions must use real stable IDs or `none`, and merge authority/source must be explicit and verifiable.
+Handoff checks live in [reference/context-and-planning.md §Handoff integrity checklist](reference/context-and-planning.md#handoff-integrity-checklist): Reviewer Lift rows must match [templates/reviewer-lift-schema.md](templates/reviewer-lift-schema.md), shared `delivery.kind=gitlab-delivery` blocks must follow [templates/gitlab-delivery-schema.md](templates/gitlab-delivery-schema.md) when present, `delivery.handoff_contract` must carry the required routing fields and only use `blocking_question` for specific actionable blockers, compact delivery fields remain untrusted claims/indexes until verified from Tier 1/Tier 2 evidence, `Reviewed SHA` must equal MR head at ready, CI evidence must be SHA-bound before counting green, and local gate evidence must be `PASS`/`N/A` or parent-owned per [reference/parent-owned-gate.md](reference/parent-owned-gate.md).
 
 Project-profile hooks in `templates/gitlab-delivery-schema.md` may specialize
 project gate policy, labels, branch naming, CI jobs, domain docs,
