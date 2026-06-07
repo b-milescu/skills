@@ -14,7 +14,7 @@ When a skill runs from a target repository, reference guard resources with `skil
 - `skill://gitlab-local/scripts/gitlab-finish-mr.sh`
 - `skill://gitlab-local/scripts/gitlab-wrappers.sh`
 
-Target-repo policy remains repo-relative. Use `docs/agents/check-gate.md`, `docs/agents/dev-workflows.md`, `docs/agents/triage-labels.md`, and similar paths for the repository being changed; do not rewrite those target policy refs as `skill://gitlab-local/docs/agents/...`.
+Target-repo policy remains repo-relative. Use `docs/agents/check-gate.md`, `docs/agents/dev-workflows.md`, `docs/agents/triage-labels.md`, and similar paths for the repository being changed; do not rewrite those target policy refs as gitlab-local skill resources.
 
 ## Applicability
 

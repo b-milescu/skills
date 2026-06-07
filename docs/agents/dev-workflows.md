@@ -81,7 +81,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 ## Usage rules
 
 - Before any GitLab API action, load `/gitlab-local` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
-- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab-local/reference/mutation-guard.md`; do not replace this repo's `docs/agents/...` policy references with `skill://gitlab-local/docs/agents/...` when working from another project.
+- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab-local/reference/mutation-guard.md`; keep this repo's `docs/agents/...` policy references repo-relative when working from another project.
 - Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
 - Before implementation from GitLab issues, load `/start-build`.
 - Before MR review, load `/start-review`.
