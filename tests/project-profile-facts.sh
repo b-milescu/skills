@@ -71,7 +71,8 @@ assert(defaultProfile.check_gate.gate_policy_ref === 'docs/agents/check-gate.md#
 assert(defaultProfile.check_gate.command === 'npm run check', 'default Check Gate command drifted');
 assert(defaultProfile.dev_workflows.path === 'docs/agents/dev-workflows.md', 'default Dev Workflow path drifted');
 assert(defaultProfile.branch_naming.pattern === 'issue-<iid>-<slug>', 'default branch naming drifted');
-assert(defaultProfile.ci_parity.required_jobs.includes('validation'), 'default CI required jobs missing validation');
+assert(defaultProfile.ci_parity.required_jobs.includes('check'), 'default CI required jobs missing check');
+assert(!defaultProfile.ci_parity.required_jobs.includes('validation'), 'default CI required jobs must name the check job, not the validate stage');
 allRepoRelative(defaultProfile.agent_setup_docs, 'default_profile.agent_setup_docs');
 
 for (const [key, value] of Object.entries(facts.skill_resources)) {
@@ -95,6 +96,18 @@ assert(setupSkill.includes(factsResource), 'setup skill must name the skill:// f
 for (const term of ['Agent Setup Doc paths', 'tracker fields', 'Triage Role mapping', 'Check Gate refs', 'Dev Workflow refs', 'branch naming', 'CI parity', 'runtime skill-resource URIs']) {
   assert(setupSkill.includes(term), `setup skill missing fact-source term ${term}`);
 }
+
+for (const pathToken of [
+  '<agent_setup_docs.issue_tracker>',
+  '<agent_setup_docs.triage_labels>',
+  '<agent_setup_docs.domain>',
+  '<agent_setup_docs.check_gate>',
+  '<agent_setup_docs.coding_guardrails>',
+  '<agent_setup_docs.dev_workflows>'
+]) {
+  assert(setupSkill.includes(pathToken), `setup skill Agent skills block missing ${pathToken}`);
+}
+assert(setupSkill.includes('Substitute each `<agent_setup_docs.*>` placeholder'), 'setup skill must require target-profile path substitution for the Agent skills block');
 
 for (const file of [
   'setup-dev-skills/dev-workflows-gitlab.md',

@@ -65,7 +65,7 @@ delivery:
     ci_jobs:
       ref: "docs/agents/check-gate.md#ci-parity"
       required:
-        - "validation"
+        - "check"
     domain_docs:
       ref: "docs/agents/domain.md"
       context: "CONTEXT.md"

@@ -96,7 +96,7 @@
     },
     "ci_parity": {
       "ci_jobs_ref": "docs/agents/check-gate.md#ci-parity",
-      "required_jobs": ["validation"],
+      "required_jobs": ["check"],
       "mirrors_local_gate": true
     },
     "domain_docs": {

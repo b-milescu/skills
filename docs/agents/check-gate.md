@@ -152,8 +152,9 @@ Commands were derived from:
 
 - The repo-local runtime contract is Node.js 22.x (`.nvmrc` and `package.json` `engines.node`).
 - GitLab CI uses the Node 22 image.
-- The validation job runs `npm ci` so dependencies come from `package-lock.json`.
-- The validation job then runs `npm run check`, the same canonical command used locally.
+- Required GitLab CI job name: `check` (stage `validate`).
+- The `check` job runs `npm ci` so dependencies come from `package-lock.json`.
+- The `check` job then runs `npm run check`, the same canonical command used locally.
 - Pipeline workflow rules create pipelines for merge requests, the default branch, and tags.
 - CI caches npm's download cache under `.npm/`, keyed by `package-lock.json`; `npm ci` remains the correctness boundary, so cache misses only make installs slower.
 

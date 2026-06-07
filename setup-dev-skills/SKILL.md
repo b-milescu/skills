@@ -93,23 +93,30 @@ Show draft contents before writing: `## Agent skills` block plus `docs/agents/is
 
 Pick file: if `CLAUDE.md` exists, edit it; else if `AGENTS.md` exists, edit it; if neither exists, ask which one to create. Never create one when the other already exists. If `## Agent skills` exists, update it in place without touching surrounding sections; if multiple or legacy blocks exist, ask which block to keep and remove/merge duplicates only after confirmation.
 
-Block shape:
+Block shape (substitute Agent Setup Doc paths from the target project profile
+before writing; the default profile may resolve these placeholders to
+`docs/agents/...` paths):
 
 ```md
 ## Agent skills
 ### Issue tracker
-[summary]. See `docs/agents/issue-tracker.md`.
+[summary]. See `<agent_setup_docs.issue_tracker>`.
 ### Triage labels
-[summary]. See `docs/agents/triage-labels.md`.
+[summary]. See `<agent_setup_docs.triage_labels>`.
 ### Domain docs
-[summary]. See `docs/agents/domain.md`.
+[summary]. See `<agent_setup_docs.domain>`.
 ### Check gate
-[summary]. See `docs/agents/check-gate.md`.
+[summary]. See `<agent_setup_docs.check_gate>`.
 ### Coding guardrails
-[summary]. See `docs/agents/coding-guardrails.md`.
+[summary]. See `<agent_setup_docs.coding_guardrails>`.
 ### Dev workflows
-[summary]. See `docs/agents/dev-workflows.md`.
+[summary]. See `<agent_setup_docs.dev_workflows>`.
 ```
+
+Substitute each `<agent_setup_docs.*>` placeholder from the selected
+`project_profile.agent_setup_docs` values in `reference/project-profile-facts.json`
+or from live target-repo findings. Do not copy the default `docs/agents/...`
+paths into repos with a non-default Agent Setup Doc root.
 
 Use seed files in this skill folder as generated-doc templates backed by `reference/project-profile-facts.json`. Adapt host/project names, target Agent Setup Doc paths, live tracker labels, local gate commands, branch naming, CI job requirements, language families, auxiliary index tooling, release/deploy policy, manual validation rules, and existing coding guidance from repo inspection. Reconcile older output in place: keep valid project-specific prose, replace stale generated claims, and do not blindly overwrite user additions. Do not leave default or placeholder labels in `triage-labels.md` unless the user explicitly chose to create/migrate to them. Use `dev-workflows-gitlab.md` for GitLab and `dev-workflows-generic.md` otherwise.
 
