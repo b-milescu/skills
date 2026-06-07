@@ -27,24 +27,16 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
 SKILL="gitlab-local/SKILL.md"
+TEST_NAME="gitlab-local-split-snippets"
 
-fail() {
-  printf 'gitlab-local-split-snippets: FAIL: %s\n' "$*" >&2
-  exit 1
-}
-
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
+# shellcheck source=tests/lib/assertions.sh
+source "$REPO_ROOT/tests/lib/assertions.sh"
+# shellcheck source=tests/lib/marked-sections.sh
+source "$REPO_ROOT/tests/lib/marked-sections.sh"
 
 extract_snippet() {
   local file="$1" name="$2"
-  awk -v heading="### Snippet: $name" '
-    $0 == heading { in_section=1; next }
-    in_section && /^### Snippet:/ { exit }
-    in_section { print }
-  ' "$file"
+  extract_markdown_section "$file" "### Snippet: $name" '^### Snippet:'
 }
 
 require_snippet() {
@@ -52,16 +44,6 @@ require_snippet() {
   body="$(extract_snippet "$SKILL" "$name")"
   [[ -n "$body" ]] || fail "$SKILL missing snippet $name"
   printf '%s\n' "$body"
-}
-
-assert_contains() {
-  local text="$1" needle="$2" label="$3"
-  [[ "$text" == *"$needle"* ]] || fail "missing $label: $needle"
-}
-
-assert_not_contains() {
-  local text="$1" needle="$2" label="$3"
-  [[ "$text" != *"$needle"* ]] || fail "unexpected $label: $needle"
 }
 
 # Behavioural matcher: a snippet "performs <verb>" if its body contains the verb
@@ -133,7 +115,7 @@ for name in \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
   finish-mr-authority-aware; do
-  grep -Fxq "### Snippet: $name" "$SKILL" || fail "missing stable snippet name $name"
+  require_exact_line "$SKILL" "### Snippet: $name" "stable snippet name $name"
 done
 snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
 [[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"

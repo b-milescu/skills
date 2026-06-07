@@ -60,7 +60,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 
 ## Shipped shell regression inventory
 
-`scripts/check.sh` runs every `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.
+`scripts/check.sh` runs every top-level `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.
 
 | Script | Focus |
 | --- | --- |
@@ -93,6 +93,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/post-merge-verifier-read-only.sh` | Canonical post-merge verifier recipe read-only invariant keeps the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator), `issue_closure_pending` / `source_branch_cleanup_pending` report tokens, helper wiring, and removed top-level skill absence check, and keeps the post-#152 dropped "promised docs/ADR/follow-ups" check absent. |
 | `tests/project-profile-hooks.sh` | `project_profile` extension fields stay documented in the GitLab delivery schema and generated handoff copies; setup-dev-skills seeds/generated docs declare gate, labels, branch naming, CI jobs, domain/ADR, release/deploy, manual validation, language, and auxiliary index hooks; GitLab-specific schema names and safety invariants remain intact. |
 | `tests/project-profile-facts.sh` | `setup-dev-skills/reference/project-profile-facts.json` remains the canonical project-profile fact source for Agent Setup Doc paths, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, skill resource URIs, and a non-default docs/labels fixture; setup seeds/live docs and GitLab issue pickup avoid globally hardcoded labels. |
+| `tests/regression-harness.sh` | Shared regression harness self-check for shell assertion primitives, command-output capture, marked-section extraction, schema-sync field extraction, and fake GitLab fixture setup. |
 | `tests/review-authority-explicit.sh` | Reviewer workflow docs default approval after pass unless explicitly restricted, keep approval authority separate from merge authority, and prevent missing merge authority from defaulting to approval-only finish authority. |
 | `tests/review-authority-provenance.sh` | Reviewer/build workflow docs require approval and merge authority provenance, precedence, stable repo policy references, and builder-claim-not-grant semantics. |
 | `tests/review-blocked-verdict.sh` | Reviewer verdict/action split keeps `blocked` first-class, synchronizes Review Report/final handoff verdict and action-blocker enums, and routes non-code blockers through explicit action fields. |

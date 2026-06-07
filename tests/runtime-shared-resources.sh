@@ -4,24 +4,13 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+TEST_NAME="runtime-shared-resources"
+
+# shellcheck source=tests/lib/assertions.sh
+source "$REPO_ROOT/tests/lib/assertions.sh"
+
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/skills-runtime-resources.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
-
-assert_readable() {
-  local path="$1"
-  if [[ ! -r "$path" ]]; then
-    echo "expected readable shared runtime resource: $path" >&2
-    exit 1
-  fi
-}
-
-assert_not_exists() {
-  local path="$1"
-  if [[ -e "$path" || -L "$path" ]]; then
-    echo "unexpected runtime skill-root resource entry: $path" >&2
-    exit 1
-  fi
-}
 
 home_dir="$TMP_ROOT/home"
 foreign_project="$TMP_ROOT/foreign-project"
@@ -39,8 +28,8 @@ HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 for runtime in \
   "$home_dir/.claude/skills" \
   "$home_dir/.pi/agent/skills"; do
-  assert_not_exists "$runtime/docs"
-  assert_not_exists "$runtime/templates"
+  assert_path_absent "$runtime/docs" "runtime skill-root resource entry"
+  assert_path_absent "$runtime/templates" "runtime skill-root resource entry"
 done
 
 if [[ -e "$foreign_project/docs/decoupling-contract.md" ]]; then
@@ -59,9 +48,9 @@ fi
     "$home_dir/.pi/agent/skills"; do
     for skill_file in "$REPO_ROOT"/*/SKILL.md; do
       skill_name="$(basename "$(dirname "$skill_file")")"
-      assert_readable "$runtime/$skill_name/docs/decoupling-contract.md"
-      assert_readable "$runtime/$skill_name/docs/effort-scaling.md"
-      assert_readable "$runtime/$skill_name/shared-templates/filling-guide.md"
+      assert_path_readable "$runtime/$skill_name/docs/decoupling-contract.md" "shared runtime resource"
+      assert_path_readable "$runtime/$skill_name/docs/effort-scaling.md" "shared runtime resource"
+      assert_path_readable "$runtime/$skill_name/shared-templates/filling-guide.md" "shared runtime resource"
     done
   done
 )

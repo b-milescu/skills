@@ -13,7 +13,7 @@ write_check_gate_doc() {
   {
     printf '# Check Gate\n\n'
     printf '## Shipped shell regression inventory\n\n'
-    printf '`scripts/check.sh` runs every `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.\n\n'
+    printf '`scripts/check.sh` runs every top-level `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.\n\n'
     printf '| Script | Focus |\n'
     printf '| --- | --- |\n'
     local script
@@ -31,7 +31,7 @@ extract_inventory_scripts() {
   awk '
     /^## Shipped shell regression inventory$/ { in_section=1; next }
     in_section && /^## / { exit }
-    in_section && /^\| `tests\/[^`]+\.sh`[[:space:]]*\|/ {
+    in_section && /^\| `tests\/[^`\/]+\.sh`[[:space:]]*\|/ {
       path=$0
       sub(/^\| `/, "", path)
       sub(/`.*/, "", path)
@@ -42,7 +42,7 @@ extract_inventory_scripts() {
 
 list_tracked_test_scripts() {
   local repo="$1"
-  git -C "$repo" ls-files 'tests/*.sh' | sort
+  git -C "$repo" ls-files 'tests/*.sh' | awk '/^tests\/[^\/]+\.sh$/ { print }' | sort
 }
 
 check_inventory() {
@@ -59,7 +59,7 @@ check_inventory() {
   comm -13 "$actual_file" "$inventory_file" > "$extra_file"
 
   if [[ -s "$missing_file" || -s "$extra_file" ]]; then
-    echo "Check Gate shipped shell regression inventory is out of sync with tracked tests/*.sh files." >&2
+    echo "Check Gate shipped shell regression inventory is out of sync with top-level tracked tests/*.sh files." >&2
     if [[ -s "$missing_file" ]]; then
       echo "Missing from docs/agents/check-gate.md inventory:" >&2
       sed 's/^/  - /' "$missing_file" >&2
@@ -88,7 +88,7 @@ make_fixture_repo() {
 
 missing_repo="$TMPDIR/missing-entry"
 mkdir -p "$missing_repo"
-make_fixture_repo "$missing_repo" tests/actual.sh tests/missing-from-doc.sh
+make_fixture_repo "$missing_repo" tests/actual.sh tests/missing-from-doc.sh tests/lib/helper.sh
 write_check_gate_doc "$missing_repo" tests/actual.sh
 set +e
 missing_output="$(check_inventory "$missing_repo" 2>&1)"
@@ -96,6 +96,12 @@ missing_status=$?
 set -e
 if [[ $missing_status -eq 0 || "$missing_output" != *"tests/missing-from-doc.sh"* ]]; then
   echo "missing tracked script fixture did not fail with expected diagnostic" >&2
+  echo "--- output ---" >&2
+  printf '%s\n' "$missing_output" >&2
+  exit 1
+fi
+if [[ "$missing_output" == *"tests/lib/helper.sh"* ]]; then
+  echo "helper module fixture was incorrectly treated as a top-level regression script" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$missing_output" >&2
   exit 1

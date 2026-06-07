@@ -4,22 +4,10 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-fail() {
-  printf 'gitlab-mcp-first-workflows: FAIL: %s\n' "$*" >&2
-  exit 1
-}
+TEST_NAME="gitlab-mcp-first-workflows"
 
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-reject_text() {
-  local file="$1" pattern="$2" label="$3"
-  if grep -Eni -- "$pattern" "$file" >&2; then
-    fail "$file contains unconditional primary glab guidance: $label"
-  fi
-}
+# shellcheck source=tests/lib/assertions.sh
+source "$REPO_ROOT/tests/lib/assertions.sh"
 
 workflow_docs=(
   gitlab-local/SKILL.md
@@ -76,7 +64,7 @@ for name in \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
   finish-mr-authority-aware; do
-  grep -Fxq "### Snippet: $name" gitlab-local/SKILL.md || fail "missing stable snippet $name"
+  require_exact_line gitlab-local/SKILL.md "### Snippet: $name" "stable snippet $name"
   require_text "$contract" "\`$name\`" "transport contract for $name"
 done
 
