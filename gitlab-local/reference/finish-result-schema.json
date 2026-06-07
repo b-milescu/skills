@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "gitlab-local/reference/finish-result-schema.json",
   "title": "finish_result",
-  "description": "Machine-readable result the agent-driven finish flow emits and the parent orchestrator gates on. Includes transport evidence so reports can distinguish via=mcp from via=glab-fallback without trusting prose-only summaries.",
+  "description": "Machine-readable result the agent-driven finish flow emits and the parent orchestrator gates on. It records Authority Verification evidence (gitlab-local/reference/authority-verification.md) separately from transport evidence, so reports can distinguish verified authority from via=mcp / via=glab-fallback mutation transport without trusting prose-only summaries.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -113,7 +113,7 @@
       ]
     },
     "authority_verification_source": {
-      "description": "How merge authority was verified for this finish.",
+      "description": "How merge authority was verified for this finish through the canonical Authority Verification seam (gitlab-local/reference/authority-verification.md). This is separate from the transport field.",
       "type": "string",
       "enum": [
         "description-verified",

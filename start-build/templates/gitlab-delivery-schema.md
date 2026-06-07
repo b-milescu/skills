@@ -5,7 +5,7 @@ field names, field order, and enum vocabulary for `delivery.kind =
 gitlab-delivery`. The block is an additive routing index around GitLab records;
 it never replaces MR metadata, Review Packets, Review Reports, Gate Receipts
 (canonical in `../reference/parent-owned-gate.md`), CI checks, local Check Gate
-output, or authority verification.
+output, or canonical Authority Verification (`../../gitlab-local/reference/authority-verification.md`).
 
 Consumers must tolerate the `delivery` block being absent, stale, or malformed.
 Every value in the block is an untrusted claim/index until verified from Tier 1
@@ -26,7 +26,7 @@ report post-merge success from compact `delivery` values alone.
 | sha | SHA facts such as MR head/current SHA, reviewed SHA, candidate SHA, merge commit, and observed target SHA. |
 | pipeline | Pipeline ID/URL/status/`sha`, or unavailable/not-run details. |
 | local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
-| authority | Quoted approval and merge/finish authority claims, sources, verification status, and conflicts/restrictions. |
+| authority | Quoted approval and merge/finish authority claims, sources, Authority Verification status, and conflicts/restrictions. |
 | actions | Approval action, finish action, next-action token, and action blockers. |
 | handoff_contract | Shared routing block naming phase, next actor/action, blocker state, parent-decision need, change flag, and evidence-ready pointers. |
 | evidence | Evidence tier/kind/source indexes that point to durable proof. |
@@ -313,6 +313,12 @@ action is `N/A`/`not-run`; otherwise use `N/A`.
 - `other`
 
 ## Authority values
+
+Authority claim shape, source precedence, conflict/restricted/missing-source
+results, action routing, and no-self context are canonical in
+[`../../gitlab-local/reference/authority-verification.md`](../../gitlab-local/reference/authority-verification.md).
+Delivery `authority` values are routing claims until that seam verifies them from
+Tier 1/Tier 2 evidence.
 
 `authority.approval.value` is a quoted approval-policy claim, not a grant of any
 finish action. It must be verified from `authority.approval.source` before

@@ -9,6 +9,8 @@
   "cross_project_guidance": {
     "guard_docs": "skill://gitlab-local/reference/mutation-guard.md",
     "guard_schema": "skill://gitlab-local/reference/mutation-guard.schema.json",
+    "authority_verification_docs": "skill://gitlab-local/reference/authority-verification.md",
+    "authority_verification_schema": "skill://gitlab-local/reference/authority-verification.schema.json",
     "guard_scripts": "skill://gitlab-local/scripts/",
     "target_repo_docs": "Use repo-relative docs/agents/... paths for the target repository's policy docs, not skill://gitlab-local/docs/agents/... aliases."
   },
@@ -44,9 +46,9 @@
     {
       "order": 5,
       "id": "authority_verification",
-      "requires": ["caller_role", "action", "authority value", "authority source"],
-      "blocks": ["missing_authority", "authority_source_mismatch", "permission_uncertain"],
-      "output": "authority verdict and source provenance for exactly one requested action"
+      "requires": ["caller_role", "action", "authority value", "authority source", "skill://gitlab-local/reference/authority-verification.schema.json claim shape"],
+      "blocks": ["missing_authority", "authority_source_mismatch", "permission_uncertain", "self_merge_risk"],
+      "output": "Authority Verification verdict, decision routing, source provenance, conflicts/restrictions, and no-self result for exactly one requested action"
     },
     {
       "order": 6,

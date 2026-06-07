@@ -15,7 +15,7 @@ Compact pointer map for approval and finish decisions after a Review Report has 
 - Fail-closed coverage for `partial-review` and `secret-exposure-suspected`: [`../REVIEW-FLOW.md#fail-closed-review-coverage`](../REVIEW-FLOW.md#fail-closed-review-coverage).
 - CI policy: [`../REVIEW-FLOW.md#ci-decision-table`](../REVIEW-FLOW.md#ci-decision-table).
 - Open Question policy: [`../REVIEW-FLOW.md#open-question-decision-table`](../REVIEW-FLOW.md#open-question-decision-table).
-- Approval authority policy: [`../REVIEW-FLOW.md#approval-authority-policy`](../REVIEW-FLOW.md#approval-authority-policy); merge authority source precedence: [`../REVIEW-FLOW.md#merge-authority-source-precedence`](../REVIEW-FLOW.md#merge-authority-source-precedence).
+- Authority verification seam: [`../../gitlab-local/reference/authority-verification.md`](../../gitlab-local/reference/authority-verification.md); approval authority policy: [`../REVIEW-FLOW.md#approval-authority-policy`](../REVIEW-FLOW.md#approval-authority-policy); merge authority source precedence: [`../REVIEW-FLOW.md#merge-authority-source-precedence`](../REVIEW-FLOW.md#merge-authority-source-precedence).
 - Project binding rules: [`../REVIEW-FLOW.md#project-binding`](../REVIEW-FLOW.md#project-binding).
 - Finish helper and post-merge boundary: [`../../gitlab-local/reference/ci-finish-guards.md`](../../gitlab-local/reference/ci-finish-guards.md) and [`../../start-build/reference/post-merge-verifier.md`](../../start-build/reference/post-merge-verifier.md).
 

@@ -7,7 +7,7 @@ This card owns the CI/finish specializations for `ci-watch-sha-pinned` and `fini
 
 Use this card for CI/finish-specific inputs and result vocabulary only. Do not copy the full mutation sequence here; apply the Mutation Guard order first, then the specialization below.
 
-Verdict classification policy lives in [`start-review/REVIEW-FLOW.md#ci-decision-table`](../../start-review/REVIEW-FLOW.md#ci-decision-table). Authority and builder-boundary policy live in [`start-build/SAFETY.md`](../../start-build/SAFETY.md), [`authority-matrix.md`](authority-matrix.md), and the Mutation Guard's Authority Verification phase.
+Verdict classification policy lives in [`start-review/REVIEW-FLOW.md#ci-decision-table`](../../start-review/REVIEW-FLOW.md#ci-decision-table). Non-negotiable builder/self-finish floors live in [`start-build/SAFETY.md`](../../start-build/SAFETY.md). Authority claim shape, source precedence, conflict/restriction handling, action routing, and no-self context live in [`authority-verification.md`](authority-verification.md); the role × merge-authority finish sub-decision lives in [`authority-matrix.md`](authority-matrix.md).
 
 ## CI verdict mechanics (`ci-watch-sha-pinned`)
 
@@ -31,8 +31,8 @@ Map finish inputs to Mutation Guard fields as follows:
 | `mutation_kind` | `sha-bound-approval`, `sha-bound-merge`, `sha-bound-auto-merge-queue`, or `finish-mr-authority-aware` |
 | `reviewed_sha` | SHA from Reviewer Lift / Review Report, guarded with `.sha == reviewed_sha` and transport `--sha` / MCP `sha` where supported |
 | `ci_policy` | exact-SHA green CI for merge; protected pending/running policy only for queue auto-merge when allowed |
-| `authority_value` / `authority_source` | Review Packet / Review Report / parent or human finish-authority source, verified before action |
-| `caller_role` / `caller_identity` | caller role plus entry and pre-mutation `get_current_user()` token-stability evidence |
+| `authority_value` / `authority_source` | Review Packet / Review Report / parent or human finish-authority source, verified through [Authority Verification](authority-verification.md) before action |
+| `caller_role` / `caller_identity` | caller role plus entry and pre-mutation `get_current_user()` token-stability evidence; same-session no-self classification comes from [Authority Verification](authority-verification.md) |
 | `mcp_gap_state` | `none` normally; `mcp_merge_robustness_gap` only for the documented merge fallback; `mcp_unavailable` only when the required MCP action/read is unavailable |
 | `post_mutation_reread` | `get_merge_request` / approval state / issue state after mutation; classify `merged`, `auto_merge_queued`, `already_merged`, `stale_head`, `merge_blocked`, or related schema token |
 

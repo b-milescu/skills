@@ -2,7 +2,7 @@
 
 The **GitLab Mutation Guard** is the single seam every GitLab workflow mutation passes through before it writes, approves, marks ready, merges, queues auto-merge, labels, or posts a note. It exists so MCP primary transport and guarded `glab` fallback share the same fail-closed ordering and the same result evidence.
 
-Machine-readable schema: [`mutation-guard.schema.json`](mutation-guard.schema.json) / `skill://gitlab-local/reference/mutation-guard.schema.json`.
+Machine-readable schema: [`mutation-guard.schema.json`](mutation-guard.schema.json) / `skill://gitlab-local/reference/mutation-guard.schema.json`. Authority phase schema: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab-local/reference/authority-verification.schema.json`.
 
 ## Resource addressing
 
@@ -10,6 +10,8 @@ When a skill runs from a target repository, reference guard resources with `skil
 
 - `skill://gitlab-local/reference/mutation-guard.md`
 - `skill://gitlab-local/reference/mutation-guard.schema.json`
+- `skill://gitlab-local/reference/authority-verification.md`
+- `skill://gitlab-local/reference/authority-verification.schema.json`
 - `skill://gitlab-local/scripts/gitlab-content-guard.sh`
 - `skill://gitlab-local/scripts/gitlab-finish-mr.sh`
 - `skill://gitlab-local/scripts/gitlab-wrappers.sh`
@@ -35,7 +37,7 @@ The order is load-bearing. Do not move fallback earlier to “try the CLI” bef
 2. **Current target re-read.** Re-read the target with a single-record MCP read (`get_merge_request`, `get_issue`, approval state, notes/discussions as applicable). Lists are candidate data only.
 3. **Reviewed SHA.** For review, ready, approval, merge, auto-merge, or finish actions, compare current MR head to `reviewed_sha`. A mismatch is `head_changed` and blocks before fallback.
 4. **Exact-SHA CI.** When CI is relevant, use exact-SHA pipeline evidence (`list_pipelines(sha=reviewed_sha)` or `get_pipeline`). Missing, red, canceled, skipped, or SHA-mismatched CI is a blocker, not fallback eligibility.
-5. **Authority Verification.** Verify the action authority value and source for the exact requested mutation. Missing, contradictory, or unverified authority blocks that action.
+5. **Authority Verification.** Apply the canonical [Authority Verification](authority-verification.md) seam for the exact requested action. Missing, contradictory, restricted, self-context, or unverified authority blocks that action.
 6. **Caller identity and context.** Resolve the authenticated caller at entry and re-check immediately before mutation. Stop on identity unavailable/changed, permission uncertainty, or same-session/self-finish risk. GitLab account equality alone is not a self-merge blocker for a fresh gate-eligible reviewer; role/context is the boundary.
 7. **Safe GitLab Text.** For body-bearing mutations, run the content-byte rule from [`safe-text.md`](safe-text.md) before the write. NUL, non-whitespace C0 controls, or DEL block both MCP and fallback; diagnostics must not echo the body.
 8. **Fallback eligibility.** MCP remains primary. Fallback may be considered only for a first-class MCP gap state (`mcp_unavailable`, `mcp_merge_robustness_gap`, or `mcp_pagination_gap`) after every non-transport guard above has passed and help-first evidence exists for the exact flagged command.
@@ -54,7 +56,7 @@ The schema names the machine fields. Human packets should carry the same facts:
 | `source_branch` / `target_branch` | Required for MR branch-sensitive actions. |
 | `reviewed_sha` | Required for review, ready, approval, merge, queue, and finish actions. |
 | `ci_policy` | Whether exact-SHA CI is required, pending-allowed, waived, or not relevant. |
-| `authority_value` / `authority_source` | Approval, merge, ready, note, or label authority plus provenance. |
+| `authority_value` / `authority_source` | Approval, merge, ready, note, or label authority plus provenance; approval/finish actions use the [Authority Verification](authority-verification.md) claim shape and source precedence. |
 | `caller_role` / `caller_identity` | Role and token-stability evidence for the actor taking the action. |
 | `safe_text_role` | Description, note, or other body role for content-byte diagnostics. |
 | `mcp_gap_state` | `none`, `mcp_unavailable`, `mcp_merge_robustness_gap`, or `mcp_pagination_gap`. |
@@ -70,7 +72,7 @@ Every guard result reports:
 - `mutation_performed`: true only after the single mutation step ran.
 - `transport_evidence`: `via=mcp`, `via=glab-fallback`, or `via=n/a`.
 - `mcp_gap_state`: the gap that justified fallback, or `none`.
-- Project, target, SHA, CI, authority, caller identity, safe-text, and post-read evidence.
+- Project, target, SHA, CI, Authority Verification, caller identity, safe-text, and post-read evidence.
 - `post_mutation_reread.classification`: `verified`, `note_created`, `description_updated`, `ready_marked`, `approved`, `merged`, `auto_merge_queued`, `labels_reconciled`, `issue_updated`, `already_merged`, `stale_head`, `merge_blocked`, `description_lost`, `target_state_mismatch`, or `post_reread_unavailable`.
 
 `via=n/a` is only for no-action handoff/held/blocked results. A mutating success reports `via=mcp` or `via=glab-fallback`.
@@ -111,7 +113,7 @@ These blockers stay fatal for both MCP and `glab` fallback. Fallback exists for 
 
 ## Finish integration
 
-`finish-mr-authority-aware` is a specialization of the SHA-bound finish profile. The finish flow still uses the authority matrix, caller identity lifecycle, exact-SHA CI policy, and finish result schema, but those documents should point here for the shared mutation order instead of copying it.
+`finish-mr-authority-aware` is a specialization of the SHA-bound finish profile. The finish flow still uses [Authority Verification](authority-verification.md), the authority matrix, caller identity lifecycle, exact-SHA CI policy, and finish result schema, but those documents should point here for the shared mutation order instead of copying it.
 
 Finish-specific result mapping:
 
