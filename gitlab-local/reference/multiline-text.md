@@ -11,9 +11,11 @@ the MCP `body`/`description` only after the content-byte guard passes. Quoted
 heredocs (`<<'EOF'`) keep Markdown backticks, `$VARS`, and command substitutions
 literal while writing the local file.
 
-The wrappers and standalone content guard validate file bytes before a GitLab
-mutation: NUL, non-whitespace C0 controls, and DEL are rejected locally, while
-tab/newline/carriage return remain valid for Markdown. Diagnostics do not print secrets or the malformed packet body; they name the failing file role and byte offset.
+The shared adapter `gitlab-local/scripts/gitlab-content-guard.sh` validates
+stdin MCP bodies and file-backed fallback bodies before a GitLab mutation.
+`gitlab-local/scripts/gitlab-wrappers.sh` delegates file-backed validation to
+that adapter: NUL, non-whitespace C0 controls, and DEL are rejected locally,
+while tab/newline/carriage return remain valid for Markdown. Diagnostics do not print secrets or the malformed packet body; they name the failing role and byte offset.
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.

@@ -395,6 +395,8 @@ run_wrapper_fixture() {
     FAKE_EXPECT_SOURCE="${FAKE_EXPECT_SOURCE:-issue-183}" \
     FAKE_EXPECT_TARGET="${FAKE_EXPECT_TARGET:-main}" \
     FAKE_MR_MERGE_MODE="${FAKE_MR_MERGE_MODE:-success}" \
+    GITLAB_CONTENT_GUARD="${GITLAB_CONTENT_GUARD:-}" \
+    FAKE_CONTENT_GUARD_LOG="${FAKE_CONTENT_GUARD_LOG:-}" \
     PATH="$dir/bin:$PATH" \
     "$REPO_ROOT/gitlab-local/scripts/gitlab-wrappers.sh" "$@"
 }
@@ -1014,6 +1016,67 @@ test_wrappers_create_and_update_mr_descriptions_with_control_validation() {
   [[ "$CAPTURE_OUTPUT" != *"Reviewer Lift"* ]] || fail "MR update control diagnostic printed malformed packet"
 }
 
+test_wrappers_delegate_file_backed_validation_to_shared_content_guard() {
+  local dir guard guard_log description_file message_file malformed_file secret
+  secret='secret-token-line'
+
+  dir="$(make_wrapper_fixture_dir wrapper-shared-content-guard)"
+  guard="$dir/gitlab-content-guard.sh"
+  guard_log="$dir/content-guard.log"
+  cat > "$guard" <<'FAKE_GUARD'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$FAKE_CONTENT_GUARD_LOG"
+file=""
+role=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --file) file="${2:-}"; shift 2 ;;
+    --role) role="${2:-}"; shift 2 ;;
+    *) echo "GITLAB_CONTENT_GUARD result=blocked reason=unknown_arg:$1" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$file" ]] || { echo "GITLAB_CONTENT_GUARD result=blocked reason=missing_file" >&2; exit 64; }
+[[ -n "$role" ]] || { echo "GITLAB_CONTENT_GUARD result=blocked reason=missing_role" >&2; exit 64; }
+case "$file" in
+  *blocked*) echo "GITLAB_CONTENT_GUARD result=blocked reason=invalid_control_character:${role}:byte_7" >&2; exit 65 ;;
+esac
+FAKE_GUARD
+  chmod +x "$guard"
+
+  description_file="$dir/review-packet.md"
+  printf '# Reviewer Lift\n\n%s\n' "$secret" > "$description_file"
+  FAKE_EXPECT_DESCRIPTION="$(cat "$description_file")" GITLAB_CONTENT_GUARD="$guard" FAKE_CONTENT_GUARD_LOG="$guard_log" run_wrapper_fixture "$dir" \
+    mr_description_update \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --description-file "$description_file"
+  assert_status 0
+  assert_log_contains "$guard_log" "--file $description_file --role description_file"
+
+  message_file="$dir/message.md"
+  printf '# Revision Packet\n\n%s\n' "$secret" > "$message_file"
+  FAKE_EXPECT_MESSAGE="$(cat "$message_file")" GITLAB_CONTENT_GUARD="$guard" FAKE_CONTENT_GUARD_LOG="$guard_log" run_wrapper_fixture "$dir" \
+    mr_note_create \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --message-file "$message_file"
+  assert_status 0
+  assert_log_contains "$guard_log" "--file $message_file --role message_file"
+
+  : > "$dir/glab.log"
+  malformed_file="$dir/blocked-review-packet.md"
+  printf '# Reviewer Lift\n\n%s\n' "$secret" > "$malformed_file"
+  GITLAB_CONTENT_GUARD="$guard" FAKE_CONTENT_GUARD_LOG="$guard_log" run_wrapper_fixture "$dir" \
+    mr_description_update \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --mr-iid 59 \
+    --description-file "$malformed_file"
+  assert_validation_failure_without_glab_call "$dir" 65 "invalid_control_character:description_file:byte_7"
+  [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "delegated content-guard diagnostic leaked description body"
+  [[ "$CAPTURE_OUTPUT" != *"Reviewer Lift"* ]] || fail "delegated content-guard diagnostic printed malformed packet"
+}
+
 
 test_wrappers_fail_closed_for_note_validation_without_glab_calls() {
   local dir message_file unreadable_file empty_file secret
@@ -1436,6 +1499,7 @@ test_finish_blocks_local_cleanup_until_default_is_verified_safe
 test_finish_blocks_unsafe_states_before_mutation
 test_wrappers_create_issue_and_mr_notes_without_body_leak
 test_wrappers_create_and_update_mr_descriptions_with_control_validation
+test_wrappers_delegate_file_backed_validation_to_shared_content_guard
 test_wrappers_fail_closed_for_note_validation_without_glab_calls
 test_label_reconcile_adds_and_removes_without_replace_assumption
 test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed

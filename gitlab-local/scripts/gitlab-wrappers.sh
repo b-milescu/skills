@@ -3,6 +3,8 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
 usage() {
   cat <<'USAGE'
 Usage: gitlab-wrappers.sh <wrapper> [options]
@@ -34,6 +36,12 @@ require_node() {
   command -v node >/dev/null || fail GITLAB_WRAPPER 127 dependency_missing_node
 }
 
+content_guard_path() {
+  local prefix="$1" guard="${GITLAB_CONTENT_GUARD:-$SCRIPT_DIR/gitlab-content-guard.sh}"
+  [[ -n "$guard" && -x "$guard" ]] || fail "$prefix" 127 dependency_missing_content_guard
+  printf '%s' "$guard"
+}
+
 require_file_arg() {
   local prefix="$1" file="$2"
   [[ -n "$file" ]] || fail "$prefix" 64 missing_message_file
@@ -42,32 +50,21 @@ require_file_arg() {
 }
 
 validate_text_file() {
-  local prefix="$1" file="$2" label="$3" result status
-  require_node
+  local prefix="$1" file="$2" label="$3" guard result status reason
+  guard="$(content_guard_path "$prefix")"
   set +e
-  result="$(node - "$file" "$label" <<'NODE'
-const fs = require('fs');
-const file = process.argv[2] || '';
-const label = process.argv[3] || 'message_file';
-let bytes;
-try {
-  bytes = fs.readFileSync(file);
-} catch (_) {
-  process.stdout.write(`unreadable_${label}`);
-  process.exit(2);
-}
-for (let i = 0; i < bytes.length; i += 1) {
-  const byte = bytes[i];
-  if ((byte < 0x20 && byte !== 0x09 && byte !== 0x0a && byte !== 0x0d) || byte === 0x7f) {
-    process.stdout.write(`invalid_control_character:${label}:byte_${i}`);
-    process.exit(2);
-  }
-}
-NODE
-)"
+  result="$("$guard" --file "$file" --role "$label" 2>&1)"
   status=$?
   set -e
-  [[ "$status" -eq 0 ]] || fail "$prefix" 65 "${result:-invalid_control_character:$label}"
+  [[ "$status" -eq 0 ]] && return 0
+
+  reason="${result#*reason=}"
+  if [[ "$reason" == "$result" || -z "$reason" ]]; then
+    reason=content_guard_failed
+  fi
+  reason="${reason%%$'\n'*}"
+  reason="${reason%%$'\r'*}"
+  fail "$prefix" "$status" "$reason"
 }
 
 derive_gitlab_hostname() {

@@ -15,10 +15,11 @@ fail() {
   exit 1
 }
 
-# run_guard_stdin <input-file>  — feed the file body on stdin, capture status+output.
+# run_guard_stdin <input-file> [extra-args...] — feed the file body on stdin, capture status+output.
 run_guard_stdin() {
+  local body="$1"; shift
   set +e
-  CAPTURE_OUTPUT="$("$GUARD" < "$1" 2>&1)"
+  CAPTURE_OUTPUT="$("$GUARD" "$@" < "$body" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }
@@ -52,18 +53,19 @@ assert_not_contains() {
 nul_body="$TMPDIR/nul-body.md"
 printf 'safe prefix LEAK_MARKER_SECRET=topsecret\000more text\n' > "$nul_body"
 
-run_guard_stdin "$nul_body"
+run_guard_stdin "$nul_body" --role mcp_body
 [[ "$CAPTURE_STATUS" -ne 0 ]] || fail "NUL body must exit non-zero, got 0; output: $CAPTURE_OUTPUT"
-# Diagnostics must name the failing role + byte offset.
-assert_contains "byte"
+# MCP-body-style diagnostics must name the failing role + byte offset.
+assert_contains "invalid_control_character:mcp_body:byte_"
 # Diagnostics must NEVER print the body.
 assert_not_contains "LEAK_MARKER_SECRET"
 assert_not_contains "topsecret"
 assert_not_contains "more text"
 
 # Same reject case via --file: still non-zero, still no body leak.
-run_guard_file "$nul_body"
+run_guard_file "$nul_body" --role file_backed_body
 [[ "$CAPTURE_STATUS" -ne 0 ]] || fail "NUL body via --file must exit non-zero; output: $CAPTURE_OUTPUT"
+assert_contains "invalid_control_character:file_backed_body:byte_"
 assert_not_contains "LEAK_MARKER_SECRET"
 assert_not_contains "topsecret"
 
