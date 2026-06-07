@@ -48,7 +48,7 @@ require_text "$gate_doc" 'skill://start-build/reference/parent-owned-gate\.md' '
 require_text "$gate_doc" 'docs/agents/check-gate\.md' 'target repo Check Gate ref'
 
 require_text "$child_doc" 'parent-owned-gate\.md#ownership-contract' 'child points at canonical ownership contract'
-require_text "$child_doc" 'must not claim gate pass/fail' 'child pass/fail claim prohibition'
+require_text "$child_doc" 'do not claim gate pass/fail' 'child pass/fail claim prohibition'
 require_text "$child_doc" 'must not mark ready' 'child ready-marking prohibition'
 reject_text "$child_doc" 'builder_gate_status\.status:[[:space:]]*not-run' 'duplicated dotted parent-owned gate value definition'
 
