@@ -28,6 +28,26 @@ Use pi's agent frontmatter dialect. Use lowercase tool names and pi-specific
 fields such as intercom bridge coordination fields. Keep pi-only bridge wording
 here, not in Claude Code variants.
 
+## MCP access for MR agents
+
+MR builder and reviewer variants use least-privilege MCP selections in the
+runtime's native dialect.
+
+- Claude Code variants keep explicit `tools:` allowlists with PascalCase builtin
+  tool names (`Bash`, `Read`, `Edit`, `Write`, and peers) plus scoped selectors
+  for the approved servers: `mcp__gitlab-mcp__*` and
+  `mcp__wowtools-mcp__*`. Do not replace these allowlists with inherited broad
+  tools or `disallowedTools`.
+- pi variants keep explicit lowercase builtin tool lists (`bash`, `read`,
+  `edit`, `write`, and peers) plus direct approved server selections:
+  `mcp:gitlab-mcp` and `mcp:wowtools-mcp`. Do not add bare `mcp`.
+- GitLab authority stays in `gitlab-local`: it remains canonical for GitLab
+  transport, MCP-first snippet contracts, the Mutation Guard, SHA/CI guards,
+  approval, merge, ready-transition, label, and finish evidence.
+- `wowtools-mcp` is read/query/domain-data lookup only. It is never GitLab
+  authority, CI, gate, approval, merge, ready-transition, label, or finish
+  evidence.
+
 ## Agent definition body strategy
 
 Current strategy: do not add a generator or shared-fragment system now. Keep
