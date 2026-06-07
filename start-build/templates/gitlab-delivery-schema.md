@@ -3,8 +3,9 @@
 Canonical shared schema for compact GitLab delivery blocks. This file owns the
 field names, field order, and enum vocabulary for `delivery.kind =
 gitlab-delivery`. The block is an additive routing index around GitLab records;
-it never replaces MR metadata, Review Packets, Review Reports, Gate Receipts, CI
-checks, local Check Gate output, or authority verification.
+it never replaces MR metadata, Review Packets, Review Reports, Gate Receipts
+(canonical in `../reference/parent-owned-gate.md`), CI checks, local Check Gate
+output, or authority verification.
 
 Consumers must tolerate the `delivery` block being absent, stale, or malformed.
 Every value in the block is an untrusted claim/index until verified from Tier 1
@@ -214,65 +215,24 @@ approved generated copy.
 - `human-authority`
 - `delivery-index`
 
-## Parent-owned gate ownership contract
+## Parent-owned Check Gate / Gate Receipt seam
 
-When the parent coordinator owns the final local gate and ready transition, the
-child builder records the ownership contract without claiming a gate result:
+The parent-owned Check Gate ownership contract, Gate Receipt schema, parent
+verification checklist, ready-transition conditions, and evidence-ready tokens
+are canonical in [`../reference/parent-owned-gate.md`](../reference/parent-owned-gate.md)
+(`skill://start-build/reference/parent-owned-gate.md` when invoked from another
+repo).
 
-```yaml
-local_gate_owner: "parent"
-builder_gate_status:
-  status: "not-run"
-  not_run_reason: "parent-owned"
-ready_transition_owner: "parent"
-```
+This delivery schema keeps only the routing vocabulary for that seam:
 
-This contract separates "the child intentionally did not run the parent-owned
-gate" from "gate evidence is missing." It does not make the Gate Receipt a
-substitute for the full project Check Gate.
+- `local_gate.status: "not-run"` with `not_run_reason: "parent-owned"`;
+- evidence kind `gate-receipt`;
+- next-action token `parent-run-gate`;
+- `gate_receipt.kind=gate-receipt` as the receipt anchor.
 
-## Gate Receipt schema
-
-Anchor: `gate_receipt.kind=gate-receipt`. The parent posts this as an MR comment
-before marking ready when `local_gate_owner: parent`.
-
-```yaml
-gate_receipt:
-  kind: "gate-receipt"
-  version: "1"
-  owner: "parent"
-  mr_iid: "123"
-  issue_iid: "57"
-  checkout_path: "/absolute/path/to/verified/checkout"
-  checkout_sha: "1111111111111111111111111111111111111111"
-  status_before: "draft"
-  status_after: "ready"
-  command: "npm run check"
-  result: "PASS"
-  summary: "full project Check Gate completed successfully"
-  preflight_checks:
-    - name: "clean-status-before"
-      command: "git status --porcelain"
-      result: "PASS"
-      summary: "empty"
-    - name: "tracked-files-unchanged-after"
-      command: "git status --porcelain"
-      result: "PASS"
-      summary: "empty; no tracked files changed during preflight/gate"
-  evidence:
-    - tier: "tier-1"
-      kind: "local-gate"
-      source: "MR comment or run artifact URL/path"
-      summary: "command, checkout SHA, and result"
-  observed_at: "2026-06-01T00:00:00Z"
-```
-
-`observed_at` is optional. Every other field is required so the parent, reviewer,
-and finisher can bind the receipt to the exact MR, issue, checkout path, checkout
-SHA, command, status transition, preflight state, and evidence. If tracked files
-changed during preflight or the gate, the parent blocks ready/merge unless those
-changes are committed to the MR head and the gate reruns on the new SHA, or an
-explicit parent/human waiver is recorded in the receipt and MR discussion.
+Delivery blocks remain untrusted indexes. The parent and reviewer must read the
+canonical seam and decision-grade GitLab/worktree evidence before using a Gate
+Receipt for ready, review, approval, or finish routing.
 
 ## Post-merge Snapshot schema
 
@@ -467,7 +427,8 @@ is still required before the expected next actor can safely continue.
 conclusions changed since the prior ready/revision/finish handoff.
 
 `evidence_ready_for_next_actor` is a non-empty list of concise pointers/tokens
-describing what the next actor can verify immediately.
+describing what the next actor can verify immediately. Parent-owned gate mode
+uses the evidence-ready tokens from `../reference/parent-owned-gate.md`.
 
 ## Generated-copy contract
 

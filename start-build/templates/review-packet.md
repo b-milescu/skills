@@ -21,7 +21,7 @@ section-by-section instructions and the conditional-section triggers.
 
 ## Reviewer Lift
 
-Field names, order, and required semantics are canonical in `reviewer-lift-schema.md`.
+Field names, order, and required semantics are canonical in `reviewer-lift-schema.md`; parent-owned Gate Receipt / Check Gate ownership is canonical in `../reference/parent-owned-gate.md`.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
@@ -29,7 +29,7 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
-| Local gate | `<PASS before ready/review / FAIL while draft / N/A — why / not-run — parent-owned with Gate Receipt pending> — <exact command, e.g. make check>` |
+| Local gate | `<PASS before ready/review / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending> — <exact command, e.g. make check>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |

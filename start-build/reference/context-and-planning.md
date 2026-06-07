@@ -38,7 +38,7 @@ Before marking ready or requesting review, validate the MR handoff:
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
-- Local gate command/result is present, or N/A explains why only CI can provide it.
+- Local gate command/result is present, N/A explains why only CI can provide it, or parent-owned gate mode records the ownership contract from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.
 - Merge authority is explicit and treated as a quoted claim, not a builder grant.

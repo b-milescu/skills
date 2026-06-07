@@ -101,8 +101,8 @@ done
 # Canonical start-build anchors stay referenced instead of restating policy.
 require_text "$child_card" 'child-builder\.md#child-checklist' 'child checklist canonical anchor'
 require_text "$child_card" 'child-builder\.md#authority-boundary' 'child authority canonical anchor'
-require_text "$parent_gate_card" 'parent-orchestrator\.md#parent-owned-gate-receipt-mode' 'parent Gate Receipt canonical anchor'
-require_text "$parent_gate_card" 'gitlab-delivery-schema\.md#gate-receipt-schema' 'Gate Receipt schema anchor'
+require_text "$parent_gate_card" 'parent-owned-gate\.md#parent-verification-checklist' 'parent Gate Receipt canonical checklist anchor'
+require_text "$parent_gate_card" 'parent-owned-gate\.md#gate-receipt-schema' 'Gate Receipt schema canonical seam anchor'
 require_text "$revision_card" 'implementation-flow\.md#procedure' 'revision procedure canonical anchor'
 require_text "$revision_card" 'revision-packet\.md' 'revision packet template pointer'
 require_text "$parent_card" 'parent-orchestrator\.md#parent-loop' 'parent loop canonical anchor'

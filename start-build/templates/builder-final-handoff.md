@@ -222,14 +222,13 @@ agent_handoff:
   GitLab status when available, commonly `success`, `pending`, `running`,
   `failed`, `canceled`, `skipped`, or `N/A` with a reason.
 - `local_gate` names the exact command and concise result. `local_gate.status` is
-  `PASS`, `FAIL`, `N/A`, or `not-run`; use `not-run` with
-  `not_run_reason: "parent-owned"` only when the parent owns the final gate.
+  `PASS`, `FAIL`, `N/A`, or `not-run`; parent-owned mode uses `not-run` with
+  `not_run_reason: "parent-owned"` per
+  `start-build/reference/parent-owned-gate.md`.
   `N/A` still needs a concrete reason.
-- `gate_ownership` records `local_gate_owner`, `builder_gate_status`, and
-  `ready_transition_owner`. Parent-owned mode uses `local_gate_owner: "parent"`,
-  `builder_gate_status.status: "not-run"`,
-  `builder_gate_status.not_run_reason: "parent-owned"`, and
-  `ready_transition_owner: "parent"`.
+- `gate_ownership` records the parent-owned ownership contract from
+  `start-build/reference/parent-owned-gate.md`: `local_gate_owner`,
+  `builder_gate_status`, and `ready_transition_owner`.
 - `delivery.handoff_contract` is the shared routing contract. Keep it aligned
   with `status`, `next_action`, blockers, and the parent-owned gate contract.
   Use `required_parent_decision: "none"` when no extra parent choice is still
