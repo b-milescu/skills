@@ -29,7 +29,7 @@ Slice *toward* the shared [Decoupling Contract](skill://gitlab-to-issues/docs/de
 
 Use only labels listed in `<repo-root>/docs/agents/triage-labels.md`; never invent or rely on lazy label creation. That file owns the live vocabulary; this section only describes when to look there.
 
-- **AFK**: ready for an agent to implement; see the AFK-safety row of `<repo-root>/docs/agents/agent-readiness-scorecard.md` for what that requires. Fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
+- **AFK**: ready for an agent to implement; see the AFK-safety row of `<repo-root>/docs/agents/agent-readiness-scorecard.md` for what that requires. Fill the [Agent Readiness](skill://gitlab-to-issues/templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<repo-root>/docs/agents/triage-labels.md` defines one.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
@@ -44,7 +44,7 @@ For each proposed slice, show:
 - **Blocked by**: issue title or dependency, if any
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
-- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](docs/agents/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](templates/issue-body.md#agent-readiness)
+- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](skill://gitlab-to-issues/templates/issue-body.md#agent-readiness)
 - **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](skill://gitlab-to-issues/docs/decoupling-contract.md)
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
@@ -61,4 +61,4 @@ For generated AFK issues, preserve the `## Agent Readiness` section from the iss
 
 ## Issue body template
 
-Use [templates/issue-body.md](templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.
+Use [skill://gitlab-to-issues/templates/issue-body.md](skill://gitlab-to-issues/templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.

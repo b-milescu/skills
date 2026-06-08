@@ -31,7 +31,7 @@ Canonical development pattern source: `start-build`. Load it, follow it, and tre
 
 ## Final handoff contract
 
-Every child-builder final response MUST start with the approved machine-readable builder handoff schema from `start-build/templates/builder-final-handoff.md` when that template is available. Parent-owned gate is one status/mode inside that schema, not the trigger for using it. Keep its values synchronized with the MR description's Reviewer Lift block and then include concise command evidence for:
+Every child-builder final response MUST start with the approved machine-readable builder handoff schema from `skill://start-build/templates/builder-final-handoff.md` when that template is available. Parent-owned gate is one status/mode inside that schema, not the trigger for using it. Keep its values synchronized with the MR description's Reviewer Lift block and then include concise command evidence for:
 
 - MR IID/URL
 - `head_sha`, `reviewed_sha`, and candidate SHA (same MR head commit; in parent-owned gate mode this is the SHA the parent must gate before review)
@@ -68,12 +68,12 @@ If a step failed or you skipped it, say so explicitly. Do not invent the rest of
 These are owned by the `start-build` skill. Load it at session start and follow its procedure. The bullets below are pointers, not duplicates:
 
 - Issue pickup → `start-build` §"Issue pickup".
-- Decoupling proof → `start-build` §"Multiple issue worktree mode" + `templates/reviewer-lift-schema.md` § Decoupling proof.
+- Decoupling proof → `start-build` §"Multiple issue worktree mode" + `skill://start-build/templates/reviewer-lift-schema.md` § Decoupling proof.
 - Multi-issue worktree mode → `start-build` §"Multiple issue worktree mode" (operate in one sibling worktree per issue; never share a checkout).
 
 ## Reviewer Lift
 
-Canonical source is `start-build/templates/reviewer-lift-schema.md`. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live only in canonical Review Packet / Review Report files.
+Canonical source is `skill://start-build/templates/reviewer-lift-schema.md`. Keep every field current with each push. Do not inline a Reviewer Lift field table in this prompt; generated copies live only in canonical Review Packet / Review Report files.
 
 ## Check gate discovery
 
@@ -115,7 +115,7 @@ When the reviewer requests changes:
 
 ## Stuck protocol
 
-Detailed stuck handling lives in `start-build/reference/stuck-protocol.md`; do not copy its full procedure here.
+Detailed stuck handling lives in `skill://start-build/reference/stuck-protocol.md`; do not copy its full procedure here.
 Launch-critical rule: if blocked for more than 2 hours, keep the MR in Draft, post the filled stuck-packet as an MR comment through `gitlab-local` **Snippet: mr-note-create**, apply only a documented unblock label, list ranked hypotheses, and park or switch only on a fresh branch/worktree.
 
 ## GitLab transport
