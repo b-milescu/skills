@@ -98,6 +98,50 @@ tools: read
 YAML should fail.
 MD
 
+cat > "$TMPDIR/bad/agents/claude/claude-bad-anthropic.md" <<'MD'
+---
+name: claude-bad-anthropic
+description: Claude provider-prefixed model fixture
+tools: Bash, Read
+model: anthropic/claude-opus-4-8
+---
+
+Claude body without bridge wording.
+MD
+
+cat > "$TMPDIR/bad/agents/claude/claude-bad-codex.md" <<'MD'
+---
+name: claude-bad-codex
+description: Claude codex-routed model fixture
+tools: Bash, Read
+model: openai-codex/gpt-5.5
+---
+
+Claude body without bridge wording.
+MD
+
+cat > "$TMPDIR/bad/agents/claude/claude-typo-model.md" <<'MD'
+---
+name: claude-typo-model
+description: Claude typo model fixture
+tools: Bash, Read
+model: claude-opus-4-99
+---
+
+Claude body without bridge wording.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bare-model.md" <<'MD'
+---
+name: pi-bare-model
+description: pi bare model fixture
+tools: read, bash
+model: claude-opus-4-8
+---
+
+Pi body.
+MD
+
 set +e
 output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/bad/agents" 2>&1)"
 status=$?
@@ -126,6 +170,10 @@ for expected in \
   "Claude MCP selector \"mcp__*\" is not approved; allowed selectors: mcp__gitlab-mcp__*, mcp__wowtools-mcp__*" \
   "pi MCP selection \"mcp\" is not approved; allowed selections: mcp:gitlab-mcp, mcp:wowtools-mcp" \
   "pi MCP selection \"mcp:chrome-devtools\" is not approved; allowed selections: mcp:gitlab-mcp, mcp:wowtools-mcp" \
+  "Claude model \"anthropic/claude-opus-4-8\" is not approved; allowed models: inherit, opus, sonnet, haiku, claude-opus-4-8, claude-sonnet-4-6" \
+  "Claude model \"openai-codex/gpt-5.5\" is not approved; allowed models: inherit, opus, sonnet, haiku, claude-opus-4-8, claude-sonnet-4-6" \
+  "Claude model \"claude-opus-4-99\" is not approved; allowed models: inherit, opus, sonnet, haiku, claude-opus-4-8, claude-sonnet-4-6" \
+  "pi model \"claude-opus-4-8\" is not an approved route; allowed provider prefixes: anthropic/, openai-codex/" \
   "frontmatter YAML does not parse"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
@@ -139,6 +187,112 @@ clean_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good/
 if [[ "$clean_output" != "agents-schema: checked 1 Claude agent(s), 1 pi agent(s)" ]]; then
   echo "unexpected clean output" >&2
   printf '%s\n' "$clean_output" >&2
+  exit 1
+fi
+
+mkdir -p "$TMPDIR/good-models/agents/claude" "$TMPDIR/good-models/agents/pi"
+cat > "$TMPDIR/good-models/agents/claude/model-inherit.md" <<'MD'
+---
+name: model-inherit
+description: Claude inherit model fixture
+tools: Bash, Read
+model: inherit
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/claude/model-alias-opus.md" <<'MD'
+---
+name: model-alias-opus
+description: Claude opus alias fixture
+tools: Bash, Read
+model: opus
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/claude/model-alias-sonnet.md" <<'MD'
+---
+name: model-alias-sonnet
+description: Claude sonnet alias fixture
+tools: Bash, Read
+model: sonnet
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/claude/model-alias-haiku.md" <<'MD'
+---
+name: model-alias-haiku
+description: Claude haiku alias fixture
+tools: Bash, Read
+model: haiku
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/claude/model-bare-opus.md" <<'MD'
+---
+name: model-bare-opus
+description: Claude bare opus id fixture
+tools: Bash, Read
+model: claude-opus-4-8
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/claude/model-bare-sonnet.md" <<'MD'
+---
+name: model-bare-sonnet
+description: Claude bare sonnet id fixture
+tools: Bash, Read
+model: claude-sonnet-4-6
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/good-models/agents/pi/model-anthropic.md" <<'MD'
+---
+name: model-anthropic
+description: pi anthropic route fixture
+tools: read, bash
+model: anthropic/claude-opus-4-8
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/good-models/agents/pi/model-codex.md" <<'MD'
+---
+name: model-codex
+description: pi codex route fixture
+tools: read, bash
+model: openai-codex/gpt-5.5
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/good-models/agents/pi/model-absent.md" <<'MD'
+---
+name: model-absent
+description: pi fixture without model field
+tools: read, bash
+---
+
+Pi body.
+MD
+
+models_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good-models/agents")"
+if [[ "$models_output" != "agents-schema: checked 6 Claude agent(s), 3 pi agent(s)" ]]; then
+  echo "unexpected good-models output" >&2
+  printf '%s\n' "$models_output" >&2
   exit 1
 fi
 
