@@ -67,7 +67,18 @@ check_agent_variant_parity() {
   local missing_pi="$TMPDIR_CHECK/missing-pi"
   local missing_claude="$TMPDIR_CHECK/missing-claude"
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
-  local name file rel declared claude_declared pi_declared
+  local name file rel declared claude_declared pi_declared allowed allowed_name
+
+  # Pi may carry routed agents whose pinned model only exists in the Pi runtime.
+  # The GPT reviewer/scout routes pin openai-codex/* models that Claude Code
+  # cannot select, so they are intentionally Pi-only and exempt from the
+  # "missing Claude counterpart" parity error. This allowlist is the deliberate,
+  # documented exception: every other Pi agent still requires a Claude
+  # counterpart, and Claude-only agents always require a Pi counterpart.
+  local pi_only_allowed=(
+    mr-reviewer-gpt55-xhigh
+    mr-review-scout-gpt54-low
+  )
 
   list_agent_names "$claude_dir" > "$claude_names"
   list_agent_names "$pi_dir" > "$pi_names"
@@ -83,6 +94,14 @@ check_agent_variant_parity() {
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
+    allowed=0
+    for allowed_name in "${pi_only_allowed[@]}"; do
+      [[ "$allowed_name" == "$name" ]] && { allowed=1; break; }
+    done
+    if (( allowed )); then
+      info "agent dialect parity: agents/pi/$name.md is an allowed Pi-only route; no Claude counterpart required"
+      continue
+    fi
     error "agent dialect parity: agents/pi/$name.md has no agents/claude/$name.md"
   done < "$missing_claude"
 

@@ -148,12 +148,19 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 
 const repoRoot = process.env.REPO_ROOT_PATH;
-const routedAgents = [
+// Routed agents present in both runtime dialects (anthropic models that both
+// Claude Code and pi can select).
+const dualDialectRoutedAgents = [
   ['mr-builder-sonnet-low', 'anthropic/claude-sonnet-4-6', 'low'],
   ['mr-builder-opus48', 'anthropic/claude-opus-4-8', 'medium'],
   ['mr-builder-opus48-high', 'anthropic/claude-opus-4-8', 'high'],
-  ['mr-reviewer-gpt55-xhigh', 'openai-codex/gpt-5.5', 'xhigh'],
   ['mr-reviewer-opus48-xhigh', 'anthropic/claude-opus-4-8', 'xhigh'],
+];
+
+// GPT-routed agents exist only in the pi dialect: Claude Code has no
+// openai-codex/* route, so these files must not exist under agents/claude.
+const piOnlyRoutedAgents = [
+  ['mr-reviewer-gpt55-xhigh', 'openai-codex/gpt-5.5', 'xhigh'],
   ['mr-review-scout-gpt54-low', 'openai-codex/gpt-5.4', 'low'],
 ];
 
@@ -162,9 +169,13 @@ function fail(file, message) {
   process.exit(1);
 }
 
+function agentPath(dialect, name) {
+  return path.join(repoRoot, `agents/${dialect}/${name}.md`);
+}
+
 function readAgent(dialect, name) {
   const relative = `agents/${dialect}/${name}.md`;
-  const file = path.join(repoRoot, relative);
+  const file = agentPath(dialect, name);
   const content = fs.readFileSync(file, 'utf8');
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/u);
   if (!match) {
@@ -177,42 +188,62 @@ function readAgent(dialect, name) {
   };
 }
 
-for (const [name, expectedModel, expectedLevel] of routedAgents) {
-  for (const dialect of ['claude', 'pi']) {
-    const agent = readAgent(dialect, name);
-    const expectedField = dialect === 'claude' ? 'effort' : 'thinking';
-    const forbiddenField = dialect === 'claude' ? 'thinking' : 'effort';
-    const data = agent.data;
+function validateRoute(dialect, name, expectedModel, expectedLevel) {
+  const agent = readAgent(dialect, name);
+  const expectedField = dialect === 'claude' ? 'effort' : 'thinking';
+  const forbiddenField = dialect === 'claude' ? 'thinking' : 'effort';
+  const data = agent.data;
 
-    if (data.model !== expectedModel) {
-      fail(agent.relative, `expected model ${expectedModel}, got ${data.model}`);
-    }
-    if (data[expectedField] !== expectedLevel) {
-      fail(agent.relative, `expected ${expectedField} ${expectedLevel}, got ${data[expectedField]}`);
-    }
-    if (Object.hasOwn(data, forbiddenField)) {
-      fail(agent.relative, `unexpected ${forbiddenField} frontmatter`);
-    }
-    if (Object.hasOwn(data, 'verbosity')) {
-      fail(agent.relative, 'unsupported verbosity frontmatter is forbidden');
-    }
-    if (!/\bHigh verbosity\b/u.test(agent.body)) {
-      fail(agent.relative, 'high verbosity requirement must live in the prompt body');
-    }
+  if (data.model !== expectedModel) {
+    fail(agent.relative, `expected model ${expectedModel}, got ${data.model}`);
+  }
+  if (data[expectedField] !== expectedLevel) {
+    fail(agent.relative, `expected ${expectedField} ${expectedLevel}, got ${data[expectedField]}`);
+  }
+  if (Object.hasOwn(data, forbiddenField)) {
+    fail(agent.relative, `unexpected ${forbiddenField} frontmatter`);
+  }
+  if (Object.hasOwn(data, 'verbosity')) {
+    fail(agent.relative, 'unsupported verbosity frontmatter is forbidden');
+  }
+  if (!/\bHigh verbosity\b/u.test(agent.body)) {
+    fail(agent.relative, 'high verbosity requirement must live in the prompt body');
   }
 }
 
-for (const dialect of ['claude', 'pi']) {
-  const fallback = readAgent(dialect, 'mr-reviewer-opus48-xhigh');
-  if (!/Provider-failure fallback only/u.test(fallback.body) || !/Never select it as a cost downgrade/u.test(fallback.body)) {
-    fail(fallback.relative, 'must be provider-failure fallback only, never a cost downgrade');
+for (const [name, expectedModel, expectedLevel] of dualDialectRoutedAgents) {
+  for (const dialect of ['claude', 'pi']) {
+    validateRoute(dialect, name, expectedModel, expectedLevel);
   }
+}
 
-  const scout = readAgent(dialect, 'mr-review-scout-gpt54-low');
-  for (const expected of ['non-gate', 'non-authoritative', 'must not approve', 'pass', 'fail']) {
-    if (!scout.body.includes(expected)) {
-      fail(scout.relative, `missing scout authority token: ${expected}`);
-    }
+for (const [name, expectedModel, expectedLevel] of piOnlyRoutedAgents) {
+  validateRoute('pi', name, expectedModel, expectedLevel);
+  if (fs.existsSync(agentPath('claude', name))) {
+    fail(`agents/claude/${name}.md`, 'GPT-routed agent must not exist in the Claude dialect; Claude Code has no openai-codex/* route');
+  }
+}
+
+// Pi keeps the Opus xhigh route as provider-failure fallback only; Claude Code
+// promotes the Opus xhigh route to its primary final-review route.
+const piFallback = readAgent('pi', 'mr-reviewer-opus48-xhigh');
+if (!/Provider-failure fallback only/u.test(piFallback.body) || !/Never select it as a cost downgrade/u.test(piFallback.body)) {
+  fail(piFallback.relative, 'must be provider-failure fallback only, never a cost downgrade');
+}
+
+const claudeFinal = readAgent('claude', 'mr-reviewer-opus48-xhigh');
+if (!/Claude Code final-review route/u.test(claudeFinal.body)) {
+  fail(claudeFinal.relative, 'must declare itself the primary Claude Code final-review route');
+}
+if (/Provider-failure fallback only/u.test(claudeFinal.body)) {
+  fail(claudeFinal.relative, 'Claude Code final-review route must not be labeled provider-failure fallback only');
+}
+
+// The GPT non-gate scout is pi-only.
+const scout = readAgent('pi', 'mr-review-scout-gpt54-low');
+for (const expected of ['non-gate', 'non-authoritative', 'must not approve', 'pass', 'fail']) {
+  if (!scout.body.includes(expected)) {
+    fail(scout.relative, `missing scout authority token: ${expected}`);
   }
 }
 NODE

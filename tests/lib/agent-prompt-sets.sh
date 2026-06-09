@@ -35,13 +35,37 @@ reviewer_prompt_names=(
   "${scout_prompt_names[@]}"
 )
 
+# GPT-routed reviewer/scout agents exist only in the pi dialect: Claude Code has
+# no openai-codex/* route, so these names must not generate agents/claude paths.
+pi_only_prompt_names=(
+  mr-reviewer-gpt55-xhigh
+  mr-review-scout-gpt54-low
+)
+
+agent_prompt_is_pi_only() {
+  local candidate="$1" name
+  for name in "${pi_only_prompt_names[@]}"; do
+    [[ "$name" == "$candidate" ]] && return 0
+  done
+  return 1
+}
+
+agent_prompt_dialects_for() {
+  local name="$1"
+  if agent_prompt_is_pi_only "$name"; then
+    printf 'pi\n'
+  else
+    printf '%s\n' "${agent_prompt_dialects[@]}"
+  fi
+}
+
 agent_prompt_paths() {
   local name dialect
 
   for name in "$@"; do
-    for dialect in "${agent_prompt_dialects[@]}"; do
+    while IFS= read -r dialect; do
       printf 'agents/%s/%s.md\n' "$dialect" "$name"
-    done
+    done < <(agent_prompt_dialects_for "$name")
   done
 }
 
@@ -50,8 +74,8 @@ agent_prompt_paths_under() {
   shift
 
   for name in "$@"; do
-    for dialect in "${agent_prompt_dialects[@]}"; do
+    while IFS= read -r dialect; do
       printf '%s/agents/%s/%s.md\n' "$root" "$dialect" "$name"
-    done
+    done < <(agent_prompt_dialects_for "$name")
   done
 }

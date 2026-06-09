@@ -3,10 +3,12 @@ set -euo pipefail
 
 # Invariant guard for issue-delivery-loop/SKILL.md, Dev Workflow docs, and the
 # parent launch seam. Pins the POST-#151 pointer shape while also guarding the
-# #226 skill-only model-tier routing contract: classify before child launch, use
-# exact routed builder/reviewer names at parent-orchestrator dispatch, keep the
-# optional scout non-gate, and restrict reviewer fallback to explicit provider
-# failure only.
+# #226 skill-only model-tier routing contract and the #227 runtime-aware reviewer
+# split: classify before child launch, use exact routed builder/reviewer names at
+# parent-orchestrator dispatch, route the final reviewer by runtime
+# (mr-reviewer-opus48-xhigh on Claude Code, mr-reviewer-gpt55-xhigh on Pi), keep
+# the Pi-only optional scout non-gate, and restrict the Pi Opus xhigh reviewer
+# fallback to explicit provider failure only.
 # Assertions are tokens, not whole sentences.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -72,9 +74,11 @@ require_contains 'expected handoff schema'
 require_contains 'minimum evidence pointers'
 require_contains 'delivery.handoff_contract'
 
-# #226 model-tier routing: the loop classifies each target and the parent seam
-# launches exact routed agents. The final review gate remains GPT-5.5 xhigh; the
-# scout is optional/non-gate; Opus xhigh fallback is provider-failure only.
+# #226/#227 model-tier routing: the loop classifies each target and the parent
+# seam launches exact routed agents. The final review gate is runtime-specific
+# (Opus 4.8 xhigh on Claude Code, GPT-5.5 xhigh on Pi); the GPT scout/reviewer
+# routes are Pi-only and the scout is optional/non-gate; the Pi Opus xhigh route
+# is provider-failure fallback only.
 for needle in \
   'mr-builder-sonnet-low' \
   'mr-builder-opus48' \
@@ -111,8 +115,13 @@ require_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `hi
 require_parent_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
 require_contains 'Manual direct agent selection is outside this enforcement surface'
 require_parent_contains 'Manual direct agent selection is outside this enforcement surface'
-require_contains 'final reviewer `mr-reviewer-gpt55-xhigh`'
-require_parent_contains 'Start `mr-reviewer-gpt55-xhigh` for the mandatory independent final review for every tier'
+# Runtime-aware final reviewer: Claude Code uses the Opus route; Pi keeps the GPT
+# route. The GPT reviewer/scout routes are Pi-only (no openai-codex/* on Claude).
+require_contains 'final reviewer `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi'
+require_contains 'pin `openai-codex/*` models that exist only on Pi'
+require_parent_contains 'mandatory independent final reviewer for every tier'
+require_parent_contains '`mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi'
+require_parent_contains 'Claude Code has no `openai-codex/*` route'
 require_contains 'cannot satisfy the mandatory independent review gate'
 require_parent_contains 'cannot satisfy independent review'
 require_parent_contains 'cannot approve/pass/fail/request changes'
@@ -131,6 +140,8 @@ for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
   require_file_contains "$workflow_file" 'mr-review-scout-gpt54-low'
   require_file_contains "$workflow_file" 'mr-reviewer-gpt55-xhigh'
   require_file_contains "$workflow_file" 'mr-reviewer-opus48-xhigh'
+  require_file_contains "$workflow_file" '`mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi'
+  require_file_contains "$workflow_file" 'pin `openai-codex/*` models that exist only on Pi'
   require_file_contains "$workflow_file" 'cannot satisfy independent review'
   require_file_contains "$workflow_file" 'explicit parent/operator decision token'
   require_file_contains "$workflow_file" 'never a cost downgrade'

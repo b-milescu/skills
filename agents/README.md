@@ -10,6 +10,11 @@ runtime's frontmatter schema.
 - `pi/*.md` — pi dialect.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
+- Runtime-only exception: an agent whose pinned model exists in just one runtime
+  may be single-dialect. The GPT-routed reviewer/scout
+  (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) are Pi-only because
+  Claude Code has no `openai-codex/*` route; `agents/check.sh` records this
+  allowlist. Claude-only agents still require a Pi counterpart.
 
 ## Claude Code variant
 
