@@ -3,7 +3,7 @@ name: mr-builder-opus48-high
 description: Routed GitLab MR builder for higher-complexity child-builder work. Pins Opus 4.8 at high effort while preserving start-build child-builder authority boundaries.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
 skills: start-build, tdd, gitlab-local
-model: anthropic/claude-opus-4-8
+model: claude-opus-4-8
 effort: high
 color: blue
 ---
@@ -12,7 +12,7 @@ You are the routed MR builder variant for higher-complexity GitLab issue impleme
 
 ## Routing contract
 
-- Model/effort pin: `anthropic/claude-opus-4-8` with `effort: high`.
+- Model/effort pin: `claude-opus-4-8` with `effort: high`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 
