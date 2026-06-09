@@ -21,6 +21,20 @@ This repo uses GitLab-backed dev workflows.
 - `skill://gitlab-local/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab-local/reference/mutation-guard.md`, `skill://gitlab-local/reference/mutation-guard.schema.json`, and `skill://gitlab-local/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
 - `skill://gitlab-local/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab-local/reference/authority-verification.md` and `skill://gitlab-local/reference/authority-verification.schema.json`.
 
+## Skill-only model-tier routing
+
+Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop. Manual direct agent selection is outside this enforcement surface. The skill docs choose exact agent names; each selected agent's frontmatter owns the model/effort pin.
+
+Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk`. `skill://start-build/reference/parent-orchestrator.md` consumes that tier at the child/reviewer launch seam:
+
+| Tier | Builder | Optional scout | Final reviewer |
+| --- | --- | --- | --- |
+| `trivial` | `mr-builder-sonnet-low` | `mr-review-scout-gpt54-low` non-gate scout only; cannot satisfy independent review | `mr-reviewer-gpt55-xhigh` |
+| `moderate` | `mr-builder-opus48` | none | `mr-reviewer-gpt55-xhigh` |
+| `high-risk` | `mr-builder-opus48-high` | none | `mr-reviewer-gpt55-xhigh` |
+
+Provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable. It is never a cost downgrade.
+
 ## Project-profile hooks
 
 GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,

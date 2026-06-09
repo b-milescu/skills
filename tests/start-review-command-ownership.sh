@@ -3,6 +3,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -57,8 +60,7 @@ reviewer_owned_docs=(
   start-review/SKILL.md
   start-review/REVIEW-FLOW.md
   start-review/templates/filling-guide.md
-  agents/claude/mr-reviewer.md
-  agents/pi/mr-reviewer.md
+  $(agent_prompt_paths "${reviewer_prompt_names[@]}")
 )
 
 for file in "${reviewer_owned_docs[@]}"; do

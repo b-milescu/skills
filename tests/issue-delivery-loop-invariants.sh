@@ -1,27 +1,45 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Invariant guard for issue-delivery-loop/SKILL.md.
-# Pins the POST-#151 shape: the operating contract delegates the canonical loop
-# to parent-orchestrator.md (decoupling proof before parallel work, parent
-# spot-check, revision rounds) via a POINTER instead of paraphrased restatements,
-# while keeping the load-bearing batch envelope + metrics + post-merge handoff.
+# Invariant guard for issue-delivery-loop/SKILL.md, Dev Workflow docs, and the
+# parent launch seam. Pins the POST-#151 pointer shape while also guarding the
+# #226 skill-only model-tier routing contract: classify before child launch, use
+# exact routed builder/reviewer names at parent-orchestrator dispatch, keep the
+# optional scout non-gate, and restrict reviewer fallback to explicit provider
+# failure only.
 # Assertions are tokens, not whole sentences.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 SKILL_FILE="$REPO_ROOT/issue-delivery-loop/SKILL.md"
+PARENT_FILE="$REPO_ROOT/start-build/reference/parent-orchestrator.md"
+DEV_WORKFLOW_FILE="$REPO_ROOT/docs/agents/dev-workflows.md"
+SETUP_DEV_WORKFLOW_FILE="$REPO_ROOT/setup-dev-skills/dev-workflows-gitlab.md"
 
 fail() {
   printf 'issue-delivery-loop-invariants: FAIL: %s\n' "$*" >&2
   exit 1
 }
 
+require_file_contains() {
+  local file="$1"
+  local needle="$2"
+  grep -Fq -- "$needle" "$file" || fail "missing expected token in ${file#$REPO_ROOT/}: $needle"
+}
+
 require_contains() {
-  local needle="$1"
-  grep -Fq -- "$needle" "$SKILL_FILE" || fail "missing expected token: $needle"
+  require_file_contains "$SKILL_FILE" "$1"
+}
+
+require_parent_contains() {
+  require_file_contains "$PARENT_FILE" "$1"
 }
 
 [[ -f "$SKILL_FILE" ]] || fail "missing required file: issue-delivery-loop/SKILL.md"
+[[ -f "$PARENT_FILE" ]] || fail "missing required file: start-build/reference/parent-orchestrator.md"
+[[ -f "$DEV_WORKFLOW_FILE" ]] || fail "missing required file: docs/agents/dev-workflows.md"
+[[ -f "$SETUP_DEV_WORKFLOW_FILE" ]] || fail "missing required file: setup-dev-skills/dev-workflows-gitlab.md"
+
+
 
 # Batch envelope survives: serial-by-default WIP=1.
 require_contains 'Default WIP: 1'
@@ -53,6 +71,70 @@ require_contains 'exact role/mode'
 require_contains 'expected handoff schema'
 require_contains 'minimum evidence pointers'
 require_contains 'delivery.handoff_contract'
+
+# #226 model-tier routing: the loop classifies each target and the parent seam
+# launches exact routed agents. The final review gate remains GPT-5.5 xhigh; the
+# scout is optional/non-gate; Opus xhigh fallback is provider-failure only.
+for needle in \
+  'mr-builder-sonnet-low' \
+  'mr-builder-opus48' \
+  'mr-builder-opus48-high' \
+  'mr-reviewer-gpt55-xhigh' \
+  'mr-review-scout-gpt54-low' \
+  'mr-reviewer-opus48-xhigh'; do
+  require_contains "$needle"
+  require_parent_contains "$needle"
+done
+
+for needle in \
+  'docs/prose/templates/labels/inventory/checklist' \
+  'no runtime behavior' \
+  'no security/auth/permissions/billing' \
+  'no schema/migration/persistence' \
+  'no deploy/runtime/CI semantic change' \
+  'no concurrency/state-machine/locking impact' \
+  'no broad architecture/cross-file coupling' \
+  'clear acceptance criteria' \
+  'auth/security/crypto/secrets' \
+  'migrations/schema/data-loss' \
+  'deploy/runtime/infra/CI semantics' \
+  'concurrency/locking/state machines/queues' \
+  'billing/permissions/access control' \
+  '>=20' \
+  '>=1000' \
+  'unclear acceptance criteria'; do
+  require_contains "$needle"
+  require_parent_contains "$needle"
+done
+
+require_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
+require_parent_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
+require_contains 'Manual direct agent selection is outside this enforcement surface'
+require_parent_contains 'Manual direct agent selection is outside this enforcement surface'
+require_contains 'final reviewer `mr-reviewer-gpt55-xhigh`'
+require_parent_contains 'Start `mr-reviewer-gpt55-xhigh` for the mandatory independent final review for every tier'
+require_contains 'cannot satisfy the mandatory independent review gate'
+require_parent_contains 'cannot satisfy independent review'
+require_parent_contains 'cannot approve/pass/fail/request changes'
+require_contains 'explicit parent/operator decision token'
+require_parent_contains 'explicit parent/operator decision token'
+require_contains 'never a cost downgrade'
+require_parent_contains 'never describe or select it as a cost downgrade'
+
+for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
+  require_file_contains "$workflow_file" 'Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop'
+  require_file_contains "$workflow_file" 'Manual direct agent selection is outside this enforcement surface'
+  require_file_contains "$workflow_file" "frontmatter owns the model/effort pin"
+  require_file_contains "$workflow_file" 'mr-builder-sonnet-low'
+  require_file_contains "$workflow_file" 'mr-builder-opus48'
+  require_file_contains "$workflow_file" 'mr-builder-opus48-high'
+  require_file_contains "$workflow_file" 'mr-review-scout-gpt54-low'
+  require_file_contains "$workflow_file" 'mr-reviewer-gpt55-xhigh'
+  require_file_contains "$workflow_file" 'mr-reviewer-opus48-xhigh'
+  require_file_contains "$workflow_file" 'cannot satisfy independent review'
+  require_file_contains "$workflow_file" 'explicit parent/operator decision token'
+  require_file_contains "$workflow_file" 'never a cost downgrade'
+done
 
 # Per-batch metrics envelope survives.
 require_contains 'Metrics to report per batch'

@@ -3,6 +3,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 fail() {
   printf 'review-authority-provenance: FAIL: %s\n' "$*" >&2
@@ -65,9 +68,9 @@ reviewer_guidance=(
   start-review/REVIEW-FLOW.md
   start-review/SKILL.md
   start-review/templates/filling-guide.md
-  agents/claude/mr-reviewer.md
-  agents/pi/mr-reviewer.md
+  $(agent_prompt_paths mr-reviewer)
 )
+routed_final_reviewer_guidance=( $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}") )
 
 for file in "${reviewer_guidance[@]}"; do
   require_text "$file" 'Approval authority|approval authority' 'Approval authority guidance'
@@ -80,14 +83,23 @@ for file in "${reviewer_guidance[@]}"; do
   require_text "$file" 'without[^.]*verifiable[^.]*source[^.]*blocked|without it[^.]*blocked|blocked[^.]*without[^.]*verifiable[^.]*source|missing merge authority[^.]*blocks finish' 'missing source blocks high-authority finish modes'
 done
 
+# Routed final reviewers are thin route pins; they must still preserve the
+# authority-verification seam and treat builder/parent handoff fields as claims.
+for file in "${routed_final_reviewer_guidance[@]}"; do
+  require_text "$file" 'Canonical development pattern source: `start-review`' 'routed reviewer start-review pointer'
+  require_text "$file" 'authority verification' 'routed reviewer authority verification'
+  require_text "$file" 'start-review` plus `gitlab-local` authority verification explicitly permit' 'routed reviewer authority source seam'
+  require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer handoff claim verification'
+done
+
 # Builders must record provenance, not mint authority.
 builder_guidance=(
   start-build/BUILD-FLOW.md
   start-build/SKILL.md
   start-build/templates/filling-guide.md
-  agents/claude/mr-builder.md
-  agents/pi/mr-builder.md
+  $(agent_prompt_paths mr-builder)
 )
+routed_builder_guidance=( $(agent_prompt_paths "${routed_builder_prompt_names[@]}") )
 
 for file in "${builder_guidance[@]}"; do
   require_text "$file" 'Approval authority|approval authority' 'builder records Approval authority'
@@ -96,6 +108,12 @@ for file in "${builder_guidance[@]}"; do
   require_text "$file" 'not[^.]*grant|cannot[^.]*grant' 'builder cannot grant authority'
 done
 
+for file in "${routed_builder_guidance[@]}"; do
+  require_text "$file" 'Canonical development pattern source: `start-build`' 'routed builder start-build pointer'
+  require_text "$file" 'authority' 'routed builder authority evidence'
+  require_text "$file" 'approve[^.]*merge[^.]*queue auto-merge|queue auto-merge[^.]*approve[^.]*merge' 'routed builder cannot self-approve/self-merge'
+  require_text "$file" 'explicit parent/human delegation' 'routed builder parent/human authority override source'
+done
 # Machine handoffs preserve approval and merge authority/source for parent orchestration.
 require_text "start-build/templates/builder-final-handoff.md" '^  approval_authority:' 'builder handoff approval_authority field'
 require_text "start-build/templates/builder-final-handoff.md" '^  approval_authority_source:' 'builder handoff approval_authority_source field'

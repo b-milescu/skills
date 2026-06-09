@@ -110,10 +110,10 @@ check_agent_variant_parity() {
 
 workflow_skill_for_agent() {
   case "$1" in
-    mr-builder)
+    mr-builder|mr-builder-*)
       printf '%s' "start-build"
       ;;
-    mr-reviewer)
+    mr-reviewer|mr-reviewer-*|mr-review-scout-*)
       printf '%s' "start-review"
       ;;
     *)
