@@ -45,12 +45,25 @@ require_contains 'Domain gate'
 require_contains 'Edge gate'
 require_contains 'Survives all five'
 
-# Broad-sweep-by-default discovery (amends #149): fan-out is the DEFAULT posture for a
-# repo-wide sweep; narrowing to a single/docs-only pass is an explicit, user-requested
-# opt-out, not the default. 'broad' must still appear.
-require_contains 'broad'
+# Precision-first discovery: repo-wide broad sweep remains the default only when
+# scope is unspecified; explicit narrower scopes and partial coverage must be
+# surfaced, not papered over.
+require_contains 'Default to a repo-wide sweep when scope is unspecified'
+require_contains 'honor any explicit narrower user scope'
 require_contains 'the default posture for discovery'
-require_contains 'narrow to a single pass only when'
+require_contains 'If coverage is incomplete'
+require_contains 'known gaps before findings'
+
+# Findings must be proven, not optimistic leads or preference cleanup.
+require_contains 'every finding **MUST** cite exact file/line/command/doc/test evidence'
+require_contains 'Leads without proof are not findings'
+require_contains 'pure nits, style, and personal preference are OUT/omitted'
+require_contains 'proven deslop/destale candidates only'
+
+# Destale precision: a correction needs one proving source and a visible
+# stale-to-correct pair.
+require_contains 'single mechanical source of truth'
+require_contains 'stale → correct value pair'
 
 # OUT-of-scope handoffs with fallbacks stay present (deslop firewall keeps
 # boundary-moving work routed away).
