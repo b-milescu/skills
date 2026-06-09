@@ -1,7 +1,7 @@
 ---
 name: mr-builder-sonnet-low
 description: Routed GitLab MR builder for low-complexity child-builder work. Pins Sonnet 4.6 at low thinking while preserving start-build child-builder authority boundaries.
-tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
+tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools"
 model: anthropic/claude-sonnet-4-6
 thinking: low
 systemPromptMode: replace

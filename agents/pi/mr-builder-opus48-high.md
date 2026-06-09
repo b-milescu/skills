@@ -1,7 +1,7 @@
 ---
 name: mr-builder-opus48-high
 description: Routed GitLab MR builder for higher-complexity child-builder work. Pins Opus 4.8 at high thinking while preserving start-build child-builder authority boundaries.
-tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
+tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools"
 model: anthropic/claude-opus-4-8
 thinking: high
 systemPromptMode: replace

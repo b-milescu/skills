@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer-opus48-xhigh
 description: Routed final GitLab MR reviewer fallback. Pins Opus 4.8 at xhigh thinking and is provider-failure fallback only, never a cost downgrade.
-tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
+tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools"
 model: anthropic/claude-opus-4-8
 thinking: xhigh
 systemPromptMode: replace

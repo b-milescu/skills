@@ -1,7 +1,7 @@
 ---
 name: mr-review-scout-gpt54-low
 description: Routed non-gate GitLab MR review scout. Pins GPT-5.4 at low thinking and cannot approve, pass, fail, or satisfy the mandatory review gate.
-tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools-mcp"
+tools: "read, grep, find, ls, bash, edit, write, intercom, mcp:gitlab-mcp, mcp:wowtools"
 model: openai-codex/gpt-5.4
 thinking: low
 systemPromptMode: replace
