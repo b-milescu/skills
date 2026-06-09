@@ -2,8 +2,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-GATE="$REPO_ROOT/gitlab-local/scripts/gitlab-finish-authority.sh"
-MATRIX="$REPO_ROOT/gitlab-local/reference/authority-matrix.md"
+GATE="$REPO_ROOT/gitlab/scripts/gitlab-finish-authority.sh"
+MATRIX="$REPO_ROOT/gitlab/reference/authority-matrix.md"
 
 CAPTURE_STATUS=0
 CAPTURE_OUTPUT=""

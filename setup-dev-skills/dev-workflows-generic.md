@@ -4,7 +4,7 @@ This repo is not configured for GitLab-backed dev workflows.
 
 ## GitLab-only skills
 
-- **`/gitlab-local`** — only for GitLab repositories or GitLab mirrors.
+- **`/gitlab`** — only for GitLab repositories or GitLab mirrors.
 - **`/gitlab-to-issues`** — only for publishing approved plans/specs/PRDs as GitLab issues.
 - **`/start-build`** — only for implementing GitLab issues and opening GitLab merge requests.
 - **`/start-review`** — only for reviewing GitLab merge requests.

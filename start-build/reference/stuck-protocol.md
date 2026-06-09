@@ -5,7 +5,7 @@ Detailed stuck-handling reference for `start-build`. The stable entrypoint and c
 If blocked for more than 2 hours:
 
 1. Keep the MR in Draft.
-2. Post `templates/stuck-packet.md` as an MR comment after filling it with `gitlab-local` **Snippet: mr-note-create**.
+2. Post `templates/stuck-packet.md` as an MR comment after filling it with `gitlab` **Snippet: mr-note-create**.
 3. Apply the project's unblock label if one exists.
 4. Request review explicitly for unblocking.
 5. List ranked hypotheses.

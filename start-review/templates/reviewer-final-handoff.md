@@ -172,7 +172,7 @@ agent_handoff:
   It is a compact routing index, not proof; parents/verifiers must verify its
   claims from Tier 1/Tier 2 evidence before relying on them for finish,
   post-merge, or blocker routing. Authority claims are verified through
-  `../../gitlab-local/reference/authority-verification.md`.
+  `../../gitlab/reference/authority-verification.md`.
 - `delivery.project_profile` is a project-specific routing index for gate,
   labels, branches, CI jobs, domain docs, auxiliary indexes, release/deploy
   policy, and manual validation. Reviewers still enforce reviewed-SHA binding,
@@ -201,7 +201,7 @@ agent_handoff:
 - `approval_authority` records the approval policy result. `default-after-pass`
   means reviewer approval is allowed after a passing review unless explicitly
   restricted; `restricted: ...` names the source/reason that blocks or limits
-  approval. Authority Verification (`../../gitlab-local/reference/authority-verification.md`)
+  approval. Authority Verification (`../../gitlab/reference/authority-verification.md`)
   owns the restricted result and source precedence.
 - `approval_authority_source` records the stable repo/rulebook policy source or
   explicit restriction source verified before approval. It is separate from

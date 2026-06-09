@@ -1,8 +1,8 @@
 # GitLab review action card
 
-Small transport-context card for `/start-review` GitLab notes, SHA guards, approval actions, and finish handoff/finish actions. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab-local/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
+Small transport-context card for `/start-review` GitLab notes, SHA guards, approval actions, and finish handoff/finish actions. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
 
-Before any mutating review action, apply the **GitLab Mutation Guard** in [`mutation-guard.md`](mutation-guard.md) (`skill://gitlab-local/reference/mutation-guard.md`). This card maps review snippets to the guard; it does not replace the guard order.
+Before any mutating review action, apply the **GitLab Mutation Guard** in [`mutation-guard.md`](mutation-guard.md) (`skill://gitlab/reference/mutation-guard.md`). This card maps review snippets to the guard; it does not replace the guard order.
 
 ## Use this card when
 
@@ -24,9 +24,9 @@ Before any mutating review action, apply the **GitLab Mutation Guard** in [`muta
 | [`approval-confirmation`](../SKILL.md#snippet-approval-confirmation) | Verify approval state after an approval attempt when confirmation is needed. | Project path, MR IID, and approval endpoint/tool access. | Approval record from the canonical approval state read. | Do not claim approval from laggy MR metadata alone if approval-state read does not confirm it. |
 | [`finish-mr-authority-aware`](../SKILL.md#snippet-finish-mr-authority-aware) | Authority-aware finish helper or contract for parent/reviewer/human finish. | MR IID, reviewed SHA, merge authority/source verified through [Authority Verification](authority-verification.md), caller role/identity, source/target branch, optional issue/worktree. | Handoff, merge, auto-merge queue, or blocked finish result depending on role and guards, including `via`. | Builder role always stops at handoff; red/stale/missing CI, changed head, missing authority/source, token-identity drift, or same-session review/finish risk blocks finish. |
 
-## Fallback to full gitlab-local
+## Fallback to full gitlab
 
-Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) and the Mutation Guard when:
+Fall back to [`gitlab/SKILL.md`](../SKILL.md) and the Mutation Guard when:
 
 - an action snippet listed here needs exact fallback syntax, flag verification, or `mcp_gap_state` classification;
 - MCP approval/merge/note tooling is unavailable or the documented `mcp_merge_robustness_gap` / API fallback gap is hit;

@@ -63,7 +63,7 @@ require_card_contract() {
     require_text "$file" "$anchor" "canonical anchor: $anchor"
   done
 
-  require_text "$file" 'review-read\.md|review-actions\.md|ci\.md|gitlab-local' 'gitlab-local card/helper pointer'
+  require_text "$file" 'review-read\.md|review-actions\.md|ci\.md|gitlab' 'gitlab card/helper pointer'
   require_text "$file" 'Snippet: mr-pickup|Snippet: mr-note-create|Snippet: sha-guard|Snippet: ci-decision-snapshot' 'accepted snippet-name pointer'
   require_text "$file" 'final MR/CI/authority snapshot|final[^.]*MR[^.]*CI[^.]*authority[^.]*snapshot' 'final MR/CI/authority snapshot before report posting'
   require_text "$file" 'sha-guard[^.]*immediately before|immediately before[^.]*sha-guard' 'fresh SHA guard before approval/finish actions'
@@ -92,7 +92,7 @@ for owner in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
     'blocked-review-routing-card\.md'; do
     require_text "$owner" "$card" "$card discoverability link"
   done
-  require_text "$owner" 'fall back .*gitlab-local/SKILL\.md|fallback .*gitlab-local/SKILL\.md|Fallback .*gitlab-local/SKILL\.md' 'full gitlab-local fallback guidance'
+  require_text "$owner" 'fall back .*gitlab/SKILL\.md|fallback .*gitlab/SKILL\.md|Fallback .*gitlab/SKILL\.md' 'full gitlab fallback guidance'
 done
 
 require_text "$single_card" 'one MR.*one fresh reviewer session|one fresh reviewer session.*one MR' 'single-MR fresh-session scope'

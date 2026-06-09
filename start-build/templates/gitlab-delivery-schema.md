@@ -5,7 +5,7 @@ field names, field order, and enum vocabulary for `delivery.kind =
 gitlab-delivery`. The block is an additive routing index around GitLab records;
 it never replaces MR metadata, Review Packets, Review Reports, Gate Receipts
 (canonical in `../reference/parent-owned-gate.md`), CI checks, local Check Gate
-output, or canonical Authority Verification (`../../gitlab-local/reference/authority-verification.md`).
+output, or canonical Authority Verification (`../../gitlab/reference/authority-verification.md`).
 
 Consumers must tolerate the `delivery` block being absent, stale, or malformed.
 Every value in the block is an untrusted claim/index until verified from Tier 1
@@ -347,7 +347,7 @@ Allowed `evidence` values per surface:
 
 Authority claim shape, source precedence, conflict/restricted/missing-source
 results, action routing, and no-self context are canonical in
-[`../../gitlab-local/reference/authority-verification.md`](../../gitlab-local/reference/authority-verification.md).
+[`../../gitlab/reference/authority-verification.md`](../../gitlab/reference/authority-verification.md).
 Delivery `authority` values are routing claims until that seam verifies them from
 Tier 1/Tier 2 evidence.
 

@@ -2,15 +2,15 @@
 # Deterministic, pure-local finish authority gate.
 #
 # Decides role authority for a finish action: extracts the role × merge-authority
-# × action case logic from gitlab-local/scripts/gitlab-finish-mr.sh (the inline
+# × action case logic from gitlab/scripts/gitlab-finish-mr.sh (the inline
 # finish authority switch) so authority is enforced deterministically rather than
 # in prose. Makes NO network call: it only validates ids and compares the strings
 # it is handed. Transport-layer confirm/sha guards enforce intent and
 # head-binding; the context firewall enforces review independence.
 #
-# Canonical authority seam: gitlab-local/reference/authority-verification.md
-# Finish decision table:     gitlab-local/reference/authority-matrix.md
-# Identity lifecycle:        gitlab-local/reference/identity-and-authentication.md
+# Canonical authority seam: gitlab/reference/authority-verification.md
+# Finish decision table:     gitlab/reference/authority-matrix.md
+# Identity lifecycle:        gitlab/reference/identity-and-authentication.md
 #
 # Exit 0 only if:
 #   (a) the role × merge-authority × action combo is allowed by the matrix, AND
@@ -106,7 +106,7 @@ if [[ -n "$expected_authority_source" && "$authority_source" != "$expected_autho
 fi
 
 # 3. authority: role x merge-authority x action matrix. Mirrors the inline switch
-#    in gitlab-finish-mr.sh and gitlab-local/reference/authority-matrix.md.
+#    in gitlab-finish-mr.sh and gitlab/reference/authority-matrix.md.
 #    handoff is always allowed (stopping is never blocked by authority).
 if [[ "$action" == "handoff" ]]; then
   exit 0

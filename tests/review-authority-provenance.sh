@@ -88,7 +88,7 @@ done
 for file in "${routed_final_reviewer_guidance[@]}"; do
   require_text "$file" 'Canonical development pattern source: `start-review`' 'routed reviewer start-review pointer'
   require_text "$file" 'authority verification' 'routed reviewer authority verification'
-  require_text "$file" 'start-review` plus `gitlab-local` authority verification explicitly permit' 'routed reviewer authority source seam'
+  require_text "$file" 'start-review` plus `gitlab` authority verification explicitly permit' 'routed reviewer authority source seam'
   require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer handoff claim verification'
 done
 

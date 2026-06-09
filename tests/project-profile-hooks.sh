@@ -55,7 +55,7 @@ invariant_docs=(
   "start-build/reference/child-builder.md"
   "start-build/reference/context-and-planning.md"
   "start-review/REVIEW-FLOW.md"
-  "gitlab-local/SKILL.md"
+  "gitlab/SKILL.md"
   "docs/agents/dev-workflows.md"
   "setup-dev-skills/dev-workflows-gitlab.md"
 )

@@ -75,7 +75,7 @@ import sys
 
 root = Path(sys.argv[1])
 skill_names = {
-    "gitlab-local",
+    "gitlab",
     "gitlab-to-issues",
     "issue-delivery-loop",
     "setup-dev-skills",

@@ -95,7 +95,7 @@ for snippet in \
   mr-note-create \
   draft-mr-mark-ready; do
   grep -R "SKILL\.md#snippet-${snippet}" start-build/reference/*-card.md >/dev/null || \
-    fail "missing accepted gitlab-local snippet pointer: $snippet"
+    fail "missing accepted gitlab snippet pointer: $snippet"
 done
 
 # Canonical start-build anchors stay referenced instead of restating policy.

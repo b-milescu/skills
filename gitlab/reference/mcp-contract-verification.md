@@ -1,12 +1,12 @@
 # gitlab-mcp contract verification reference
 
-Reference for the MCP-first GitLab workflow transport used by `/gitlab-local` and `/gitlab-to-issues`. MCP is the primary path for normal GitLab API actions; guarded `glab` fallback remains documented for known gaps, helper-only safe-text paths, and troubleshooting.
+Reference for the MCP-first GitLab workflow transport used by `/gitlab` and `/gitlab-to-issues`. MCP is the primary path for normal GitLab API actions; guarded `glab` fallback remains documented for known gaps, helper-only safe-text paths, and troubleshooting.
 
 Scope discipline for this reference:
 
 - **Evidence is read-only / schema-level unless explicitly marked as smoke-test evidence.** Do not infer unobserved mutation behavior from this doc.
 - Each area states the fact, verification method, and any deferred procedure needed for sandbox/fake-harness confirmation.
-- Fallback command syntax and flag ownership remain in [`gitlab-local/SKILL.md`](../SKILL.md); per-snippet MCP/fallback contracts live in [`snippet-transports.md`](snippet-transports.md), and mutating-action ordering lives in the [GitLab Mutation Guard](mutation-guard.md).
+- Fallback command syntax and flag ownership remain in [`gitlab/SKILL.md`](../SKILL.md); per-snippet MCP/fallback contracts live in [`snippet-transports.md`](snippet-transports.md), and mutating-action ordering lives in the [GitLab Mutation Guard](mutation-guard.md).
 
 ## Verification status legend
 
@@ -31,7 +31,7 @@ Scope discipline for this reference:
 
 **Verification method.** `live-smoke` — cited in issue #210. This doc records the finding; it does not replay live mutations.
 
-**Workflow consequence.** `/gitlab-local` snippets should name MCP primary tools first and reserve `glab` for explicit fallback/helper/troubleshooting conditions. Normal issue/MR/review delivery should not instruct unconditional primary `glab` use.
+**Workflow consequence.** `/gitlab` snippets should name MCP primary tools first and reserve `glab` for explicit fallback/helper/troubleshooting conditions. Normal issue/MR/review delivery should not instruct unconditional primary `glab` use.
 
 ## 3. `update_merge_request` atomicity (designed contract + test procedure)
 
@@ -74,7 +74,7 @@ Scope discipline for this reference:
 - **Re-read after every mutation.** After any mutating MCP tool call (`update_merge_request`, `approve_merge_request`, `merge_merge_request`, notes, label/assignee changes), immediately re-read through MCP (`get_merge_request`, `get_issue`, approval state, or notes/discussions as applicable) and re-check the SHA pin before trusting local state.
 - **SHA-pin re-check.** Compare the re-read head SHA against the reviewed/expected SHA. A mismatch means the head moved under the operation and the action must not be assumed applied to the intended commit.
 - **Transport evidence.** Report `via=mcp` for successful MCP actions and `via=glab-fallback` for guarded fallback actions.
-- **Mutation Guard evidence.** The canonical guard schema (`skill://gitlab-local/reference/mutation-guard.schema.json`) owns shared blocker and gap tokens including `mcp_unavailable`, `mcp_merge_robustness_gap`, and `mcp_pagination_gap`.
+- **Mutation Guard evidence.** The canonical guard schema (`skill://gitlab/reference/mutation-guard.schema.json`) owns shared blocker and gap tokens including `mcp_unavailable`, `mcp_merge_robustness_gap`, and `mcp_pagination_gap`.
 
 **Conflict classification.** When a mutation does not produce the expected state, classify from the re-read before retrying:
 
@@ -110,4 +110,4 @@ Scope discipline for this reference:
 - Stable snippet transport contracts: [`snippet-transports.md`](snippet-transports.md).
 - GitLab Mutation Guard seam and schema: [`mutation-guard.md`](mutation-guard.md), [`mutation-guard.schema.json`](mutation-guard.schema.json).
 - Safe text/content-byte rule for MCP and fallback bodies: [`safe-text.md`](safe-text.md).
-- Guarded fallback help-first discipline: [`gitlab-local/SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule).
+- Guarded fallback help-first discipline: [`gitlab/SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule).

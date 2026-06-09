@@ -1,6 +1,6 @@
 # GitLab help-first reference
 
-This reference owns the detailed run-dir help-cache pattern for guarded `/gitlab-local` `glab` fallback paths. The main [`SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule) keeps the transport order, high-value fallback rule, compatibility headings, pitfalls, and canonical workflow snippets.
+This reference owns the detailed run-dir help-cache pattern for guarded `/gitlab` `glab` fallback paths. The main [`SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule) keeps the transport order, high-value fallback rule, compatibility headings, pitfalls, and canonical workflow snippets.
 
 ## Help-first rule detail
 

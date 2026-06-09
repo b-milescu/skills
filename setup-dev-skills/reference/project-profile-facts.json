@@ -114,9 +114,9 @@
     }
   },
   "skill_resources": {
-    "gitlab_local_snippet_metadata": "skill://gitlab-local/reference/snippet-metadata.json",
-    "gitlab_mutation_guard": "skill://gitlab-local/reference/mutation-guard.md",
-    "gitlab_authority_verification": "skill://gitlab-local/reference/authority-verification.md",
+    "gitlab_snippet_metadata": "skill://gitlab/reference/snippet-metadata.json",
+    "gitlab_mutation_guard": "skill://gitlab/reference/mutation-guard.md",
+    "gitlab_authority_verification": "skill://gitlab/reference/authority-verification.md",
     "start_build_parent_owned_gate": "skill://start-build/reference/parent-owned-gate.md",
     "start_build_delivery_schema": "skill://start-build/templates/gitlab-delivery-schema.md",
     "start_build_reviewer_lift_schema": "skill://start-build/templates/reviewer-lift-schema.md",

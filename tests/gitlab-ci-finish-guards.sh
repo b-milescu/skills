@@ -7,13 +7,13 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-SKILL="gitlab-local/SKILL.md"
-CARD="gitlab-local/reference/ci-finish-guards.md"
-GUARD_DOC="gitlab-local/reference/mutation-guard.md"
-GUARD_SCHEMA="gitlab-local/reference/mutation-guard.schema.json"
+SKILL="gitlab/SKILL.md"
+CARD="gitlab/reference/ci-finish-guards.md"
+GUARD_DOC="gitlab/reference/mutation-guard.md"
+GUARD_SCHEMA="gitlab/reference/mutation-guard.schema.json"
 
 fail() {
-  printf 'gitlab-local-ci-finish-guards: FAIL: %s\n' "$*" >&2
+  printf 'gitlab-ci-finish-guards: FAIL: %s\n' "$*" >&2
   exit 1
 }
 
@@ -71,8 +71,8 @@ require_file "$GUARD_SCHEMA"
 
 # The card points to the seam and no longer owns a second full sequence.
 require_text "$CARD" 'GitLab Mutation Guard' 'Mutation Guard seam pointer'
-require_text "$CARD" 'skill://gitlab-local/reference/mutation-guard\.md' 'guard doc skill URI'
-require_text "$CARD" 'skill://gitlab-local/reference/mutation-guard\.schema\.json' 'guard schema skill URI'
+require_text "$CARD" 'skill://gitlab/reference/mutation-guard\.md' 'guard doc skill URI'
+require_text "$CARD" 'skill://gitlab/reference/mutation-guard\.schema\.json' 'guard schema skill URI'
 reject_text "$CARD" '^### Polling and SHA rules$' 'old full polling list section'
 reject_text "$CARD" '^### Guard and authority order$' 'old full finish guard order section'
 
@@ -120,7 +120,7 @@ assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'ci-watch helper s
 assert_contains "$ci_watch_body" 'scripts/README.md' 'ci-watch helper docs pointer'
 assert_contains "$ci_watch_body" 'tests/gitlab-workflow-helpers.sh' 'ci-watch regression test pointer'
 assert_contains "$ci_watch_body" '--reviewed-sha "$reviewed_sha"' 'ci-watch helper invocation block'
-assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"' 'ci-watch full skill URI helper path'
+assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"' 'ci-watch full skill URI helper path'
 assert_contains "$ci_watch_body" 'reference/ci-finish-guards.md' 'ci-watch link to specialization card'
 assert_contains "$ci_watch_body" 'mutation-guard.md' 'ci-watch link to Mutation Guard'
 
@@ -129,7 +129,7 @@ assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper scri
 assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
 assert_contains "$finish_body" 'tests/gitlab-workflow-helpers.sh' 'finish regression test pointer'
 assert_contains "$finish_body" '--merge-authority "$merge_authority"' 'finish helper invocation block'
-assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
+assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
 assert_contains "$finish_body" 'reference/ci-finish-guards.md' 'finish link to specialization card'
 assert_contains "$finish_body" 'mutation-guard.md' 'finish link to Mutation Guard'
 
@@ -141,4 +141,4 @@ require_text "$SKILL" 'reference/mutation-guard\.md' 'SKILL.md discoverability l
 skill_lines="$(wc -l < "$SKILL")"
 [[ "$skill_lines" -lt 409 ]] || fail "SKILL.md must stay shorter than 409 lines, found $skill_lines"
 
-printf 'gitlab-local-ci-finish-guards: PASS\n'
+printf 'gitlab-ci-finish-guards: PASS\n'

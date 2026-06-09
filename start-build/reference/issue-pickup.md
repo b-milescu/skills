@@ -4,8 +4,8 @@ Detailed issue-resolution procedure for `start-build`. The stable compatibility 
 
 ## Procedure
 
-1. Run `gitlab-local` **Snippet: local-repo-preflight** to confirm cwd is the intended GitLab repo and MCP/fallback project binding resolves to it. If it fails, stop and ask.
-2. Use `gitlab-local` **Snippet: issue-pickup** to list candidates when the caller did not supply an issue. Narrow with labels, assignment, author, or milestone only when project conventions support those filters.
+1. Run `gitlab` **Snippet: local-repo-preflight** to confirm cwd is the intended GitLab repo and MCP/fallback project binding resolves to it. If it fails, stop and ask.
+2. Use `gitlab` **Snippet: issue-pickup** to list candidates when the caller did not supply an issue. Narrow with labels, assignment, author, or milestone only when project conventions support those filters.
 3. Inspect enough candidates to validate fit and coupling. For a normal queue, inspect 3-5 candidates; for a supplied issue, inspect that issue, its comments, and linked MRs.
 4. Prefer open issues that are unassigned or assigned to you, ready/triaged, clear, unblocked, non-confidential, and sized for one MR.
 5. Deprioritize blocked issues, issues with information-needed or human-decision equivalents, WIP/in-progress issues, and confidential/security-sensitive issues unless the user explicitly supplied them.

@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "skill://gitlab-local/reference/mutation-guard.schema.json",
+  "$id": "skill://gitlab/reference/mutation-guard.schema.json",
   "kind": "gitlab-mutation-guard-schema",
   "version": "1",
-  "owner": "gitlab-local",
-  "human_resource": "skill://gitlab-local/reference/mutation-guard.md",
+  "owner": "gitlab",
+  "human_resource": "skill://gitlab/reference/mutation-guard.md",
   "summary": "Machine-readable contract for the GitLab Mutation Guard seam. Mutating GitLab workflow snippets use this ordered guard before one GitLab mutation and use its output shape after the post-mutation MCP re-read.",
   "cross_project_guidance": {
-    "guard_docs": "skill://gitlab-local/reference/mutation-guard.md",
-    "guard_schema": "skill://gitlab-local/reference/mutation-guard.schema.json",
-    "authority_verification_docs": "skill://gitlab-local/reference/authority-verification.md",
-    "authority_verification_schema": "skill://gitlab-local/reference/authority-verification.schema.json",
-    "guard_scripts": "skill://gitlab-local/scripts/",
-    "target_repo_docs": "Use repo-relative docs/agents/... paths for the target repository's policy docs, not skill://gitlab-local/docs/agents/... aliases."
+    "guard_docs": "skill://gitlab/reference/mutation-guard.md",
+    "guard_schema": "skill://gitlab/reference/mutation-guard.schema.json",
+    "authority_verification_docs": "skill://gitlab/reference/authority-verification.md",
+    "authority_verification_schema": "skill://gitlab/reference/authority-verification.schema.json",
+    "guard_scripts": "skill://gitlab/scripts/",
+    "target_repo_docs": "Use repo-relative docs/agents/... paths for the target repository's policy docs, not skill://gitlab/docs/agents/... aliases."
   },
   "ordered_steps": [
     {
@@ -46,7 +46,7 @@
     {
       "order": 5,
       "id": "authority_verification",
-      "requires": ["caller_role", "action", "authority value", "authority source", "skill://gitlab-local/reference/authority-verification.schema.json claim shape"],
+      "requires": ["caller_role", "action", "authority value", "authority source", "skill://gitlab/reference/authority-verification.schema.json claim shape"],
       "blocks": ["missing_authority", "authority_source_mismatch", "permission_uncertain", "self_merge_risk"],
       "output": "Authority Verification verdict, decision routing, source provenance, conflicts/restrictions, and no-self result for exactly one requested action"
     },

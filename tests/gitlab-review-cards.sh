@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
 fail() {
-  printf 'gitlab-local-review-cards: FAIL: %s\n' "$*" >&2
+  printf 'gitlab-review-cards: FAIL: %s\n' "$*" >&2
   exit 1
 }
 
@@ -29,10 +29,10 @@ reject_text() {
 require_card_contract() {
   local file="$1"
   require_file "$file"
-  require_text "$file" '\.\./SKILL\.md' 'full gitlab-local/SKILL.md ownership pointer'
+  require_text "$file" '\.\./SKILL\.md' 'full gitlab/SKILL.md ownership pointer'
   require_text "$file" 'help-first' 'help-first pointer'
   require_text "$file" '^## Snippets' 'Snippets section'
-  require_text "$file" '^## Fallback to full gitlab-local' 'fallback section'
+  require_text "$file" '^## Fallback to full gitlab' 'fallback section'
   require_text "$file" 'Inputs' 'Inputs column/section'
   require_text "$file" 'Outputs' 'Outputs column/section'
   require_text "$file" 'Fail closed' 'Fail closed column/section'
@@ -40,9 +40,9 @@ require_card_contract() {
   reject_text "$file" '(^|[[:space:]])glab[[:space:]]+(issue|mr|ci|repo|api)\b' 'raw glab command copy'
 }
 
-read_card="gitlab-local/reference/review-read.md"
-action_card="gitlab-local/reference/review-actions.md"
-ci_card="gitlab-local/reference/ci.md"
+read_card="gitlab/reference/review-read.md"
+action_card="gitlab/reference/review-actions.md"
+ci_card="gitlab/reference/ci.md"
 
 for card in "$read_card" "$action_card" "$ci_card"; do
   require_card_contract "$card"
@@ -64,14 +64,14 @@ require_text "$action_card" 'MR comments only' 'MR-note target split rule'
 require_text "$action_card" 'issue workflow explicitly calls' 'issue-note target split rule'
 
 for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
-  require_text "$file" '../gitlab-local/reference/review-read.md' 'review-read card link'
-  require_text "$file" '../gitlab-local/reference/review-actions.md' 'review-actions card link'
-  require_text "$file" '../gitlab-local/reference/ci.md' 'ci card link'
-  require_text "$file" 'fall back to .*gitlab-local/SKILL.md' 'full-reference fallback guidance'
+  require_text "$file" '../gitlab/reference/review-read.md' 'review-read card link'
+  require_text "$file" '../gitlab/reference/review-actions.md' 'review-actions card link'
+  require_text "$file" '../gitlab/reference/ci.md' 'ci card link'
+  require_text "$file" 'fall back to .*gitlab/SKILL.md' 'full-reference fallback guidance'
 done
 
-require_text "gitlab-local/SKILL.md" 'reference/review-read.md' 'review-read discoverability link'
-require_text "gitlab-local/SKILL.md" 'reference/review-actions.md' 'review-actions discoverability link'
-require_text "gitlab-local/SKILL.md" 'reference/ci.md' 'ci card discoverability link'
+require_text "gitlab/SKILL.md" 'reference/review-read.md' 'review-read discoverability link'
+require_text "gitlab/SKILL.md" 'reference/review-actions.md' 'review-actions discoverability link'
+require_text "gitlab/SKILL.md" 'reference/ci.md' 'ci card discoverability link'
 
-printf 'gitlab-local-review-cards: PASS\n'
+printf 'gitlab-review-cards: PASS\n'

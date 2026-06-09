@@ -3,12 +3,12 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
-skill="$REPO_ROOT/gitlab-local/SKILL.md"
+skill="$REPO_ROOT/gitlab/SKILL.md"
 
 require_text() {
   local needle="$1"
   grep -Fq "$needle" "$skill" || {
-    echo "gitlab-local help-cache guidance missing: $needle" >&2
+    echo "gitlab help-cache guidance missing: $needle" >&2
     exit 1
   }
 }
@@ -20,4 +20,4 @@ require_text 'records the exact `glab <command> --help` output'
 require_text 'verification status'
 require_text 'Refresh the cache whenever the command, `glab` version, or repo context changes'
 
-echo "gitlab-local-help-cache: PASS"
+echo "gitlab-help-cache: PASS"

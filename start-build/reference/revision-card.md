@@ -12,16 +12,16 @@ Compact pointer map for builder revision work after review feedback or a substan
 
 | Step | Pointer | Stop / verify |
 | --- | --- | --- |
-| Bind review inputs | `gitlab-local` [`mr-pickup`](../../gitlab-local/SKILL.md#snippet-mr-pickup), [`sha-guard`](../../gitlab-local/SKILL.md#snippet-sha-guard), [`standalone-gate.md` review loop](standalone-gate.md#review-loop), and [`parent-orchestrator.md` minimal revision prompt](parent-orchestrator.md#minimal-revision-prompt). | Findings must name stable IDs and reviewed SHA; Must Fix items must be revision-ready (`path + line/range + concrete problem + bounded remedy direction`) or else stay blocked as `human-decision-needed`. |
+| Bind review inputs | `gitlab` [`mr-pickup`](../../gitlab/SKILL.md#snippet-mr-pickup), [`sha-guard`](../../gitlab/SKILL.md#snippet-sha-guard), [`standalone-gate.md` review loop](standalone-gate.md#review-loop), and [`parent-orchestrator.md` minimal revision prompt](parent-orchestrator.md#minimal-revision-prompt). | Findings must name stable IDs and reviewed SHA; Must Fix items must be revision-ready (`path + line/range + concrete problem + bounded remedy direction`) or else stay blocked as `human-decision-needed`. |
 | Implement fixes | [`implementation-flow.md` revision step](implementation-flow.md#procedure) and [`SAFETY.md` behavior-touching refactor rules](../SAFETY.md#behavior-touching-refactors). | Fix commits name review item IDs where applicable; behavior-touching fixes get targeted regression evidence. |
 | Rerun evidence | [`context-and-planning.md` handoff checklist](context-and-planning.md#handoff-integrity-checklist) and repo [`Check Gate`](../../docs/agents/check-gate.md). | Targeted checks cover each finding; full gate ownership follows the active mode, with parent-owned ownership from [`parent-owned-gate.md`](parent-owned-gate.md) when delegated. |
-| Post revision packet | [`revision-packet.md`](../templates/revision-packet.md) and `gitlab-local` [`mr-note-create`](../../gitlab-local/SKILL.md#snippet-mr-note-create). | Reply to each MF/SF/C item with fix, evidence, and unresolved blocker if any. |
-| Refresh MR handoff | `gitlab-local` [`mr-description-update`](../../gitlab-local/SKILL.md#snippet-mr-description-update), [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md), and `delivery.handoff_contract` from the builder final handoff. | `Reviewed SHA`, CI row, Local gate row, Changed paths, Delta since last ready push, and the returned routing contract reflect the new MR head. |
+| Post revision packet | [`revision-packet.md`](../templates/revision-packet.md) and `gitlab` [`mr-note-create`](../../gitlab/SKILL.md#snippet-mr-note-create). | Reply to each MF/SF/C item with fix, evidence, and unresolved blocker if any. |
+| Refresh MR handoff | `gitlab` [`mr-description-update`](../../gitlab/SKILL.md#snippet-mr-description-update), [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md), and `delivery.handoff_contract` from the builder final handoff. | `Reviewed SHA`, CI row, Local gate row, Changed paths, Delta since last ready push, and the returned routing contract reflect the new MR head. |
 | Return control | [`child-builder.md` final handoff](child-builder.md#child-checklist) or [`standalone-gate.md` fresh reviewer rule](standalone-gate.md#review-loop). | Child mode stops for parent with the exact expected handoff; standalone mode starts a fresh reviewer session instead of reusing stale approval. |
 
 ## Safety and authority pointers
 
-- Final SHA guard: `gitlab-local` [`sha-guard`](../../gitlab-local/SKILL.md#snippet-sha-guard) and [`ci-decision-snapshot`](../../gitlab-local/SKILL.md#snippet-ci-decision-snapshot).
+- Final SHA guard: `gitlab` [`sha-guard`](../../gitlab/SKILL.md#snippet-sha-guard) and [`ci-decision-snapshot`](../../gitlab/SKILL.md#snippet-ci-decision-snapshot).
 - CI decision policy: [`start-review/REVIEW-FLOW.md` CI decision table](../../start-review/REVIEW-FLOW.md#ci-decision-table).
 - Authority source verification: [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and [`parent-orchestrator.md` finish by authority](parent-orchestrator.md#parent-loop).
 - Child no-review/no-merge boundary: [`child-builder.md` authority boundary](child-builder.md#authority-boundary).
@@ -30,4 +30,4 @@ Compact pointer map for builder revision work after review feedback or a substan
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live fallback help win over this card; never treat a revision packet, parent summary, or compact handoff as independent review evidence.
+Fall back to the canonical docs and `gitlab/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action. The full references plus live fallback help win over this card; never treat a revision packet, parent summary, or compact handoff as independent review evidence.

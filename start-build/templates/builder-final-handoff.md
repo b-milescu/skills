@@ -204,7 +204,7 @@ agent_handoff:
   not proof; parents/reviewers must verify its claims from Tier 1/Tier 2
   evidence before relying on them for review, CI, authority, or finish routing.
   Authority claims are verified through
-  `../../gitlab-local/reference/authority-verification.md`.
+  `../../gitlab/reference/authority-verification.md`.
 - `delivery.project_profile` records bounded project-specific hooks such as
   gate, labels, branches, CI jobs, domain docs, auxiliary indexes, release/deploy
   policy, and manual validation. These hooks specialize project policy only; they
@@ -260,7 +260,7 @@ agent_handoff:
   review unless explicitly restricted; use `restricted: <reason/source>` when an
   explicit source limits approval. Approval still requires exact reviewed SHA,
   pass-eligible CI/local-gate/OQ state, SHA-bound approval, and the canonical
-  Authority Verification seam (`../../gitlab-local/reference/authority-verification.md`).
+  Authority Verification seam (`../../gitlab/reference/authority-verification.md`).
 - `approval_authority_source` records the stable repo/rulebook policy source or
   explicit restriction source. It is separate from merge authority and does not
   grant merge, auto-merge, release, deploy, close, or cleanup authority.

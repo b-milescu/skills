@@ -7,10 +7,10 @@ cd "$REPO_ROOT"
 node <<'NODE'
 const fs = require('node:fs');
 
-const schemaPath = 'gitlab-local/reference/authority-verification.schema.json';
-const docPath = 'gitlab-local/reference/authority-verification.md';
-const schemaResource = 'skill://gitlab-local/reference/authority-verification.schema.json';
-const docResource = 'skill://gitlab-local/reference/authority-verification.md';
+const schemaPath = 'gitlab/reference/authority-verification.schema.json';
+const docPath = 'gitlab/reference/authority-verification.md';
+const schemaResource = 'skill://gitlab/reference/authority-verification.schema.json';
+const docResource = 'skill://gitlab/reference/authority-verification.md';
 
 function fail(message) {
   console.error(`authority-verification-schema: FAIL: ${message}`);
@@ -169,16 +169,16 @@ for (const [path, label] of [
   ['start-build/templates/gitlab-delivery-schema.md', 'delivery schema'],
   ['start-build/templates/builder-final-handoff.md', 'builder delivery handoff'],
   ['start-review/templates/reviewer-final-handoff.md', 'reviewer delivery handoff'],
-  ['gitlab-local/reference/finish-result-schema.json', 'finish result schema'],
-  ['gitlab-local/reference/authority-matrix.md', 'authority matrix'],
-  ['gitlab-local/reference/mutation-guard.md', 'Mutation Guard'],
-  ['gitlab-local/reference/mutation-guard.schema.json', 'Mutation Guard schema'],
-  ['gitlab-local/reference/identity-and-authentication.md', 'identity/authentication doc']
+  ['gitlab/reference/finish-result-schema.json', 'finish result schema'],
+  ['gitlab/reference/authority-matrix.md', 'authority matrix'],
+  ['gitlab/reference/mutation-guard.md', 'Mutation Guard'],
+  ['gitlab/reference/mutation-guard.schema.json', 'Mutation Guard schema'],
+  ['gitlab/reference/identity-and-authentication.md', 'identity/authentication doc']
 ]) {
   requireText(path, /authority-verification\.md|authority-verification\.schema\.json|Authority Verification/, `${label} canonical authority seam reference`);
 }
 
-const finishSchema = readJson('gitlab-local/reference/finish-result-schema.json');
+const finishSchema = readJson('gitlab/reference/finish-result-schema.json');
 for (const field of ['transport', 'authority_verification_source']) {
   assert(finishSchema.required.includes(field), `finish_result must keep separate required ${field} evidence`);
 }

@@ -2,19 +2,19 @@
 
 **Authority Verification** is the canonical seam for deciding whether a GitLab workflow actor may proceed with an approval or finish action, must hand off, or must ask a human for a missing/contradictory authority fact.
 
-Machine-readable schema: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab-local/reference/authority-verification.schema.json`.
+Machine-readable schema: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab/reference/authority-verification.schema.json`.
 
 ## Resource addressing
 
-When a skill runs from a target repository, reference authority resources with `skill://gitlab-local/...`:
+When a skill runs from a target repository, reference authority resources with `skill://gitlab/...`:
 
-- `skill://gitlab-local/reference/authority-verification.md`
-- `skill://gitlab-local/reference/authority-verification.schema.json`
-- `skill://gitlab-local/reference/authority-matrix.md`
-- `skill://gitlab-local/reference/identity-and-authentication.md`
-- `skill://gitlab-local/scripts/gitlab-finish-authority.sh`
+- `skill://gitlab/reference/authority-verification.md`
+- `skill://gitlab/reference/authority-verification.schema.json`
+- `skill://gitlab/reference/authority-matrix.md`
+- `skill://gitlab/reference/identity-and-authentication.md`
+- `skill://gitlab/scripts/gitlab-finish-authority.sh`
 
-Target-repo policy remains repo-relative. Use `docs/agents/dev-workflows.md`, `docs/agents/check-gate.md`, and project rulebook paths for the repository being changed; do not rewrite those target policy refs as gitlab-local skill resources.
+Target-repo policy remains repo-relative. Use `docs/agents/dev-workflows.md`, `docs/agents/check-gate.md`, and project rulebook paths for the repository being changed; do not rewrite those target policy refs as gitlab skill resources.
 
 ## Scope
 

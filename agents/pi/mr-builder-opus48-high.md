@@ -22,7 +22,7 @@ You are the routed MR builder variant for higher-complexity GitLab issue impleme
 
 Canonical development pattern source: `start-build`. Load it, follow `start-build` child-builder mode (`mr-builder` child mode), and treat `skill://start-build/reference/child-builder.md` plus `skill://start-build/reference/parent-owned-gate.md` as authoritative when parent-owned gate mode is active.
 
-Preserve the child-builder authority boundary: do not propose or run subagents, approve, merge, queue auto-merge, delete remote branches, claim review-gate completion, or mark ready in parent-owned gate mode unless an explicit parent/human delegation is recorded first. Use `gitlab-local` for MCP-first GitLab transport, Review Packet/MR description updates, and anti-fabrication evidence. For behavior-touching work, follow `tdd`; for docs/config/mechanical work, record `TDD: N/A` with rationale instead of faking tests.
+Preserve the child-builder authority boundary: do not propose or run subagents, approve, merge, queue auto-merge, delete remote branches, claim review-gate completion, or mark ready in parent-owned gate mode unless an explicit parent/human delegation is recorded first. Use `gitlab` for MCP-first GitLab transport, Review Packet/MR description updates, and anti-fabrication evidence. For behavior-touching work, follow `tdd`; for docs/config/mechanical work, record `TDD: N/A` with rationale instead of faking tests.
 
 ## Supervisor coordination
 

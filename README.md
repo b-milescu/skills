@@ -7,7 +7,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs pi dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
-- `gitlab-local/scripts/` — helper scripts bundled with the `/gitlab-local` skill.
+- `gitlab/scripts/` — helper scripts bundled with the `/gitlab` skill.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills
@@ -15,7 +15,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | Skill | Purpose |
 |---|---|
 | `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) for scaffolding per-repo Agent Setup Docs, including coding guardrails. Invoke explicitly as `/setup-dev-skills`; agents may recommend it when docs are missing/stale, but must ask before running or writing. |
-| `gitlab-local` | MCP-first GitLab transport reference with guarded help-first `glab` fallback/helper contracts for local/self-hosted GitLab work. |
+| `gitlab` | MCP-first GitLab transport reference with guarded help-first `glab` fallback/helper contracts for local/self-hosted GitLab work. |
 | `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
 | `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |
 | `issue-delivery-loop` | Parent coordinator for bounded ready-issue batches: serial by default, parallel only with Decoupling Contract proof, delegates to child builders/reviewers, tracks delivery metrics, and routes post-merge checks to the `start-build` verifier recipe. |
@@ -51,6 +51,6 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 
 GitLab project namespace is `agents/skills`; the npm package name `@agents/skills` is intentionally unchanged.
 
-`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as skill-root siblings because some runtimes interpret every skill-root directory as a skill. Each installed skill exposes skill-local resource symlinks (`docs/` and `shared-templates/`) for `skill://<skill>/docs/...` and `skill://<skill>/shared-templates/...` reads. The installer warns for missing declared external skill dependencies and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, load `gitlab-local`, use MCP-first transport, and reserve direct `glab` commands for documented guarded fallback/helper cases from inside the target repo.
+`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as skill-root siblings because some runtimes interpret every skill-root directory as a skill. Each installed skill exposes skill-local resource symlinks (`docs/` and `shared-templates/`) for `skill://<skill>/docs/...` and `skill://<skill>/shared-templates/...` reads. The installer warns for missing declared external skill dependencies and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, load `gitlab`, use MCP-first transport, and reserve direct `glab` commands for documented guarded fallback/helper cases from inside the target repo.
 
 Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).

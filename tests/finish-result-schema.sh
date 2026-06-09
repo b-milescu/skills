@@ -2,8 +2,8 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-VALIDATOR="$REPO_ROOT/gitlab-local/scripts/validate-finish-result.sh"
-SCHEMA="$REPO_ROOT/gitlab-local/reference/finish-result-schema.json"
+VALIDATOR="$REPO_ROOT/gitlab/scripts/validate-finish-result.sh"
+SCHEMA="$REPO_ROOT/gitlab/reference/finish-result-schema.json"
 
 CAPTURE_STATUS=0
 CAPTURE_OUTPUT=""

@@ -1,7 +1,7 @@
 # MR Build/Review Orchestration Design Brief
 
 Status: historical design brief from issue #55. Active workflow policy now lives in
-`/start-build`, `/start-review`, `/gitlab-local`, and `docs/agents/dev-workflows.md`.
+`/start-build`, `/start-review`, `/gitlab`, and `docs/agents/dev-workflows.md`.
 Use this file for rationale and provenance only; do not treat it as a command
 reference, schema source, or future implementation plan.
 
@@ -17,7 +17,7 @@ skills and child agents:
 - Fresh `mr-reviewer` sessions own independent diff review, one durable GitLab
   Review Report, one parseable final handoff, and one SHA-bound
   approval/request-changes/reject decision.
-- `/gitlab-local` owns MCP-first GitLab transport contracts, guarded `glab`
+- `/gitlab` owns MCP-first GitLab transport contracts, guarded `glab`
   fallback syntax/flag pitfalls, file-backed GitLab writes, SHA guards, CI
   snapshots/watchers, and authority-aware finish snippets.
 - Repo-local docs point at active skills instead of copying workflow bodies.
@@ -53,7 +53,7 @@ This file intentionally no longer includes:
 | --- | --- |
 | Parent loop lives in `/start-build` | Build flow already owns issue pickup, Draft MR creation, Review Packet upkeep, local gate evidence, ready-marking, and handoff to the mandatory review gate. |
 | Review decisions live in `/start-review` | Reviewer flow owns fresh-session review, Review Report shape, finding IDs, SHA-bound approval decisions, and merge-authority limits. |
-| GitLab transport details live in `/gitlab-local` | MCP tools and fallback `glab` flags/JSON shapes drift by version; one transport reference avoids stale snippets in repo docs and prompts. |
+| GitLab transport details live in `/gitlab` | MCP tools and fallback `glab` flags/JSON shapes drift by version; one transport reference avoids stale snippets in repo docs and prompts. |
 | Machine handoff templates live beside producer flows | Builders/reviewers produce those blocks, while parent orchestrators consume them opportunistically and fall back to MR descriptions/comments. |
 | Repo docs stay pointer-first | `docs/agents/dev-workflows.md` can route agents to canonical skill docs without becoming another policy copy. |
 | Post-merge verification stays separate from review | Read-only verification after merge should not grant reviewer, builder, or verifier extra approval/merge authority. |

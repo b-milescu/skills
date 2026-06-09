@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Authority-aware GitLab MR finish fallback/helper.
 # Implements the fallback side of finish-mr-authority-aware; callers still own
-# the GitLab Mutation Guard in skill://gitlab-local/reference/mutation-guard.md.
+# the GitLab Mutation Guard in skill://gitlab/reference/mutation-guard.md.
 # Authority claim/source semantics live in
-# gitlab-local/reference/authority-verification.md; this helper records transport
+# gitlab/reference/authority-verification.md; this helper records transport
 # evidence separately from authority verification evidence.
 
 set -euo pipefail

@@ -2,7 +2,7 @@
 # Pure-local validator for a finish_result object.
 #
 # Reads a finish_result JSON from a file argument or stdin, validates it against
-# gitlab-local/reference/finish-result-schema.json, and exits 0 only when every
+# gitlab/reference/finish-result-schema.json, and exits 0 only when every
 # required field is present with a correctly enumerated/typed value. Otherwise it
 # prints a FINISH_RESULT result=invalid reason=... line to stderr and exits
 # non-zero.
@@ -11,7 +11,7 @@
 # The schema file is the single source of truth for required fields and enums;
 # this script loads them from the schema instead of re-listing them.
 #
-# Canonical schema: gitlab-local/reference/finish-result-schema.json
+# Canonical schema: gitlab/reference/finish-result-schema.json
 #
 # Exit codes:
 #   0   valid finish_result
@@ -30,7 +30,7 @@ Usage: validate-finish-result.sh [--schema <path>] [<finish-result.json>]
 
 Reads a finish_result JSON object from <finish-result.json> or, when no file is
 given, from stdin. Validates it against the finish-result schema (default:
-gitlab-local/reference/finish-result-schema.json).
+gitlab/reference/finish-result-schema.json).
 
 Options:
   --schema <path>   Override the schema path (testing/local use).

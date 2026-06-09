@@ -9,15 +9,15 @@ Turn an approved plan into GitLab issues for the current target GitLab repositor
 
 ## Quick start
 
-1. Load `/gitlab-local` and run **Snippet: local-repo-preflight** from the intended target repository before any publishing work.
+1. Load `/gitlab` and run **Snippet: local-repo-preflight** from the intended target repository before any publishing work.
 2. Resolve the target repo root with `git rev-parse --show-toplevel`; treat that path as `<repo-root>` for all repo-local docs.
 3. Read target docs from `<repo-root>/docs/agents/issue-tracker.md` and `<repo-root>/docs/agents/triage-labels.md`. Do not read these docs from the skill installation directory.
 4. If either target tracker doc is missing, or if `<repo-root>/docs/agents/issue-tracker.md` does not say the tracker is GitLab, stop and ask the user to set up or choose the correct workflow.
-5. Before drafting or publishing, display the detected GitLab target as host/project (for example, `gitlab.example/group/project`) from `/gitlab-local` preflight/repo metadata and ask the user to confirm it if there is any ambiguity.
+5. Before drafting or publishing, display the detected GitLab target as host/project (for example, `gitlab.example/group/project`) from `/gitlab` preflight/repo metadata and ask the user to confirm it if there is any ambiguity.
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.
 8. Draft vertical slices; ask the user to approve the breakdown before publishing.
-9. Publish approved slices to GitLab using `/gitlab-local` MCP-first transport contracts only after explicit publish approval; use guarded `glab` fallback only when `/gitlab-local` names the fallback condition.
+9. Publish approved slices to GitLab using `/gitlab` MCP-first transport contracts only after explicit publish approval; use guarded `glab` fallback only when `/gitlab` names the fallback condition.
 
 ## Slice rules
 
@@ -55,7 +55,7 @@ Publish approved issues in dependency order so later issues can reference real b
 
 Before publishing, show the user the detected GitLab target, labels to apply, issue count, and issue titles, then ask for explicit approval to publish. If approval is not explicit, do not create issues.
 
-Use `/gitlab-local` for MCP primary tools, guarded `glab` fallback syntax, comments, labels, safe-text rules, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<repo-root>/docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
+Use `/gitlab` for MCP primary tools, guarded `glab` fallback syntax, comments, labels, safe-text rules, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<repo-root>/docs/agents/triage-labels.md`; otherwise record the slice type in the issue body.
 
 For generated AFK issues, preserve the `## Agent Readiness` section from the issue body template. If any readiness field lacks durable context and no maintainer waiver exists, publish the slice as HITL or Needs info instead of applying an AFK-ready label.
 

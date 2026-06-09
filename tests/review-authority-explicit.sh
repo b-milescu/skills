@@ -86,7 +86,7 @@ for file in "${routed_final_reviewer_prompts[@]}"; do
   require_text "$file" 'approval action' 'routed reviewer approval action separation'
   require_text "$file" 'finish action' 'routed reviewer finish action separation'
   require_text "$file" 'authority verification' 'routed reviewer authority verification'
-  require_text "$file" 'never[^.]*merge[^.]*unless `start-review` plus `gitlab-local` authority verification explicitly permit' 'routed reviewer merge requires verified authority'
+  require_text "$file" 'never[^.]*merge[^.]*unless `start-review` plus `gitlab` authority verification explicitly permit' 'routed reviewer merge requires verified authority'
   require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer treats handoff authority as claim'
 done
 

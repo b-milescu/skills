@@ -18,8 +18,8 @@ policy pointers; they must not mutate GitLab/project state or update/copy
 auxiliary index artifacts unless a different authorized workflow explicitly
 switches roles.
 
-Use `/gitlab-local` MCP-first transport for read-only MR, issue, branch, and file
-checks. Prefer `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` only when the
+Use `/gitlab` MCP-first transport for read-only MR, issue, branch, and file
+checks. Prefer `gitlab/scripts/gitlab-post-merge-snapshot.sh` only when the
 verifier needs the documented guarded helper/fallback behavior and has MR IID,
 reviewed SHA, repo, and optional issue IID/validation inputs. The helper emits
 `post_merge_snapshot.kind=post-merge-snapshot` using read-only GitLab/git checks,
@@ -33,7 +33,7 @@ Allowed checks:
 4. Confirm the linked issue state. If closure from `Closes #<id>` is still pending, report `issue_closure_pending` with the observed issue state and do not force-close the issue.
 5. Check source-branch cleanup by reading MR metadata and/or remote refs. If the source branch still exists, report `source_branch_cleanup_pending` or `source_branch_retained_by_policy_or_unknown`; do not delete local or remote branches.
 6. Run documented post-merge validation only when the command is non-mutating and safe for the current environment. If no such command is documented, report `post_merge_validation: not-run — not-documented`.
-7. Post a concise issue note only when the repo/project workflow explicitly asks for post-merge notes. Use `/gitlab-local` **Snippet: issue-note-create** with file-backed note guidance, include only evidence from the checks above, and skip the note otherwise.
+7. Post a concise issue note only when the repo/project workflow explicitly asks for post-merge notes. Use `/gitlab` **Snippet: issue-note-create** with file-backed note guidance, include only evidence from the checks above, and skip the note otherwise.
 
 Forbidden actions:
 

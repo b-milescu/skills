@@ -18,7 +18,7 @@ Wrappers:
   safe_mr_json               Emit validated decision-grade MR metadata JSON.
   auto_merge_api_fallback    Queue auto-merge, falling back to the API for known 405s.
 
-Run gitlab-local help-first checks for the underlying glab commands before use.
+Run gitlab help-first checks for the underlying glab commands before use.
 USAGE
 }
 

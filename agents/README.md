@@ -46,7 +46,7 @@ runtime's native dialect.
 - pi variants keep explicit lowercase builtin tool lists (`bash`, `read`,
   `edit`, `write`, and peers) plus direct approved server selections:
   `mcp:gitlab-mcp` and `mcp:wowtools-mcp`. Do not add bare `mcp`.
-- GitLab authority stays in `gitlab-local`: it remains canonical for GitLab
+- GitLab authority stays in `gitlab`: it remains canonical for GitLab
   transport, MCP-first snippet contracts, the Mutation Guard, SHA/CI guards,
   approval, merge, ready-transition, label, and finish evidence.
 - `wowtools-mcp` is read/query/domain-data lookup only. It is never GitLab
@@ -66,7 +66,7 @@ Minimize duplicated operational bodies:
   and parent-owned review-gate policy.
 - `start-review` owns reviewer flow, Review Report format, authority handling,
   and SHA/CI guard policy.
-- `gitlab-local` owns MCP-first GitLab transport contracts, guarded `glab`
+- `gitlab` owns MCP-first GitLab transport contracts, guarded `glab`
   fallback syntax, JSON flag caveats, snippets, and SHA-guarding. Agent files
   should point to it instead of copying commands.
 - `issue-delivery-loop` owns batch delivery coordination, WIP limits, parent
@@ -81,7 +81,7 @@ Drift checks guard this manual strategy:
 - `npm run check:agents-schema` validates dialect frontmatter, tool casing, and
   Claude/pi body restrictions.
 - `bash agents/check.sh` validates agent name parity, canonical
-  `start-build`/`start-review` and `gitlab-local` pointers, Reviewer Lift and
+  `start-build`/`start-review` and `gitlab` pointers, Reviewer Lift and
   Review Report duplicate structures, and required external skill dependencies.
 
 If generation or shared fragments become worth revisiting, open a dedicated
@@ -95,7 +95,7 @@ routine agent edit.
 3. Keep body content shared in spirit, but keep runtime-specific coordination and
    frontmatter in the matching dialect file.
 4. Point operational procedure back to canonical skills such as `start-build`,
-   `start-review`, and `gitlab-local` rather than copying long bodies.
+   `start-review`, and `gitlab` rather than copying long bodies.
 5. Run `npm run check:agents-schema` to catch frontmatter/schema/tool-casing
    drift before install or review.
 6. Run `bash agents/check.sh` to catch parity and canonical-pointer drift.

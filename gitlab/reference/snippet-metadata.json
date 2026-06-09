@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "skill://gitlab-local/reference/snippet-metadata.json",
+  "$id": "skill://gitlab/reference/snippet-metadata.json",
   "kind": "gitlab-snippet-metadata",
   "version": "1",
-  "owner": "gitlab-local",
-  "description": "Machine-readable source of truth for stable GitLab workflow snippet transport contracts. The human-readable Markdown table in gitlab-local/reference/snippet-transports.md is checked against this metadata.",
-  "machine_resource": "skill://gitlab-local/reference/snippet-metadata.json",
-  "markdown_contract": "gitlab-local/reference/snippet-transports.md",
+  "owner": "gitlab",
+  "description": "Machine-readable source of truth for stable GitLab workflow snippet transport contracts. The human-readable Markdown table in gitlab/reference/snippet-transports.md is checked against this metadata.",
+  "machine_resource": "skill://gitlab/reference/snippet-metadata.json",
+  "markdown_contract": "gitlab/reference/snippet-transports.md",
   "stable_snippet_count": 20,
   "via_evidence_requirement": {
     "required": true,
@@ -16,8 +16,8 @@
     "summary": "Reports that rely on GitLab API transport evidence must state via=mcp for MCP primary transport or via=glab-fallback for guarded fallback/helper transport; via=n/a is reserved for no-action handoffs."
   },
   "mutation_guard": {
-    "resource": "skill://gitlab-local/reference/mutation-guard.md",
-    "schema": "skill://gitlab-local/reference/mutation-guard.schema.json",
+    "resource": "skill://gitlab/reference/mutation-guard.md",
+    "schema": "skill://gitlab/reference/mutation-guard.schema.json",
     "applies_to": "all snippets with non-empty allowed_mutations; read-only snippets feed decision-grade evidence into the guard before later mutations",
     "gap_states": [
       "mcp_unavailable",
