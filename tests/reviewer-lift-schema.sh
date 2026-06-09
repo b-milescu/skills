@@ -80,4 +80,10 @@ while IFS= read -r -d '' file; do
   ' "$file" || exit 1
 done
 
+# Require acceptance_surfaces field and taxonomy in schema
+require_text_case_sensitive "$schema" 'Acceptance surfaces' 'acceptance_surfaces field in reviewer-lift-schema'
+require_text_case_sensitive "$schema" 'docs' 'acceptance_surfaces docs taxonomy value'
+require_text_case_sensitive "$schema" 'install_surface' 'acceptance_surfaces install_surface taxonomy value'
+require_text_case_sensitive "$schema" 'mutation_guard' 'acceptance_surfaces mutation_guard taxonomy value'
+
 echo "Reviewer Lift schema check passed: ${#copies[@]} generated copies match $schema and no stale duplicate field-list tables found."

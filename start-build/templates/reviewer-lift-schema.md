@@ -17,6 +17,7 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 | GREEN | For behavior-touching implementation, passing test/check command and brief result; use `N/A with rationale — <why>` when no test applies beyond the local gate; do not fake tests or meaningless checks. |
 | Changed paths | File-level diffstat or concise path list; update with every push. |
 | Touched safety surfaces | `none` or affected surfaces such as `external-system`, `credentials`, `state`, `migration`, `gates`, `locks`, `deploy`, or `other`. |
+| Acceptance surfaces | Enumerate every acceptance surface touched by this change, each bound to evidence status. Allowed surface values: `docs`, `prompt`, `agent_inventory`, `install_surface`, `transport`, `authority`, `ci_finish`, `mutation_guard`. Allowed evidence status per surface: `test`, `smoke`, `docs-read`, `ci`, or `N/A — <reason>`. Use `none` when no named surface is touched. Example compact syntax: `docs:docs-read`, `prompt:test`, `transport:ci`. The parent must verify all declared surfaces have evidence before ready; the reviewer must verify each declared surface against evidence before pass. |
 | Decoupling proof | `single MR` for single-issue work; otherwise list co-running MR IIDs/branches and summarize the Decoupling Contract check. |
 | Reviewer Focus | Areas the reviewer should read hardest, or `none`. |
 | Open Questions | `none` or a count/list of stable `OQ-N` IDs. |

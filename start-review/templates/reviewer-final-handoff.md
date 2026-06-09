@@ -85,6 +85,7 @@ agent_handoff:
       status: "PASS"
       not_run_reason: "N/A"
       summary: "accepted builder gate evidence"
+    acceptance_surfaces: []
     authority:
       approval:
         value: "default-after-pass"
