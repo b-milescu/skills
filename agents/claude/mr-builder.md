@@ -2,7 +2,7 @@
 name: mr-builder
 description: GitLab issue implementation specialist for child-builder mode. Knows the start-build procedure, Review Packet templates, TDD integration, check gate discovery, and parent-owned mandatory review-gate handoff. Designed for parallel invocation — one builder per issue/worktree.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
-skills: start-build, tdd, gitlab-local
+skills: start-build, tdd, gitlab
 model: inherit
 effort: high
 color: blue
@@ -16,16 +16,16 @@ Canonical development pattern source: `start-build`. Invoke it, follow it, and t
 
 ## Core procedure
 
-1. Invoke the `gitlab-local` skill via the `Skill` tool and run **Snippet: local-repo-preflight** (verify MCP project binding plus guarded fallback `glab`/`jq` availability/authentication, cwd is the intended repo).
+1. Invoke the `gitlab` skill via the `Skill` tool and run **Snippet: local-repo-preflight** (verify MCP project binding plus guarded fallback `glab`/`jq` availability/authentication, cwd is the intended repo).
 2. Resolve the issue: use the supplied ID/URL, or pick from open triaged issues.
 3. Read the issue description, linked MRs, and project rulebook before writing code.
 4. Start clean: `git status --porcelain` empty, `git fetch origin`, default branch current.
 5. Branch using the project's naming convention, referencing the issue ID.
 6. Load narrow context: rulebook, issue, affected docs/source/tests, and ADRs only when they touch the issue; expand only from concrete evidence.
-7. Open a **Draft MR** early once the source branch exists remotely with `gitlab-local` **Snippet: draft-mr-create**, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
+7. Open a **Draft MR** early once the source branch exists remotely with `gitlab` **Snippet: draft-mr-create**, linked via `Closes #<id>`. Initialize the Reviewer Lift block from day one (fields may be `<pending>`).
 8. For behavior-touching work, invoke the `tdd` skill. For docs/config-only/mechanical work, state `TDD: N/A` with rationale.
-9. Run the project's full check gate before marking ready unless parent-owned gate mode is active (`local_gate_owner: parent`, `builder_gate_status.status: not-run`, `not_run_reason: parent-owned`, `ready_transition_owner: parent`). Update the MR description with evidence using `gitlab-local` **Snippet: mr-description-update**.
-10. Mark ready with `gitlab-local` **Snippet: draft-mr-mark-ready** only when this builder owns the local gate; in parent-owned gate mode, leave the MR Draft for the parent Gate Receipt / ready transition.
+9. Run the project's full check gate before marking ready unless parent-owned gate mode is active (`local_gate_owner: parent`, `builder_gate_status.status: not-run`, `not_run_reason: parent-owned`, `ready_transition_owner: parent`). Update the MR description with evidence using `gitlab` **Snippet: mr-description-update**.
+10. Mark ready with `gitlab` **Snippet: draft-mr-mark-ready** only when this builder owns the local gate; in parent-owned gate mode, leave the MR Draft for the parent Gate Receipt / ready transition.
 11. Stop. Return the machine-readable builder-final handoff plus the evidence contract below. **The parent orchestrator spawns the reviewer and owns any approval, merge, or auto-merge allowed by policy/human instruction.** Do not attempt the mandatory review gate yourself unless the parent explicitly changes your role scope.
 
 ## Final handoff contract
@@ -57,7 +57,7 @@ Every claim about repo state, command output, or remote artefacts in your final 
 
 - Quote real `git rev-parse HEAD` output for `head_sha` / `reviewed_sha`.
 - Quote real `git ls-remote origin <branch>` output after pushing.
-- Quote real output from `gitlab-local` **Snippet: mr-pickup** for the MR IID, state, draft, and pipeline fields.
+- Quote real output from `gitlab` **Snippet: mr-pickup** for the MR IID, state, draft, and pipeline fields.
 - Never use placeholder text like `<sha>`, `NNN`, `XXX`, `[snippet]`, or square-bracketed pseudo-values in the report.
 
 If a step failed or you skipped it, say so explicitly. Do not invent the rest of the transcript.
@@ -115,11 +115,11 @@ When the parent reports the reviewer requested changes:
 ## Stuck protocol
 
 Detailed stuck handling lives in `skill://start-build/reference/stuck-protocol.md`; do not copy its full procedure here.
-Launch-critical rule: if blocked for more than 2 hours, keep the MR in Draft, post the filled stuck-packet as an MR comment through `gitlab-local` **Snippet: mr-note-create**, apply only a documented unblock label, list ranked hypotheses, and park or switch only on a fresh branch/worktree.
+Launch-critical rule: if blocked for more than 2 hours, keep the MR in Draft, post the filled stuck-packet as an MR comment through `gitlab` **Snippet: mr-note-create**, apply only a documented unblock label, list ranked hypotheses, and park or switch only on a fresh branch/worktree.
 
 ## GitLab transport
 
-Use the `gitlab-local` skill for MCP-first transport contracts, guarded `glab` fallback syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here — the skill is the single source of truth.
+Use the `gitlab` skill for MCP-first transport contracts, guarded `glab` fallback syntax, JSON output modes, flag pitfalls, and SHA-guarding. Do not hardcode commands here — the skill is the single source of truth.
 
 ## Working rules
 

@@ -1,6 +1,6 @@
 # GitLab review read card
 
-Small transport-context card for `/start-review` read-only GitLab work. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab-local/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
+Small transport-context card for `/start-review` read-only GitLab work. MCP is primary; guarded `glab` fallback and flag/help ownership stay in [`gitlab/SKILL.md`](../SKILL.md). Apply the [`help-first` rule](../SKILL.md#guarded-glab-fallback-and-help-first-rule) only when a documented fallback path uses flagged `glab`.
 
 ## Use this card when
 
@@ -18,9 +18,9 @@ Small transport-context card for `/start-review` read-only GitLab work. MCP is p
 | [`mr-pickup`](../SKILL.md#snippet-mr-pickup) | Read decision-grade MR metadata before review, final snapshot, and SHA guards. | Bound MR IID, full MR URL, or current branch; explicit project path/repo target when needed. | MR IID, draft/state, source/target branches, head SHA, pipeline, merge status, URL. | Do not approve or finish from list-only/candidate data; re-read one bound MR record. |
 | [`artifact-capture`](../SKILL.md#snippet-artifact-capture) | Save MR comments, JSON, patch, and numstat for diff-first review. | Bound MR IID plus temp run directory. | Redacted local artifacts outside tracked paths. | Do not continue from missing/stale diff artifacts when they are needed for findings. |
 
-## Fallback to full gitlab-local
+## Fallback to full gitlab
 
-Fall back to [`gitlab-local/SKILL.md`](../SKILL.md) when:
+Fall back to [`gitlab/SKILL.md`](../SKILL.md) when:
 
 - the needed review read is not listed here;
 - MCP is unavailable, the diff endpoint is unavailable, or list pagination limits block safe candidate selection;

@@ -7,11 +7,11 @@ cd "$REPO_ROOT"
 node <<'NODE'
 const fs = require('node:fs');
 
-const schemaPath = 'gitlab-local/reference/mutation-guard.schema.json';
-const docPath = 'gitlab-local/reference/mutation-guard.md';
-const metadataPath = 'gitlab-local/reference/snippet-metadata.json';
-const guardDocResource = 'skill://gitlab-local/reference/mutation-guard.md';
-const guardSchemaResource = 'skill://gitlab-local/reference/mutation-guard.schema.json';
+const schemaPath = 'gitlab/reference/mutation-guard.schema.json';
+const docPath = 'gitlab/reference/mutation-guard.md';
+const metadataPath = 'gitlab/reference/snippet-metadata.json';
+const guardDocResource = 'skill://gitlab/reference/mutation-guard.md';
+const guardSchemaResource = 'skill://gitlab/reference/mutation-guard.schema.json';
 
 function fail(message) {
   console.error(`gitlab-mutation-guard: FAIL: ${message}`);
@@ -48,9 +48,9 @@ assert(schema.$id === guardSchemaResource, 'schema $id must be skill:// resource
 assert(schema.human_resource === guardDocResource, 'schema human_resource must use skill:// guard doc URI');
 assert(schema.cross_project_guidance.guard_docs === guardDocResource, 'cross-project guard doc resource drifted');
 assert(schema.cross_project_guidance.guard_schema === guardSchemaResource, 'cross-project guard schema resource drifted');
-assert(schema.cross_project_guidance.guard_scripts.startsWith('skill://gitlab-local/scripts/'), 'cross-project guard scripts must use skill://gitlab-local/scripts/');
+assert(schema.cross_project_guidance.guard_scripts.startsWith('skill://gitlab/scripts/'), 'cross-project guard scripts must use skill://gitlab/scripts/');
 assert(schema.cross_project_guidance.target_repo_docs.includes('docs/agents/'), 'target repo docs guidance must stay repo-relative');
-assert(!doc.includes('skill://gitlab-local/docs/agents/'), 'guard doc must not convert target docs/agents refs to gitlab-local skill docs');
+assert(!doc.includes('skill://gitlab/docs/agents/'), 'guard doc must not convert target docs/agents refs to gitlab skill docs');
 
 sameList('ordered guard steps', schema.ordered_steps.map((step) => step.id), [
   'project_binding',
@@ -152,18 +152,18 @@ for (const token of ['mcp_unavailable', 'mcp_merge_robustness_gap', 'mcp_paginat
   assert(metadata.mutation_guard.gap_states.includes(token), `snippet metadata missing guard gap state ${token}`);
 }
 
-const transportDoc = requireText('gitlab-local/reference/snippet-transports.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
+const transportDoc = requireText('gitlab/reference/snippet-transports.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
 assert(transportDoc.includes(guardSchemaResource), 'snippet-transports.md must name guard schema skill URI');
-const ciFinishDoc = requireText('gitlab-local/reference/ci-finish-guards.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
+const ciFinishDoc = requireText('gitlab/reference/ci-finish-guards.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
 assert(ciFinishDoc.includes(guardDocResource), 'ci-finish-guards.md must name guard doc skill URI');
 assert(!/### Guard and authority order/.test(ciFinishDoc), 'ci-finish-guards.md must not restate the old full guard order section');
-const devWorkflowsDoc = requireText('docs/agents/dev-workflows.md', /skill:\/\/gitlab-local\/reference\/mutation-guard\.md/, 'cross-project Mutation Guard skill URI');
+const devWorkflowsDoc = requireText('docs/agents/dev-workflows.md', /skill:\/\/gitlab\/reference\/mutation-guard\.md/, 'cross-project Mutation Guard skill URI');
 assert(devWorkflowsDoc.includes('docs/agents/...'), 'dev-workflows cross-project guidance must keep target docs repo-relative');
 
 for (const path of [
-  'gitlab-local/SKILL.md',
-  'gitlab-local/reference/review-actions.md',
-  'gitlab-local/scripts/README.md'
+  'gitlab/SKILL.md',
+  'gitlab/reference/review-actions.md',
+  'gitlab/scripts/README.md'
 ]) {
   const text = requireText(path, /Mutation Guard/, 'Mutation Guard reference');
   assert(text.includes('mutation-guard.md') || text.includes(guardDocResource), `${path} must link the guard doc`);

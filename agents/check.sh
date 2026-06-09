@@ -144,7 +144,7 @@ workflow_skill_for_agent() {
 check_agent_prompt_strategy() {
   local file rel name workflow_skill workflow_skill_file gitlab_skill_file
 
-  gitlab_skill_file="$REPO_ROOT/gitlab-local/SKILL.md"
+  gitlab_skill_file="$REPO_ROOT/gitlab/SKILL.md"
   if [[ ! -f "$gitlab_skill_file" ]]; then
     error "agent prompt strategy: canonical GitLab transport skill missing: $(relpath "$gitlab_skill_file")"
   fi
@@ -163,8 +163,8 @@ check_agent_prompt_strategy() {
     if ! grep -Fq 'Canonical development pattern source: `'"$workflow_skill"'`' "$file"; then
       error "agent prompt strategy: $rel must point to canonical workflow skill $workflow_skill"
     fi
-    if ! grep -Fq 'gitlab-local' "$file"; then
-      error "agent prompt strategy: $rel must point to gitlab-local for GitLab transport/fallback mechanics"
+    if ! grep -Fq 'gitlab' "$file"; then
+      error "agent prompt strategy: $rel must point to gitlab for GitLab transport/fallback mechanics"
     fi
   done
 }

@@ -4,7 +4,7 @@ Router and compatibility anchor host for `start-build`. Detailed mode-specific f
 
 ## Issue pickup
 
-Issue selection detail lives in [reference/issue-pickup.md](reference/issue-pickup.md): run `gitlab-local` preflight, use `gitlab-local` **Snippet: issue-pickup** when no issue is supplied, prefer ready/unblocked one-MR work, inspect comments/linked MRs, prove the [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) before multiple-issue work, and avoid casual claim/label mutation.
+Issue selection detail lives in [reference/issue-pickup.md](reference/issue-pickup.md): run `gitlab` preflight, use `gitlab` **Snippet: issue-pickup** when no issue is supplied, prefer ready/unblocked one-MR work, inspect comments/linked MRs, prove the [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) before multiple-issue work, and avoid casual claim/label mutation.
 
 ## Multiple issue worktree mode
 
@@ -24,7 +24,7 @@ Mode boundaries are split across [reference/child-builder.md](reference/child-bu
 
 ## Compact mode cards
 
-Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; parent-owned Check Gate / Gate Receipt detail lives in [`reference/parent-owned-gate.md`](reference/parent-owned-gate.md). Fall back to the full reference docs and `/gitlab-local` transport/fallback snippets on ambiguity, missing fields, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
+Compact mode cards live under `reference/` as pointer maps only: [`child-builder-card.md`](reference/child-builder-card.md), [`parent-owned-gate-card.md`](reference/parent-owned-gate-card.md), [`revision-card.md`](reference/revision-card.md), and [`parent-orchestrator-card.md`](reference/parent-orchestrator-card.md). Use them for active-mode checklists after the canonical mode owner is known; parent-owned Check Gate / Gate Receipt detail lives in [`reference/parent-owned-gate.md`](reference/parent-owned-gate.md). Fall back to the full reference docs and `/gitlab` transport/fallback snippets on ambiguity, missing fields, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action.
 
 ### Standalone `/start-build` mode
 
@@ -49,7 +49,7 @@ The parent loop lives in [reference/parent-orchestrator.md §Parent loop](refere
 
 ### Post-merge verifier recipe
 
-Post-merge verifier detail lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md): use that recipe only after independent review plus authority-aware finish reports merge or protected auto-merge completion, prefer `gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for repeatable read-only snapshot behavior, and never use verification to approve, reject, merge, queue auto-merge, delete remote branches, force-close issues, or run mutating release/deploy/operator validation without human authorization.
+Post-merge verifier detail lives in [reference/post-merge-verifier.md](reference/post-merge-verifier.md): use that recipe only after independent review plus authority-aware finish reports merge or protected auto-merge completion, prefer `gitlab/scripts/gitlab-post-merge-snapshot.sh` for repeatable read-only snapshot behavior, and never use verification to approve, reject, merge, queue auto-merge, delete remote branches, force-close issues, or run mutating release/deploy/operator validation without human authorization.
 
 ## Check gate discovery
 
@@ -69,7 +69,7 @@ fallback correctness.
 
 ## Implementation flow
 
-Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab-local` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, classify exact-SHA Gate coverage, and mark ready with **Snippet: draft-mr-mark-ready** only after the builder-owned ready coverage rule passes and Reviewer Lift names the current head SHA. Parent-owned gate mode leaves the MR Draft for the parent Gate Receipt / ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
+Implementation detail lives in [reference/implementation-flow.md](reference/implementation-flow.md): start clean from latest default branch, branch by issue ID, open an early Draft MR with `gitlab` **Snippet: draft-mr-create**, apply targeted tests/TDD or `TDD: N/A`, update the MR description with **Snippet: mr-description-update**, classify exact-SHA Gate coverage, and mark ready with **Snippet: draft-mr-mark-ready** only after the builder-owned ready coverage rule passes and Reviewer Lift names the current head SHA. Parent-owned gate mode leaves the MR Draft for the parent Gate Receipt / ready transition. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.
 
 ## Compact packet eligibility
 
@@ -77,7 +77,7 @@ Compact-packet detail lives in [reference/context-and-planning.md §Compact pack
 
 ## Stuck protocol
 
-Stuck handling lives in [reference/stuck-protocol.md](reference/stuck-protocol.md): if blocked for more than 2 hours, keep the MR in Draft, post [templates/stuck-packet.md](templates/stuck-packet.md) through `gitlab-local` **Snippet: mr-note-create**, apply only documented unblock labels, list ranked hypotheses, and park the branch/worktree or switch only on a fresh branch/worktree.
+Stuck handling lives in [reference/stuck-protocol.md](reference/stuck-protocol.md): if blocked for more than 2 hours, keep the MR in Draft, post [templates/stuck-packet.md](templates/stuck-packet.md) through `gitlab` **Snippet: mr-note-create**, apply only documented unblock labels, list ranked hypotheses, and park the branch/worktree or switch only on a fresh branch/worktree.
 
 ## Mandatory review gate
 

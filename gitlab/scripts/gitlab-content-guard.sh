@@ -8,7 +8,7 @@
 #
 # Diagnostics name the failing role and the offending byte offset and NEVER print
 # the body, so a malformed or secret-bearing payload is not echoed back.
-# gitlab-local/scripts/gitlab-wrappers.sh delegates file-backed fallback bodies
+# gitlab/scripts/gitlab-wrappers.sh delegates file-backed fallback bodies
 # here, so this script owns the shared Safe GitLab Text byte rule.
 #
 # Makes NO network call: it only reads the local input body.

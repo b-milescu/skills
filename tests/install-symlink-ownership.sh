@@ -98,7 +98,7 @@ custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
 pi_custom_skill_abs="$("$REALPATH" -m "$external_dir/pi-custom-skill")"
 pi_custom_agent_abs="$("$REALPATH" -m "$external_dir/pi-custom-agent.md")"
 
-ln -s "$REPO_ROOT/gitlab-local" "$home_dir/.claude/skills/start-review"
+ln -s "$REPO_ROOT/gitlab" "$home_dir/.claude/skills/start-review"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-reviewer.md"
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"

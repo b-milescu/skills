@@ -2,8 +2,8 @@
 
 This card owns the CI/finish specializations for `ci-watch-sha-pinned` and `finish-mr-authority-aware`. The shared ordered mutation seam lives in the **GitLab Mutation Guard**:
 
-- Human contract: `skill://gitlab-local/reference/mutation-guard.md`
-- Machine schema: `skill://gitlab-local/reference/mutation-guard.schema.json`
+- Human contract: `skill://gitlab/reference/mutation-guard.md`
+- Machine schema: `skill://gitlab/reference/mutation-guard.schema.json`
 
 Use this card for CI/finish-specific inputs and result vocabulary only. Do not copy the full mutation sequence here; apply the Mutation Guard order first, then the specialization below.
 

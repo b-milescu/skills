@@ -668,7 +668,7 @@ test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed() {
   old_sha=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
   dir="$(make_wrapper_fixture_dir wrapper-safe-mr-json)"
-  write_safe_mr_json "$dir/mr.json" "$good_sha" success "$good_sha" issue-173-gitlab-local-wrappers main
+  write_safe_mr_json "$dir/mr.json" "$good_sha" success "$good_sha" issue-173-gitlab-wrappers main
   run_wrapper_fixture "$dir" \
     safe_mr_json \
     --repo git@gitlab.example.com:agents/skills.git \
@@ -677,7 +677,7 @@ test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed() {
   assert_status 0
   assert_json_field sha "$good_sha"
   assert_json_field pipeline.status success
-  assert_json_field source_branch issue-173-gitlab-local-wrappers
+  assert_json_field source_branch issue-173-gitlab-wrappers
   assert_log_contains "$dir/glab.log" "glab mr view 59 -R git@gitlab.example.com:agents/skills.git -F json"
 
   dir="$(make_wrapper_fixture_dir wrapper-safe-missing-pipeline)"
@@ -709,14 +709,14 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   old_sha=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-405)"
-  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-local-wrappers main
+  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-wrappers main
   FAKE_MR_MERGE_MODE=405 run_wrapper_fixture "$dir" \
     auto_merge_api_fallback \
     --repo git@gitlab.example.com:agents/skills.git \
     --project-path agents/skills \
     --mr-iid 59 \
     --reviewed-sha "$good_sha" \
-    --source-branch issue-173-gitlab-local-wrappers \
+    --source-branch issue-173-gitlab-wrappers \
     --target-branch main \
     --merge-authority "queue auto-merge" \
     --authority-source "parent task prompt: queue auto-merge" \
@@ -730,14 +730,14 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_log_not_contains "$dir/glab.log" "approve"
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-missing-host)"
-  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-local-wrappers main
+  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-wrappers main
   FAKE_EXPECT_REPO=agents/skills FAKE_MR_MERGE_MODE=405 run_wrapper_fixture "$dir" \
     auto_merge_api_fallback \
     --repo agents/skills \
     --project-path agents/skills \
     --mr-iid 59 \
     --reviewed-sha "$good_sha" \
-    --source-branch issue-173-gitlab-local-wrappers \
+    --source-branch issue-173-gitlab-wrappers \
     --target-branch main \
     --merge-authority "queue auto-merge" \
     --authority-source "parent task prompt: queue auto-merge" \
@@ -746,14 +746,14 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_validation_failure_without_glab_call "$dir" 64 missing_api_hostname
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-builder)"
-  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-local-wrappers main
+  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-wrappers main
   run_wrapper_fixture "$dir" \
     auto_merge_api_fallback \
     --repo git@gitlab.example.com:agents/skills.git \
     --project-path agents/skills \
     --mr-iid 59 \
     --reviewed-sha "$good_sha" \
-    --source-branch issue-173-gitlab-local-wrappers \
+    --source-branch issue-173-gitlab-wrappers \
     --target-branch main \
     --merge-authority "queue auto-merge" \
     --authority-source "parent task prompt: queue auto-merge" \
@@ -765,14 +765,14 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_log_not_contains "$dir/glab.log" "api"
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-stale-head)"
-  write_safe_mr_json "$dir/mr.json" "$old_sha" running "$old_sha" issue-173-gitlab-local-wrappers main
+  write_safe_mr_json "$dir/mr.json" "$old_sha" running "$old_sha" issue-173-gitlab-wrappers main
   run_wrapper_fixture "$dir" \
     auto_merge_api_fallback \
     --repo git@gitlab.example.com:agents/skills.git \
     --project-path agents/skills \
     --mr-iid 59 \
     --reviewed-sha "$good_sha" \
-    --source-branch issue-173-gitlab-local-wrappers \
+    --source-branch issue-173-gitlab-wrappers \
     --target-branch main \
     --merge-authority "queue auto-merge" \
     --authority-source "parent task prompt: queue auto-merge" \

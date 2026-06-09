@@ -106,7 +106,7 @@ status transition, preflight state, and evidence.
 
 A single parent ready-transition check is enough when every item below is true:
 
-1. Project binding is verified through `/gitlab-local` for the target repo, MR,
+1. Project binding is verified through `/gitlab` for the target repo, MR,
    source branch, target branch, issue IID, and default branch.
 2. The MR is Draft, links the intended issue with `Closes #<iid>`, and targets the
    expected default branch.

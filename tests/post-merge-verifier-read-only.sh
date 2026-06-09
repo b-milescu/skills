@@ -17,7 +17,7 @@ require_text() {
 removed_skill_dir="post-merge-verifier"
 removed_skill_file="$removed_skill_dir/SKILL.md"
 verifier_recipe="start-build/reference/post-merge-verifier.md"
-snapshot_helper="gitlab-local/scripts/gitlab-post-merge-snapshot.sh"
+snapshot_helper="gitlab/scripts/gitlab-post-merge-snapshot.sh"
 
 [[ ! -e "$removed_skill_file" ]] || fail "removed top-level verifier skill still exists: $removed_skill_file"
 

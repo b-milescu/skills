@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "skill://gitlab-local/reference/authority-verification.schema.json",
+  "$id": "skill://gitlab/reference/authority-verification.schema.json",
   "kind": "gitlab-authority-verification-schema",
   "version": "1",
-  "owner": "gitlab-local",
-  "human_resource": "skill://gitlab-local/reference/authority-verification.md",
+  "owner": "gitlab",
+  "human_resource": "skill://gitlab/reference/authority-verification.md",
   "summary": "Canonical contract for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source handling, caller-context no-self checks, and action routing. It is the Authority Verification phase of the GitLab Mutation Guard; transport evidence is recorded separately.",
   "type": "object",
   "additionalProperties": false,

@@ -12,12 +12,12 @@ Compact pointer map for child `mr-builder` sessions. This card is a checklist, n
 
 | Step | Pointer | Stop / verify |
 | --- | --- | --- |
-| Bind repo and issue | `gitlab-local` [`local-repo-preflight`](../../gitlab-local/SKILL.md#snippet-local-repo-preflight), [`issue-pickup`](../../gitlab-local/SKILL.md#snippet-issue-pickup), and [`child-builder.md` checklist](child-builder.md#child-checklist). | Re-read issue state and assignee immediately before branch/MR work; stop on cross-project binding or changed ownership. |
+| Bind repo and issue | `gitlab` [`local-repo-preflight`](../../gitlab/SKILL.md#snippet-local-repo-preflight), [`issue-pickup`](../../gitlab/SKILL.md#snippet-issue-pickup), and [`child-builder.md` checklist](child-builder.md#child-checklist). | Re-read issue state and assignee immediately before branch/MR work; stop on cross-project binding or changed ownership. |
 | Start clean | [`implementation-flow.md` start-clean sequence](implementation-flow.md#procedure). | Empty status, latest default branch, branch name references the issue. |
-| Draft handoff | `gitlab-local` [`draft-mr-create`](../../gitlab-local/SKILL.md#snippet-draft-mr-create) with `Closes #<issue>` and a Review Packet. | Draft only; do not mark ready during early or implementation pushes. |
+| Draft handoff | `gitlab` [`draft-mr-create`](../../gitlab/SKILL.md#snippet-draft-mr-create) with `Closes #<issue>` and a Review Packet. | Draft only; do not mark ready during early or implementation pushes. |
 | Build and evidence | [`SAFETY.md` TDD/safety rules](../SAFETY.md#non-negotiables), [`context-and-planning.md` handoff checklist](context-and-planning.md#handoff-integrity-checklist). | Behavior changes need TDD; docs/config/mechanical work records `TDD: N/A` with rationale. |
-| Reviewer Lift | [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and `gitlab-local` [`mr-description-update`](../../gitlab-local/SKILL.md#snippet-mr-description-update). | Every row stays current; authority is a quoted claim with a verifiable source. |
-| Final SHA guard | `gitlab-local` [`mr-pickup`](../../gitlab-local/SKILL.md#snippet-mr-pickup), [`sha-guard`](../../gitlab-local/SKILL.md#snippet-sha-guard), and [`child-builder.md` final push rule](child-builder.md#child-checklist). | Final handoff `head_sha`, `reviewed_sha`, and candidate SHA name the current MR head. |
+| Reviewer Lift | [`reviewer-lift-schema.md`](../templates/reviewer-lift-schema.md) and `gitlab` [`mr-description-update`](../../gitlab/SKILL.md#snippet-mr-description-update). | Every row stays current; authority is a quoted claim with a verifiable source. |
+| Final SHA guard | `gitlab` [`mr-pickup`](../../gitlab/SKILL.md#snippet-mr-pickup), [`sha-guard`](../../gitlab/SKILL.md#snippet-sha-guard), and [`child-builder.md` final push rule](child-builder.md#child-checklist). | Final handoff `head_sha`, `reviewed_sha`, and candidate SHA name the current MR head. |
 | Return handoff | [`builder-final-handoff.md`](../templates/builder-final-handoff.md). | Child builder stops after handoff; parent owns review, approval, finish, cleanup, and post-merge verification. |
 
 ## Safety and authority pointers
@@ -30,4 +30,4 @@ Compact pointer map for child `mr-builder` sessions. This card is a checklist, n
 
 ## Fallback to canonical docs
 
-Fall back to the canonical docs and `gitlab-local/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action beyond the child builder's assigned Draft MR update path. The full references plus live fallback help win over this card.
+Fall back to the canonical docs and `gitlab/SKILL.md` transport/fallback snippets on ambiguity, missing field, transport/help drift, authority uncertainty, SHA/CI mismatch, cross-project binding, partial review, or any mutation action beyond the child builder's assigned Draft MR update path. The full references plus live fallback help win over this card.

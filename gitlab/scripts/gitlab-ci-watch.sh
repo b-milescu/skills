@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SHA-pinned GitLab CI watcher helper.
-# Convenience wrapper for gitlab-local's accepted ci-watch-sha-pinned snippet.
+# Convenience wrapper for gitlab's accepted ci-watch-sha-pinned snippet.
 
 set -euo pipefail
 

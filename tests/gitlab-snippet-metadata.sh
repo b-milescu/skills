@@ -7,10 +7,10 @@ cd "$REPO_ROOT"
 node <<'NODE'
 const fs = require('node:fs');
 
-const metadataPath = 'gitlab-local/reference/snippet-metadata.json';
-const contractPath = 'gitlab-local/reference/snippet-transports.md';
-const skillPath = 'gitlab-local/SKILL.md';
-const metadataResource = 'skill://gitlab-local/reference/snippet-metadata.json';
+const metadataPath = 'gitlab/reference/snippet-metadata.json';
+const contractPath = 'gitlab/reference/snippet-transports.md';
+const skillPath = 'gitlab/SKILL.md';
+const metadataResource = 'skill://gitlab/reference/snippet-metadata.json';
 const expectedNames = [
   'local-repo-preflight',
   'issue-pickup',
@@ -88,7 +88,7 @@ assert(metadata.$id === metadataResource, 'metadata $id must use skill:// resour
 assert(metadata.markdown_contract === contractPath, 'metadata markdown_contract path drifted');
 assert(metadata.stable_snippet_count === expectedNames.length, 'stable_snippet_count drifted');
 assert(contract.includes(metadataResource), 'snippet-transports.md must name the skill:// metadata resource');
-assert(skill.includes(metadataResource), 'gitlab-local/SKILL.md must name the skill:// metadata resource');
+assert(skill.includes(metadataResource), 'gitlab/SKILL.md must name the skill:// metadata resource');
 assert(contract.includes('checked against this metadata by `tests/gitlab-snippet-metadata.sh`'), 'snippet-transports.md must state the Markdown is checked against metadata');
 assert(metadata.via_evidence_requirement?.required === true, 'top-level via evidence requirement must be present');
 assert(metadata.via_evidence_requirement.mcp_token === 'via=mcp', 'MCP via evidence token drifted');

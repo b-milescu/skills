@@ -4,7 +4,7 @@ This repo uses GitLab-backed dev workflows.
 
 ## Skills
 
-- **`/gitlab-local`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
+- **`/gitlab`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
 - **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using vertical slices and this repo's triage labels.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
@@ -12,14 +12,14 @@ This repo uses GitLab-backed dev workflows.
 
 ## Active recipes
 
-- `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab-local`.
+- `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab`.
 - `skill://start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `skill://start-build/reference/post-merge-verifier.md`; the stable compatibility anchor remains `skill://start-build/BUILD-FLOW.md#parent-orchestrator-recipe`.
-- `skill://start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` and `skill://gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets here.
+- `skill://start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab` and `skill://gitlab/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets here.
 - `skill://start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
 - `skill://setup-dev-skills/reference/project-profile-facts.json` — canonical Setup Skill fact source used to verify this repo's Agent Setup Doc paths, live label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs.
 - `skill://start-build/reference/parent-owned-gate.md` — canonical parent-owned Check Gate / Gate Receipt seam for child handoff ownership fields, receipt schema, parent verification checklist, ready-transition conditions, exact-SHA Gate coverage handling, and evidence-ready tokens. Cross-project invocations use `skill://start-build/reference/parent-owned-gate.md`; target repo Check Gate policy stays repo-relative at `docs/agents/check-gate.md`.
-- `skill://gitlab-local/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab-local/reference/mutation-guard.md`, `skill://gitlab-local/reference/mutation-guard.schema.json`, and `skill://gitlab-local/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
-- `skill://gitlab-local/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab-local/reference/authority-verification.md` and `skill://gitlab-local/reference/authority-verification.schema.json`.
+- `skill://gitlab/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab/reference/mutation-guard.md`, `skill://gitlab/reference/mutation-guard.schema.json`, and `skill://gitlab/scripts/...` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
+- `skill://gitlab/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab/reference/authority-verification.md` and `skill://gitlab/reference/authority-verification.schema.json`.
 
 ## Skill-only model-tier routing
 
@@ -101,8 +101,8 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Before any GitLab API action, load `/gitlab-local` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
-- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab-local/reference/mutation-guard.md`; keep this repo's `docs/agents/...` policy references repo-relative when working from another project.
+- Before any GitLab API action, load `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab/reference/mutation-guard.md`; keep this repo's `docs/agents/...` policy references repo-relative when working from another project.
 - Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
 - Before implementation from GitLab issues, load `/start-build`.
 - Before MR review, load `/start-review`.

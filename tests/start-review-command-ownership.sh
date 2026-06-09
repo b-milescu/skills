@@ -24,7 +24,7 @@ collect_raw_glab_syntax() {
   local file="$1"
 
   # Reject command-shaped glab examples in reviewer-owned docs. Review cards and
-  # gitlab-local/SKILL.md own flag syntax; start-review should point to snippets
+  # gitlab/SKILL.md own flag syntax; start-review should point to snippets
   # and bound-target concepts instead of copying raw command bodies.
   grep -En -- 'glab[[:space:]]+(issue|mr|ci|repo|api|\.\.\.|-[A-Za-z-])\b' "$file" || true
 }
@@ -50,7 +50,7 @@ fi
 
 good_fixture="$TMPDIR/snippet-pointer.md"
 cat > "$good_fixture" <<'GOOD'
-Reviewer should use `gitlab-local` **Snippet: mr-pickup** with a bound MR IID
+Reviewer should use `gitlab` **Snippet: mr-pickup** with a bound MR IID
 plus explicit repo target, or the full bound MR URL when repo inference is unsafe.
 GOOD
 
@@ -64,14 +64,14 @@ reviewer_owned_docs=(
 )
 
 for file in "${reviewer_owned_docs[@]}"; do
-  assert_no_raw_glab_syntax "$file" || fail "$file copies raw glab command syntax instead of pointing to gitlab-local cards/snippets"
+  assert_no_raw_glab_syntax "$file" || fail "$file copies raw glab command syntax instead of pointing to gitlab cards/snippets"
 done
 
 for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
-  require_text "$file" '../gitlab-local/reference/review-read.md' 'review-read card link'
-  require_text "$file" '../gitlab-local/reference/review-actions.md' 'review-actions card link'
-  require_text "$file" '../gitlab-local/reference/ci.md' 'CI card link'
-  require_text "$file" 'fall back to .*gitlab-local/SKILL.md|Fallback to full gitlab-local' 'full gitlab-local fallback guidance'
+  require_text "$file" '../gitlab/reference/review-read.md' 'review-read card link'
+  require_text "$file" '../gitlab/reference/review-actions.md' 'review-actions card link'
+  require_text "$file" '../gitlab/reference/ci.md' 'CI card link'
+  require_text "$file" 'fall back to .*gitlab/SKILL.md|Fallback to full gitlab' 'full gitlab fallback guidance'
 done
 
 require_text start-review/REVIEW-FLOW.md 'Snippet: local-repo-preflight' 'preflight snippet ownership'

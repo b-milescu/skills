@@ -74,7 +74,7 @@ for prompt in "${final_reviewer_prompts[@]}"; do
   fi
 
   require_text "$prompt" 'Canonical development pattern source: `start-review`' 'canonical start-review pointer'
-  require_text "$prompt" 'gitlab-local' 'gitlab-local pointer'
+  require_text "$prompt" 'gitlab' 'gitlab pointer'
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Review Report' 'Review Report handoff invariant'
   require_text "$prompt" 'final handoff|reviewer-final-handoff\.md' 'final handoff invariant'
@@ -85,7 +85,7 @@ for prompt in "${final_reviewer_prompts[@]}"; do
 
   reject_text "$prompt" '^##[[:space:]]+Summary-first Review Report and final handoff[[:space:]]*$' 'duplicated Review Report/final handoff section heading'
   reject_text "$prompt" '^##[[:space:]]+Handoff integrity check[[:space:]]*$' 'duplicated handoff integrity section heading'
-  reject_text "$prompt" 'Full command ownership still lives|Reviewers load the small `gitlab-local` review cards before the full command reference' 'copied gitlab-local tooling prose from start-review'
+  reject_text "$prompt" 'Full command ownership still lives|Reviewers load the small `gitlab` review cards before the full command reference' 'copied gitlab tooling prose from start-review'
 done
 
 for prompt in "${generic_reviewer_prompts[@]}"; do
@@ -101,7 +101,7 @@ done
 
 for prompt in "${scout_prompts[@]}"; do
   require_text "$prompt" 'Canonical development pattern source: `start-review`' 'scout start-review pointer'
-  require_text "$prompt" 'gitlab-local' 'scout gitlab-local pointer'
+  require_text "$prompt" 'gitlab' 'scout gitlab pointer'
   require_text "$prompt" 'anti-fabrication' 'scout anti-fabrication evidence'
   require_text "$prompt" 'non-gate' 'scout non-gate boundary'
   require_text "$prompt" 'non-authoritative' 'scout non-authoritative boundary'

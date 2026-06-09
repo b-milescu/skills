@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-GUARD="$REPO_ROOT/gitlab-local/scripts/gitlab-content-guard.sh"
+GUARD="$REPO_ROOT/gitlab/scripts/gitlab-content-guard.sh"
 
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT

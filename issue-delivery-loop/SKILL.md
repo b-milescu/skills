@@ -16,7 +16,7 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 
 Act immediately — this skill drives the batch, it is not passive reference. Follow the Operating contract below; this ramp just orders the first actions:
 
-1. Preflight (`skill://gitlab-local/SKILL.md`) and read the ready queue.
+1. Preflight (`skill://gitlab/SKILL.md`) and read the ready queue.
 2. Prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work.
 3. Classify each target issue/MR as `trivial`, `moderate`, or `high-risk` using [Model-tier routing](#model-tier-routing).
 4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md).
@@ -68,8 +68,8 @@ Route exact agent names from that classification:
 - Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 - Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
 - After merge or protected auto-merge, hand off read-only validation to the `skill://start-build/reference/post-merge-verifier.md` recipe.
-- Canonical sources: `skill://gitlab-local/SKILL.md`, `skill://start-build/BUILD-FLOW.md`, `skill://start-build/reference/parent-orchestrator.md`, `skill://start-build/reference/parent-owned-gate.md`, `skill://start-build/reference/child-builder.md`, `skill://start-build/reference/post-merge-verifier.md`, `skill://start-build/templates/reviewer-lift-schema.md`, `skill://start-build/templates/review-packet.md`, `skill://start-review/REVIEW-FLOW.md`, `skill://start-review/templates/review-report.md`.
+- Canonical sources: `skill://gitlab/SKILL.md`, `skill://start-build/BUILD-FLOW.md`, `skill://start-build/reference/parent-orchestrator.md`, `skill://start-build/reference/parent-owned-gate.md`, `skill://start-build/reference/child-builder.md`, `skill://start-build/reference/post-merge-verifier.md`, `skill://start-build/templates/reviewer-lift-schema.md`, `skill://start-build/templates/review-packet.md`, `skill://start-review/REVIEW-FLOW.md`, `skill://start-review/templates/review-report.md`.
 
 ## Handoff
 
-Use this skill as coordinator-only guidance. Keep live GitLab transport syntax and fallback conditions in `/gitlab-local`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.
+Use this skill as coordinator-only guidance. Keep live GitLab transport syntax and fallback conditions in `/gitlab`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.

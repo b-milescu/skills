@@ -2,21 +2,21 @@
 
 The **GitLab Mutation Guard** is the single seam every GitLab workflow mutation passes through before it writes, approves, marks ready, merges, queues auto-merge, labels, or posts a note. It exists so MCP primary transport and guarded `glab` fallback share the same fail-closed ordering and the same result evidence.
 
-Machine-readable schema: [`mutation-guard.schema.json`](mutation-guard.schema.json) / `skill://gitlab-local/reference/mutation-guard.schema.json`. Authority phase schema: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab-local/reference/authority-verification.schema.json`.
+Machine-readable schema: [`mutation-guard.schema.json`](mutation-guard.schema.json) / `skill://gitlab/reference/mutation-guard.schema.json`. Authority phase schema: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab/reference/authority-verification.schema.json`.
 
 ## Resource addressing
 
-When a skill runs from a target repository, reference guard resources with `skill://gitlab-local/...`:
+When a skill runs from a target repository, reference guard resources with `skill://gitlab/...`:
 
-- `skill://gitlab-local/reference/mutation-guard.md`
-- `skill://gitlab-local/reference/mutation-guard.schema.json`
-- `skill://gitlab-local/reference/authority-verification.md`
-- `skill://gitlab-local/reference/authority-verification.schema.json`
-- `skill://gitlab-local/scripts/gitlab-content-guard.sh`
-- `skill://gitlab-local/scripts/gitlab-finish-mr.sh`
-- `skill://gitlab-local/scripts/gitlab-wrappers.sh`
+- `skill://gitlab/reference/mutation-guard.md`
+- `skill://gitlab/reference/mutation-guard.schema.json`
+- `skill://gitlab/reference/authority-verification.md`
+- `skill://gitlab/reference/authority-verification.schema.json`
+- `skill://gitlab/scripts/gitlab-content-guard.sh`
+- `skill://gitlab/scripts/gitlab-finish-mr.sh`
+- `skill://gitlab/scripts/gitlab-wrappers.sh`
 
-Target-repo policy remains repo-relative. Use `docs/agents/check-gate.md`, `docs/agents/dev-workflows.md`, `docs/agents/triage-labels.md`, and similar paths for the repository being changed; do not rewrite those target policy refs as gitlab-local skill resources.
+Target-repo policy remains repo-relative. Use `docs/agents/check-gate.md`, `docs/agents/dev-workflows.md`, `docs/agents/triage-labels.md`, and similar paths for the repository being changed; do not rewrite those target policy refs as gitlab skill resources.
 
 ## Applicability
 

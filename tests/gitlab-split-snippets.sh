@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Parallel-execution contract (issue #197/#210):
 #   Snippet body/stability assertions live here.
-#   CI/finish guard mechanics live in tests/gitlab-local-ci-finish-guards.sh.
+#   CI/finish guard mechanics live in tests/gitlab-ci-finish-guards.sh.
 # These two test files are intentionally disjoint so future changes can update
 # snippet inventory separately from CI/finish mechanics.
 # both, merge test rows by ID without resequencing the existing assertions.
@@ -12,7 +12,7 @@ set -euo pipefail
 #   This test asserts BEHAVIOURAL invariants, stable snippet names, and guarded
 #   fallback/helper contracts, NOT unconditional primary `glab` command strings.
 #   Per-snippet MCP primary tool/input/output/fail-closed/fallback details live
-#   in gitlab-local/reference/snippet-transports.md; inline SKILL shell blocks
+#   in gitlab/reference/snippet-transports.md; inline SKILL shell blocks
 #   are accepted fallback/helper examples.
 #     - the 20 snippet NAMES are stable (transport-independent API),
 #     - one action per snippet (no snippet mixes two mutating verbs),
@@ -26,8 +26,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-SKILL="gitlab-local/SKILL.md"
-TEST_NAME="gitlab-local-split-snippets"
+SKILL="gitlab/SKILL.md"
+TEST_NAME="gitlab-split-snippets"
 
 # shellcheck source=tests/lib/assertions.sh
 source "$REPO_ROOT/tests/lib/assertions.sh"
@@ -124,7 +124,7 @@ snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
 [[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"
 
 
-CONTRACT="gitlab-local/reference/snippet-transports.md"
+CONTRACT="gitlab/reference/snippet-transports.md"
 [[ -f "$CONTRACT" ]] || fail "missing snippet transport contract $CONTRACT"
 require_text "$SKILL" 'reference/snippet-transports\.md' 'snippet transport contract link'
 require_text "$CONTRACT" 'MCP primary tool' 'MCP primary tools column'
@@ -142,7 +142,7 @@ for name in \
 done
 # --- Draft MR create: creates an MR, file-backed description, no ready/update --
 # One action: it CREATES, it does not update an existing MR and does not mark ready.
-assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
+assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
 assert_contains "$draft_create_body" 'draft_mr_create' 'Draft MR create wrapper command'
 assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch input'
 assert_contains "$draft_create_body" '--description-file "$description_file"' 'Draft MR file-backed description'
@@ -151,7 +151,7 @@ assert_not_performs "$draft_create_body" "$VERB_MR_UPDATE" 'an MR-update action 
 assert_not_performs "$draft_create_body" "$VERB_MARK_READY" 'a mark-ready action in the create snippet'
 
 # --- MR description update: updates description, explicit target, no create/ready
-assert_contains "$mr_description_update_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'MR description update wrapper path'
+assert_contains "$mr_description_update_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'MR description update wrapper path'
 assert_contains "$mr_description_update_body" 'mr_description_update' 'MR description update wrapper command'
 assert_contains "$mr_description_update_body" '--mr-iid "$mr_iid"' 'MR description explicit target'
 assert_contains "$mr_description_update_body" '--description-file "$description_file"' 'MR description file-backed input'
@@ -193,10 +193,10 @@ assert_not_performs "$confirmation_body" "$VERB_MERGE" 'a merge action in the co
 # The bodies must point at the in-skill helper script + docs (path contracts that
 # survive transport changes), and must not re-inline the long relocated bodies.
 assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'CI watcher helper script pointer'
-assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab-local/scripts/gitlab-ci-watch.sh"' 'CI watcher full skill URI helper path'
+assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"' 'CI watcher full skill URI helper path'
 assert_contains "$ci_watch_body" 'scripts/README.md' 'CI watcher helper docs pointer'
 assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper script pointer'
-assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab-local/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
+assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
 assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
 assert_not_contains "$ci_watch_body" 'while [ "$SECONDS" -le "$deadline" ]; do' 'long CI watcher shell body'
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
@@ -217,29 +217,29 @@ assert_contains "$issue_note_body" '--message-file "$comment_file"' 'file-backed
 assert_not_performs "$issue_note_body" "$VERB_MR_NOTE" 'an MR-note action in the issue-note snippet'
 
 # --- Label reconcile / safe MR JSON / auto-merge fallback: wrapper contracts ---
-assert_contains "$label_reconcile_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'label reconcile self-contained wrapper script path'
+assert_contains "$label_reconcile_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'label reconcile self-contained wrapper script path'
 assert_contains "$label_reconcile_body" 'label_reconcile' 'label reconcile wrapper command'
 assert_contains "$label_reconcile_body" '--add-labels "$add_labels"' 'label reconcile add input'
 assert_contains "$label_reconcile_body" '--remove-labels "$remove_labels"' 'label reconcile remove input'
 assert_contains "$label_reconcile_body" 'state/category label conflicts' 'label conflict fail-closed docs'
-assert_contains "$safe_mr_json_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'safe MR JSON self-contained wrapper script path'
+assert_contains "$safe_mr_json_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'safe MR JSON self-contained wrapper script path'
 assert_contains "$safe_mr_json_body" 'safe_mr_json' 'safe MR JSON wrapper command'
 assert_contains "$safe_mr_json_body" 'project binding, SHA, pipeline' 'safe MR JSON fail-closed docs'
-assert_contains "$auto_merge_api_body" 'gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"' 'auto-merge fallback self-contained wrapper script path'
+assert_contains "$auto_merge_api_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'auto-merge fallback self-contained wrapper script path'
 assert_contains "$auto_merge_api_body" 'auto_merge_api_fallback' 'auto-merge fallback wrapper command'
 assert_contains "$auto_merge_api_body" '--authority-verified true' 'verified authority source input'
-require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-create.*mr-description-update' 'wrappers README description contract reference'
+require_text "gitlab/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-create.*mr-description-update' 'wrappers README description contract reference'
 
 # --- File-backed multiline + help-first guidance survive ----------------------
 require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
 require_text "$SKILL" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
-require_text "gitlab-local/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
+require_text "gitlab/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
 require_text "$SKILL" 'Before any flagged fallback `glab` command, run exact command help' 'fallback help-first rule'
 
-require_text "gitlab-local/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
-require_text "gitlab-local/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
-require_text "gitlab-local/scripts/README.md" 'gitlab-wrappers\.sh.*auto-merge-api-fallback' 'wrappers README contract reference'
-require_text "gitlab-local/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
+require_text "gitlab/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
+require_text "gitlab/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
+require_text "gitlab/scripts/README.md" 'gitlab-wrappers\.sh.*auto-merge-api-fallback' 'wrappers README contract reference'
+require_text "gitlab/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
 # --- Retired combined snippets stay gone (transport-independent names) ---------
 if grep -Fq 'Snippet: approve-merge-sha-bound' "$SKILL"; then
@@ -253,7 +253,7 @@ if grep -Fq 'Snippet: draft-mr-create-update' "$SKILL"; then
 fi
 
 for file in \
-  gitlab-local/SKILL.md \
+  gitlab/SKILL.md \
   start-build/SKILL.md \
   start-build/BUILD-FLOW.md \
   $(agent_prompt_paths "${builder_prompt_names[@]}"); do
@@ -269,7 +269,7 @@ for file in start-build/SKILL.md start-build/BUILD-FLOW.md; do
 done
 
 for file in \
-  gitlab-local/SKILL.md \
+  gitlab/SKILL.md \
   start-review/SKILL.md \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
@@ -380,4 +380,4 @@ awk '
   END { flush(); exit bad ? 1 : 0 }
 ' "$SKILL" || fail 'combined MR+issue note snippet detected'
 
-printf 'gitlab-local-split-snippets: PASS\n'
+printf 'gitlab-split-snippets: PASS\n'

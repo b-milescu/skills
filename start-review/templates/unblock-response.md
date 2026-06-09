@@ -1,6 +1,6 @@
 # Unblock Response
 
-<!-- Post this filled response as an MR note with `gitlab-local` Snippet: mr-note-create. -->
+<!-- Post this filled response as an MR note with `gitlab` Snippet: mr-note-create. -->
 
 ## Metadata
 

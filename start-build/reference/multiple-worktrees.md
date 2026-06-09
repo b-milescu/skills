@@ -9,7 +9,7 @@ Use this mode when the user supplies multiple issues, asks for multiple tasks, o
 3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled work to save time.
 4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
    - `git status --porcelain` empty;
-   - detect default branch with `gitlab-local` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
+   - detect default branch with `gitlab` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
    - for each issue, immediately before its `git worktree add`, run `git fetch origin`;
    - read and record `default_sha="$(git rev-parse "origin/$default_branch")"` for that issue;
    - create the sibling worktree from the verified remote default: `git worktree add -b <branch> <path> "origin/$default_branch"`;

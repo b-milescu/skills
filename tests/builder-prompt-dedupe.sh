@@ -59,7 +59,7 @@ for prompt in "${builder_prompts[@]}"; do
   fi
 
   require_text "$prompt" 'Canonical development pattern source: `start-build`' 'canonical start-build pointer'
-  require_text "$prompt" 'gitlab-local' 'gitlab-local pointer'
+  require_text "$prompt" 'gitlab' 'gitlab pointer'
   require_text "$prompt" 'tdd' 'tdd pointer'
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Child mode authority boundary|child-builder authority boundary' 'child-mode authority boundary invariant'

@@ -4,7 +4,7 @@ This target repo uses GitLab-backed dev workflows.
 
 ## Skills
 
-- **`/gitlab-local`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
+- **`/gitlab`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
 - **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using the target repo's triage labels.
 - **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
 - **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
@@ -12,9 +12,9 @@ This target repo uses GitLab-backed dev workflows.
 
 ## Active recipes
 
-- `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab-local`.
+- `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab`.
 - `skill://start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for GitLab issue-to-MR work: issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `skill://start-build/reference/post-merge-verifier.md`; the stable compatibility anchor remains `skill://start-build/BUILD-FLOW.md#parent-orchestrator-recipe`.
-- `skill://start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab-local` and `skill://gitlab-local/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets into generated setup docs.
+- `skill://start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe for merged/default-branch state, linked issue closure or pending closure, branch cleanup, and documented non-mutating post-merge validation. Use `/gitlab` and `skill://gitlab/scripts/gitlab-post-merge-snapshot.sh` for transport/helper behavior instead of copying snippets into generated setup docs.
 - `skill://start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block, `project_profile` hook field list, evidence/action taxonomy, and generated-copy drift contract.
 - `skill://setup-dev-skills/reference/project-profile-facts.json` — canonical Setup Skill fact source for target Agent Setup Doc paths, tracker fields, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs.
 
@@ -96,7 +96,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Before any GitLab API action, load `/gitlab-local` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- Before any GitLab API action, load `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
 - Use `skill://setup-dev-skills/reference/project-profile-facts.json` as the generation/verification source for target-specific docs, label vocabulary, Check Gate refs, Dev Workflow refs, and skill-resource addressing.
 - Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
 - Before implementation from GitLab issues, load `/start-build`.

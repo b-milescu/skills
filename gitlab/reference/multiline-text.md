@@ -1,19 +1,19 @@
 # GitLab multiline text reference
 
-This reference owns the detailed file-backed text patterns for `/gitlab-local`. The main [`SKILL.md`](../SKILL.md#safe-multiline-gitlab-text) keeps the compatibility heading and short safety summary.
+This reference owns the detailed file-backed text patterns for `/gitlab`. The main [`SKILL.md`](../SKILL.md#safe-multiline-gitlab-text) keeps the compatibility heading and short safety summary.
 
 ## Safe multiline GitLab text
 
 Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
 and MR descriptions. For fallback/helper paths, submit those files through
-`gitlab-local/scripts/gitlab-wrappers.sh`; for MCP paths, read the same file into
+`gitlab/scripts/gitlab-wrappers.sh`; for MCP paths, read the same file into
 the MCP `body`/`description` only after the content-byte guard passes. Quoted
 heredocs (`<<'EOF'`) keep Markdown backticks, `$VARS`, and command substitutions
 literal while writing the local file.
 
-The shared adapter `gitlab-local/scripts/gitlab-content-guard.sh` validates
+The shared adapter `gitlab/scripts/gitlab-content-guard.sh` validates
 stdin MCP bodies and file-backed fallback bodies before a GitLab mutation.
-`gitlab-local/scripts/gitlab-wrappers.sh` delegates file-backed validation to
+`gitlab/scripts/gitlab-wrappers.sh` delegates file-backed validation to
 that adapter: NUL, non-whitespace C0 controls, and DEL are rejected locally,
 while tab/newline/carriage return remain valid for Markdown. Diagnostics do not print secrets or the malformed packet body; they name the failing role and byte offset.
 
@@ -32,7 +32,7 @@ cat > "$message_file" <<'EOF'
 - Literal example: `echo "$EXAMPLE_VAR"` is not executed.
 EOF
 
-gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" mr_note_create --repo "$repo_url" --mr-iid "$mr_iid" \
   --message-file "$message_file"
 ```
@@ -49,7 +49,7 @@ cat > "$message_file" <<'EOF'
 - Status: ready for review
 EOF
 
-gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" issue_note_create --repo "$repo_url" --issue-iid "$issue_iid" \
   --message-file "$message_file"
 ```
@@ -65,7 +65,7 @@ cat > "$description_file" <<'EOF'
 Generated from a local file so Markdown is not interpreted by the shell.
 EOF
 
-gitlab_wrappers_script="skill://gitlab-local/scripts/gitlab-wrappers.sh"
+gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
 "$gitlab_wrappers_script" draft_mr_create --repo "$repo_url" \
   --target-branch "$default_branch" --source-branch "$source_branch" \
   --title "$title" --description-file "$description_file"
