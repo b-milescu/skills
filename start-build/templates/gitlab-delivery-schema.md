@@ -26,6 +26,7 @@ report post-merge success from compact `delivery` values alone.
 | sha | SHA facts such as MR head/current SHA, reviewed SHA, candidate SHA, merge commit, and observed target SHA. |
 | pipeline | Pipeline ID/URL/status/`sha`, or unavailable/not-run details. |
 | local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
+| acceptance_surfaces | Declared acceptance surfaces and per-surface evidence status. Each entry names one taxonomy surface and its evidence (`test`, `smoke`, `docs-read`, `ci`, or `N/A — <reason>`). Use empty list when no named surface is touched. |
 | authority | Quoted approval and merge/finish authority claims, sources, Authority Verification status, and conflicts/restrictions. |
 | actions | Approval action, finish action, next-action token, and action blockers. |
 | handoff_contract | Shared routing block naming phase, next actor/action, blocker state, parent-decision need, change flag, and evidence-ready pointers. |
@@ -105,6 +106,7 @@ delivery:
     status: "PASS"
     not_run_reason: "N/A"
     summary: "completed successfully"
+  acceptance_surfaces: []
   authority:
     approval:
       value: "default-after-pass"
@@ -311,6 +313,35 @@ action is `N/A`/`not-run`; otherwise use `N/A`.
 - `permission-failure`
 - `preflight-failure`
 - `other`
+
+## Acceptance surfaces taxonomy
+
+`acceptance_surfaces` is a list of objects, each naming one touched surface and
+its evidence status. Use an empty list (`[]`) when no named surface is touched.
+Builders declare surfaces; parents verify all declared surfaces have evidence
+before ready; reviewers verify each declared surface against evidence before pass.
+
+Compact string form: `"surface:evidence"` (e.g. `"docs:docs-read"`).
+Object form: `{surface: "docs", evidence: "docs-read"}`.
+
+Allowed `surface` values:
+
+- `docs` — documentation files changed or read as evidence.
+- `prompt` — agent prompt / SKILL.md / agent definition file changed.
+- `agent_inventory` — agent inventory manifest or registry changed.
+- `install_surface` — install script, symlink, or deploy artifact changed.
+- `transport` — GitLab transport / MCP / glab fallback logic changed.
+- `authority` — authority verification, approval, or merge authority logic changed.
+- `ci_finish` — CI watch, finish guard, or CI-verdict logic changed.
+- `mutation_guard` — GitLab mutation guard or safe-text handling changed.
+
+Allowed `evidence` values per surface:
+
+- `test` — targeted automated test covers the surface.
+- `smoke` — manual or scripted smoke check performed.
+- `docs-read` — documentation-level change verified by reading.
+- `ci` — CI pipeline covers the surface at the reviewed SHA.
+- `N/A — <reason>` — surface not exercised; reason documented.
 
 ## Authority values
 

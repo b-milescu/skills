@@ -111,6 +111,18 @@ require_text "$schema" 'contains_reviewed_sha' 'post-merge reviewed containment 
 require_text "$schema" 'contains_merge_commit_sha' 'post-merge merge containment field'
 require_text "$schema" 'contains_squash_commit_sha' 'post-merge squash containment field'
 
+# Acceptance surfaces: schema declares taxonomy, copies carry field, workflow docs require verification
+require_text "$schema" 'acceptance_surfaces' 'acceptance_surfaces field in delivery schema'
+require_text "$schema" 'Acceptance surfaces taxonomy' 'acceptance_surfaces taxonomy section heading'
+for surface in 'docs' 'prompt' 'agent_inventory' 'install_surface' 'transport' 'authority' 'ci_finish' 'mutation_guard'; do
+  require_text "$schema" "$surface" "acceptance_surfaces taxonomy surface: $surface"
+done
+for ev in 'test' 'smoke' 'docs-read' 'ci'; do
+  require_text "$schema" "$ev" "acceptance_surfaces evidence value: $ev"
+done
+require_text "start-review/REVIEW-FLOW.md" 'Acceptance surfaces' 'reviewer flow acceptance surface verification requirement'
+require_text "start-build/reference/parent-owned-gate.md" 'Acceptance surfaces' 'parent gate acceptance surface verification requirement'
+
 if grep -Eq '\bpull_request\b|\bpull_request_url\b|\bpr_url\b' "$schema"; then
   echo "gitlab-delivery-schema: FAIL: provider-neutral pull-request aliases are not allowed" >&2
   exit 1

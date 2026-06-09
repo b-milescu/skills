@@ -85,6 +85,7 @@ agent_handoff:
       status: "not-run"
       not_run_reason: "parent-owned"
       summary: "parent owns final local gate and ready transition"
+    acceptance_surfaces: []
     authority:
       approval:
         value: "default-after-pass"

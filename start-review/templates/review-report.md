@@ -63,6 +63,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy from Reviewer Lift; verify against diff>` |
 | Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
+| Acceptance surfaces | `<copy from Reviewer Lift; verify each declared surface has test, smoke, docs-read, ci, or documented N/A evidence; surfaces without evidence or undeclared touched surfaces are MF-N blockers before pass>` |
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
 | Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
 | Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
