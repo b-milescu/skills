@@ -148,13 +148,14 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 
 const repoRoot = process.env.REPO_ROOT_PATH;
-// Routed agents present in both runtime dialects (anthropic models that both
-// Claude Code and pi can select).
+// Routed agents present in both runtime dialects. The same model is expressed
+// per dialect: Claude Code sub-agent frontmatter takes a bare model id, while pi
+// routes through LiteLLM and takes the provider-prefixed anthropic/ form.
 const dualDialectRoutedAgents = [
-  ['mr-builder-sonnet-low', 'anthropic/claude-sonnet-4-6', 'low'],
-  ['mr-builder-opus48', 'anthropic/claude-opus-4-8', 'medium'],
-  ['mr-builder-opus48-high', 'anthropic/claude-opus-4-8', 'high'],
-  ['mr-reviewer-opus48-xhigh', 'anthropic/claude-opus-4-8', 'xhigh'],
+  ['mr-builder-sonnet-low', { claude: 'claude-sonnet-4-6', pi: 'anthropic/claude-sonnet-4-6' }, 'low'],
+  ['mr-builder-opus48', { claude: 'claude-opus-4-8', pi: 'anthropic/claude-opus-4-8' }, 'medium'],
+  ['mr-builder-opus48-high', { claude: 'claude-opus-4-8', pi: 'anthropic/claude-opus-4-8' }, 'high'],
+  ['mr-reviewer-opus48-xhigh', { claude: 'claude-opus-4-8', pi: 'anthropic/claude-opus-4-8' }, 'xhigh'],
 ];
 
 // GPT-routed agents exist only in the pi dialect: Claude Code has no
@@ -211,9 +212,9 @@ function validateRoute(dialect, name, expectedModel, expectedLevel) {
   }
 }
 
-for (const [name, expectedModel, expectedLevel] of dualDialectRoutedAgents) {
+for (const [name, expectedModels, expectedLevel] of dualDialectRoutedAgents) {
   for (const dialect of ['claude', 'pi']) {
-    validateRoute(dialect, name, expectedModel, expectedLevel);
+    validateRoute(dialect, name, expectedModels[dialect], expectedLevel);
   }
 }
 
