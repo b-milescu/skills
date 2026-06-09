@@ -17,6 +17,16 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local file="$1" unexpected="$2"
+  if grep -Fq "$unexpected" "$file"; then
+    echo "expected output NOT to contain: $unexpected" >&2
+    echo "--- output ---" >&2
+    cat "$file" >&2
+    exit 1
+  fi
+}
+
 assert_not_exists() {
   local path="$1"
   if [[ -e "$path" || -L "$path" ]]; then
@@ -80,6 +90,10 @@ copy_repo "$clean_repo"
 prepare_installed_agents "$clean_repo" "$clean_home" yes
 run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
+# The Pi-only GPT routes have no Claude counterpart by design; the documented
+# allowlist in agents/check.sh must exempt them from the parity error.
+assert_not_contains "$clean_output" "agents/pi/mr-reviewer-gpt55-xhigh.md has no agents/claude/mr-reviewer-gpt55-xhigh.md"
+assert_not_contains "$clean_output" "agents/pi/mr-review-scout-gpt54-low.md has no agents/claude/mr-review-scout-gpt54-low.md"
 
 git_noise_repo="$TMP_ROOT/git-noise-repo"
 git_noise_home="$TMP_ROOT/git-noise-home"
@@ -250,10 +264,10 @@ routed_prompt_strategy_repo="$TMP_ROOT/routed-prompt-strategy-repo"
 routed_prompt_strategy_home="$TMP_ROOT/routed-prompt-strategy-home"
 routed_prompt_strategy_output="$TMP_ROOT/routed-prompt-strategy.out"
 copy_repo "$routed_prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-review`/Canonical development pattern source: `local-copy`/' "$routed_prompt_strategy_repo/agents/claude/mr-review-scout-gpt54-low.md"
+perl -0pi -e 's/Canonical development pattern source: `start-review`/Canonical development pattern source: `local-copy`/' "$routed_prompt_strategy_repo/agents/claude/mr-reviewer-opus48-xhigh.md"
 prepare_installed_agents "$routed_prompt_strategy_repo" "$routed_prompt_strategy_home" yes
 run_check_fail "$routed_prompt_strategy_repo" "$routed_prompt_strategy_home" "$routed_prompt_strategy_output"
-assert_contains "$routed_prompt_strategy_output" "agent prompt strategy: agents/claude/mr-review-scout-gpt54-low.md must point to canonical workflow skill start-review"
+assert_contains "$routed_prompt_strategy_output" "agent prompt strategy: agents/claude/mr-reviewer-opus48-xhigh.md must point to canonical workflow skill start-review"
 
 lift_drift_repo="$TMP_ROOT/lift-drift-repo"
 lift_drift_home="$TMP_ROOT/lift-drift-home"

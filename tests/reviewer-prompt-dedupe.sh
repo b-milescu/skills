@@ -48,7 +48,10 @@ core_step_count() {
 final_reviewer_prompts=( $(agent_prompt_paths "${final_reviewer_prompt_names[@]}") )
 generic_reviewer_prompts=( $(agent_prompt_paths mr-reviewer) )
 scout_prompts=( $(agent_prompt_paths "${scout_prompt_names[@]}") )
-fallback_reviewer_prompts=( $(agent_prompt_paths mr-reviewer-opus48-xhigh) )
+# Pi keeps the Opus xhigh route as provider-failure fallback only; Claude Code
+# promotes the same route to its primary final-review route.
+pi_fallback_reviewer_prompt='agents/pi/mr-reviewer-opus48-xhigh.md'
+claude_final_reviewer_prompt='agents/claude/mr-reviewer-opus48-xhigh.md'
 
 # Final reviewer prompts carry runtime/tool rules and critical fail-closed
 # invariants. Canonical review workflow policy lives in /start-review; routed
@@ -110,10 +113,11 @@ for prompt in "${scout_prompts[@]}"; do
   reject_text "$prompt" 'default-after-pass|approval is allowed by default|reviewer may merge' 'authoritative reviewer approval/merge wording'
 done
 
-for prompt in "${fallback_reviewer_prompts[@]}"; do
-  require_text "$prompt" 'Provider-failure fallback only' 'fallback provider-failure-only routing'
-  require_text "$prompt" 'Never select it as a cost downgrade' 'fallback never cost downgrade'
-done
+require_text "$pi_fallback_reviewer_prompt" 'Provider-failure fallback only' 'pi fallback provider-failure-only routing'
+require_text "$pi_fallback_reviewer_prompt" 'Never select it as a cost downgrade' 'pi fallback never cost downgrade'
+
+require_text "$claude_final_reviewer_prompt" 'Claude Code final-review route' 'Claude final-review primary routing'
+reject_text "$claude_final_reviewer_prompt" 'Provider-failure fallback only' 'Claude final reviewer labeled provider-failure fallback only'
 
 require_text 'agents/claude/mr-reviewer.md' 'Invoke it via the `Skill` tool' 'Claude-specific Skill invocation wording'
 require_text 'agents/claude/mr-reviewer.md' 'Invoke the `start-review` skill via the `Skill` tool' 'Claude core procedure Skill invocation'
