@@ -20,6 +20,20 @@ This target repo uses GitLab-backed dev workflows.
 
 When adapting this seed into the target repo's Dev Workflow doc, instantiate the target-specific paths, labels, gate command, branch naming, CI jobs, and skill-resource refs from `skill://setup-dev-skills/reference/project-profile-facts.json` plus live repo inspection. Keep active recipe pointers conceptually aligned with the target repo's workflow docs while leaving project-specific design briefs, labels, gate commands, branch naming, CI jobs, release/deploy policy, manual validation rules, and merge authority in the target repo's own setup docs.
 
+## Skill-only model-tier routing
+
+Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop. Manual direct agent selection is outside this enforcement surface. The skill docs choose exact agent names; each selected agent's frontmatter owns the model/effort pin.
+
+Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk`. `skill://start-build/reference/parent-orchestrator.md` consumes that tier at the child/reviewer launch seam:
+
+| Tier | Builder | Optional scout | Final reviewer |
+| --- | --- | --- | --- |
+| `trivial` | `mr-builder-sonnet-low` | `mr-review-scout-gpt54-low` non-gate scout only; cannot satisfy independent review | `mr-reviewer-gpt55-xhigh` |
+| `moderate` | `mr-builder-opus48` | none | `mr-reviewer-gpt55-xhigh` |
+| `high-risk` | `mr-builder-opus48-high` | none | `mr-reviewer-gpt55-xhigh` |
+
+Provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable. It is never a cost downgrade.
+
 ## Project-profile hooks
 
 GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,
