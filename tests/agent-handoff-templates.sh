@@ -7,6 +7,9 @@ trap 'rm -rf "$TMPDIR"' EXIT
 
 builder_template="$REPO_ROOT/start-build/templates/builder-final-handoff.md"
 reviewer_template="$REPO_ROOT/start-review/templates/reviewer-final-handoff.md"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 builder_expected=(
   kind
@@ -217,9 +220,9 @@ require_text() {
 reviewer_final_guidance=(
   "$REPO_ROOT/start-review/REVIEW-FLOW.md"
   "$REPO_ROOT/start-review/SKILL.md"
-  "$REPO_ROOT/agents/claude/mr-reviewer.md"
-  "$REPO_ROOT/agents/pi/mr-reviewer.md"
+  $(agent_prompt_paths_under "$REPO_ROOT" mr-reviewer)
 )
+routed_reviewer_final_guidance=( $(agent_prompt_paths_under "$REPO_ROOT" "${routed_final_reviewer_prompt_names[@]}") )
 
 for file in "${reviewer_final_guidance[@]}"; do
   require_text "$file" 'reviewer-final-handoff\.md' 'reviewer final handoff template reference'
@@ -227,6 +230,13 @@ for file in "${reviewer_final_guidance[@]}"; do
   require_text "$file" 'review_verdict' 'review verdict field in final handoff guidance'
   require_text "$file" 'report_url' 'report URL field in final handoff guidance'
   require_text "$file" 'template[^.]*unavailable|unavailable[^.]*template' 'safe fallback when final handoff template is unavailable'
+done
+
+for file in "${routed_reviewer_final_guidance[@]}"; do
+  require_text "$file" 'Review Report' 'routed reviewer Review Report reference'
+  require_text "$file" 'final handoff' 'routed reviewer final handoff reference'
+  require_text "$file" 'verdict, approval action, finish action, action blocker, and next action separate' 'routed reviewer action-field separation'
+  require_text "$file" 'MR, SHA, CI/gate, authority, finding, action, and blocker evidence' 'routed reviewer final evidence fields'
 done
 
 require_text \

@@ -3,6 +3,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 fail() {
   printf 'builder-prompt-dedupe: FAIL: %s\n' "$*" >&2
@@ -32,15 +35,16 @@ body_line_count() {
   ' "$file"
 }
 
-builder_prompts=(
-  agents/claude/mr-builder.md
-  agents/pi/mr-builder.md
-)
+builder_prompts=( $(agent_prompt_paths "${builder_prompt_names[@]}") )
+generic_builder_prompts=( $(agent_prompt_paths mr-builder) )
 
 # Builder prompts carry runtime/tool rules plus critical anti-fabrication and
 # child-mode authority invariants. Canonical implementation policy lives in
-# /start-build; the Issue-pickup / Decoupling / Multiple-issue-worktree
-# procedures must stay pointers, not inlined copies that drift silently.
+# /start-build; routed builder variants must preserve the same workflow pointer,
+# GitLab transport, authority, parent-owned gate, and handoff/report guardrails.
+# The generic compatibility prompts also keep Issue-pickup / Decoupling /
+# Multiple-issue-worktree procedures as pointers, not inlined copies that drift
+# silently.
 # This cap sits above the current pointer-first builder bodies and below legacy
 # inlined copies, so it ratchets future drift without pinning the test to exact
 # historical body counts. It is intentionally larger
@@ -58,6 +62,23 @@ for prompt in "${builder_prompts[@]}"; do
   require_text "$prompt" 'gitlab-local' 'gitlab-local pointer'
   require_text "$prompt" 'tdd' 'tdd pointer'
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
+  require_text "$prompt" 'Child mode authority boundary|child-builder authority boundary' 'child-mode authority boundary invariant'
+  require_text "$prompt" 'approve[^.]*merge[^.]*queue auto-merge|queue auto-merge[^.]*approve[^.]*merge' 'approval/merge/auto-merge authority boundary'
+  require_text "$prompt" 'parent-owned gate mode' 'parent-owned gate invariant'
+  require_text "$prompt" 'Review Packet' 'Review Packet handoff invariant'
+  require_text "$prompt" 'final handoff' 'final handoff invariant'
+  require_text "$prompt" 'authority' 'authority evidence invariant'
+
+  # Reject re-inlining the canonical procedure bodies as their own headings.
+  reject_text "$prompt" '^##[[:space:]]+Issue pickup[[:space:]]*$' 'inlined Issue pickup procedure heading'
+  reject_text "$prompt" '^##[[:space:]]+Decoupling[[:space:]]*' 'inlined Decoupling procedure heading'
+  reject_text "$prompt" '^##[[:space:]]+Multiple issue worktree mode[[:space:]]*$' 'inlined Multiple issue worktree mode procedure heading'
+  # The worktree creation command is canonical to start-build; a copied
+  # `git worktree add` invocation is the tell-tale inlined procedure body.
+  reject_text "$prompt" 'git worktree add' 'copied git worktree add command from start-build'
+done
+
+for prompt in "${generic_builder_prompts[@]}"; do
   require_text "$prompt" 'Child mode authority boundary' 'child-mode authority boundary invariant'
   require_text "$prompt" 'Merge authority source' 'authority-source invariant'
   require_text "$prompt" 'Approval authority' 'approval-authority invariant'
@@ -76,14 +97,6 @@ for prompt in "${builder_prompts[@]}"; do
   require_text "$prompt" 'owned by the `start-build` skill' 'start-build ownership pointer for Issue-pickup/Decoupling/Multi-issue procedures'
   require_text "$prompt" 'start-build`.*"Issue pickup"' 'Issue pickup pointer'
   require_text "$prompt" 'start-build`.*"Multiple issue worktree mode"' 'Multiple issue worktree mode pointer'
-
-  # Reject re-inlining the canonical procedure bodies as their own headings.
-  reject_text "$prompt" '^##[[:space:]]+Issue pickup[[:space:]]*$' 'inlined Issue pickup procedure heading'
-  reject_text "$prompt" '^##[[:space:]]+Decoupling[[:space:]]*' 'inlined Decoupling procedure heading'
-  reject_text "$prompt" '^##[[:space:]]+Multiple issue worktree mode[[:space:]]*$' 'inlined Multiple issue worktree mode procedure heading'
-  # The worktree creation command is canonical to start-build; a copied
-  # `git worktree add` invocation is the tell-tale inlined procedure body.
-  reject_text "$prompt" 'git worktree add' 'copied git worktree add command from start-build'
 done
 
 printf 'builder-prompt-dedupe: PASS\n'

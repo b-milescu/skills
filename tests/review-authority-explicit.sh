@@ -3,6 +3,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 fail() {
   printf 'review-authority-explicit: FAIL: %s\n' "$*" >&2
@@ -19,9 +22,9 @@ review_authority_docs=(
   "start-review/SKILL.md"
   "start-review/templates/review-report.md"
   "start-review/templates/filling-guide.md"
-  "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  $(agent_prompt_paths mr-reviewer)
 )
+routed_final_reviewer_prompts=( $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}") )
 
 # Reviewer-facing guidance must default approval after pass while keeping merge
 # authority explicit. Missing merge authority must not silently become
@@ -67,7 +70,7 @@ require_text \
   'Missing Merge authority[^.]*blocks finish actions[^.]*not default approval|missing merge authority[^.]*blocks finish[^.]*not default approval' \
   'filling-guide missing merge authority finish-only blocker'
 
-for file in agents/claude/mr-reviewer.md agents/pi/mr-reviewer.md; do
+for file in $(agent_prompt_paths mr-reviewer); do
   require_text \
     "$file" \
     'approval is allowed by default after a passing review' \
@@ -76,6 +79,15 @@ for file in agents/claude/mr-reviewer.md agents/pi/mr-reviewer.md; do
     "$file" \
     'If merge authority is missing[^.]*do not merge[^.]*not as a reason to withhold default approval' \
     'agent prompt missing merge authority finish-only blocker'
+done
+
+for file in "${routed_final_reviewer_prompts[@]}"; do
+  require_text "$file" 'Canonical development pattern source: `start-review`' 'routed reviewer start-review authority source'
+  require_text "$file" 'approval action' 'routed reviewer approval action separation'
+  require_text "$file" 'finish action' 'routed reviewer finish action separation'
+  require_text "$file" 'authority verification' 'routed reviewer authority verification'
+  require_text "$file" 'never[^.]*merge[^.]*unless `start-review` plus `gitlab-local` authority verification explicitly permit' 'routed reviewer merge requires verified authority'
+  require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer treats handoff authority as claim'
 done
 
 printf 'review-authority-explicit: PASS\n'

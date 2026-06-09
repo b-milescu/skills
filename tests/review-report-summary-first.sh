@@ -3,6 +3,9 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 REPORT="$REPO_ROOT/start-review/templates/review-report.md"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
@@ -145,9 +148,9 @@ require_prompt_text() {
 prompt_files=(
   "$REPO_ROOT/start-review/templates/filling-guide.md"
   "$REPO_ROOT/start-review/SKILL.md"
-  "$REPO_ROOT/agents/claude/mr-reviewer.md"
-  "$REPO_ROOT/agents/pi/mr-reviewer.md"
+  $(agent_prompt_paths_under "$REPO_ROOT" mr-reviewer)
 )
+routed_final_reviewer_prompts=( $(agent_prompt_paths_under "$REPO_ROOT" "${routed_final_reviewer_prompt_names[@]}") )
 
 for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Decision Summary' 'Decision Summary reference'
@@ -162,6 +165,13 @@ for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Action blocker' 'action blocker summary field reference'
   require_prompt_text "$file" 'Next action' 'next action summary field reference'
   require_prompt_text "$file" 'Report link|report link' 'report link summary field reference'
+done
+
+for file in "${routed_final_reviewer_prompts[@]}"; do
+  require_prompt_text "$file" 'Review Report' 'routed reviewer Review Report reference'
+  require_prompt_text "$file" 'final handoff' 'routed reviewer final handoff reference'
+  require_prompt_text "$file" 'MR, SHA, CI/gate, authority, finding, action, and blocker evidence' 'routed reviewer report/handoff evidence fields'
+  require_prompt_text "$file" 'verdict, approval action, finish action, action blocker, and next action separate' 'routed reviewer action separation'
 done
 
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Context / Snapshot' 'Context / Snapshot filling guidance'

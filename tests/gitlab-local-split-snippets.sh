@@ -33,6 +33,9 @@ TEST_NAME="gitlab-local-split-snippets"
 source "$REPO_ROOT/tests/lib/assertions.sh"
 # shellcheck source=tests/lib/marked-sections.sh
 source "$REPO_ROOT/tests/lib/marked-sections.sh"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 extract_snippet() {
   local file="$1" name="$2"
@@ -253,8 +256,7 @@ for file in \
   gitlab-local/SKILL.md \
   start-build/SKILL.md \
   start-build/BUILD-FLOW.md \
-  agents/claude/mr-builder.md \
-  agents/pi/mr-builder.md; do
+  $(agent_prompt_paths "${builder_prompt_names[@]}"); do
   if grep -Fq 'draft-mr-create-update' "$file"; then
     fail "$file still references retired combined draft-mr-create-update snippet"
   fi
@@ -271,8 +273,7 @@ for file in \
   start-review/SKILL.md \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
-  agents/claude/mr-reviewer.md \
-  agents/pi/mr-reviewer.md \
+  $(agent_prompt_paths "${reviewer_prompt_names[@]}") \
   start-build/BUILD-FLOW.md \
   start-build/reference/stuck-protocol.md; do
   if grep -Fq 'note-comment-creation' "$file"; then
@@ -286,8 +287,7 @@ for file in \
   start-review/templates/filling-guide.md \
   start-review/templates/review-report.md \
   start-review/templates/unblock-response.md \
-  agents/claude/mr-reviewer.md \
-  agents/pi/mr-reviewer.md; do
+  $(agent_prompt_paths mr-reviewer); do
   require_text "$file" 'Snippet: mr-note-create' 'MR-note snippet reference'
   if grep -Fq 'Snippet: issue-note-create' "$file"; then
     fail "$file references issue-note-create in MR review posting guidance"
