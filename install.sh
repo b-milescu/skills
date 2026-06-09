@@ -82,15 +82,20 @@ for dir in "$REPO_ROOT"/*/; do
 done
 
 # Agents are organised per target dialect under agents/<target>/.
-# AGENT_NAMES enumerates shared agent names from agents/claude/; agents/check.sh
-# enforces strict Claude Code ↔ pi dialect parity before review.
+# AGENT_NAMES is populated per target from that target's own source directory so
+# Pi-only routed agents remain installed while Claude Code omits unsupported
+# agent definitions.
 AGENT_NAMES=()
-if [[ -d "$REPO_ROOT/agents/claude" ]]; then
-  for f in "$REPO_ROOT/agents/claude"/*.md; do
+
+collect_agent_names() {
+  local source_root="$1" f
+
+  AGENT_NAMES=()
+  for f in "$source_root"/*.md; do
     [[ -f "$f" ]] || continue
     AGENT_NAMES+=("$(basename "$f" .md)")
   done
-fi
+}
 
 is_skill_name() {
   local name="$1" known
@@ -260,6 +265,7 @@ for entry in "${AGENT_TARGETS[@]}"; do
     continue
   fi
   mkdir -p "$agent_dir"
+  collect_agent_names "$source_root"
   echo "Agents (${source_subdir} dialect) → $agent_dir"
   prune_stale_repo_links "$agent_dir" is_agent_name
   for name in "${AGENT_NAMES[@]}"; do
