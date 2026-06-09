@@ -47,6 +47,11 @@ const PI_MCP_SELECTIONS = new Set(['mcp:gitlab-mcp', 'mcp:wowtools-mcp']);
 const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
 const ALLOWED_PI_MCP_SELECTIONS = [...PI_MCP_SELECTIONS].join(', ');
 
+const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);
+const PI_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/'];
+const ALLOWED_CLAUDE_MODELS = [...CLAUDE_MODELS].join(', ');
+const ALLOWED_PI_MODEL_PREFIXES = PI_MODEL_PROVIDER_PREFIXES.join(', ');
+
 const CLAUDE_TOOLS = new Set([
   'AskUserQuestion',
   'Bash',
@@ -217,6 +222,7 @@ function validateAgent(file) {
 
   validateRequiredFields(file, data, fieldLines);
   validateDialectFields(file, data, fieldLines);
+  validateModel(file, data, fieldLines);
   validateNameMatchesFile(file, data, fieldLines);
   validateTools(file, data, fieldLines);
   validateBody(file, lines, frontmatter.endLine);
@@ -303,6 +309,37 @@ function validateDialectFields(file, data, fieldLines) {
     if (!allowed.has(field)) {
       addDiagnostic(file, lineFor(fieldLines, field), `frontmatter field "${field}" is not allowed in ${file.dialect} agent schema`);
     }
+  }
+}
+
+function validateModel(file, data, fieldLines) {
+  if (!Object.hasOwn(data, 'model')) {
+    return;
+  }
+
+  const model = data.model;
+  if (typeof model !== 'string' || model.length === 0) {
+    addDiagnostic(file, lineFor(fieldLines, 'model'), 'frontmatter field "model" must be a non-empty string');
+    return;
+  }
+
+  if (file.dialect === 'claude') {
+    if (!CLAUDE_MODELS.has(model)) {
+      addDiagnostic(
+        file,
+        lineFor(fieldLines, 'model'),
+        `Claude model "${model}" is not approved; allowed models: ${ALLOWED_CLAUDE_MODELS}`,
+      );
+    }
+    return;
+  }
+
+  if (!PI_MODEL_PROVIDER_PREFIXES.some((prefix) => model.length > prefix.length && model.startsWith(prefix))) {
+    addDiagnostic(
+      file,
+      lineFor(fieldLines, 'model'),
+      `pi model "${model}" is not an approved route; allowed provider prefixes: ${ALLOWED_PI_MODEL_PREFIXES}`,
+    );
   }
 }
 
