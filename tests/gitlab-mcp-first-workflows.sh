@@ -8,6 +8,9 @@ TEST_NAME="gitlab-mcp-first-workflows"
 
 # shellcheck source=tests/lib/assertions.sh
 source "$REPO_ROOT/tests/lib/assertions.sh"
+# shellcheck source=tests/lib/agent-prompt-sets.sh
+source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+
 
 workflow_docs=(
   gitlab-local/SKILL.md
@@ -17,10 +20,8 @@ workflow_docs=(
   start-review/SKILL.md
   start-review/REVIEW-FLOW.md
   issue-delivery-loop/SKILL.md
-  agents/claude/mr-builder.md
-  agents/pi/mr-builder.md
-  agents/claude/mr-reviewer.md
-  agents/pi/mr-reviewer.md
+  $(agent_prompt_paths "${builder_prompt_names[@]}")
+  $(agent_prompt_paths "${reviewer_prompt_names[@]}")
   docs/agents/dev-workflows.md
   docs/agents/issue-tracker.md
   setup-dev-skills/dev-workflows-gitlab.md
