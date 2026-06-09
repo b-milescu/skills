@@ -142,4 +142,80 @@ if [[ "$clean_output" != "agents-schema: checked 1 Claude agent(s), 1 pi agent(s
   exit 1
 fi
 
+REPO_ROOT_PATH="$REPO_ROOT" node --input-type=module <<'NODE'
+import fs from 'node:fs';
+import path from 'node:path';
+import yaml from 'js-yaml';
+
+const repoRoot = process.env.REPO_ROOT_PATH;
+const routedAgents = [
+  ['mr-builder-sonnet-low', 'anthropic/claude-sonnet-4-6', 'low'],
+  ['mr-builder-opus48', 'anthropic/claude-opus-4-8', 'medium'],
+  ['mr-builder-opus48-high', 'anthropic/claude-opus-4-8', 'high'],
+  ['mr-reviewer-gpt55-xhigh', 'openai-codex/gpt-5.5', 'xhigh'],
+  ['mr-reviewer-opus48-xhigh', 'anthropic/claude-opus-4-8', 'xhigh'],
+  ['mr-review-scout-gpt54-low', 'openai-codex/gpt-5.4', 'low'],
+];
+
+function fail(file, message) {
+  console.error(`${file}: ${message}`);
+  process.exit(1);
+}
+
+function readAgent(dialect, name) {
+  const relative = `agents/${dialect}/${name}.md`;
+  const file = path.join(repoRoot, relative);
+  const content = fs.readFileSync(file, 'utf8');
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/u);
+  if (!match) {
+    fail(relative, 'missing YAML frontmatter');
+  }
+  return {
+    relative,
+    data: yaml.load(match[1]),
+    body: match[2],
+  };
+}
+
+for (const [name, expectedModel, expectedLevel] of routedAgents) {
+  for (const dialect of ['claude', 'pi']) {
+    const agent = readAgent(dialect, name);
+    const expectedField = dialect === 'claude' ? 'effort' : 'thinking';
+    const forbiddenField = dialect === 'claude' ? 'thinking' : 'effort';
+    const data = agent.data;
+
+    if (data.model !== expectedModel) {
+      fail(agent.relative, `expected model ${expectedModel}, got ${data.model}`);
+    }
+    if (data[expectedField] !== expectedLevel) {
+      fail(agent.relative, `expected ${expectedField} ${expectedLevel}, got ${data[expectedField]}`);
+    }
+    if (Object.hasOwn(data, forbiddenField)) {
+      fail(agent.relative, `unexpected ${forbiddenField} frontmatter`);
+    }
+    if (Object.hasOwn(data, 'verbosity')) {
+      fail(agent.relative, 'unsupported verbosity frontmatter is forbidden');
+    }
+    if (!/\bHigh verbosity\b/u.test(agent.body)) {
+      fail(agent.relative, 'high verbosity requirement must live in the prompt body');
+    }
+  }
+}
+
+for (const dialect of ['claude', 'pi']) {
+  const fallback = readAgent(dialect, 'mr-reviewer-opus48-xhigh');
+  if (!/Provider-failure fallback only/u.test(fallback.body) || !/Never select it as a cost downgrade/u.test(fallback.body)) {
+    fail(fallback.relative, 'must be provider-failure fallback only, never a cost downgrade');
+  }
+
+  const scout = readAgent(dialect, 'mr-review-scout-gpt54-low');
+  for (const expected of ['non-gate', 'non-authoritative', 'must not approve', 'pass', 'fail']) {
+    if (!scout.body.includes(expected)) {
+      fail(scout.relative, `missing scout authority token: ${expected}`);
+    }
+  }
+}
+NODE
+
+
 echo "agents-schema regression: PASS"
