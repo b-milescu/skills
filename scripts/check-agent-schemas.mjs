@@ -52,6 +52,14 @@ const PI_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/'];
 const ALLOWED_CLAUDE_MODELS = [...CLAUDE_MODELS].join(', ');
 const ALLOWED_PI_MODEL_PREFIXES = PI_MODEL_PROVIDER_PREFIXES.join(', ');
 
+const PI_SYSTEM_PROMPT_MODES = new Set(['append', 'replace']);
+const PI_DEFAULT_CONTEXTS = new Set(['fresh', 'fork']);
+const PI_BOOLEAN_VALUES = new Set(['true', 'false']);
+const PI_BOOLEAN_FIELDS = ['inheritProjectContext', 'inheritSkills', 'completionGuard'];
+const ALLOWED_PI_SYSTEM_PROMPT_MODES = '"append" or "replace"';
+const ALLOWED_PI_DEFAULT_CONTEXTS = '"fresh" or "fork"';
+const ALLOWED_PI_BOOLEAN_VALUES = 'lowercase "true" or "false"';
+
 const CLAUDE_TOOLS = new Set([
   'AskUserQuestion',
   'Bash',
@@ -225,6 +233,7 @@ function validateAgent(file) {
   validateModel(file, data, fieldLines);
   validateNameMatchesFile(file, data, fieldLines);
   validateTools(file, data, fieldLines);
+  validatePiSemanticFields(file, frontmatter, fieldLines);
   validateBody(file, lines, frontmatter.endLine);
 }
 
@@ -341,6 +350,70 @@ function validateModel(file, data, fieldLines) {
       `pi model "${model}" is not an approved route; allowed provider prefixes: ${ALLOWED_PI_MODEL_PREFIXES}`,
     );
   }
+}
+
+function validatePiSemanticFields(file, frontmatter, fieldLines) {
+  if (file.dialect !== 'pi') {
+    return;
+  }
+
+  const scalars = collectPiScalars(frontmatter);
+  validatePiEnumField(file, scalars, fieldLines, 'systemPromptMode', PI_SYSTEM_PROMPT_MODES, ALLOWED_PI_SYSTEM_PROMPT_MODES);
+  validatePiEnumField(file, scalars, fieldLines, 'defaultContext', PI_DEFAULT_CONTEXTS, ALLOWED_PI_DEFAULT_CONTEXTS);
+  for (const field of PI_BOOLEAN_FIELDS) {
+    validatePiEnumField(file, scalars, fieldLines, field, PI_BOOLEAN_VALUES, ALLOWED_PI_BOOLEAN_VALUES);
+  }
+  validatePiMaxSubagentDepth(file, scalars, fieldLines);
+}
+
+// Mirror pi's frontmatter scalar reader (pi-subagents src/agents/frontmatter.ts):
+// each value is a trimmed string with at most one layer of matching surrounding
+// quotes removed and no YAML-native boolean/number coercion. Reading raw scalars
+// is what lets the checker reject forms pi never honors (e.g. TRUE, yes, 2.5).
+function collectPiScalars(frontmatter) {
+  const scalars = new Map();
+  for (const line of frontmatter.source.split('\n')) {
+    const match = line.match(/^([\w-]+):\s*(.*)$/u);
+    if (!match) {
+      continue;
+    }
+    let value = match[2].trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    scalars.set(match[1], value);
+  }
+  return scalars;
+}
+
+function validatePiEnumField(file, scalars, fieldLines, field, allowed, allowedLabel) {
+  if (!scalars.has(field)) {
+    return;
+  }
+
+  const value = scalars.get(field);
+  if (allowed.has(value)) {
+    return;
+  }
+
+  addDiagnostic(file, lineFor(fieldLines, field), `pi ${field} "${value}" is not a valid value; allowed: ${allowedLabel}`);
+}
+
+function validatePiMaxSubagentDepth(file, scalars, fieldLines) {
+  if (!scalars.has('maxSubagentDepth')) {
+    return;
+  }
+
+  const value = scalars.get('maxSubagentDepth');
+  const parsed = Number(value);
+  if (Number.isInteger(parsed) && parsed >= 0) {
+    return;
+  }
+
+  addDiagnostic(file, lineFor(fieldLines, 'maxSubagentDepth'), `pi maxSubagentDepth "${value}" is not a valid value; must be an integer >= 0`);
 }
 
 function validateNameMatchesFile(file, data, fieldLines) {

@@ -142,6 +142,83 @@ model: claude-opus-4-8
 Pi body.
 MD
 
+cat > "$TMPDIR/bad/agents/pi/pi-bad-systempromptmode.md" <<'MD'
+---
+name: pi-bad-systempromptmode
+description: pi invalid systemPromptMode fixture
+tools: "read, bash"
+systemPromptMode: rewrite
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-defaultcontext.md" <<'MD'
+---
+name: pi-bad-defaultcontext
+description: pi invalid defaultContext fixture
+tools: "read, bash"
+defaultContext: shared
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-inheritskills.md" <<'MD'
+---
+name: pi-bad-inheritskills
+description: pi uppercase boolean fixture
+tools: "read, bash"
+inheritSkills: TRUE
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-inheritprojectcontext.md" <<'MD'
+---
+name: pi-bad-inheritprojectcontext
+description: pi capitalized boolean fixture
+tools: "read, bash"
+inheritProjectContext: False
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-completionguard.md" <<'MD'
+---
+name: pi-bad-completionguard
+description: pi yes-boolean fixture
+tools: "read, bash"
+completionGuard: yes
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-maxsubagentdepth-negative.md" <<'MD'
+---
+name: pi-bad-maxsubagentdepth-negative
+description: pi negative depth fixture
+tools: "read, bash"
+maxSubagentDepth: -1
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/bad/agents/pi/pi-bad-maxsubagentdepth-float.md" <<'MD'
+---
+name: pi-bad-maxsubagentdepth-float
+description: pi non-integer depth fixture
+tools: "read, bash"
+maxSubagentDepth: 2.5
+---
+
+Pi body.
+MD
+
 set +e
 output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/bad/agents" 2>&1)"
 status=$?
@@ -174,6 +251,13 @@ for expected in \
   "Claude model \"openai-codex/gpt-5.5\" is not approved; allowed models: inherit, opus, sonnet, haiku, claude-opus-4-8, claude-sonnet-4-6" \
   "Claude model \"claude-opus-4-99\" is not approved; allowed models: inherit, opus, sonnet, haiku, claude-opus-4-8, claude-sonnet-4-6" \
   "pi model \"claude-opus-4-8\" is not an approved route; allowed provider prefixes: anthropic/, openai-codex/" \
+  "pi systemPromptMode \"rewrite\" is not a valid value; allowed: \"append\" or \"replace\"" \
+  "pi defaultContext \"shared\" is not a valid value; allowed: \"fresh\" or \"fork\"" \
+  "pi inheritSkills \"TRUE\" is not a valid value; allowed: lowercase \"true\" or \"false\"" \
+  "pi inheritProjectContext \"False\" is not a valid value; allowed: lowercase \"true\" or \"false\"" \
+  "pi completionGuard \"yes\" is not a valid value; allowed: lowercase \"true\" or \"false\"" \
+  "pi maxSubagentDepth \"-1\" is not a valid value; must be an integer >= 0" \
+  "pi maxSubagentDepth \"2.5\" is not a valid value; must be an integer >= 0" \
   "frontmatter YAML does not parse"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
@@ -293,6 +377,46 @@ models_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good
 if [[ "$models_output" != "agents-schema: checked 6 Claude agent(s), 3 pi agent(s)" ]]; then
   echo "unexpected good-models output" >&2
   printf '%s\n' "$models_output" >&2
+  exit 1
+fi
+
+mkdir -p "$TMPDIR/good-pi-semantics/agents/pi"
+cat > "$TMPDIR/good-pi-semantics/agents/pi/pi-semantics-quoted.md" <<'MD'
+---
+name: pi-semantics-quoted
+description: pi accepted quoted semantic values fixture
+tools: "read, bash"
+systemPromptMode: "append"
+defaultContext: "fork"
+inheritProjectContext: "true"
+inheritSkills: "false"
+completionGuard: "true"
+maxSubagentDepth: "3"
+---
+
+Pi body.
+MD
+
+cat > "$TMPDIR/good-pi-semantics/agents/pi/pi-semantics-unquoted.md" <<'MD'
+---
+name: pi-semantics-unquoted
+description: pi accepted unquoted semantic values fixture
+tools: "read, bash"
+systemPromptMode: replace
+defaultContext: fresh
+inheritProjectContext: false
+inheritSkills: true
+completionGuard: false
+maxSubagentDepth: 0
+---
+
+Pi body.
+MD
+
+semantics_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good-pi-semantics/agents")"
+if [[ "$semantics_output" != "agents-schema: checked 0 Claude agent(s), 2 pi agent(s)" ]]; then
+  echo "unexpected good-pi-semantics output" >&2
+  printf '%s\n' "$semantics_output" >&2
   exit 1
 fi
 
