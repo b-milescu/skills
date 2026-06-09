@@ -122,6 +122,14 @@ reject_text "$claude_final_reviewer_prompt" 'Provider-failure fallback only' 'Cl
 require_text 'agents/claude/mr-reviewer.md' 'Invoke it via the `Skill` tool' 'Claude-specific Skill invocation wording'
 require_text 'agents/claude/mr-reviewer.md' 'Invoke the `start-review` skill via the `Skill` tool' 'Claude core procedure Skill invocation'
 
+# #230 reviewer launch prompt must have route-resolution evidence field, and
+# orchestrator docs must not present GPT routes as Claude Code reviewer targets.
+parent_doc='start-build/reference/parent-orchestrator.md'
+require_text "$parent_doc" 'Route-resolved-at-launch' 'route-resolution evidence field in minimal reviewer launch prompt'
+require_text "$parent_doc" 'immediately before launching the reviewer' 'runtime inventory re-resolution requirement before reviewer launch'
+# Reject wording that presents the GPT route as a Claude Code reviewer option.
+reject_text "$parent_doc" 'mr-reviewer-gpt55-xhigh.*on Claude Code\|use mr-reviewer-gpt55-xhigh.*Claude Code' 'GPT route presented as Claude Code reviewer target'
+
 shared_adr='templates/adr.md'
 review_adr='start-review/templates/adr.md'
 

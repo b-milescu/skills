@@ -130,6 +130,13 @@ require_parent_contains 'explicit parent/operator decision token'
 require_contains 'never a cost downgrade'
 require_parent_contains 'never describe or select it as a cost downgrade'
 
+# #230 reviewer route resolution: parent must re-resolve from current runtime
+# inventory immediately before reviewer launch; agent_inventory changes require
+# re-resolution to avoid stale routes.
+require_parent_contains 'Immediately before launching the reviewer'
+require_parent_contains 'agent_inventory'
+require_parent_contains 'Route-resolved-at-launch'
+
 for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
   require_file_contains "$workflow_file" 'Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop'
   require_file_contains "$workflow_file" 'Manual direct agent selection is outside this enforcement surface'

@@ -157,3 +157,13 @@ After the Gate Receipt and ready transition, the parent can route review with th
 Gate Receipt comment as a Tier 1/Tier 2 source pointer. Reviewers still treat the
 receipt as a claim/source pointer and independently verify SHA, CI/local-gate,
 authority, scope, and diff evidence before approval or finish actions.
+
+## Gate Receipt as canonical gate evidence; delta-sized MR description updates
+
+The Gate Receipt MR comment is the canonical record of the parent-owned gate result. Once a Gate Receipt is posted:
+
+- Do not duplicate the Gate Receipt content into a full MR description rewrite. The Reviewer Lift in the description must stay current, but the Gate Receipt comment is the authoritative gate evidence source.
+- MR description updates after a Gate Receipt is posted must be delta-only: update only fields whose content actually changed — for example, `Reviewed SHA` when a post-receipt fix was committed, or a provenance pointer when the authority source changed. Do not repeat the full Gate Receipt body, parent reasoning, or prior Reviewer Lift narrative as description prose.
+- Token-heavy full MR description rewrites duplicate canonical evidence, create reviewer confusion about which record to trust, and inflate context with stale parent reasoning. Keep post-receipt updates minimal.
+
+This rule does not reduce required Reviewer Lift fields: all required fields must remain present and current. It governs only the verbosity of post-receipt description updates.
