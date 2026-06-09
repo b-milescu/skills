@@ -115,4 +115,11 @@ require_text "$review_report" 'parent-owned-gate\.md' 'review report canonical s
 
 require_text "$check_gate_doc" 'tests/parent-owned-gate-invariants\.sh' 'check gate inventory entry'
 
+# #230 Gate Receipt canonical evidence and delta-sized MR description updates:
+# gate_doc must document that the Receipt is canonical and post-receipt updates
+# must be delta-only.
+require_text "$gate_doc" 'canonical gate evidence' 'Gate Receipt canonical gate evidence statement'
+require_text "$gate_doc" 'delta-only' 'delta-only post-receipt MR description update rule'
+require_text "$gate_doc" 'Gate Receipt as canonical gate evidence' 'Gate Receipt canonical gate evidence section heading'
+
 printf 'parent-owned-gate-invariants: PASS\n'
