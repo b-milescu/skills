@@ -102,6 +102,8 @@ ln -s "$REPO_ROOT/gitlab-local" "$home_dir/.claude/skills/start-review"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-reviewer.md"
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"
+ln -s "$REPO_ROOT/agents/pi/mr-reviewer-gpt55-xhigh.md" "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
+ln -s "$REPO_ROOT/agents/pi/mr-review-scout-gpt54-low.md" "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
 
 # Older installers linked shared resource dirs into runtime skill roots. They are
 # repo-owned but not skills, so a rerun must prune them instead of preserving the
@@ -125,6 +127,10 @@ assert_contains "$output_file" "skip:    $home_dir/.pi/agent/agents/mr-builder.m
 
 assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
 assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-reviewer.md"
+assert_symlink_resolves_to "$home_dir/.pi/agent/agents/mr-reviewer-gpt55-xhigh.md" "$REPO_ROOT/agents/pi/mr-reviewer-gpt55-xhigh.md"
+assert_symlink_resolves_to "$home_dir/.pi/agent/agents/mr-review-scout-gpt54-low.md" "$REPO_ROOT/agents/pi/mr-review-scout-gpt54-low.md"
+assert_not_exists "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
+assert_not_exists "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
 for runtime in \
   "$home_dir/.claude/skills" \
   "$home_dir/.pi/agent/skills"; do
