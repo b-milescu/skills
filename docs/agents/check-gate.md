@@ -100,7 +100,8 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/gitlab-local-split-snippets.sh` | GitLab workflow snippets remain split into Draft MR create, MR description update, Draft MR mark-ready, SHA-bound approval, merge, auto-merge, MR-note, issue-note, label-reconcile, safe-mr-json, auto-merge-api-fallback, CI watch, and finish helper guidance. |
 | `tests/gitlab-workflow-helpers.sh` | `gitlab-local/scripts/gitlab-ci-watch.sh`, `gitlab-local/scripts/gitlab-finish-mr.sh`, `gitlab-local/scripts/gitlab-post-merge-snapshot.sh`, and `gitlab-local/scripts/gitlab-wrappers.sh` SHA/CI/authority guard, local default fast-forward / merged-SHA cleanup safety, post-merge snapshot read-only reporting, MR description create/update and note wrapper delegation to the shared content guard plus file-backed control-character rejection, label reconciliation, safe MR JSON, and auto-merge API fallback behavior with fake GitLab/Git helpers. |
 | `tests/install-external-deps.sh` | `install.sh` warnings for missing required/optional external skills and silence when dependencies exist under a temporary `HOME`. |
-| `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks and replaces stale in-repo symlinks under a temporary `HOME`. |
+| `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks, replaces stale in-repo symlinks, and keeps Pi-only routed agents (GPT routes) linked in Pi while confirming their absence from Claude — all under a temporary `HOME`. |
+| `tests/installer-smoke-requirement.sh` | Installer smoke requirement docs stay present in `docs/agents/check-gate.md`: `install_surface` surface, `agents/`, `install.sh`, and runtime routing triggers, temp-HOME installer smoke evidence, parent-owned gate evidence requirement, Pi-only routing in the `install-symlink-ownership` inventory entry, and `installer-smoke-requirement` self-entry. |
 | `tests/issue-delivery-loop-invariants.sh` | `issue-delivery-loop/SKILL.md`, Dev Workflow docs, and `start-build/reference/parent-orchestrator.md` preserve the post-#151 pointer shape plus #226 skill-only model-tier routing and the #227 runtime-aware reviewer split: classify trivial/moderate/high-risk before child launch, launch exact routed builders/reviewers, use the runtime final reviewer (`mr-reviewer-opus48-xhigh` on Claude Code, `mr-reviewer-gpt55-xhigh` on Pi), keep the Pi-only trivial GPT scout non-gate, and restrict the Pi Opus xhigh reviewer fallback to explicit provider failure. |
 | `tests/parent-owned-gate-invariants.sh` | Canonical `start-build/reference/parent-owned-gate.md` seam owns parent-owned Check Gate / Gate Receipt fields, receipt schema, parent verification checklist, evidence-ready tokens, cross-project `skill://start-build/...` resource guidance, and references from builder, parent, reviewer, delivery-loop, and template docs. |
 | `tests/md-links.sh` | Markdown local-link checker diagnostics for broken files, anchors, image targets, allowed skill URIs, and external URL host allowlist behavior. |
@@ -184,6 +185,16 @@ Manual validation is supporting evidence only when automation cannot cover the
 change. Record exact commands or observations, redact secrets, and bind the
 evidence to the reviewed SHA. Manual validation does not replace `npm run check`
 for ready-marking unless the MR records a specific, reviewed exception.
+
+## Installer smoke requirement
+
+When a change touches files in `agents/`, `install.sh`, or runtime agent routing, declare `install_surface` in `Acceptance surfaces` and include installer smoke evidence. This requirement cannot be satisfied by `npm run check:agents-schema` or `./install.sh --check` alone; an actual `./install.sh` run in a temp HOME confirms installer output behavior.
+
+Required evidence: run `HOME=<tmpdir> ./install.sh` and verify that expected agent and skill symlinks exist and no unintended additions or removals occurred. Use a safe temp HOME to avoid mutating the live `$HOME`.
+
+For parent-owned gate evidence, name `./install.sh` or a temp-HOME installer smoke as the expected confirmation when `install_surface` is present.
+
+`tests/install-symlink-ownership.sh` regression covers symlink ownership including Pi-only routed agents (GPT routes linked in Pi, absent from Claude) under `npm run check`. A live temp-HOME installer smoke supplements rather than replaces it.
 
 ## When the gate cannot be run
 
