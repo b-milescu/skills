@@ -51,6 +51,7 @@ Declare project policy in these setup docs:
 | `profile_id` / `profile_path` | This doc's project-profile section. |
 | `gate_policy_ref` | `docs/agents/check-gate.md` full local gate and when-gate-cannot-run sections. |
 | `label_profile_ref` | `docs/agents/triage-labels.md` live label inventory and agent rules. |
+| `acceptance_surfaces_ref` | This doc's acceptance-surface vocabulary section, using the target repo's own surface values. When the target repo declares no vocabulary, `acceptance_surfaces` is fail-closed to `[]`/`none`. |
 | `language_families` | This doc, using the target repo's language/tooling families. |
 | `branch_naming` | This doc's branch naming section. |
 | `ci_jobs` | `docs/agents/check-gate.md` CI parity / required jobs section. |

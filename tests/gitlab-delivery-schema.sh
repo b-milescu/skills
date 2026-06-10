@@ -111,17 +111,37 @@ require_text "$schema" 'contains_reviewed_sha' 'post-merge reviewed containment 
 require_text "$schema" 'contains_merge_commit_sha' 'post-merge merge containment field'
 require_text "$schema" 'contains_squash_commit_sha' 'post-merge squash containment field'
 
-# Acceptance surfaces: schema declares taxonomy, copies carry field, workflow docs require verification
+# Acceptance surfaces: schema declares taxonomy + project-profile ref, evidence enum stays global,
+# repo-specific surface vocabulary lives behind project_profile.acceptance_surfaces_ref (vocabulary
+# host is docs/agents/dev-workflows.md), and the no-ref default is fail-closed.
 require_text "$schema" 'acceptance_surfaces' 'acceptance_surfaces field in delivery schema'
 require_text "$schema" 'Acceptance surfaces taxonomy' 'acceptance_surfaces taxonomy section heading'
-for surface in 'docs' 'prompt' 'agent_inventory' 'install_surface' 'transport' 'authority' 'ci_finish' 'mutation_guard'; do
-  require_text "$schema" "$surface" "acceptance_surfaces taxonomy surface: $surface"
-done
+require_text "$schema" 'acceptance_surfaces_ref' 'acceptance_surfaces project-profile ref hook'
+require_text "$schema" 'fail-closed' 'acceptance_surfaces fail-closed no-ref default'
+# Evidence enum stays global in the schema.
 for ev in 'test' 'smoke' 'docs-read' 'ci'; do
   require_text "$schema" "$ev" "acceptance_surfaces evidence value: $ev"
 done
+# The schema must not hardcode this repo's surface vocabulary as the global allowed list.
+# A bare "docs" token is allowed only as a compact-syntax example, so guard the repo-specific
+# surfaces that have no other reason to appear globally.
+for surface in 'agent_inventory' 'install_surface' 'ci_finish' 'mutation_guard'; do
+  if grep -Eq -- "$surface" "$schema"; then
+    echo "gitlab-delivery-schema: FAIL: schema must not hardcode repo-specific acceptance surface: $surface (move it behind project_profile.acceptance_surfaces_ref)" >&2
+    exit 1
+  fi
+done
+# Vocabulary host: this repo's surface values live in the dev-workflows acceptance-surface vocabulary.
+vocab_host="docs/agents/dev-workflows.md"
+require_text "$vocab_host" 'acceptance_surfaces_ref' 'dev-workflows acceptance_surfaces_ref declaration row'
+require_text "$vocab_host" 'Acceptance-surface vocabulary' 'dev-workflows acceptance-surface vocabulary section'
+for surface in 'docs' 'prompt' 'agent_inventory' 'install_surface' 'transport' 'authority' 'ci_finish' 'mutation_guard'; do
+  require_text "$vocab_host" "$surface" "dev-workflows acceptance surface vocabulary value: $surface"
+done
 require_text "start-review/REVIEW-FLOW.md" 'Acceptance surfaces' 'reviewer flow acceptance surface verification requirement'
+require_text "start-review/REVIEW-FLOW.md" 'acceptance_surfaces_ref' 'reviewer flow acceptance_surfaces_ref + fail-closed fallback'
 require_text "start-build/reference/parent-owned-gate.md" 'Acceptance surfaces' 'parent gate acceptance surface verification requirement'
+require_text "start-build/reference/parent-owned-gate.md" 'acceptance_surfaces_ref' 'parent gate acceptance_surfaces_ref + fail-closed fallback'
 
 if grep -Eq '\bpull_request\b|\bpull_request_url\b|\bpr_url\b' "$schema"; then
   echo "gitlab-delivery-schema: FAIL: provider-neutral pull-request aliases are not allowed" >&2

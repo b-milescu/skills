@@ -80,10 +80,11 @@ while IFS= read -r -d '' file; do
   ' "$file" || exit 1
 done
 
-# Require acceptance_surfaces field and taxonomy in schema
+# Require acceptance_surfaces field in schema; vocabulary now lives behind
+# project_profile.acceptance_surfaces_ref, so the row must reference the ref and
+# the fail-closed no-ref default rather than hardcode this repo's surface values.
 require_text_case_sensitive "$schema" 'Acceptance surfaces' 'acceptance_surfaces field in reviewer-lift-schema'
-require_text_case_sensitive "$schema" 'docs' 'acceptance_surfaces docs taxonomy value'
-require_text_case_sensitive "$schema" 'install_surface' 'acceptance_surfaces install_surface taxonomy value'
-require_text_case_sensitive "$schema" 'mutation_guard' 'acceptance_surfaces mutation_guard taxonomy value'
+require_text_case_sensitive "$schema" 'acceptance_surfaces_ref' 'reviewer-lift acceptance_surfaces_ref reference'
+require_text_case_sensitive "$schema" 'fail-closed' 'reviewer-lift acceptance_surfaces fail-closed no-ref default'
 
 echo "Reviewer Lift schema check passed: ${#copies[@]} generated copies match $schema and no stale duplicate field-list tables found."

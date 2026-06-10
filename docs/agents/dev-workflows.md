@@ -51,6 +51,7 @@ This repo uses the default profile from `skill://setup-dev-skills/reference/proj
 | `profile_id` / `profile_path` | `default` / this section. |
 | `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) full local gate, Gate coverage for ready handoff, CI parity, and when-gate-cannot-run sections. |
 | `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
+| `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
 | `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
 | `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
 | `ci_jobs` | [`docs/agents/check-gate.md`](check-gate.md) CI parity / required jobs section. |
@@ -65,6 +66,28 @@ Project-profile hooks may specialize this repo's policy, but they must not
 weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
 independent review, the child-builder boundary, the verifier read-only boundary,
 or MCP-first transport correctness plus help-first `glab` fallback correctness.
+
+### Acceptance-surface vocabulary
+
+This repo's `project_profile.acceptance_surfaces_ref` resolves here. These are
+the only allowed `acceptance_surfaces` surface values for this repo; the global
+evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
+[`skill://start-build/templates/gitlab-delivery-schema.md`](skill://start-build/templates/gitlab-delivery-schema.md).
+
+| Surface value | Meaning |
+| --- | --- |
+| `docs` | Documentation files changed or read as evidence. |
+| `prompt` | Agent prompt / SKILL.md / agent definition file changed. |
+| `agent_inventory` | Agent inventory manifest or registry changed. |
+| `install_surface` | Install script, symlink, or deploy artifact changed. |
+| `transport` | GitLab transport / MCP / glab fallback logic changed. |
+| `authority` | Authority verification, approval, or merge authority logic changed. |
+| `ci_finish` | CI watch, finish guard, or CI-verdict logic changed. |
+| `mutation_guard` | GitLab mutation guard or safe-text handling changed. |
+
+When no surface above is touched, declare `acceptance_surfaces` as `[]`/`none`. A
+declared surface without evidence, or an observably-changed surface that is not
+declared, blocks ready/pass.
 
 ### Branch naming
 

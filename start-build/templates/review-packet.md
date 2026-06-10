@@ -37,7 +37,7 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / other>` |
-| Acceptance surfaces | `<none, or per-surface evidence; allowed surfaces: docs, prompt, agent_inventory, install_surface, transport, authority, ci_finish, mutation_guard; compact syntax: surface:evidence — e.g. docs:docs-read, prompt:test; each declared surface must have test/smoke/docs-read/ci/N/A evidence before ready/pass>` |
+| Acceptance surfaces | `<none, or per-surface evidence; allowed surfaces come from project_profile.acceptance_surfaces_ref (no ref ⇒ none); evidence enum: test/smoke/docs-read/ci/N/A; compact syntax: surface:evidence — e.g. docs:docs-read, prompt:test; each declared surface must have test/smoke/docs-read/ci/N/A evidence before ready/pass>` |
 | Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |

@@ -131,7 +131,7 @@ A single parent ready-transition check is enough when every item below is true:
    `checkout_sha`; if it changed, block and rerun the checklist on the new SHA.
 10. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
    confirms the expected MR state.
-11. Each acceptance surface declared in the builder's Reviewer Lift `Acceptance surfaces` row has `test`, `smoke`, `docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier 1/Tier 2 sources before the ready transition. Use the taxonomy in `start-build/templates/gitlab-delivery-schema.md#acceptance-surfaces-taxonomy`.
+11. Each acceptance surface declared in the builder's Reviewer Lift `Acceptance surfaces` row is drawn from the project's `project_profile.acceptance_surfaces_ref` vocabulary and has `test`, `smoke`, `docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier 1/Tier 2 sources before the ready transition. When the project declares no `acceptance_surfaces_ref`, this row is fail-closed to `[]`/`none`; any non-empty surface value or an unresolvable surface ref blocks the ready transition as a schema defect. Use the taxonomy in `start-build/templates/gitlab-delivery-schema.md#acceptance-surfaces-taxonomy`.
 
 ## Evidence-ready handoff tokens
 
