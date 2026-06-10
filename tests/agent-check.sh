@@ -199,6 +199,26 @@ if grep -E '/(graphify-out|\.graphify[^/]*)/|/\.graphify[^/]*\.md$' "$fallback_n
   cat "$fallback_noise_scan" >&2
   exit 1
 fi
+
+# Leftover builder worktrees can be copied under a non-Git fixture checkout
+# (tar copy preserves `.claude/worktrees/<name>/` once `.git` is excluded). The
+# find fallback must prune those worktree copies so stale tracked-Markdown copies
+# do not trip the prompt-drift checks on main (issue #246).
+worktree_noise_repo="$TMP_ROOT/worktree-noise-repo"
+worktree_noise_scan="$TMP_ROOT/worktree-noise-scan.list"
+copy_repo "$worktree_noise_repo"
+mkdir -p "$worktree_noise_repo/.claude/worktrees/stale-builder/start-build/templates"
+cp "$worktree_noise_repo/start-build/templates/reviewer-lift-schema.md" \
+  "$worktree_noise_repo/.claude/worktrees/stale-builder/start-build/templates/reviewer-lift-schema.md"
+bash "$worktree_noise_repo/scripts/list-prompt-drift-markdown.sh" "$worktree_noise_repo" |
+  tr '\0' '\n' |
+  sed '/^$/d' > "$worktree_noise_scan"
+if grep -E '/\.claude/worktrees/' "$worktree_noise_scan"; then
+  echo "expected fallback prompt-drift Markdown scan to ignore .claude/worktrees copies" >&2
+  echo "--- scan list ---" >&2
+  cat "$worktree_noise_scan" >&2
+  exit 1
+fi
 run_check_ok "$git_noise_repo" "$git_noise_home" "$git_noise_output"
 assert_contains "$git_noise_output" "agent-check: PASS"
 if ! (cd "$git_noise_repo" && bash tests/reviewer-lift-schema.sh) >"$git_noise_schema_output" 2>&1; then

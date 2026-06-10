@@ -9,7 +9,7 @@ Repo-local maintenance scripts for this skill repository.
 | `check.sh` | Canonical local Check Gate wrapper used by `npm run check`. |
 | `check-agent-schemas.mjs` | Validates Claude/OMP agent frontmatter and dialect-specific schema rules. |
 | `check-md-links.mjs` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
-| `list-prompt-drift-markdown.sh` | Enumerates Markdown files for prompt-drift checks: normal repo-root worktrees use `git ls-files` so scans stay limited to tracked Markdown, while fixture or temp-copied repos without matching Git metadata use a conservative `find` fallback that prunes local artifact directories. |
+| `list-prompt-drift-markdown.sh` | Enumerates Markdown files for prompt-drift checks: normal repo-root worktrees use `git ls-files` so scans stay limited to tracked Markdown, while fixture or temp-copied repos without matching Git metadata use a conservative `find` fallback that prunes local artifact directories, including leftover builder `git worktree` copies under `.claude/worktrees/`. |
 
 Executable-bit policy: only directly invoked entrypoints keep executable bits.
 `scripts/check.sh` is executable because `npm run check` invokes it by path;
