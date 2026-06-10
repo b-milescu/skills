@@ -96,6 +96,23 @@ for owner in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
 done
 
 require_text "$single_card" 'one MR.*one fresh reviewer session|one fresh reviewer session.*one MR' 'single-MR fresh-session scope'
+
+# Issue #250: trivial-tier mutation actions are satisfied by named canonical
+# anchors instead of the whole REVIEW-FLOW.md. The mutation-action trigger stays
+# present (require_card_contract enforces 'any mutation action'), but on the
+# single card it must route to the enumerated anchors and the procedure action
+# steps, while the gitlab/SKILL.md transport-fallback leg stays intact.
+require_text "$single_card" 'any mutation action[^.]*named canonical anchors|named canonical anchors[^.]*mutation' 'single-card mutation path routes to named anchors, not whole flow'
+require_text "$single_card" 'REVIEW-FLOW\.md#procedure' 'single-card mutation path cites procedure action steps anchor'
+require_text "$single_card" 'gitlab/SKILL\.md.*transport/help drift|transport/help drift.*gitlab/SKILL\.md' 'single-card preserves gitlab/SKILL.md transport-fallback leg'
+for anchor in \
+  'REVIEW-FLOW\.md#approval-authority-policy' \
+  'REVIEW-FLOW\.md#merge-authority-source-precedence' \
+  'REVIEW-FLOW\.md#ci-decision-table' \
+  'REVIEW-FLOW\.md#fail-closed-review-coverage' \
+  'REVIEW-FLOW\.md#context-firewall'; do
+  require_text "$single_card" "$anchor" "single-card mutation anchor: $anchor"
+done
 require_text "$rerun_card" 'revision packet|Delta since last ready push|builder revision' 'request-changes revision evidence pointer'
 require_text "$finish_card" 'finish-mr-authority-aware|sha-bound-merge|sha-bound-auto-merge-queue' 'finish action helper/snippet pointer'
 require_text "$blocked_card" 'Action blocker|review_verdict: blocked|blocked Review Report' 'blocked routing vocabulary'
