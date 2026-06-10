@@ -14,7 +14,6 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 # shellcheck source=tests/lib/assertions.sh
 source "$REPO_ROOT/tests/lib/assertions.sh"
 
-command -v bun >/dev/null 2>&1 || fail "bun required to run this test"
 
 # GNU realpath for symlink resolution (matches install.sh and sibling tests).
 if realpath --relative-to=/ / >/dev/null 2>&1; then
@@ -75,6 +74,11 @@ if [[ -z "$pkg_dir" || ! -f "$pkg_dir/src/task/discovery.ts" ]]; then
   exit 0
 fi
 
+if ! command -v bun >/dev/null 2>&1; then
+  printf '%s: loader assertions N/A (bun not found); installer exposure checked\n' "$TEST_NAME"
+  exit 0
+fi
+
 expected_names_nl="$(printf '%s\n' "${expected_names[@]}")"
 assertions_js="$TMP_ROOT/omp-loader-assertions.mjs"
 cat > "$assertions_js" <<'BUN'
@@ -129,6 +133,8 @@ for (const name of expectedNames) {
   if (pin) {
     assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
     assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
+  } else if (name === "mr-builder" || name === "mr-reviewer") {
+    assert(agent.model === undefined || agent.model.length === 0, `${name} must inherit the session model, got ${agent.model}`);
   }
 }
 BUN
