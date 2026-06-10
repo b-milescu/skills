@@ -23,6 +23,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 5. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
 6. Hand merged work to the `skill://start-build/reference/post-merge-verifier.md` recipe.
 7. Report the per-batch metrics listed in the Operating contract.
+8. (Optional) Hand the per-batch metrics to `/retro` to turn friction evidence into routed follow-up issues.
 
 ## Use when
 

@@ -22,6 +22,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `memory-retrospective` | Read-only claude-mem retrospective skill for memory audits, workflow bottleneck analysis, aggregate counts by activity type/project/agent role/date range, and candidate skill/template changes without raw dumps. |
 | `gitlab-to-issues` | Break approved plans/specs into GitLab issues using local tracker docs and triage labels. |
 | `cleanup-codebase` | Discover and plan subtractive repo maintenance — deslop (behavior- and boundary-preserving local simplification) and destale (remove/correct stale items) — as planning-only work routed to the build workflow. |
+| `retro` | Delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. |
 
 ## External skill dependencies
 
