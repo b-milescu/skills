@@ -73,6 +73,7 @@ expected_blockers=(
   missing-authority
   stale-or-missing-ci
   changed-head-sha
+  merge-conflict
   sha-bound-action-unsupported
   preflight-failure
   permission-failure

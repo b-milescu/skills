@@ -158,7 +158,7 @@ agent_handoff:
   merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
   approval_action: "approved | not-approved | blocked | N/A"
   finish_action: "merged | auto-merge queued | approval-only stop | human-release stop | none | blocked | N/A"
-  action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | partial-review | secret-exposure-suspected | other"
+  action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | merge-conflict | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | partial-review | secret-exposure-suspected | other"
   next_action: "finish-by-authorized-actor | revise | human-escalation | wait-ci | rerun-review | fix-blocker"
   report_url: "https://gitlab.example/group/project/-/merge_requests/123#note_789 | N/A"
   extra: {}
@@ -230,11 +230,12 @@ agent_handoff:
   records the completed finish result or blocker after the fresh SHA guard for
   that specific action.
 - `action_blocker` is `none` or one stable blocker token: `missing-authority`,
-  `stale-or-missing-ci`, `changed-head-sha`,
+  `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`,
   `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`,
   `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or
-  `other`. For `secret-exposure-suspected`, report the blocker and safe
-  path/artifact locator without secret values.
+  `other`. `merge-conflict` marks an MR that is conflicted or whose target went
+  stale after a sibling MR merged. For `secret-exposure-suspected`, report the
+  blocker and safe path/artifact locator without secret values.
 - `delivery.handoff_contract` is the shared routing contract. Keep it aligned
   with `review_verdict`, `approval_action`, `finish_action`, `action_blocker`,
   and `next_action`. When a human/product/security choice blocks progress, set
