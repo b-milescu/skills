@@ -24,7 +24,7 @@ reject_text() {
 flow="start-review/REVIEW-FLOW.md"
 skill="start-review/SKILL.md"
 claude_prompt="agents/claude/mr-reviewer.md"
-pi_prompt="agents/pi/mr-reviewer.md"
+pi_prompt="agents/omp/mr-reviewer.md"
 
 for file in "$skill" "$flow"; do
   require_text "$file" 'single-MR[^.]*default[^.]*preferred|default[^.]*preferred[^.]*single-MR|one MR per fresh reviewer session[^.]*default[^.]*preferred' 'single-MR default/preferred policy'

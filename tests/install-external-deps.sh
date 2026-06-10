@@ -29,7 +29,7 @@ assert_not_contains() {
 
 run_install() {
   local home_dir="$1" output_file="$2"
-  mkdir -p "$home_dir/.claude" "$home_dir/.pi/agent"
+  mkdir -p "$home_dir/.claude" "$home_dir/.omp/agent"
   HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 }
 
@@ -39,7 +39,7 @@ run_install "$missing_home" "$missing_output"
 
 for runtime in \
   "$missing_home/.claude/skills" \
-  "$missing_home/.pi/agent/skills"; do
+  "$missing_home/.omp/agent/skills"; do
   assert_contains "$missing_output" "warn: missing required external skill tdd in $runtime"
   assert_contains "$missing_output" "warn: missing optional external skill grill-with-docs in $runtime"
   assert_contains "$missing_output" "warn: missing optional external skill to-issues in $runtime"
@@ -50,7 +50,7 @@ done
 present_home="$TMP_ROOT/present"
 for runtime in \
   "$present_home/.claude/skills" \
-  "$present_home/.pi/agent/skills"; do
+  "$present_home/.omp/agent/skills"; do
   for skill in tdd grill-with-docs to-issues improve-codebase-architecture triage; do
     mkdir -p "$runtime/$skill"
     printf '# %s\n' "$skill" >"$runtime/$skill/SKILL.md"

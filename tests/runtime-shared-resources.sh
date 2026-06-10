@@ -21,14 +21,14 @@ bad_shared_resource_ref_pattern='(^|[^A-Za-z0-9_:/.-])((\./)|(\.\./))*docs/(deco
 portable_resource_bad_refs="$TMP_ROOT/portable-resource-bad-refs.out"
 mkdir -p \
   "$home_dir/.claude" \
-  "$home_dir/.pi/agent" \
+  "$home_dir/.omp/agent" \
   "$foreign_project"
 
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
 for runtime in \
   "$home_dir/.claude/skills" \
-  "$home_dir/.pi/agent/skills"; do
+  "$home_dir/.omp/agent/skills"; do
   assert_path_absent "$runtime/docs" "runtime skill-root resource entry"
   assert_path_absent "$runtime/templates" "runtime skill-root resource entry"
 done
@@ -48,7 +48,7 @@ fi
   cd "$foreign_project"
   for runtime in \
     "$home_dir/.claude/skills" \
-    "$home_dir/.pi/agent/skills"; do
+    "$home_dir/.omp/agent/skills"; do
     for skill_file in "$REPO_ROOT"/*/SKILL.md; do
       skill_name="$(basename "$(dirname "$skill_file")")"
       assert_path_readable "$runtime/$skill_name/docs/decoupling-contract.md" "shared runtime resource"

@@ -26,13 +26,13 @@ Model-tier routing is enforced only for flows launched through `/issue-delivery-
 
 Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk`. `skill://start-build/reference/parent-orchestrator.md` consumes that tier at the child/reviewer launch seam:
 
-| Tier | Builder | Optional scout (Pi runtime only) | Final reviewer (by runtime) |
+| Tier | Builder | Optional scout (OMP runtime only) | Final reviewer (by runtime) |
 | --- | --- | --- | --- |
-| `trivial` | `mr-builder-sonnet-low` | `mr-review-scout-gpt54-low` non-gate scout only; cannot satisfy independent review | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi |
-| `moderate` | `mr-builder-opus48` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi |
-| `high-risk` | `mr-builder-opus48-high` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on Pi |
+| `trivial` | `mr-builder-sonnet-low` | `mr-review-scout-gpt54-low` non-gate scout only; cannot satisfy independent review | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
+| `moderate` | `mr-builder-opus48` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
+| `high-risk` | `mr-builder-opus48-high` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
 
-The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on Pi; Claude Code never selects them. Claude Code uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier and has no optional scout. On Pi, provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable. It is never a cost downgrade.
+The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on OMP; Claude Code never selects them. Claude Code uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier and has no optional scout. On OMP, provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable. It is never a cost downgrade.
 
 ## Project-profile hooks
 

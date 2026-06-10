@@ -24,6 +24,7 @@ if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   if [[ "$git_top" == "$repo_root" ]]; then
     git -C "$repo_root" ls-files -z '*.md' |
     while IFS= read -r -d '' path; do
+      [[ -f "$repo_root/$path" ]] || continue
       printf '%s\0' "$repo_root/$path"
     done
     exit 0

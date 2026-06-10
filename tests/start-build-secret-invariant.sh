@@ -17,7 +17,7 @@ require_text() {
 safety="start-build/SAFETY.md"
 builder_prompts=(
   "agents/claude/mr-builder.md"
-  "agents/pi/mr-builder.md"
+  "agents/omp/mr-builder.md"
 )
 
 # SAFETY.md owns the operational credential detail: never read/print/edit/commit

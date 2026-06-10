@@ -109,7 +109,7 @@ review_docs=(
   "start-review/templates/reviewer-final-handoff.md"
   "start-review/templates/filling-guide.md"
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${review_docs[@]}"; do
@@ -123,7 +123,7 @@ revision_ready_docs=(
   "start-review/templates/review-report.md"
   "start-review/templates/filling-guide.md"
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${revision_ready_docs[@]}"; do
@@ -155,7 +155,7 @@ routing_docs=(
   "start-review/REVIEW-FLOW.md"
   "start-review/templates/filling-guide.md"
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${routing_docs[@]}"; do

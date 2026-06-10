@@ -50,9 +50,9 @@ require_text "$check_gate_doc" 'parent-owned gate evidence' \
 require_text "$check_gate_doc" 'install_surface.*present|present.*install_surface' \
   'install_surface presence condition for parent-owned gate evidence'
 
-# Pi-only routing must be stated in install-symlink-ownership description
-require_text "$check_gate_doc" 'install-symlink-ownership.*Pi-only|Pi-only.*install-symlink-ownership' \
-  'Pi-only routing coverage in install-symlink-ownership inventory entry'
+# OMP-only routing must be stated in install-symlink-ownership description
+require_text "$check_gate_doc" 'install-symlink-ownership.*OMP-only|OMP-only.*install-symlink-ownership' \
+  'OMP-only routing coverage in install-symlink-ownership inventory entry'
 
 # installer-smoke-requirement test must itself be in the check-gate inventory
 require_text "$check_gate_doc" 'tests/installer-smoke-requirement\.sh' \

@@ -72,7 +72,7 @@ require_text \
   '(auto-merge|queue)[^.]*(fresh|re-run)[^.]*SHA guard[^.]*immediately before[^.]*(auto-merge|queue)|fresh SHA guard[^.]*immediately before[^.]*(auto-merge|queue)' \
   'fresh SHA guard immediately before auto-merge queue'
 
-for file in start-review/SKILL.md agents/claude/mr-reviewer.md agents/pi/mr-reviewer.md; do
+for file in start-review/SKILL.md agents/claude/mr-reviewer.md agents/omp/mr-reviewer.md; do
   require_text "$file" 'draft[^.]*Review Report|Review Report[^.]*draft' 'draft Review Report before final guards prompt guidance'
   require_text "$file" 'final MR/CI/authority snapshot|MR/CI/authority snapshot' 'final MR/CI/authority snapshot prompt guidance'
   require_text "$file" 'head SHA changes after[^.]*report[^.]*(posted|posting)[^.]*skip' 'stale head after report skip prompt guidance'

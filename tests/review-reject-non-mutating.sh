@@ -18,7 +18,7 @@ reject_docs=(
   "start-review/REVIEW-FLOW.md"
   "start-review/SKILL.md"
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 require_text \
@@ -45,7 +45,7 @@ while IFS=: read -r file line text; do
 done < <(
   grep -RIinE \
     'close (an |the )?mr|close-mr|mr close|closing (an |the )?mr' \
-    start-review agents/claude/mr-reviewer.md agents/pi/mr-reviewer.md || true
+    start-review agents/claude/mr-reviewer.md agents/omp/mr-reviewer.md || true
 )
 
 printf 'review-reject-non-mutating: PASS\n'

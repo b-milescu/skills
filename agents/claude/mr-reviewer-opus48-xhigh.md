@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer-opus48-xhigh
 description: Routed final GitLab MR reviewer for Claude Code. Pins Opus 4.8 at xhigh effort as the primary Claude Code final-review route.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__wowtools__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
 skills: start-review, tdd, gitlab
 model: claude-opus-4-8
 effort: xhigh

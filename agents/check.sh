@@ -61,51 +61,51 @@ frontmatter_name() {
 
 check_agent_variant_parity() {
   local claude_dir="$REPO_ROOT/agents/claude"
-  local pi_dir="$REPO_ROOT/agents/pi"
+  local omp_dir="$REPO_ROOT/agents/omp"
   local claude_names="$TMPDIR_CHECK/claude-agent-names"
-  local pi_names="$TMPDIR_CHECK/pi-agent-names"
-  local missing_pi="$TMPDIR_CHECK/missing-pi"
+  local omp_names="$TMPDIR_CHECK/omp-agent-names"
+  local missing_omp="$TMPDIR_CHECK/missing-omp"
   local missing_claude="$TMPDIR_CHECK/missing-claude"
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
-  local name file rel declared claude_declared pi_declared allowed allowed_name
+  local name file rel declared claude_declared omp_declared allowed allowed_name
 
-  # Pi may carry routed agents whose pinned model only exists in the Pi runtime.
+  # OMP may carry routed agents whose pinned model only exists in the OMP runtime.
   # The GPT reviewer/scout routes pin openai-codex/* models that Claude Code
-  # cannot select, so they are intentionally Pi-only and exempt from the
+  # cannot select, so they are intentionally OMP-only and exempt from the
   # "missing Claude counterpart" parity error. This allowlist is the deliberate,
-  # documented exception: every other Pi agent still requires a Claude
-  # counterpart, and Claude-only agents always require a Pi counterpart.
-  local pi_only_allowed=(
+  # documented exception: every other OMP agent still requires a Claude
+  # counterpart, and Claude-only agents always require an OMP counterpart.
+  local omp_only_allowed=(
     mr-reviewer-gpt55-xhigh
     mr-review-scout-gpt54-low
   )
 
   list_agent_names "$claude_dir" > "$claude_names"
-  list_agent_names "$pi_dir" > "$pi_names"
+  list_agent_names "$omp_dir" > "$omp_names"
 
-  comm -23 "$claude_names" "$pi_names" > "$missing_pi"
-  comm -13 "$claude_names" "$pi_names" > "$missing_claude"
-  comm -12 "$claude_names" "$pi_names" > "$shared_names"
+  comm -23 "$claude_names" "$omp_names" > "$missing_omp"
+  comm -13 "$claude_names" "$omp_names" > "$missing_claude"
+  comm -12 "$claude_names" "$omp_names" > "$shared_names"
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
-    error "agent dialect parity: agents/claude/$name.md has no agents/pi/$name.md"
-  done < "$missing_pi"
+    error "agent dialect parity: agents/claude/$name.md has no agents/omp/$name.md"
+  done < "$missing_omp"
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
     allowed=0
-    for allowed_name in "${pi_only_allowed[@]}"; do
+    for allowed_name in "${omp_only_allowed[@]}"; do
       [[ "$allowed_name" == "$name" ]] && { allowed=1; break; }
     done
     if (( allowed )); then
-      info "agent dialect parity: agents/pi/$name.md is an allowed Pi-only route; no Claude counterpart required"
+      info "agent dialect parity: agents/omp/$name.md is an allowed OMP-only route; no Claude counterpart required"
       continue
     fi
-    error "agent dialect parity: agents/pi/$name.md has no agents/claude/$name.md"
+    error "agent dialect parity: agents/omp/$name.md has no agents/claude/$name.md"
   done < "$missing_claude"
 
-  for file in "$claude_dir"/*.md "$pi_dir"/*.md; do
+  for file in "$claude_dir"/*.md "$omp_dir"/*.md; do
     [[ -f "$file" ]] || continue
     name="$(basename "$file" .md)"
     rel="$(relpath "$file")"
@@ -120,9 +120,9 @@ check_agent_variant_parity() {
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
     claude_declared="$(frontmatter_name "$claude_dir/$name.md" || true)"
-    pi_declared="$(frontmatter_name "$pi_dir/$name.md" || true)"
-    if [[ -n "$claude_declared" && -n "$pi_declared" && "$claude_declared" != "$pi_declared" ]]; then
-      error "agent dialect parity: agents/claude/$name.md name '$claude_declared' differs from agents/pi/$name.md name '$pi_declared'"
+    omp_declared="$(frontmatter_name "$omp_dir/$name.md" || true)"
+    if [[ -n "$claude_declared" && -n "$omp_declared" && "$claude_declared" != "$omp_declared" ]]; then
+      error "agent dialect parity: agents/claude/$name.md name '$claude_declared' differs from agents/omp/$name.md name '$omp_declared'"
     fi
   done < "$shared_names"
 }
@@ -149,7 +149,7 @@ check_agent_prompt_strategy() {
     error "agent prompt strategy: canonical GitLab transport skill missing: $(relpath "$gitlab_skill_file")"
   fi
 
-  for file in "$REPO_ROOT/agents/claude"/*.md "$REPO_ROOT/agents/pi"/*.md; do
+  for file in "$REPO_ROOT/agents/claude"/*.md "$REPO_ROOT/agents/omp"/*.md; do
     [[ -f "$file" ]] || continue
     name="$(basename "$file" .md)"
     workflow_skill="$(workflow_skill_for_agent "$name" || true)"
@@ -377,7 +377,7 @@ check_runtime_external_skills() {
 
 check_external_skill_dependencies() {
   check_runtime_external_skills "Claude" "$CHECK_HOME/.claude" "$CHECK_HOME/.claude/agents" "$CHECK_HOME/.claude/skills" "$REPO_ROOT/agents/claude"
-  check_runtime_external_skills "pi" "$CHECK_HOME/.pi/agent" "$CHECK_HOME/.pi/agent/agents" "$CHECK_HOME/.pi/agent/skills" "$REPO_ROOT/agents/pi"
+  check_runtime_external_skills "OMP" "$CHECK_HOME/.omp/agent" "$CHECK_HOME/.omp/agent/agents" "$CHECK_HOME/.omp/agent/skills" "$REPO_ROOT/agents/omp"
 }
 
 check_agent_variant_parity

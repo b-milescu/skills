@@ -1,7 +1,7 @@
 ---
 name: mr-builder-opus48
 description: Routed GitLab MR builder for standard child-builder work. Pins Opus 4.8 at medium effort while preserving start-build child-builder authority boundaries.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
 skills: start-build, tdd, gitlab
 model: claude-opus-4-8
 effort: medium

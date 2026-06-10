@@ -8,6 +8,12 @@ shopt -s nullglob
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
+CHECK_HOME="$(mktemp -d "${TMPDIR:-/tmp}/agent-skills-check-home.XXXXXX")"
+trap 'rm -rf "$CHECK_HOME"' EXIT
+mkdir -p "$CHECK_HOME/.claude/skills/tdd" "$CHECK_HOME/.omp/agent/skills/tdd"
+printf '# tdd\n' > "$CHECK_HOME/.claude/skills/tdd/SKILL.md"
+printf '# tdd\n' > "$CHECK_HOME/.omp/agent/skills/tdd/SKILL.md"
+
 
 run() {
   local label="$1"
@@ -25,7 +31,7 @@ run() {
 
 run "install.sh syntax" bash -n install.sh
 run "Agent schema validation" npm run check:agents-schema
-run "agent consistency" bash agents/check.sh
+run "agent consistency" env AGENT_SKILLS_CHECK_HOME="$CHECK_HOME" bash agents/check.sh
 run "Markdown lint" npm run check:md
 run "Markdown links" npm run check:links
 

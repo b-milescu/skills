@@ -48,9 +48,9 @@ core_step_count() {
 final_reviewer_prompts=( $(agent_prompt_paths "${final_reviewer_prompt_names[@]}") )
 generic_reviewer_prompts=( $(agent_prompt_paths mr-reviewer) )
 scout_prompts=( $(agent_prompt_paths "${scout_prompt_names[@]}") )
-# Pi keeps the Opus xhigh route as provider-failure fallback only; Claude Code
+# OMP keeps the Opus xhigh route as provider-failure fallback only; Claude Code
 # promotes the same route to its primary final-review route.
-pi_fallback_reviewer_prompt='agents/pi/mr-reviewer-opus48-xhigh.md'
+omp_fallback_reviewer_prompt='agents/omp/mr-reviewer-opus48-xhigh.md'
 claude_final_reviewer_prompt='agents/claude/mr-reviewer-opus48-xhigh.md'
 
 # Final reviewer prompts carry runtime/tool rules and critical fail-closed
@@ -113,8 +113,8 @@ for prompt in "${scout_prompts[@]}"; do
   reject_text "$prompt" 'default-after-pass|approval is allowed by default|reviewer may merge' 'authoritative reviewer approval/merge wording'
 done
 
-require_text "$pi_fallback_reviewer_prompt" 'Provider-failure fallback only' 'pi fallback provider-failure-only routing'
-require_text "$pi_fallback_reviewer_prompt" 'Never select it as a cost downgrade' 'pi fallback never cost downgrade'
+require_text "$omp_fallback_reviewer_prompt" 'Provider-failure fallback only' 'OMP fallback provider-failure-only routing'
+require_text "$omp_fallback_reviewer_prompt" 'Never select it as a cost downgrade' 'OMP fallback never cost downgrade'
 
 require_text "$claude_final_reviewer_prompt" 'Claude Code final-review route' 'Claude final-review primary routing'
 reject_text "$claude_final_reviewer_prompt" 'Provider-failure fallback only' 'Claude final reviewer labeled provider-failure fallback only'

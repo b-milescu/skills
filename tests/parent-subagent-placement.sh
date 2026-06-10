@@ -40,7 +40,7 @@ if grep -qF "$needle" "$router_file"; then
   exit 1
 fi
 
-for builder_prompt in agents/claude/mr-builder.md agents/pi/mr-builder.md "$child_doc"; do
+for builder_prompt in agents/claude/mr-builder.md agents/omp/mr-builder.md "$child_doc"; do
   if grep -qF "$needle" "$builder_prompt"; then
     echo "parent-subagent-placement: child builder prompt/doc contains runtime-specific subagent list call: $builder_prompt" >&2
     exit 1
