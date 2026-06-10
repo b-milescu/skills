@@ -51,6 +51,7 @@ delivery:
     profile_path: "docs/agents/dev-workflows.md#project-profile-hooks"
     gate_policy_ref: "docs/agents/check-gate.md#full-local-gate"
     label_profile_ref: "docs/agents/triage-labels.md#live-label-inventory"
+    acceptance_surfaces_ref: "docs/agents/dev-workflows.md#acceptance-surface-vocabulary"
     language_families:
       - "typescript"
       - "shell"
@@ -162,6 +163,7 @@ for those fields.
 | `profile_path` | Repo-local doc path that owns the profile declaration. |
 | `gate_policy_ref` | Repo-local gate policy reference; usually `docs/agents/check-gate.md`. |
 | `label_profile_ref` | Repo-local label vocabulary reference; usually `docs/agents/triage-labels.md`. |
+| `acceptance_surfaces_ref` | Repo-local acceptance-surface vocabulary reference; usually a `docs/agents/dev-workflows.md` subsection. Enumerates the allowed `acceptance_surfaces` surface values for this project. When absent, `acceptance_surfaces` is fail-closed to `[]`/`none` (see [Acceptance surfaces taxonomy](#acceptance-surfaces-taxonomy)). |
 | `language_families` | Project language/tooling families that inform local gate discovery and reviewer focus. |
 | `auxiliary_index_policy` | Ownership/read-only rules for auxiliary project indexes such as graph or search artifacts. |
 | `branch_naming` | Repo-local branch naming convention for source branches; this does not rename `source_branch` or `target_branch`. |
@@ -317,23 +319,34 @@ action is `N/A`/`not-run`; otherwise use `N/A`.
 ## Acceptance surfaces taxonomy
 
 `acceptance_surfaces` is a list of objects, each naming one touched surface and
-its evidence status. Use an empty list (`[]`) when no named surface is touched.
-Builders declare surfaces; parents verify all declared surfaces have evidence
-before ready; reviewers verify each declared surface against evidence before pass.
+its evidence status. Builders declare surfaces; parents verify all declared
+surfaces have evidence before ready; reviewers verify each declared surface
+against evidence before pass.
+
+The `surface` **vocabulary is project-specific** and is not defined globally in
+this shared schema. It is declared per project behind
+`project_profile.acceptance_surfaces_ref`, mirroring `label_profile_ref`: the ref
+points at the repo-local vocabulary subsection that enumerates the allowed
+`surface` values for that project. Only the `evidence` enum below stays global.
+
+Fail-closed default: when a target repo declares no
+`project_profile.acceptance_surfaces_ref`, `acceptance_surfaces` must be the
+empty list (`[]`) / `none`; there is no project vocabulary to declare against, so
+any non-empty surface value is a schema defect that blocks ready/pass and
+reviewers fall back to the global `Touched safety surfaces` row. Use the empty
+list (`[]`) / `none` both when no named surface is touched **and** when no
+`acceptance_surfaces_ref` is declared. Any declared surface value whose ref does
+not resolve to a vocabulary entry is a schema defect that blocks ready/pass.
+Where a vocabulary *is* declared, a declared-but-unevidenced surface and an
+observably-changed-but-undeclared surface each keep blocking ready/pass exactly
+as before.
 
 Compact string form: `"surface:evidence"` (e.g. `"docs:docs-read"`).
-Object form: `{surface: "docs", evidence: "docs-read"}`.
+Object form: `{surface: "docs", evidence: "docs-read"}`. Surface tokens such as
+`docs` in these examples illustrate compact syntax only; the resolvable surface
+values come from the project's `acceptance_surfaces_ref` vocabulary.
 
-Allowed `surface` values:
-
-- `docs` — documentation files changed or read as evidence.
-- `prompt` — agent prompt / SKILL.md / agent definition file changed.
-- `agent_inventory` — agent inventory manifest or registry changed.
-- `install_surface` — install script, symlink, or deploy artifact changed.
-- `transport` — GitLab transport / MCP / glab fallback logic changed.
-- `authority` — authority verification, approval, or merge authority logic changed.
-- `ci_finish` — CI watch, finish guard, or CI-verdict logic changed.
-- `mutation_guard` — GitLab mutation guard or safe-text handling changed.
+The global `evidence` enum below applies to every project vocabulary.
 
 Allowed `evidence` values per surface:
 

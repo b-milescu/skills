@@ -70,6 +70,7 @@ assert(defaultProfile.label_vocabulary.triage_role_labels.afk_ready === 'ready-f
 assert(defaultProfile.check_gate.gate_policy_ref === 'docs/agents/check-gate.md#full-local-gate', 'default gate_policy_ref drifted');
 assert(defaultProfile.check_gate.command === 'npm run check', 'default Check Gate command drifted');
 assert(defaultProfile.dev_workflows.path === 'docs/agents/dev-workflows.md', 'default Dev Workflow path drifted');
+assert(defaultProfile.dev_workflows.acceptance_surfaces_ref === 'docs/agents/dev-workflows.md#acceptance-surface-vocabulary', 'default acceptance_surfaces_ref drifted');
 assert(defaultProfile.branch_naming.pattern === 'issue-<iid>-<slug>', 'default branch naming drifted');
 assert(defaultProfile.ci_parity.required_jobs.includes('check'), 'default CI required jobs missing check');
 assert(!defaultProfile.ci_parity.required_jobs.includes('validation'), 'default CI required jobs must name the check job, not the validate stage');
@@ -90,6 +91,9 @@ assert(fixture.label_vocabulary.triage_role_labels.afk_ready === 'agent-ready', 
 allRepoRelative(fixture.agent_setup_docs, 'fixture.agent_setup_docs');
 assert(fixture.check_gate.gate_policy_ref.startsWith(fixture.agent_setup_docs.check_gate), 'fixture gate ref must derive from fixture Check Gate path');
 assert(fixture.dev_workflows.path === fixture.agent_setup_docs.dev_workflows, 'fixture Dev Workflow path must derive from fixture Agent Setup Docs');
+// Fail-closed default: a target repo that declares no acceptance_surfaces_ref must omit it,
+// so acceptance_surfaces is forced to []/none rather than borrowing this repo's vocabulary.
+assert(fixture.dev_workflows.acceptance_surfaces_ref === undefined, 'no-vocabulary fixture must omit acceptance_surfaces_ref to demonstrate the fail-closed default');
 
 const setupSkill = read('setup-dev-skills/SKILL.md');
 assert(setupSkill.includes(factsResource), 'setup skill must name the skill:// fact source');
@@ -126,6 +130,19 @@ for (const file of [
 const liveLabels = read('docs/agents/triage-labels.md');
 assert(liveLabels.includes('| `afk_ready` | `ready-for-agent` |'), 'live docs must map afk_ready Triage Role to this repo label');
 assert(liveLabels.includes('reusable skills must read `project_profile.label_profile_ref`'), 'live labels doc must forbid global label assumptions');
+
+const liveDevWorkflows = read('docs/agents/dev-workflows.md');
+assert(liveDevWorkflows.includes('acceptance_surfaces_ref'), 'live dev-workflows must declare the acceptance_surfaces_ref hook');
+assert(liveDevWorkflows.includes('Acceptance-surface vocabulary'), 'live dev-workflows must host the acceptance-surface vocabulary section');
+for (const surface of ['docs', 'prompt', 'agent_inventory', 'install_surface', 'transport', 'authority', 'ci_finish', 'mutation_guard']) {
+  assert(liveDevWorkflows.includes(surface), `live dev-workflows acceptance-surface vocabulary must list ${surface}`);
+}
+
+const deliverySchema = read('start-build/templates/gitlab-delivery-schema.md');
+assert(deliverySchema.includes('acceptance_surfaces_ref'), 'delivery schema must expose acceptance_surfaces_ref hook');
+for (const surface of ['agent_inventory', 'install_surface', 'ci_finish', 'mutation_guard']) {
+  assert(!deliverySchema.includes(surface), `delivery schema must not hardcode this repo acceptance surface ${surface} as a global value`);
+}
 
 const genericTriageSeed = read('setup-dev-skills/triage-labels.md');
 assert(!genericTriageSeed.includes('ready-for-agent'), 'generic triage seed must not hardcode this repo AFK-ready label');

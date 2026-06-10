@@ -89,7 +89,8 @@
       "path": "docs/agents/dev-workflows.md",
       "branch_naming_ref": "docs/agents/dev-workflows.md#branch-naming",
       "release_deploy_policy_ref": "docs/agents/dev-workflows.md#release-deploy-policy",
-      "auxiliary_index_policy_ref": "docs/agents/dev-workflows.md#auxiliary-project-index-policy"
+      "auxiliary_index_policy_ref": "docs/agents/dev-workflows.md#auxiliary-project-index-policy",
+      "acceptance_surfaces_ref": "docs/agents/dev-workflows.md#acceptance-surface-vocabulary"
     },
     "branch_naming": {
       "pattern": "issue-<iid>-<slug>"

@@ -106,6 +106,7 @@ done
 for file in "setup-dev-skills/dev-workflows-gitlab.md" "docs/agents/dev-workflows.md"; do
   require_text "$file" 'gate_policy_ref' 'gate policy declaration hook'
   require_text "$file" 'label_profile_ref' 'label vocabulary declaration hook'
+  require_text "$file" 'acceptance_surfaces_ref' 'acceptance-surface vocabulary declaration hook'
   require_text "$file" 'branch_naming' 'branch naming declaration hook'
   require_text "$file" 'ci_jobs' 'CI jobs declaration hook'
   require_text "$file" 'domain_docs' 'domain docs declaration hook'
