@@ -41,12 +41,9 @@ Before launching any child builder, classify each target issue/MR:
 - `high-risk` applies when any trigger is present: auth/security/crypto/secrets; migrations/schema/data-loss; deploy/runtime/infra/CI semantics; concurrency/locking/state machines/queues; billing/permissions/access control; large diff (`>=20` files or `>=1000` diff lines); unclear acceptance criteria.
 - `moderate` is the default when work is neither `trivial` nor `high-risk`.
 
-Route exact agent names from that classification:
+The exact per-tier builder route names live in one canonical table, owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md) — the launch seam this loop dispatches through. This loop classifies the tier; do not restate the route-name rows here.
 
-- `trivial`: builder `mr-builder-sonnet-low`; optional scout `mr-review-scout-gpt54-low` (OMP runtime only) may produce non-gate observations only and cannot satisfy the mandatory independent review gate; final reviewer `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP.
-- `moderate`: builder `mr-builder-opus48`; final reviewer `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP.
-- `high-risk`: builder `mr-builder-opus48-high`; final reviewer `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP.
-- The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on OMP; Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route. On OMP, provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after the `mr-reviewer-gpt55-xhigh` route is unavailable; it is never a cost downgrade or weaker-effort substitute.
+Independent-review floors hold regardless of route: the optional OMP scout produces non-gate observations only and cannot satisfy the mandatory independent review gate; the final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT reviewer/scout routes pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route. On OMP, provider-failure fallback to the Opus xhigh reviewer requires an explicit parent/operator decision token after the `mr-reviewer-gpt55-xhigh` route is unavailable, and is never a cost downgrade or weaker-effort substitute.
 
 ## Operating contract
 

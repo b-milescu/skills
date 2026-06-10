@@ -26,15 +26,9 @@ This repo uses GitLab-backed dev workflows.
 
 Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop. Manual direct agent selection is outside this enforcement surface. The skill docs choose exact agent names; each selected agent's frontmatter owns the model/effort pin.
 
-Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk`. `skill://start-build/reference/parent-orchestrator.md` consumes that tier at the child/reviewer launch seam:
+Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk` (tier criteria live in [`skill://issue-delivery-loop/SKILL.md`](skill://issue-delivery-loop/SKILL.md)). The single canonical tier→builder route table is owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), which consumes that tier at the child/reviewer launch seam; this doc does not restate the per-tier builder route rows.
 
-| Tier | Builder | Optional scout (OMP runtime only) | Final reviewer (by runtime) |
-| --- | --- | --- | --- |
-| `trivial` | `mr-builder-sonnet-low` | `mr-review-scout-gpt54-low` non-gate scout only; cannot satisfy independent review | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
-| `moderate` | `mr-builder-opus48` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
-| `high-risk` | `mr-builder-opus48-high` | none | `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP |
-
-The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on OMP; Claude Code never selects them. Claude Code uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier and has no optional scout. On OMP, provider-failure fallback to `mr-reviewer-opus48-xhigh` requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable. It is never a cost downgrade.
+Independent-review floors hold for every tier: the mandatory final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier with no optional scout, while the OMP optional `mr-review-scout-gpt54-low` cannot satisfy independent review. On OMP, provider-failure fallback to the Opus xhigh reviewer requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable, and is never a cost downgrade.
 
 ## Project-profile hooks
 

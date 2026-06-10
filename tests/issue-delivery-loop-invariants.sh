@@ -28,6 +28,14 @@ require_file_contains() {
   grep -Fq -- "$needle" "$file" || fail "missing expected token in ${file#$REPO_ROOT/}: $needle"
 }
 
+refute_file_contains() {
+  local file="$1"
+  local needle="$2"
+  if grep -Fq -- "$needle" "$file"; then
+    fail "forbidden token present in ${file#$REPO_ROOT/}: $needle"
+  fi
+}
+
 require_contains() {
   require_file_contains "$SKILL_FILE" "$1"
 }
@@ -79,16 +87,49 @@ require_contains 'delivery.handoff_contract'
 # (Opus 4.8 xhigh on Claude Code, GPT-5.5 xhigh on OMP); the GPT scout/reviewer
 # routes are OMP-only and the scout is optional/non-gate; the OMP Opus xhigh route
 # is provider-failure fallback only.
+#
+# #249 single-table-owner split: the per-tier builder route NAMES live in exactly
+# one canonical table (parent-orchestrator.md). The three pointer files
+# (issue-delivery-loop SKILL.md + the two Dev Workflow docs) keep `skill://`
+# pointers and the independent-review FLOOR sentences, but must not restate the
+# builder route names on their doc surface.
+POINTER_FILES=("$SKILL_FILE" "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE")
+BUILDER_ROUTE_NAMES=(
+  'mr-builder-sonnet-low'
+  'mr-builder-opus48-high'
+  'mr-builder-opus48'
+)
+
+# Positive: the canonical table owner names every builder route. The runtime
+# reviewer/scout routes are floor sentences and stay reachable in all four files.
 for needle in \
   'mr-builder-sonnet-low' \
   'mr-builder-opus48' \
-  'mr-builder-opus48-high' \
+  'mr-builder-opus48-high'; do
+  require_parent_contains "$needle"
+done
+for needle in \
   'mr-reviewer-gpt55-xhigh' \
   'mr-review-scout-gpt54-low' \
   'mr-reviewer-opus48-xhigh'; do
   require_contains "$needle"
   require_parent_contains "$needle"
 done
+
+# Negative: no builder route name appears on the three pointer files' doc surface.
+for pointer_file in "${POINTER_FILES[@]}"; do
+  for route_name in "${BUILDER_ROUTE_NAMES[@]}"; do
+    refute_file_contains "$pointer_file" "$route_name"
+  done
+done
+
+# Tier criteria stay owned by issue-delivery-loop (inline criteria bullets) and
+# reachable from the parent's required reads. The two Dev Workflow docs point back
+# to the criteria owner instead of silently duplicating the route table.
+require_contains '`moderate` is the default when work is neither `trivial` nor `high-risk`'
+require_file_contains "$DEV_WORKFLOW_FILE" 'tier criteria live in'
+require_file_contains "$SETUP_DEV_WORKFLOW_FILE" 'tier criteria live in'
+require_parent_contains 'classifies with the same criteria'
 
 for needle in \
   'docs/prose/templates/labels/inventory/checklist' \
@@ -117,7 +158,7 @@ require_contains 'Manual direct agent selection is outside this enforcement surf
 require_parent_contains 'Manual direct agent selection is outside this enforcement surface'
 # Runtime-aware final reviewer: Claude Code uses the Opus route; OMP keeps the GPT
 # route. The GPT reviewer/scout routes are OMP-only (no openai-codex/* on Claude).
-require_contains 'final reviewer `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
+require_contains 'mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
 require_contains 'pin `openai-codex/*` models that exist only on OMP'
 require_parent_contains 'mandatory independent final reviewer for every tier'
 require_parent_contains '`mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
@@ -141,9 +182,8 @@ for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
   require_file_contains "$workflow_file" 'Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop'
   require_file_contains "$workflow_file" 'Manual direct agent selection is outside this enforcement surface'
   require_file_contains "$workflow_file" "frontmatter owns the model/effort pin"
-  require_file_contains "$workflow_file" 'mr-builder-sonnet-low'
-  require_file_contains "$workflow_file" 'mr-builder-opus48'
-  require_file_contains "$workflow_file" 'mr-builder-opus48-high'
+  # #249: builder route names are NOT restated here (covered by the negative
+  # POINTER_FILES loop above); the canonical table owner is parent-orchestrator.md.
   require_file_contains "$workflow_file" 'mr-review-scout-gpt54-low'
   require_file_contains "$workflow_file" 'mr-reviewer-gpt55-xhigh'
   require_file_contains "$workflow_file" 'mr-reviewer-opus48-xhigh'
