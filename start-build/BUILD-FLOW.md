@@ -45,7 +45,7 @@ Durable-output detail lives in [reference/parent-orchestrator.md §Durable child
 
 ### Parent loop
 
-The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees only after an immediate `git fetch origin` plus default-branch SHA verification, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle approve/request-changes/reject/timeout/stale/interrupted outcomes with status/activity checks before replacement, and finish only according to explicit merge authority and cleanup safety.
+The parent loop lives in [reference/parent-orchestrator.md §Parent loop](reference/parent-orchestrator.md#parent-loop): process issues serially unless decoupled, create isolated branches/worktrees only after an immediate `git fetch origin` plus default-branch SHA verification, run one builder per issue, spot-check Reviewer Lift and local-gate evidence, start one fresh reviewer per MR/SHA, handle pass/request-changes/reject/blocked/timeout/stale/interrupted outcomes with status/activity checks before replacement, and finish only according to explicit merge authority and cleanup safety.
 
 ### Post-merge verifier recipe
 
@@ -89,7 +89,7 @@ Reviewer launch detail lives in [reference/standalone-gate.md §Reviewer launch 
 
 ### Review loop
 
-Review-loop detail lives in [reference/standalone-gate.md §Review loop](reference/standalone-gate.md#review-loop): approve proceeds to SHA/CI/authority-guarded finish, request-changes requires fix commits plus revision packet plus a fresh reviewer session, reject stops and escalates, and three request-changes rounds exhaust the gate.
+Review-loop detail lives in [reference/standalone-gate.md §Review loop](reference/standalone-gate.md#review-loop): a `pass` verdict records the separate approval action and then proceeds to SHA/CI/authority-guarded finish, request-changes requires fix commits plus revision packet plus a fresh reviewer session, reject stops and escalates, blocked records the blocker and escalates, and three request-changes rounds exhaust the gate.
 
 ### Timeout handling
 

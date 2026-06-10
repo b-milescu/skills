@@ -54,8 +54,10 @@ require_text "$standalone" 'No fixed wall-clock value alone authorizes replaceme
   "$standalone must not let a fixed timeout alone authorize replacement"
 require_text "$standalone" 'timeout / stale / interrupted are non-completion states' \
   "$standalone Review Gate Summary must record timeout/stale/interrupted without implying completion"
-require_text "$standalone" 'approve / request-changes / reject / timeout / stale / interrupted' \
-  "$standalone Review Gate Summary table must include timeout/stale/interrupted states"
+require_text "$standalone" 'pass / request-changes / reject / blocked / timeout / stale / interrupted' \
+  "$standalone Review Gate Summary table must use the verdict enum plus timeout/stale/interrupted states"
+reject_text "$standalone" 'approve / request-changes / reject / timeout / stale / interrupted' \
+  "$standalone Review Gate Summary table must not retain the approve round token"
 
 require_text "$parent" 'check the reviewer run status/activity before replacement' \
   "$parent must check reviewer status/activity before replacement"

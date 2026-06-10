@@ -20,7 +20,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work (decoupling proof before parallel work). Serial WIP-1 batches skip this step.
 3. Classify each target issue/MR as `trivial`, `moderate`, or `high-risk` using [Model-tier routing](#model-tier-routing).
 4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md).
-5. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
+5. On `pass` (with recorded approval action), finish by authority (SHA/CI/authority guards in the canonical flows).
 6. Hand merged work to the `skill://start-build/reference/post-merge-verifier.md` recipe.
 7. Report the per-batch metrics listed in the Operating contract.
 8. (Optional) Hand the per-batch metrics to `/retro` to turn friction evidence into routed follow-up issues.
