@@ -13,7 +13,7 @@ description: >-
 
 # Retro
 
-Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns the evidence of one run into bounded improvement proposals. Proposal-only: like `memory-retrospective`, it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/gitlab-to-issues` (or `/to-issues` when the target tracker is not GitLab) and ship through the normal build/review workflow.
+Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/gitlab-to-issues` (or `/to-issues` when the target tracker is not GitLab) and ship through the normal build/review workflow.
 
 This skill is project-agnostic and runs from any target repo. Project-specific facts — live labels, Check Gate commands, doc ownership, workflow policy — come from the target repo's Agent Setup Docs and `project_profile` hooks at run time; never assume the skills repo's own layout or vocabulary in a finding.
 
@@ -22,8 +22,21 @@ This skill is project-agnostic and runs from any target repo. Project-specific f
 - a `/issue-delivery-loop` batch or a `/start-build` + `/start-review` session just finished
 - the user asks for a retro, retrospective, post-batch review, or lessons learned on agent delivery work
 - per-batch metrics from the `issue-delivery-loop` operating contract exist and nothing has consumed them
+- the user asks what friction recurred across the last week/month of delivery work (the `lookback` scope)
 
-Not this skill: longitudinal claude-mem aggregate mining (`/memory-retrospective`), repo cleanup discovery (`/cleanup-codebase`), or reviewing a diff (`/start-review`).
+Not this skill: raw memory analytics or aggregate query mechanics (claude-mem's own reporting skills, e.g. `/mem-search`), repo cleanup discovery (`/cleanup-codebase`), or reviewing a diff (`/start-review`).
+
+## Scopes
+
+Pick one scope per run; both produce the same Retro Report and route findings through the same machinery (signal catalogue, `RF-N` taxonomy + dispositions, owner-doc mapping, routing plan, and the safety-floor check).
+
+- **`batch`** (default) — the just-finished `/start-build` + `/start-review` session or `/issue-delivery-loop` batch. Behavior below is unchanged.
+- **`lookback <date range>`** — recurring friction across an explicit date range. Bound the window first. This scope adds four behaviors on top of `batch`:
+  - **Aggregate counts** by activity type / project / agent role / date range, as an *optional* Retro Report section, to show where effort concentrated.
+  - **claude-mem DB discovery with graceful degradation** — locate the local claude-mem DB/export; if it is unavailable, say so and continue with repo and GitLab evidence only. Raw query mechanics belong to claude-mem's own skills (`/mem-search` etc.); this skill points at them and does not own query syntax.
+  - **Date-range scoping** — every aggregate and finding is scoped to the named window; do not mix in evidence from outside it.
+
+The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one anecdote is a `monitor`, not a process defect.
 
 ## Operating contract
 
