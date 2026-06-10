@@ -4,7 +4,10 @@
 # In normal Git worktrees, only tracked Markdown can reach an MR, so use the
 # index to avoid ignored/generated/untracked local artifact noise. In fixture or
 # temp-copied repos without Git metadata, fall back to a conservative find scan
-# that prunes known local artifact directories/files.
+# that prunes known local artifact directories/files, including leftover builder
+# `git worktree` copies under `.claude/worktrees/`. Stale worktrees carry copies
+# of tracked Markdown; scanning them produced false prompt-drift failures on main
+# (issue #246), so the fallback prunes them too.
 
 set -euo pipefail
 
@@ -32,12 +35,12 @@ if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 find "$repo_root" \
-  \( -type d \( \
+  \( \( -type d \( \
     -name .git -o \
     -name node_modules -o \
     -name .npm -o \
     -name cleanup-discovery -o \
     -name graphify-out -o \
     -name '.graphify*' \
-  \) -prune \) \
+  \) -o -path '*/.claude/worktrees' \) -prune \) \
   -o \( -type f -name '*.md' ! -path "$repo_root/progress.md" ! -path '*/.graphify*' -print0 \)
