@@ -70,7 +70,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.omp/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.omp/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
-| Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near the skill guideline of under 100 lines when practical. |
+| Skill size/readability | `wc -w <skill>/SKILL.md` | Keep `SKILL.md` near or under **1,200 words** when practical. |
 | Stale naming check | `rg -n "<old-name>\|<rejected-term>" .` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
@@ -163,7 +163,7 @@ Commands were derived from:
 - `agents/check.sh` source parity, prompt drift, and installed external skill dependency checks.
 - Issue #53 agent schema validation requirements for Claude/OMP dialect-specific frontmatter and tool casing.
 - `scripts/check.sh` canonical wrapper wiring those checks, Markdown checks, and regression scripts behind one stable command.
-- Skill authoring guideline that `SKILL.md` should stay under 100 lines where practical.
+- Skill authoring guideline that `SKILL.md` should stay near or under 1,200 words where practical (`wc -w`).
 - No `Makefile` exists at time of writing.
 
 ## CI parity
