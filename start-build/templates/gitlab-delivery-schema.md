@@ -192,6 +192,10 @@ The `delivery` block is compact by design. It can route work, but it is not proo
 Consumers verify claims from evidence before making safety, review, authority, CI,
 or finish decisions.
 
+`routing index` is the canonical term for unverified handoff data — a claim to
+verify, not evidence — defined by the Tier 3 row below; other delivery skills
+gloss it inline and point here rather than re-explaining the rule.
+
 | Tier | Name | Trust rule | Examples |
 |---|---|---|---|
 | `tier-1` | Decision-grade GitLab/worktree fact | May support decisions after the consumer reads it directly and binds it to the MR/project/SHA. | GitLab issue/MR metadata, MR diff, MR description/Reviewer Lift, Review Report comment, CI pipeline metadata/logs, `git rev-parse HEAD`, `git ls-remote origin <source_branch>`, exact-checkout local command output. |

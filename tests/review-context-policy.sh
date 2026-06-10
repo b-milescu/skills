@@ -23,6 +23,14 @@ flow="start-review/REVIEW-FLOW.md"
 report="start-review/templates/review-report.md"
 filling="start-review/templates/filling-guide.md"
 parent_flow="start-build/BUILD-FLOW.md"
+delivery_schema="start-build/templates/gitlab-delivery-schema.md"
+
+# Canonical term: `routing index` names unverified handoff data, defined in the
+# trust-tiers section of the delivery schema. Glosses elsewhere point here; this
+# pin guards the single canonical-definition site against drift or removal.
+require_text "$delivery_schema" '^## Trust and evidence tiers$' 'delivery-schema trust-tiers section'
+require_text "$delivery_schema" '`routing index`[^.]*canonical term[^.]*unverified handoff data' 'routing index canonical-term declaration'
+require_row "$delivery_schema" '`tier-3`[^|]*\|[[:space:]]*Unverified routing index' 'delivery-schema Tier 3 unverified routing index'
 
 # Context Firewall: review independence is session/context-bound, not GitLab identity-bound.
 require_text "$flow" '^## Context Firewall$' 'Context Firewall section'
