@@ -164,6 +164,7 @@ for file in "${routing_docs[@]}"; do
     'missing-authority' \
     'stale-or-missing-ci' \
     'changed-head-sha' \
+    'merge-conflict' \
     'sha-bound-action-unsupported' \
     'preflight-failure' \
     'permission-failure' \
@@ -175,6 +176,22 @@ for file in "${routing_docs[@]}"; do
   require_text "$file" 'Approval action' 'approval action routing'
   require_text "$file" 'Finish action' 'finish action routing'
   require_text "$file" 'Action blocker' 'action blocker routing'
+done
+
+# The four sibling Action-blocker vocabularies must carry `merge-conflict`
+# immediately after `changed-head-sha`, matching the canonical enum order in
+# start-build/templates/gitlab-delivery-schema.md. Guards future token additions
+# from silently skipping these sites again (issue #255).
+sibling_vocab_docs=(
+  "agents/claude/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
+  "start-review/reference/blocked-review-routing-card.md"
+  "start-review/templates/filling-guide.md"
+)
+
+for file in "${sibling_vocab_docs[@]}"; do
+  require_text "$file" 'changed-head-sha`,[[:space:]]*`merge-conflict`' \
+    'merge-conflict immediately after changed-head-sha in canonical enum order'
 done
 
 printf 'review-blocked-verdict: PASS\n'
