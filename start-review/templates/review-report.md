@@ -20,7 +20,7 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 | Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
 | Merge authority | `<verified finish authority value or blocked: missing-authority>` |
 | Merge authority source | `<verified finish authority source or blocked: missing-authority>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |

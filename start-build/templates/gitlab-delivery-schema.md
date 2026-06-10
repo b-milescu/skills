@@ -412,6 +412,7 @@ completed machine value or blocker.
 - `missing-authority`
 - `stale-or-missing-ci`
 - `changed-head-sha`
+- `merge-conflict`
 - `sha-bound-action-unsupported`
 - `preflight-failure`
 - `permission-failure`
@@ -419,6 +420,14 @@ completed machine value or blocker.
 - `partial-review`
 - `secret-exposure-suspected`
 - `other`
+
+`merge-conflict` covers an MR that is conflicted or whose target became stale
+after a sibling MR merged (the multiple-MR flows' "conflicted/stale-target"
+event). It names the same event class as the `conflict_type` enum
+(`none | already_merged | stale_head | merge_blocked`) in
+[`../../gitlab/reference/finish-result-schema.json`](../../gitlab/reference/finish-result-schema.json);
+use this Action blocker token for routing/metrics rather than coining a third
+vocabulary.
 
 ## Next-action tokens
 

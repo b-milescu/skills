@@ -17,7 +17,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 |---|---|---|
 | Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, claude-mem observations, `gitlab` helper output | tooling |
 | Review rounds > 1 on any MR — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
-| Blocker tokens fired (`missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `partial-review`, ...) — was the blocker avoidable upstream? | reviewer final handoffs, `delivery.handoff_contract`, action-result notes | flow |
+| Blocker tokens fired (`missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`, `partial-review`, ...) — was the blocker avoidable upstream? | reviewer final handoffs, `delivery.handoff_contract`, action-result notes | flow |
 | `Action blocker: other` or `not_run_reason: other` used — the enum lacked a real value | handoffs, delivery blocks | taxonomy |
 | Timeout / stale / interrupted reviewer or builder rounds | Review Gate Summary, parent loop records | flow |
 | Leftover local state after the run — worktrees, `refs/tmp/review/*` temp refs, undeleted source branches, dirty checkouts | `git worktree list`, `git for-each-ref refs/tmp`, `git branch`, `git status --porcelain` | flow |
