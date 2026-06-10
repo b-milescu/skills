@@ -20,6 +20,80 @@ Tests in `../../tests/gitlab-workflow-helpers.sh` use fake `glab` and `git` bina
 
 Coverage in `../../tests/gitlab-split-snippets.sh` verifies `/gitlab` keeps stable snippet names while pointing long helper bodies here and to script sources. Coverage in `../../tests/gitlab-mcp-first-workflows.sh` verifies top-level workflow docs/prompts stay MCP-first while allowing these guarded fallback/helper paths.
 
+## Resolving `skill://` URIs to filesystem paths
+
+`skill://` URIs are runtime token references, not filesystem paths. Embedding a
+bare `skill://` URI in a `bash` eval context (e.g., `source skill://gitlab/scripts/gitlab-wrappers.sh`)
+fails because the shell has no resolver — the runtime expands them only when they
+appear as string arguments to supported tool calls (Read, Bash with quoted content,
+etc.). A mid-delivery sourcing failure caused by this was the trigger for this
+recipe (claude-mem obs 4875).
+
+### Resolution recipe
+
+Derive the `skill://` root from the **invoked skill's own installed location**.
+Never hardcode `~/.claude/skills` or `~/.omp/agent/skills`; both are valid
+install targets and the installed skill directory name may differ from the repo
+directory name (e.g. `gitlab-local` vs `gitlab` during a rename window).
+
+```bash
+# --- skill:// resolution recipe (runtime-agnostic) ---
+#
+# Step 1: Locate this skill's own SKILL.md via a Read tool call
+#         (the runtime expands skill:// there) and capture the resolved path.
+#         Example: Read("skill://gitlab/SKILL.md") resolves to an absolute path
+#         such as /home/user/.omp/agent/skills/gitlab-local/SKILL.md
+#         or      /home/user/.claude/skills/gitlab/SKILL.md
+#
+# Step 2: Strip the SKILL.md filename to get the skill root.
+#         SKILL_ROOT="$(dirname "<resolved-path-from-step-1>")"
+#         # e.g. /home/user/.claude/skills/gitlab
+#
+# Step 3: Reference any script relative to that root.
+#         GITLAB_WRAPPERS="${SKILL_ROOT}/scripts/gitlab-wrappers.sh"
+#         source "${GITLAB_WRAPPERS}"
+#         # or: bash "${SKILL_ROOT}/scripts/gitlab-ci-watch.sh" --mr-iid ...
+```
+
+**Concrete example** — the `source .../gitlab-wrappers.sh` case that failed:
+
+```bash
+# In the workflow skill doc the snippet says:
+#   gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
+#   "$gitlab_wrappers_script" draft_mr_create ...
+#
+# At agent runtime, translate that URI before the bash command runs:
+#
+# 1. Use a Read tool call to resolve skill://gitlab/SKILL.md.
+#    Suppose the resolved path is:
+#      /home/runner/.claude/skills/gitlab/SKILL.md
+#
+# 2. Derive the root:
+#    SKILL_ROOT="/home/runner/.claude/skills/gitlab"
+#
+# 3. Use the absolute path:
+#    GITLAB_WRAPPERS="${SKILL_ROOT}/scripts/gitlab-wrappers.sh"
+#    "${GITLAB_WRAPPERS}" draft_mr_create \
+#      --repo "$repo_url" \
+#      --target-branch "$default_branch" \
+#      --source-branch "$source_branch" \
+#      --title "$title" \
+#      --description-file "$description_file"
+```
+
+This pattern works on any runtime because:
+
+- The skill root is derived at runtime from an actual Read resolution, not a
+  hardcoded path.
+- The installed directory name is whatever the runtime installed it as; `dirname`
+  strips only the `SKILL.md` filename.
+- No assumption is made about the user's home directory layout or the skill repo's
+  directory name.
+
+For helper script URIs that appear in workflow skill docs (e.g.,
+`skill://gitlab/scripts/gitlab-ci-watch.sh`), apply the same recipe: resolve the
+skill root once, then substitute the path component from the URI.
+
 ## When to prefer MCP primary snippets
 
 Use MCP primary tools from [`../reference/snippet-transports.md`](../reference/snippet-transports.md) for normal GitLab API actions.
