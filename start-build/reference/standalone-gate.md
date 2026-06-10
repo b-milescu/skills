@@ -24,9 +24,10 @@ For the canonical example task prompt template and the planning-details exclusio
 1. **Start** a fresh reviewer session.
 2. **Wait** for the Review Report using the caller's review wait budget. No fixed wall-clock value alone authorizes replacement; if the report is missing after the budget, follow [Timeout handling](#timeout-handling) before any second reviewer attempt.
 3. **Evaluate** the reviewer's decision:
-   - **Approve** — reviewer records approval for the reviewed SHA when approval authority permits it, then finish per separate `Merge authority`. If merge authority is `approval-only` or `human release`, stop after approval and report the reviewed SHA. If merge authority is `reviewer may merge` or `queue auto-merge`, only the reviewer, an authorized parent, or a human may merge or queue with the reviewed SHA. When merge authority is already granted, the approving reviewer performs the SHA-guarded finish in this same session — do not spawn a separate finisher agent for the merge; spawn a separate authorized finisher only when merge authority arrives after the review session has ended (for example, a human releases it later). If GitLab blocks reviewer-side merge or queue, report the blocker and route finish to an authorized parent or human; the builder must not merge as a fallback. For safety-critical tasks, link the MR from any durable decision log the project keeps. Record the reviewed SHA and decision.
+   - **Pass** — the reviewer's verdict is `pass`; this is a review judgment only and never by itself implies approval or merge. On a `pass` verdict, the reviewer records the separate approval action for the reviewed SHA when approval authority permits it, then finishes per separate `Merge authority`. If merge authority is `approval-only` or `human release`, stop after approval and report the reviewed SHA. If merge authority is `reviewer may merge` or `queue auto-merge`, only the reviewer, an authorized parent, or a human may merge or queue with the reviewed SHA. When merge authority is already granted, the approving reviewer performs the SHA-guarded finish in this same session — do not spawn a separate finisher agent for the merge; spawn a separate authorized finisher only when merge authority arrives after the review session has ended (for example, a human releases it later). If GitLab blocks reviewer-side merge or queue, report the blocker and route finish to an authorized parent or human; the builder must not merge as a fallback. For safety-critical tasks, link the MR from any durable decision log the project keeps. Record the reviewed SHA and decision.
    - **Request changes** — push fix commits, each commit subject naming the item ID such as `MF-1: <fix>`; post a revision-packet comment; update the MR description and Reviewer Lift; then start a **new** reviewer session with fresh context.
    - **Reject** — hard stop. Do not spawn another reviewer on the same MR. Escalate to human immediately.
+   - **Blocked** — the reviewer could not complete the review (for example a final guard failed, evidence was missing, or a non-code blocker stopped the review). Do not treat a `blocked` verdict as approval or finish; record the blocker, do not spawn another reviewer on the same MR for the same blocker, and escalate to human.
 4. **3-round limit:** up to 3 rounds total, initial plus 2 retries. If all 3 rounds result in request-changes, escalate to human with round count, Review Reports, and remaining Must Fix items.
 
 ## Timeout handling
@@ -42,12 +43,14 @@ After all rounds complete or escalation is needed, post a brief summary as an MR
 
 | Round | Reviewer | Decision | Headline |
 |-------|----------|----------|----------|
-| 1     | <agent>  | approve / request-changes / reject / timeout / stale / interrupted | <one-line summary> |
+| 1     | <agent>  | pass / request-changes / reject / blocked / timeout / stale / interrupted | <one-line summary> |
 | 2     | <agent>  | ...      | ...      |
 | 3     | <agent>  | ...      | ...      |
 
 Final Review Report: <link to MR comment, or N/A — timeout/stale/interrupted without completed report>
 ```
+
+The `Decision` column records the reviewer's round verdict (`pass`, `request-changes`, `reject`, or `blocked`), not the approval side effect. A `pass` verdict is a review judgment only; the approval action is recorded separately and never implied by the verdict.
 
 `timeout / stale / interrupted are non-completion states`: they document gate history and escalation blockers only. They do not imply independent review completed, approval exists, or finish authority is available.
 
