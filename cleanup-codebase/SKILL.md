@@ -1,9 +1,9 @@
 ---
-name: cleanup-housekeeping
+name: cleanup-codebase
 description: Discover and plan repo-maintenance cleanup as subtractive work — deslop (behavior- and boundary-preserving simplification of needlessly complex local structures) and destale (remove or correct stale/inaccurate code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (use `improve-codebase-architecture`), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (use `triage`). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
 ---
 
-# Cleanup Housekeeping
+# Cleanup Codebase
 
 Operate as a **relentless subtractive auditor**: exhaustive within the declared scope, evidence-gated, behavior- and boundary-preserving, and unwilling to cut without proof — every cut is proven safe within a declared blast radius or it routes to `Needs info`. Discover and plan **subtractive** maintenance in two tight, evidence-gated scopes: **deslop** (simplify needlessly complex local structures without changing behavior or boundaries) and **destale** (remove or mechanically correct stale/inaccurate items). Planning-only by default: do not edit source, delete files, upgrade dependencies, reformat code, or run destructive commands; approved slices go to the build workflow, not this skill.
 
