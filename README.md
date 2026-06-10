@@ -1,11 +1,11 @@
 # agent-skills
 
-Loose collection of agent skills. Skills are surfaced to each installed agent (Claude Code at `~/.claude/skills/`, pi at `~/.pi/agent/skills/`) via symlinks.
+Loose collection of agent skills. Skills are surfaced to each installed agent (Claude Code at `~/.claude/skills/`, OMP at `~/.omp/agent/skills/`) via symlinks.
 
 ## Layout
 
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
-- `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs pi dialect rules.
+- `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
 - `gitlab/scripts/` — helper scripts bundled with the `/gitlab` skill.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
@@ -25,7 +25,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 
 ## External skill dependencies
 
-This repo does not vendor every skill referenced by docs or prompts. Install external skills into each runtime skill directory that exists on the host (for example `~/.claude/skills/<name>` and/or `~/.pi/agent/skills/<name>`).
+This repo does not vendor every skill referenced by docs or prompts. Install external skills into each runtime skill directory that exists on the host (for example `~/.claude/skills/<name>` and/or `~/.omp/agent/skills/<name>`).
 
 | Skill | Requirement | Referenced by | Fallback |
 |---|---|---|---|

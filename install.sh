@@ -2,13 +2,13 @@
 # install.sh — idempotently surface skills and agents via symlinks.
 #
 #   Skills:  <repo>/<skill>/  → ~/.claude/skills/<skill>   (Claude Code)
-#                            → ~/.pi/agent/skills/<skill> (pi agent)
+#                            → ~/.omp/agent/skills/<skill> (OMP agent)
 #
 #   Agents:  <repo>/agents/<name>.md → ~/.claude/agents/<name>.md   (Claude Code)
-#                                  → ~/.pi/agent/agents/<name>.md (pi agent)
+#                                  → ~/.omp/agent/agents/<name>.md (OMP agent)
 #
 # Each destination is skipped if its parent directory (e.g. ~/.claude/,
-# ~/.pi/agent/) doesn't exist — that agent simply isn't installed on this host.
+# ~/.omp/agent/) doesn't exist — that agent simply isn't installed on this host.
 # Safe to re-run after adding/removing skills or agents. Refuses to overwrite
 # non-symlink targets or user-managed symlinks pointing outside this repo — fix
 # those by hand. Stale repo-owned symlinks are pruned so renames propagate
@@ -51,7 +51,7 @@ esac
 
 SKILL_DESTS=(
   "$HOME/.claude/skills"
-  "$HOME/.pi/agent/skills"
+  "$HOME/.omp/agent/skills"
 )
 
 # External skills referenced by this repo but not vendored here. They should be
@@ -83,7 +83,7 @@ done
 
 # Agents are organised per target dialect under agents/<target>/.
 # AGENT_NAMES is populated per target from that target's own source directory so
-# Pi-only routed agents remain installed while Claude Code omits unsupported
+# OMP-only routed agents remain installed while Claude Code omits unsupported
 # agent definitions.
 AGENT_NAMES=()
 
@@ -244,11 +244,11 @@ done
 # --- Agents (per-target dialect) ---
 # Each agent has a per-target source under agents/<dialect>/<name>.md so the
 # frontmatter can match the target runtime's schema (Claude Code uses
-# PascalCase tools and its own field set; pi uses lowercase tools and its own
-# intercom-bridge fields). Symlink the right variant to each destination.
+# PascalCase tools and its own field set; OMP uses lowercase tool names and its own
+# task-agent fields). Symlink the right variant to each destination.
 AGENT_TARGETS=(
   "$HOME/.claude/agents|claude"
-  "$HOME/.pi/agent/agents|pi"
+  "$HOME/.omp/agent/agents|omp"
 )
 
 for entry in "${AGENT_TARGETS[@]}"; do

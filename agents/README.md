@@ -7,14 +7,14 @@ runtime's frontmatter schema.
 ## Layout
 
 - `claude/*.md` — Claude Code dialect.
-- `pi/*.md` — pi dialect.
+- `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
 - Runtime-only exception: an agent whose pinned model exists in just one runtime
   may be single-dialect. The GPT-routed reviewer/scout
-  (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) are Pi-only because
+  (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) are OMP-only because
   Claude Code has no `openai-codex/*` route; `agents/check.sh` records this
-  allowlist. Claude-only agents still require a Pi counterpart.
+  allowlist. Claude-only agents still require an OMP counterpart.
 
 ## Claude Code variant
 
@@ -22,16 +22,18 @@ Use Claude Code's documented sub-agent frontmatter only. Use PascalCase tool
 names from the tools reference, for example `Bash`, `Read`, `Edit`, and `Write`.
 Keep Claude-only fields such as `effort:` here.
 
-Remove pi bridge language from Claude bodies: no `contact_supervisor`, no
+Remove retired bridge language from Claude bodies: no `contact_supervisor`, no
 `intercom`, and no `Supervisor coordination` section. Add explicit
 anti-fabrication reporting rules when the agent interacts with GitLab or other
 remote state.
 
-## pi variant
+## OMP variant
 
-Use pi's agent frontmatter dialect. Use lowercase tool names and pi-specific
-fields such as intercom bridge coordination fields. Keep pi-only bridge wording
-here, not in Claude Code variants.
+Use OMP's task-agent frontmatter dialect. Use lowercase builtin tool names such
+as `read`, `search`, `find`, `bash`, `edit`, `write`, `todo`, and `irc`; do not
+use retired bridge tools such as `grep`, `ls`, or `intercom`. Multiword keys use
+canonical kebab-case forms such as `thinking-level`, `autoload-skills`, and
+`read-summarize`.
 
 ## MCP access for MR agents
 
@@ -43,25 +45,27 @@ runtime's native dialect.
   for the approved servers: `mcp__gitlab-mcp__*` and
   `mcp__wowtools-mcp__*`. Do not replace these allowlists with inherited broad
   tools or `disallowedTools`.
-- pi variants keep explicit lowercase builtin tool lists (`bash`, `read`,
-  `edit`, `write`, and peers) plus direct approved server selections:
-  `mcp:gitlab-mcp` and `mcp:wowtools-mcp`. Do not add bare `mcp`.
+- OMP variants keep explicit lowercase builtin tool lists plus exact runtime-real
+  MCP tool names rooted at the configured `gitlab-mcp` and `wowtools` server
+  names, for example `mcp__gitlab_mcp_get_merge_request` and
+  `mcp__wowtools_get_active_build`. Do not add bare `mcp`, `mcp:*`, or wildcard
+  `mcp__*` selectors.
 - GitLab authority stays in `gitlab`: it remains canonical for GitLab
   transport, MCP-first snippet contracts, the Mutation Guard, SHA/CI guards,
   approval, merge, ready-transition, label, and finish evidence.
-- `wowtools-mcp` is read/query/domain-data lookup only. It is never GitLab
+- `wowtools` is read/query/domain-data lookup only. It is never GitLab
   authority, CI, gate, approval, merge, ready-transition, label, or finish
   evidence.
 
 ## Agent definition body strategy
 
 Current strategy: do not add a generator or shared-fragment system now. Keep
-manual Claude/pi files so each runtime's dialect stays explicit and reviewable.
+manual Claude/OMP files so each runtime's dialect stays explicit and reviewable.
 
 Minimize duplicated operational bodies:
 
 - Runtime dialect stays in the variant file: frontmatter schema, tool names,
-  skill-loading wording, and pi bridge coordination are runtime-specific.
+  skill-loading wording, and live-agent coordination are runtime-specific.
 - `start-build` owns builder workflow, Review Packet templates, TDD handoff,
   and parent-owned review-gate policy.
 - `start-review` owns reviewer flow, Review Report format, authority handling,
@@ -78,8 +82,8 @@ Minimize duplicated operational bodies:
 
 Drift checks guard this manual strategy:
 
-- `npm run check:agents-schema` validates dialect frontmatter, tool casing, and
-  Claude/pi body restrictions.
+- `npm run check:agents-schema` validates dialect frontmatter, tool naming, MCP
+  allowlists, and retired bridge wording.
 - `bash agents/check.sh` validates agent name parity, canonical
   `start-build`/`start-review` and `gitlab` pointers, Reviewer Lift and
   Review Report duplicate structures, and required external skill dependencies.
@@ -91,7 +95,7 @@ routine agent edit.
 ## Add a new agent
 
 1. Write `agents/claude/<name>.md` with Claude Code schema.
-2. Write `agents/pi/<name>.md` with pi schema.
+2. Write `agents/omp/<name>.md` with OMP task-agent schema.
 3. Keep body content shared in spirit, but keep runtime-specific coordination and
    frontmatter in the matching dialect file.
 4. Point operational procedure back to canonical skills such as `start-build`,
@@ -108,5 +112,5 @@ routine agent edit.
 - Motivating case: https://gitlab.example.com/agents/skills/-/merge_requests/31
 - Claude Code sub-agent schema: https://code.claude.com/docs/en/sub-agents.md
 - Claude Code tools reference: https://code.claude.com/docs/en/tools-reference.md
-- pi agent frontmatter: `~/.pi/agent/npm/node_modules/pi-subagents/README.md`
-  § "Agent frontmatter"
+- OMP task-agent discovery: `omp://task-agent-discovery.md`
+- OMP MCP tool names: `omp://mcp-server-tool-authoring.md`

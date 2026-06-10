@@ -21,7 +21,7 @@ final_handoff="start-review/templates/reviewer-final-handoff.md"
 filling_guide="start-review/templates/filling-guide.md"
 prompt_docs=(
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 require_text "$review_flow" 'partial-review' 'partial-review blocker token'

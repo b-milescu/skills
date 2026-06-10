@@ -47,16 +47,16 @@ prepare_installed_agents() {
   mkdir -p \
     "$home_dir/.claude/agents" \
     "$home_dir/.claude/skills" \
-    "$home_dir/.pi/agent/agents" \
-    "$home_dir/.pi/agent/skills"
+    "$home_dir/.omp/agent/agents" \
+    "$home_dir/.omp/agent/skills"
 
   for agent in mr-builder mr-reviewer; do
     ln -s "$repo/agents/claude/$agent.md" "$home_dir/.claude/agents/$agent.md"
-    ln -s "$repo/agents/pi/$agent.md" "$home_dir/.pi/agent/agents/$agent.md"
+    ln -s "$repo/agents/omp/$agent.md" "$home_dir/.omp/agent/agents/$agent.md"
   done
 
   if [[ "$with_tdd" == yes ]]; then
-    for runtime in "$home_dir/.claude/skills" "$home_dir/.pi/agent/skills"; do
+    for runtime in "$home_dir/.claude/skills" "$home_dir/.omp/agent/skills"; do
       mkdir -p "$runtime/tdd"
       printf '# tdd\n' > "$runtime/tdd/SKILL.md"
     done
@@ -90,10 +90,10 @@ copy_repo "$clean_repo"
 prepare_installed_agents "$clean_repo" "$clean_home" yes
 run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
-# The Pi-only GPT routes have no Claude counterpart by design; the documented
+# The OMP-only GPT routes have no Claude counterpart by design; the documented
 # allowlist in agents/check.sh must exempt them from the parity error.
-assert_not_contains "$clean_output" "agents/pi/mr-reviewer-gpt55-xhigh.md has no agents/claude/mr-reviewer-gpt55-xhigh.md"
-assert_not_contains "$clean_output" "agents/pi/mr-review-scout-gpt54-low.md has no agents/claude/mr-review-scout-gpt54-low.md"
+assert_not_contains "$clean_output" "agents/omp/mr-reviewer-gpt55-xhigh.md has no agents/claude/mr-reviewer-gpt55-xhigh.md"
+assert_not_contains "$clean_output" "agents/omp/mr-review-scout-gpt54-low.md has no agents/claude/mr-review-scout-gpt54-low.md"
 
 git_noise_repo="$TMP_ROOT/git-noise-repo"
 git_noise_home="$TMP_ROOT/git-noise-home"
@@ -213,9 +213,9 @@ nomutate_home="$TMP_ROOT/nomutate-home"
 nomutate_output="$TMP_ROOT/nomutate.out"
 mkdir -p \
   "$nomutate_home/.claude/skills/tdd" \
-  "$nomutate_home/.pi/agent/skills/tdd"
+  "$nomutate_home/.omp/agent/skills/tdd"
 printf '# tdd\n' > "$nomutate_home/.claude/skills/tdd/SKILL.md"
-printf '# tdd\n' > "$nomutate_home/.pi/agent/skills/tdd/SKILL.md"
+printf '# tdd\n' > "$nomutate_home/.omp/agent/skills/tdd/SKILL.md"
 if ! AGENT_SKILLS_CHECK_HOME="$nomutate_home" HOME="$nomutate_home" "$clean_repo/install.sh" --check >"$nomutate_output" 2>&1; then
   echo "expected install.sh --check to pass" >&2
   echo "--- output ---" >&2
@@ -224,40 +224,40 @@ if ! AGENT_SKILLS_CHECK_HOME="$nomutate_home" HOME="$nomutate_home" "$clean_repo
 fi
 assert_contains "$nomutate_output" "agent-check: PASS"
 assert_not_exists "$nomutate_home/.claude/agents"
-assert_not_exists "$nomutate_home/.pi/agent/agents"
+assert_not_exists "$nomutate_home/.omp/agent/agents"
 
-pi_only_repo="$TMP_ROOT/pi-only-repo"
-pi_only_home="$TMP_ROOT/pi-only-home"
-pi_only_output="$TMP_ROOT/pi-only.out"
-copy_repo "$pi_only_repo"
-cat > "$pi_only_repo/agents/pi/pi-only.md" <<'AGENT'
+omp_only_repo="$TMP_ROOT/omp-only-repo"
+omp_only_home="$TMP_ROOT/omp-only-home"
+omp_only_output="$TMP_ROOT/omp-only.out"
+copy_repo "$omp_only_repo"
+cat > "$omp_only_repo/agents/omp/omp-only.md" <<'AGENT'
 ---
-name: pi-only
+name: omp-only
 description: should be paired with a Claude variant
 tools: read
 ---
 AGENT
-prepare_installed_agents "$pi_only_repo" "$pi_only_home" yes
-run_check_fail "$pi_only_repo" "$pi_only_home" "$pi_only_output"
-assert_contains "$pi_only_output" "agents/pi/pi-only.md has no agents/claude/pi-only.md"
+prepare_installed_agents "$omp_only_repo" "$omp_only_home" yes
+run_check_fail "$omp_only_repo" "$omp_only_home" "$omp_only_output"
+assert_contains "$omp_only_output" "agents/omp/omp-only.md has no agents/claude/omp-only.md"
 
-missing_pi_repo="$TMP_ROOT/missing-pi-repo"
-missing_pi_home="$TMP_ROOT/missing-pi-home"
-missing_pi_output="$TMP_ROOT/missing-pi.out"
-copy_repo "$missing_pi_repo"
-rm "$missing_pi_repo/agents/pi/mr-reviewer.md"
-prepare_installed_agents "$missing_pi_repo" "$missing_pi_home" yes
-run_check_fail "$missing_pi_repo" "$missing_pi_home" "$missing_pi_output"
-assert_contains "$missing_pi_output" "agents/claude/mr-reviewer.md has no agents/pi/mr-reviewer.md"
+missing_omp_repo="$TMP_ROOT/missing-omp-repo"
+missing_omp_home="$TMP_ROOT/missing-omp-home"
+missing_omp_output="$TMP_ROOT/missing-omp.out"
+copy_repo "$missing_omp_repo"
+rm "$missing_omp_repo/agents/omp/mr-reviewer.md"
+prepare_installed_agents "$missing_omp_repo" "$missing_omp_home" yes
+run_check_fail "$missing_omp_repo" "$missing_omp_home" "$missing_omp_output"
+assert_contains "$missing_omp_output" "agents/claude/mr-reviewer.md has no agents/omp/mr-reviewer.md"
 
 prompt_strategy_repo="$TMP_ROOT/prompt-strategy-repo"
 prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
 prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
 copy_repo "$prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/pi/mr-builder.md"
+perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder.md"
 prepare_installed_agents "$prompt_strategy_repo" "$prompt_strategy_home" yes
 run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
-assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/pi/mr-builder.md must point to canonical workflow skill start-build"
+assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder.md must point to canonical workflow skill start-build"
 
 
 routed_prompt_strategy_repo="$TMP_ROOT/routed-prompt-strategy-repo"
@@ -273,7 +273,7 @@ lift_drift_repo="$TMP_ROOT/lift-drift-repo"
 lift_drift_home="$TMP_ROOT/lift-drift-home"
 lift_drift_output="$TMP_ROOT/lift-drift.out"
 copy_repo "$lift_drift_repo"
-cat >> "$lift_drift_repo/agents/pi/mr-builder.md" <<'DRIFT'
+cat >> "$lift_drift_repo/agents/omp/mr-builder.md" <<'DRIFT'
 
 | Field | Value |
 |---|---|

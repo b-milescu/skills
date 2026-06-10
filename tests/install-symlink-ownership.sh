@@ -78,62 +78,62 @@ external_dir="$TMP_ROOT/external"
 mkdir -p \
   "$home_dir/.claude/skills" \
   "$home_dir/.claude/agents" \
-  "$home_dir/.pi/agent/skills" \
-  "$home_dir/.pi/agent/agents" \
+  "$home_dir/.omp/agent/skills" \
+  "$home_dir/.omp/agent/agents" \
   "$external_dir"
 
 touch \
   "$external_dir/custom-skill" \
   "$external_dir/custom-agent.md" \
-  "$external_dir/pi-custom-skill" \
-  "$external_dir/pi-custom-agent.md"
+  "$external_dir/omp-custom-skill" \
+  "$external_dir/omp-custom-agent.md"
 
 ln -s "$external_dir/custom-skill" "$home_dir/.claude/skills/start-build"
 ln -s "$external_dir/custom-agent.md" "$home_dir/.claude/agents/mr-builder.md"
-ln -s "$external_dir/pi-custom-skill" "$home_dir/.pi/agent/skills/start-build"
-ln -s "$external_dir/pi-custom-agent.md" "$home_dir/.pi/agent/agents/mr-builder.md"
+ln -s "$external_dir/omp-custom-skill" "$home_dir/.omp/agent/skills/start-build"
+ln -s "$external_dir/omp-custom-agent.md" "$home_dir/.omp/agent/agents/mr-builder.md"
 
 custom_skill_abs="$("$REALPATH" -m "$external_dir/custom-skill")"
 custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
-pi_custom_skill_abs="$("$REALPATH" -m "$external_dir/pi-custom-skill")"
-pi_custom_agent_abs="$("$REALPATH" -m "$external_dir/pi-custom-agent.md")"
+omp_custom_skill_abs="$("$REALPATH" -m "$external_dir/omp-custom-skill")"
+omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
 
 ln -s "$REPO_ROOT/gitlab" "$home_dir/.claude/skills/start-review"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-reviewer.md"
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
 ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"
-ln -s "$REPO_ROOT/agents/pi/mr-reviewer-gpt55-xhigh.md" "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
-ln -s "$REPO_ROOT/agents/pi/mr-review-scout-gpt54-low.md" "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
+ln -s "$REPO_ROOT/agents/omp/mr-reviewer-gpt55-xhigh.md" "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
+ln -s "$REPO_ROOT/agents/omp/mr-review-scout-gpt54-low.md" "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
 
 # Older installers linked shared resource dirs into runtime skill roots. They are
 # repo-owned but not skills, so a rerun must prune them instead of preserving the
 # bogus skill entries.
 ln -s "$REPO_ROOT/docs" "$home_dir/.claude/skills/docs"
 ln -s "$REPO_ROOT/templates" "$home_dir/.claude/skills/templates"
-ln -s "$REPO_ROOT/docs" "$home_dir/.pi/agent/skills/docs"
-ln -s "$REPO_ROOT/templates" "$home_dir/.pi/agent/skills/templates"
+ln -s "$REPO_ROOT/docs" "$home_dir/.omp/agent/skills/docs"
+ln -s "$REPO_ROOT/templates" "$home_dir/.omp/agent/skills/templates"
 
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
 assert_symlink_target "$home_dir/.claude/skills/start-build" "$external_dir/custom-skill"
 assert_symlink_target "$home_dir/.claude/agents/mr-builder.md" "$external_dir/custom-agent.md"
-assert_symlink_target "$home_dir/.pi/agent/skills/start-build" "$external_dir/pi-custom-skill"
-assert_symlink_target "$home_dir/.pi/agent/agents/mr-builder.md" "$external_dir/pi-custom-agent.md"
+assert_symlink_target "$home_dir/.omp/agent/skills/start-build" "$external_dir/omp-custom-skill"
+assert_symlink_target "$home_dir/.omp/agent/agents/mr-builder.md" "$external_dir/omp-custom-agent.md"
 
 assert_contains "$output_file" "skip:    $home_dir/.claude/skills/start-build (existing symlink points outside repo: $custom_skill_abs)"
 assert_contains "$output_file" "skip:    $home_dir/.claude/agents/mr-builder.md (existing symlink points outside repo: $custom_agent_abs)"
-assert_contains "$output_file" "skip:    $home_dir/.pi/agent/skills/start-build (existing symlink points outside repo: $pi_custom_skill_abs)"
-assert_contains "$output_file" "skip:    $home_dir/.pi/agent/agents/mr-builder.md (existing symlink points outside repo: $pi_custom_agent_abs)"
+assert_contains "$output_file" "skip:    $home_dir/.omp/agent/skills/start-build (existing symlink points outside repo: $omp_custom_skill_abs)"
+assert_contains "$output_file" "skip:    $home_dir/.omp/agent/agents/mr-builder.md (existing symlink points outside repo: $omp_custom_agent_abs)"
 
 assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
 assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-reviewer.md"
-assert_symlink_resolves_to "$home_dir/.pi/agent/agents/mr-reviewer-gpt55-xhigh.md" "$REPO_ROOT/agents/pi/mr-reviewer-gpt55-xhigh.md"
-assert_symlink_resolves_to "$home_dir/.pi/agent/agents/mr-review-scout-gpt54-low.md" "$REPO_ROOT/agents/pi/mr-review-scout-gpt54-low.md"
+assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-reviewer-gpt55-xhigh.md" "$REPO_ROOT/agents/omp/mr-reviewer-gpt55-xhigh.md"
+assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-review-scout-gpt54-low.md" "$REPO_ROOT/agents/omp/mr-review-scout-gpt54-low.md"
 assert_not_exists "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
 assert_not_exists "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
 for runtime in \
   "$home_dir/.claude/skills" \
-  "$home_dir/.pi/agent/skills"; do
+  "$home_dir/.omp/agent/skills"; do
   assert_not_exists "$runtime/docs"
   assert_not_exists "$runtime/templates"
 done

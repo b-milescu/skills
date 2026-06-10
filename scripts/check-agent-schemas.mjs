@@ -2,11 +2,10 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import process from 'node:process';
 import yaml from 'js-yaml';
 
 const REPO_ROOT = findRepoRoot();
-const DIALECTS = new Set(['claude', 'pi']);
+const DIALECTS = new Set(['claude', 'omp']);
 const REQUIRED_FIELDS = ['name', 'description', 'tools'];
 
 const CLAUDE_ALLOWED_FIELDS = new Set([
@@ -18,47 +17,90 @@ const CLAUDE_ALLOWED_FIELDS = new Set([
   'effort',
   'color',
 ]);
-const PI_ALLOWED_FIELDS = new Set([
+const OMP_ALLOWED_FIELDS = new Set([
   'name',
-  'package',
   'description',
   'tools',
-  'extensions',
+  'spawns',
   'model',
+  'thinking-level',
+  'autoload-skills',
+  'output',
+  'read-summarize',
+  'blocking',
+]);
+const OMP_ONLY_FIELDS = new Set([...OMP_ALLOWED_FIELDS].filter((field) => !CLAUDE_ALLOWED_FIELDS.has(field)));
+const CLAUDE_ONLY_FIELDS = new Set(['effort', 'color', 'skills']);
+const OMP_CANONICAL_FIELD_REPLACEMENTS = new Map([
+  ['thinkingLevel', 'thinking-level'],
+  ['autoloadSkills', 'autoload-skills'],
+  ['readSummarize', 'read-summarize'],
+]);
+const RETIRED_PI_FIELDS = new Set([
+  'package',
+  'extensions',
   'fallbackModels',
   'thinking',
   'systemPromptMode',
   'inheritProjectContext',
   'inheritSkills',
   'defaultContext',
-  'skills',
-  'output',
   'defaultReads',
   'defaultProgress',
   'completionGuard',
   'interactive',
   'maxSubagentDepth',
 ]);
-const PI_ONLY_FIELDS = new Set([...PI_ALLOWED_FIELDS].filter((field) => !CLAUDE_ALLOWED_FIELDS.has(field)));
-const CLAUDE_ONLY_FIELDS = new Set(['effort', 'color']);
 
 const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools-mcp__*']);
-const PI_MCP_SELECTIONS = new Set(['mcp:gitlab-mcp', 'mcp:wowtools-mcp']);
 const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
-const ALLOWED_PI_MCP_SELECTIONS = [...PI_MCP_SELECTIONS].join(', ');
+
+const OMP_MCP_TOOLS = new Set([
+  'mcp__gitlab_mcp_get_project',
+  'mcp__gitlab_mcp_get_current_user',
+  'mcp__gitlab_mcp_list_issues',
+  'mcp__gitlab_mcp_get_issue',
+  'mcp__gitlab_mcp_get_issue_discussions',
+  'mcp__gitlab_mcp_create_issue_note',
+  'mcp__gitlab_mcp_update_issue',
+  'mcp__gitlab_mcp_list_merge_requests',
+  'mcp__gitlab_mcp_get_merge_request',
+  'mcp__gitlab_mcp_get_merge_request_discussions',
+  'mcp__gitlab_mcp_get_merge_request_changes',
+  'mcp__gitlab_mcp_get_merge_request_approvals',
+  'mcp__gitlab_mcp_create_merge_request',
+  'mcp__gitlab_mcp_update_merge_request',
+  'mcp__gitlab_mcp_create_merge_request_note',
+  'mcp__gitlab_mcp_approve_merge_request',
+  'mcp__gitlab_mcp_merge_merge_request',
+  'mcp__gitlab_mcp_list_pipelines',
+  'mcp__gitlab_mcp_get_pipeline_jobs',
+  'mcp__gitlab_mcp_list_branches',
+  'mcp__gitlab_mcp_delete_branch',
+  'mcp__gitlab_mcp_trigger_pipeline',
+  'mcp__gitlab_mcp_search_repositories',
+  'mcp__gitlab_mcp_create_issue',
+  'mcp__gitlab_mcp_create_repository',
+  'mcp__gitlab_mcp_push_files',
+  'mcp__gitlab_mcp_create_or_update_file',
+  'mcp__gitlab_mcp_create_branch',
+  'mcp__gitlab_mcp_get_file_contents',
+  'mcp__gitlab_mcp_fork_repository',
+  'mcp__wowtools_get_active_build',
+  'mcp__wowtools_list_tables',
+  'mcp__wowtools_query_table',
+  'mcp__wowtools_get_rows',
+  'mcp__wowtools_get_table_schema',
+]);
+const ALLOWED_OMP_MCP_TOOLS = [...OMP_MCP_TOOLS].join(', ');
 
 const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);
-const PI_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/'];
+const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/'];
 const ALLOWED_CLAUDE_MODELS = [...CLAUDE_MODELS].join(', ');
-const ALLOWED_PI_MODEL_PREFIXES = PI_MODEL_PROVIDER_PREFIXES.join(', ');
+const ALLOWED_OMP_MODEL_PREFIXES = OMP_MODEL_PROVIDER_PREFIXES.join(', ');
 
-const PI_SYSTEM_PROMPT_MODES = new Set(['append', 'replace']);
-const PI_DEFAULT_CONTEXTS = new Set(['fresh', 'fork']);
-const PI_BOOLEAN_VALUES = new Set(['true', 'false']);
-const PI_BOOLEAN_FIELDS = ['inheritProjectContext', 'inheritSkills', 'completionGuard'];
-const ALLOWED_PI_SYSTEM_PROMPT_MODES = '"append" or "replace"';
-const ALLOWED_PI_DEFAULT_CONTEXTS = '"fresh" or "fork"';
-const ALLOWED_PI_BOOLEAN_VALUES = 'lowercase "true" or "false"';
+const OMP_THINKING_LEVELS = new Set(['inherit', 'off', 'minimal', 'low', 'medium', 'high', 'xhigh']);
+const ALLOWED_OMP_THINKING_LEVELS = [...OMP_THINKING_LEVELS].join(', ');
 
 const CLAUDE_TOOLS = new Set([
   'AskUserQuestion',
@@ -77,39 +119,61 @@ const CLAUDE_TOOLS = new Set([
   'WebSearch',
   'Write',
 ]);
-const PI_TOOLS = new Set([
+const OMP_TOOLS = new Set([
+  'ask',
+  'ast_edit',
+  'ast_grep',
   'bash',
+  'browser',
   'edit',
+  'eval',
   'find',
-  'grep',
-  'intercom',
-  'ls',
+  'inspect_image',
+  'irc',
+  'lsp',
   'read',
-  'subagent',
+  'search',
+  'task',
+  'todo',
+  'web_search',
   'write',
+  'yield',
 ]);
-const PI_TO_CLAUDE_TOOL = new Map([
+const OMP_TO_CLAUDE_TOOL = new Map([
+  ['ask', 'AskUserQuestion'],
   ['bash', 'Bash'],
   ['edit', 'Edit'],
-  ['glob', 'Glob'],
-  ['grep', 'Grep'],
-  ['ls', 'LS'],
+  ['find', 'Glob'],
+  ['search', 'Grep'],
   ['read', 'Read'],
+  ['task', 'Task'],
+  ['todo', 'TodoWrite'],
+  ['web_search', 'WebSearch'],
   ['write', 'Write'],
 ]);
-const CLAUDE_TO_PI_TOOL = new Map([
+const CLAUDE_TO_OMP_TOOL = new Map([
+  ['AskUserQuestion', 'ask'],
   ['Bash', 'bash'],
   ['Edit', 'edit'],
-  ['Grep', 'grep'],
-  ['LS', 'ls'],
+  ['Glob', 'find'],
+  ['Grep', 'search'],
+  ['LS', 'directory reads via read'],
   ['Read', 'read'],
+  ['Task', 'task'],
+  ['TodoWrite', 'todo'],
+  ['WebSearch', 'web_search'],
   ['Write', 'write'],
 ]);
-const CLAUDE_FORBIDDEN_BODY_TERMS = ['contact_supervisor', 'intercom'];
+const OMP_RETIRED_TOOL_REPLACEMENTS = new Map([
+  ['grep', 'search'],
+  ['ls', 'directory reads via read'],
+  ['intercom', 'irc'],
+]);
+const NON_PI_FORBIDDEN_BODY_TERMS = ['contact_supervisor', 'intercom'];
 
 const diagnostics = [];
 const files = collectInputFiles();
-const counts = { claude: 0, pi: 0 };
+const counts = { claude: 0, omp: 0 };
 
 for (const file of files) {
   counts[file.dialect] += 1;
@@ -123,16 +187,13 @@ if (diagnostics.length > 0) {
   process.exit(1);
 }
 
-console.log(`agents-schema: checked ${counts.claude} Claude agent(s), ${counts.pi} pi agent(s)`);
+console.log(`agents-schema: checked ${counts.claude} Claude agent(s), ${counts.omp} OMP agent(s)`);
 
 function findRepoRoot() {
   try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim();
+    return execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
   } catch {
-    return process.cwd();
+    return path.resolve(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
   }
 }
 
@@ -154,7 +215,7 @@ function collectInputFiles() {
       if (dialect) {
         collected.push(agentFile(absolute, dialect));
       } else {
-        diagnostics.push(`${displayPath(absolute)}:1: cannot infer agent dialect from path; expected path under agents/claude or agents/pi`);
+        diagnostics.push(`${displayPath(absolute)}:1: cannot infer agent dialect from path; expected path under agents/claude or agents/omp`);
       }
       continue;
     }
@@ -231,9 +292,9 @@ function validateAgent(file) {
   validateRequiredFields(file, data, fieldLines);
   validateDialectFields(file, data, fieldLines);
   validateModel(file, data, fieldLines);
+  validateOmpSemanticFields(file, data, fieldLines);
   validateNameMatchesFile(file, data, fieldLines);
   validateTools(file, data, fieldLines);
-  validatePiSemanticFields(file, frontmatter, fieldLines);
   validateBody(file, lines, frontmatter.endLine);
 }
 
@@ -243,46 +304,43 @@ function extractFrontmatter(file, lines) {
     return null;
   }
 
-  const closingIndex = lines.findIndex((line, index) => index > 0 && line === '---');
-  if (closingIndex === -1) {
-    addDiagnostic(file, 1, 'missing closing YAML frontmatter fence');
-    return null;
+  for (let index = 1; index < lines.length; index += 1) {
+    if (lines[index] === '---') {
+      return {
+        source: lines.slice(1, index).join('\n'),
+        endLine: index + 1,
+      };
+    }
   }
 
-  return {
-    source: lines.slice(1, closingIndex).join('\n'),
-    fieldLines: collectFieldLines(lines.slice(1, closingIndex)),
-    endLine: closingIndex + 1,
-  };
+  addDiagnostic(file, 1, 'unterminated YAML frontmatter fence');
+  return null;
 }
 
 function collectFieldLines(frontmatterLines) {
   const fieldLines = new Map();
-  for (let index = 0; index < frontmatterLines.length; index += 1) {
-    const match = frontmatterLines[index].match(/^([A-Za-z_][A-Za-z0-9_-]*):/u);
+  frontmatterLines.forEach((line, index) => {
+    const match = /^([A-Za-z0-9_-]+):/.exec(line);
     if (match && !fieldLines.has(match[1])) {
       fieldLines.set(match[1], index + 2);
     }
-  }
+  });
   return fieldLines;
 }
 
 function parseFrontmatter(file, frontmatter) {
-  let parsed;
+  const fieldLines = collectFieldLines(frontmatter.source.split('\n'));
   try {
-    parsed = yaml.load(frontmatter.source, { filename: file.display });
+    const data = yaml.load(frontmatter.source) ?? {};
+    if (typeof data !== 'object' || Array.isArray(data)) {
+      addDiagnostic(file, 1, 'frontmatter must be a YAML mapping');
+      return { data: null, fieldLines };
+    }
+    return { data, fieldLines };
   } catch (error) {
-    const markLine = Number.isInteger(error?.mark?.line) ? error.mark.line + 2 : 1;
-    addDiagnostic(file, markLine, `frontmatter YAML does not parse: ${firstLine(error.message)}`);
-    return { data: null, fieldLines: frontmatter.fieldLines };
+    addDiagnostic(file, 1, `frontmatter YAML does not parse: ${firstLine(error.message)}`);
+    return { data: null, fieldLines };
   }
-
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    addDiagnostic(file, 1, 'frontmatter YAML must parse to an object');
-    return { data: null, fieldLines: frontmatter.fieldLines };
-  }
-
-  return { data: parsed, fieldLines: frontmatter.fieldLines };
 }
 
 function firstLine(value) {
@@ -304,16 +362,26 @@ function validateRequiredFields(file, data, fieldLines) {
 }
 
 function validateDialectFields(file, data, fieldLines) {
-  const allowed = file.dialect === 'claude' ? CLAUDE_ALLOWED_FIELDS : PI_ALLOWED_FIELDS;
+  const allowed = file.dialect === 'claude' ? CLAUDE_ALLOWED_FIELDS : OMP_ALLOWED_FIELDS;
 
   for (const field of Object.keys(data)) {
-    if (file.dialect === 'claude' && PI_ONLY_FIELDS.has(field)) {
-      addDiagnostic(file, lineFor(fieldLines, field), `pi-only frontmatter field "${field}" is not allowed in Claude agent`);
+    if (file.dialect === 'claude' && OMP_ONLY_FIELDS.has(field)) {
+      addDiagnostic(file, lineFor(fieldLines, field), `OMP-only frontmatter field "${field}" is not allowed in Claude agent`);
       continue;
     }
-    if (file.dialect === 'pi' && CLAUDE_ONLY_FIELDS.has(field)) {
-      addDiagnostic(file, lineFor(fieldLines, field), `Claude-only frontmatter field "${field}" is not allowed in pi agent`);
-      continue;
+    if (file.dialect === 'omp') {
+      if (OMP_CANONICAL_FIELD_REPLACEMENTS.has(field)) {
+        addDiagnostic(file, lineFor(fieldLines, field), `OMP frontmatter field "${field}" must use canonical key "${OMP_CANONICAL_FIELD_REPLACEMENTS.get(field)}"`);
+        continue;
+      }
+      if (CLAUDE_ONLY_FIELDS.has(field)) {
+        addDiagnostic(file, lineFor(fieldLines, field), `Claude-only frontmatter field "${field}" is not allowed in OMP agent`);
+        continue;
+      }
+      if (RETIRED_PI_FIELDS.has(field)) {
+        addDiagnostic(file, lineFor(fieldLines, field), `retired Pi frontmatter field "${field}" is not allowed in OMP agent`);
+        continue;
+      }
     }
     if (!allowed.has(field)) {
       addDiagnostic(file, lineFor(fieldLines, field), `frontmatter field "${field}" is not allowed in ${file.dialect} agent schema`);
@@ -326,98 +394,69 @@ function validateModel(file, data, fieldLines) {
     return;
   }
 
-  const model = data.model;
-  if (typeof model !== 'string' || model.length === 0) {
-    addDiagnostic(file, lineFor(fieldLines, 'model'), 'frontmatter field "model" must be a non-empty string');
+  const models = Array.isArray(data.model) ? data.model : [data.model];
+  if (models.length === 0) {
+    addDiagnostic(file, lineFor(fieldLines, 'model'), 'frontmatter field "model" must be a non-empty string or string list');
     return;
   }
 
-  if (file.dialect === 'claude') {
-    if (!CLAUDE_MODELS.has(model)) {
+  for (const model of models) {
+    if (typeof model !== 'string' || model.length === 0) {
+      addDiagnostic(file, lineFor(fieldLines, 'model'), 'frontmatter field "model" must be a non-empty string or string list');
+      continue;
+    }
+
+    if (file.dialect === 'claude') {
+      if (!CLAUDE_MODELS.has(model)) {
+        addDiagnostic(
+          file,
+          lineFor(fieldLines, 'model'),
+          `Claude model "${model}" is not approved; allowed models: ${ALLOWED_CLAUDE_MODELS}`,
+        );
+      }
+      continue;
+    }
+
+    if (!OMP_MODEL_PROVIDER_PREFIXES.some((prefix) => model.length > prefix.length && model.startsWith(prefix))) {
       addDiagnostic(
         file,
         lineFor(fieldLines, 'model'),
-        `Claude model "${model}" is not approved; allowed models: ${ALLOWED_CLAUDE_MODELS}`,
+        `OMP model "${model}" is not an approved route; allowed provider prefixes: ${ALLOWED_OMP_MODEL_PREFIXES}`,
       );
     }
-    return;
-  }
-
-  if (!PI_MODEL_PROVIDER_PREFIXES.some((prefix) => model.length > prefix.length && model.startsWith(prefix))) {
-    addDiagnostic(
-      file,
-      lineFor(fieldLines, 'model'),
-      `pi model "${model}" is not an approved route; allowed provider prefixes: ${ALLOWED_PI_MODEL_PREFIXES}`,
-    );
   }
 }
 
-function validatePiSemanticFields(file, frontmatter, fieldLines) {
-  if (file.dialect !== 'pi') {
+function validateOmpSemanticFields(file, data, fieldLines) {
+  if (file.dialect !== 'omp') {
     return;
   }
 
-  const scalars = collectPiScalars(frontmatter);
-  validatePiEnumField(file, scalars, fieldLines, 'systemPromptMode', PI_SYSTEM_PROMPT_MODES, ALLOWED_PI_SYSTEM_PROMPT_MODES);
-  validatePiEnumField(file, scalars, fieldLines, 'defaultContext', PI_DEFAULT_CONTEXTS, ALLOWED_PI_DEFAULT_CONTEXTS);
-  for (const field of PI_BOOLEAN_FIELDS) {
-    validatePiEnumField(file, scalars, fieldLines, field, PI_BOOLEAN_VALUES, ALLOWED_PI_BOOLEAN_VALUES);
-  }
-  validatePiMaxSubagentDepth(file, scalars, fieldLines);
-}
-
-// Mirror pi's frontmatter scalar reader (pi-subagents src/agents/frontmatter.ts):
-// each value is a trimmed string with at most one layer of matching surrounding
-// quotes removed and no YAML-native boolean/number coercion. Reading raw scalars
-// is what lets the checker reject forms pi never honors (e.g. TRUE, yes, 2.5).
-function collectPiScalars(frontmatter) {
-  const scalars = new Map();
-  for (const line of frontmatter.source.split('\n')) {
-    const match = line.match(/^([\w-]+):\s*(.*)$/u);
-    if (!match) {
-      continue;
+  if (Object.hasOwn(data, 'thinking-level')) {
+    const value = data['thinking-level'];
+    if (typeof value !== 'string' || !OMP_THINKING_LEVELS.has(value)) {
+      addDiagnostic(file, lineFor(fieldLines, 'thinking-level'), `OMP thinking-level "${value}" is not a valid value; allowed: ${ALLOWED_OMP_THINKING_LEVELS}`);
     }
-    let value = match[2].trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
+  }
+
+  if (Object.hasOwn(data, 'autoload-skills')) {
+    const result = parseStringListValue(data['autoload-skills'], 'autoload-skills');
+    if (result.error) {
+      addDiagnostic(file, lineFor(fieldLines, 'autoload-skills'), result.error);
+    } else if (result.values.length === 0) {
+      addDiagnostic(file, lineFor(fieldLines, 'autoload-skills'), 'frontmatter field "autoload-skills" must list at least one skill when present');
     }
-    scalars.set(match[1], value);
-  }
-  return scalars;
-}
-
-function validatePiEnumField(file, scalars, fieldLines, field, allowed, allowedLabel) {
-  if (!scalars.has(field)) {
-    return;
   }
 
-  const value = scalars.get(field);
-  if (allowed.has(value)) {
-    return;
+  for (const field of ['blocking', 'read-summarize']) {
+    if (Object.hasOwn(data, field) && typeof data[field] !== 'boolean' && data[field] !== 'true' && data[field] !== 'false') {
+      addDiagnostic(file, lineFor(fieldLines, field), `OMP frontmatter field "${field}" must be boolean true/false`);
+    }
   }
-
-  addDiagnostic(file, lineFor(fieldLines, field), `pi ${field} "${value}" is not a valid value; allowed: ${allowedLabel}`);
-}
-
-function validatePiMaxSubagentDepth(file, scalars, fieldLines) {
-  if (!scalars.has('maxSubagentDepth')) {
-    return;
-  }
-
-  const value = scalars.get('maxSubagentDepth');
-  const parsed = Number(value);
-  if (Number.isInteger(parsed) && parsed >= 0) {
-    return;
-  }
-
-  addDiagnostic(file, lineFor(fieldLines, 'maxSubagentDepth'), `pi maxSubagentDepth "${value}" is not a valid value; must be an integer >= 0`);
 }
 
 function validateNameMatchesFile(file, data, fieldLines) {
-  if (typeof data.name !== 'string' || data.name.length === 0) {
+  if (typeof data.name !== 'string') {
     return;
   }
 
@@ -446,26 +485,34 @@ function validateTools(file, data, fieldLines) {
     if (file.dialect === 'claude') {
       validateClaudeTool(file, fieldLines, tool);
     } else {
-      validatePiTool(file, fieldLines, tool);
+      validateOmpTool(file, fieldLines, tool);
     }
   }
 }
 
 function parseToolsValue(value) {
+  const result = parseStringListValue(value, 'tools');
+  if (result.error) {
+    return { error: result.error.replace('string list', 'comma-separated string or string list') };
+  }
+  return { tools: result.values };
+}
+
+function parseStringListValue(value, field) {
   if (typeof value === 'string') {
-    return { tools: splitList(value) };
+    return { values: splitList(value) };
   }
   if (Array.isArray(value)) {
-    const tools = [];
+    const values = [];
     for (const item of value) {
       if (typeof item !== 'string') {
-        return { error: 'frontmatter field "tools" entries must be strings' };
+        return { error: `frontmatter field "${field}" entries must be strings` };
       }
-      tools.push(...splitList(item));
+      values.push(...splitList(item));
     }
-    return { tools };
+    return { values };
   }
-  return { error: 'frontmatter field "tools" must be a comma-separated string or string list' };
+  return { error: `frontmatter field "${field}" must be a string list` };
 }
 
 function splitList(value) {
@@ -480,7 +527,7 @@ function validateClaudeTool(file, fieldLines, tool) {
     return;
   }
 
-  const expected = PI_TO_CLAUDE_TOOL.get(tool);
+  const expected = OMP_TO_CLAUDE_TOOL.get(tool);
   if (expected) {
     addDiagnostic(file, lineFor(fieldLines, 'tools'), `Claude tool "${tool}" must use Claude Code casing "${expected}"`);
     return;
@@ -498,51 +545,58 @@ function validateClaudeTool(file, fieldLines, tool) {
   addDiagnostic(file, lineFor(fieldLines, 'tools'), `Claude tool "${tool}" is not a Claude Code tool`);
 }
 
-function validatePiTool(file, fieldLines, tool) {
-  if (PI_TOOLS.has(tool) || PI_MCP_SELECTIONS.has(tool)) {
+function validateOmpTool(file, fieldLines, tool) {
+  if (OMP_TOOLS.has(tool) || OMP_MCP_TOOLS.has(tool)) {
     return;
   }
 
-  const expected = CLAUDE_TO_PI_TOOL.get(tool);
+  const retiredExpected = OMP_RETIRED_TOOL_REPLACEMENTS.get(tool);
+  if (retiredExpected) {
+    addDiagnostic(file, lineFor(fieldLines, 'tools'), `OMP tool "${tool}" must use OMP-native tool "${retiredExpected}"`);
+    return;
+  }
+
+  const expected = CLAUDE_TO_OMP_TOOL.get(tool);
   if (expected) {
-    addDiagnostic(file, lineFor(fieldLines, 'tools'), `pi tool "${tool}" must use lowercase pi casing "${expected}"`);
+    addDiagnostic(file, lineFor(fieldLines, 'tools'), `OMP tool "${tool}" must use OMP tool name "${expected}"`);
     return;
   }
 
-  if (isPiMcpDirectSelection(tool)) {
+  if (isOmpMcpTool(tool)) {
     addDiagnostic(
       file,
       lineFor(fieldLines, 'tools'),
-      `pi MCP selection "${tool}" is not approved; allowed selections: ${ALLOWED_PI_MCP_SELECTIONS}`,
+      `OMP MCP tool "${tool}" is not approved; allowed tools: ${ALLOWED_OMP_MCP_TOOLS}`,
     );
     return;
   }
 
-  addDiagnostic(file, lineFor(fieldLines, 'tools'), `pi tool "${tool}" is not a pi tool`);
+  if (tool === 'mcp' || tool.startsWith('mcp:')) {
+    addDiagnostic(file, lineFor(fieldLines, 'tools'), `OMP MCP tool "${tool}" must use runtime-real mcp__ server tool names`);
+    return;
+  }
+
+  addDiagnostic(file, lineFor(fieldLines, 'tools'), `OMP tool "${tool}" is not an OMP tool`);
 }
 
 function isClaudeMcpSelector(tool) {
   return tool === 'mcp' || tool.startsWith('mcp__');
 }
 
-function isPiMcpDirectSelection(tool) {
-  return tool === 'mcp' || tool.startsWith('mcp:');
+function isOmpMcpTool(tool) {
+  return tool === 'mcp' || tool.startsWith('mcp__');
 }
 
 function validateBody(file, lines, frontmatterEndLine) {
-  if (file.dialect !== 'claude') {
-    return;
-  }
-
   for (let index = frontmatterEndLine; index < lines.length; index += 1) {
     const line = lines[index];
-    for (const term of CLAUDE_FORBIDDEN_BODY_TERMS) {
+    for (const term of NON_PI_FORBIDDEN_BODY_TERMS) {
       if (new RegExp(`\\b${escapeRegExp(term)}\\b`, 'iu').test(line)) {
-        addDiagnostic(file, index + 1, `Claude agent body must not contain pi bridge wording "${term}"`);
+        addDiagnostic(file, index + 1, `${file.dialect} agent body must not contain retired Pi bridge wording "${term}"`);
       }
     }
     if (/^##\s+Supervisor coordination/iu.test(line)) {
-      addDiagnostic(file, index + 1, 'Claude agent body must not contain pi bridge wording "Supervisor coordination"');
+      addDiagnostic(file, index + 1, `${file.dialect} agent body must not contain retired Pi bridge wording "Supervisor coordination"`);
     }
   }
 }

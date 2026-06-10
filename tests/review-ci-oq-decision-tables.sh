@@ -57,7 +57,7 @@ pointer_docs=(
   "start-review/REVIEW-FLOW.md"
   "start-review/templates/filling-guide.md"
   "agents/claude/mr-reviewer.md"
-  "agents/pi/mr-reviewer.md"
+  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${pointer_docs[@]}"; do
@@ -66,7 +66,7 @@ done
 
 # Keep detailed decision criteria centralized in REVIEW-FLOW. Other reviewer-facing
 # docs may name blocker tokens, but should not restate full CI/OQ matrices.
-for file in start-review/SKILL.md start-review/templates/filling-guide.md agents/claude/mr-reviewer.md agents/pi/mr-reviewer.md; do
+for file in start-review/SKILL.md start-review/templates/filling-guide.md agents/claude/mr-reviewer.md agents/omp/mr-reviewer.md; do
   if grep -Eiq -- 'green/waived/pending under protected auto-merge|answer, escalate, or downgrade|CI green/waived or safely pending|stale or missing decision-grade CI maps' "$file"; then
     grep -Ein -- 'green/waived/pending under protected auto-merge|answer, escalate, or downgrade|CI green/waived or safely pending|stale or missing decision-grade CI maps' "$file" >&2 || true
     fail "$file restates CI/OQ decision criteria instead of pointing to $canonical"

@@ -34,7 +34,7 @@ REPORT="start-review/templates/review-report.md"
 HANDOFF="start-review/templates/reviewer-final-handoff.md"
 GUIDE="start-review/templates/filling-guide.md"
 CLAUDE_REVIEWER="agents/claude/mr-reviewer.md"
-PI_REVIEWER="agents/pi/mr-reviewer.md"
+PI_REVIEWER="agents/omp/mr-reviewer.md"
 
 binding_offset="$(offset_of "$FLOW" '^##[[:space:]]+Project binding[[:space:]]*$' 'Project binding section')"
 pickup_offset="$(offset_of "$FLOW" '^##[[:space:]]+MR pickup[[:space:]]*$' 'MR pickup section')"
