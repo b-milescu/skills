@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Invariant guard for cleanup-housekeeping/SKILL.md.
+# Invariant guard for cleanup-codebase/SKILL.md.
 # Pins the POST-#149 rescoped identity (deslop + destale), NOT the pre-#149
 # architecture/triage scope. Assertions are tokens, not whole sentences, so the
 # test documents the load-bearing policy shape rather than exact prose.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-SKILL_FILE="$REPO_ROOT/cleanup-housekeeping/SKILL.md"
+SKILL_FILE="$REPO_ROOT/cleanup-codebase/SKILL.md"
 
 fail() {
-  printf 'cleanup-housekeeping-invariants: FAIL: %s\n' "$*" >&2
+  printf 'cleanup-codebase-invariants: FAIL: %s\n' "$*" >&2
   exit 1
 }
 
@@ -19,7 +19,7 @@ require_contains() {
   grep -Fq -- "$needle" "$SKILL_FILE" || fail "missing expected token: $needle"
 }
 
-[[ -f "$SKILL_FILE" ]] || fail "missing required file: cleanup-housekeeping/SKILL.md"
+[[ -f "$SKILL_FILE" ]] || fail "missing required file: cleanup-codebase/SKILL.md"
 
 # Planning-only default survives the rescope (fail-closed: no edits/deletes from
 # this skill; approved slices route to the build workflow).
@@ -70,4 +70,4 @@ require_contains 'stale → correct value pair'
 require_contains 'handoffs'
 require_contains 'fallback'
 
-printf 'cleanup-housekeeping-invariants: PASS\n'
+printf 'cleanup-codebase-invariants: PASS\n'
