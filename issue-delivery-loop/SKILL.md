@@ -17,7 +17,7 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 Act immediately — this skill drives the batch, it is not passive reference. Follow the Operating contract below; this ramp just orders the first actions:
 
 1. Preflight (`skill://gitlab/SKILL.md`) and read the ready queue.
-2. Prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work.
+2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work (decoupling proof before parallel work). Serial WIP-1 batches skip this step.
 3. Classify each target issue/MR as `trivial`, `moderate`, or `high-risk` using [Model-tier routing](#model-tier-routing).
 4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md).
 5. On approve, finish by authority (SHA/CI/authority guards in the canonical flows).
@@ -67,9 +67,27 @@ Route exact agent names from that classification:
   read-only boundaries, or MCP-first transport correctness plus help-first
   `glab` fallback correctness.
 - Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
-- Metrics to report per batch: issues attempted, MRs opened, merged, queued, blocked, review rounds, CI failures, brief defects, follow-up issues created.
+- Metrics to report per batch (names match `retro/templates/retro-report.md`; use `N/A — <why>` when a metric was not observable):
+  - **Issues attempted** — count of issues picked up this batch; evidence: GitLab issue list.
+  - **MRs opened** — Draft or ready MRs created; evidence: MR list for this batch.
+  - **MRs merged** — MRs successfully merged; evidence: MR merge events.
+  - **MRs queued (auto-merge)** — MRs queued for merge-when-pipeline-succeeds; evidence: auto-merge queue actions.
+  - **MRs blocked** — MRs ending this batch in a blocked state; evidence: builder/reviewer handoff `blocked` fields.
+  - **Review rounds (total / max per MR)** — total reviewer sessions across all MRs plus the single-MR maximum; evidence: reviewer handoff chain.
+  - **CI failures** — pipeline runs that ended in a failed state during this batch; evidence: CI snapshots in Review Packets / handoffs.
+  - **Brief defects** — issue briefs that omitted critical context, acceptance criteria, test strategy, or non-goals, causing avoidable discovery or rework; defined by the brief-quality-defects criteria in [the reviewer filling guide §Follow-ups for Other Tasks](skill://start-review/templates/filling-guide.md) and [the review report template](skill://start-review/templates/review-report.md); evidence: reviewer "Follow-ups for Other Tasks" sections noting brief-quality gaps.
+  - **Follow-up issues created** — GitLab issues filed during this batch to capture out-of-scope work; evidence: issue creation events.
 - After merge or protected auto-merge, hand off read-only validation to the `skill://start-build/reference/post-merge-verifier.md` recipe.
 - Canonical sources: `skill://gitlab/SKILL.md`, `skill://start-build/BUILD-FLOW.md`, `skill://start-build/reference/parent-orchestrator.md`, `skill://start-build/reference/parent-owned-gate.md`, `skill://start-build/reference/child-builder.md`, `skill://start-build/reference/post-merge-verifier.md`, `skill://start-build/templates/reviewer-lift-schema.md`, `skill://start-build/templates/review-packet.md`, `skill://start-review/REVIEW-FLOW.md`, `skill://start-review/templates/review-report.md`.
+
+## Batch teardown
+
+After all MRs in the batch are merged, queued, or blocked, sweep the following before closing the batch. Report any unresolved items as blockers using the existing blocker vocabulary.
+
+- [ ] Run-worktrees removed: follow the cleanup-order rules in [parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md) — fetch origin, fast-forward local default, then remove each clean worktree. Retain any unclean worktree and report `cleanup_pending`.
+- [ ] `refs/tmp/review/*` cleared: follow the [reviewer temp-ref removal rules](skill://start-review/REVIEW-FLOW.md) — delete each temp ref only after its review worktree is removed and no other review uses it (`git update-ref -d refs/tmp/review/mr-<iid>`).
+- [ ] Local source branches handled per project policy: delete only when the policy and default-branch safety check permit (see §Fresh default and cleanup order above).
+- [ ] Check Gate green on a fresh default branch: `git fetch origin && git checkout <default_branch> && git merge --ff-only origin/<default_branch> && npm run check`.
 
 ## Handoff
 

@@ -154,10 +154,30 @@ for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
   require_file_contains "$workflow_file" 'never a cost downgrade'
 done
 
-# Per-batch metrics envelope survives.
+# Per-batch metrics envelope survives with retro-report-matching names and definitions.
 require_contains 'Metrics to report per batch'
-require_contains 'issues attempted'
-require_contains 'review rounds'
+# Names must match retro/templates/retro-report.md
+require_contains 'Issues attempted'
+require_contains 'MRs opened'
+require_contains 'MRs merged'
+require_contains 'MRs queued (auto-merge)'
+require_contains 'MRs blocked'
+require_contains 'Review rounds (total / max per MR)'
+require_contains 'CI failures'
+require_contains 'Brief defects'
+require_contains 'Follow-up issues created'
+# Brief defects is a pointer to existing criteria, not a new inventory.
+require_contains 'start-review/templates/filling-guide.md'
+require_contains 'start-review/templates/review-report.md'
+# Decoupling proof is conditional on parallel fan-out; token preserved; serial batches skip.
+require_contains 'decoupling proof before parallel work'
+require_contains 'Serial WIP-1 batches skip'
+# Batch teardown checklist: pointer-only for deletion safety.
+require_contains 'Batch teardown'
+require_contains 'cleanup_pending'
+require_contains 'refs/tmp/review/'
+require_contains 'start-build/reference/parent-orchestrator.md'
+require_contains 'start-review/REVIEW-FLOW.md'
 
 # Post-merge handoff to the read-only verifier recipe survives.
 require_contains 'After merge or protected auto-merge'
