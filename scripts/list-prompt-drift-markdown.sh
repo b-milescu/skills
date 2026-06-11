@@ -13,8 +13,9 @@
 # `git add .` in a parent worktree can still force-stage agent-worktree template
 # copies under `.claude/worktrees/<id>/`. Such accidentally-tracked copies would
 # otherwise leak into `git ls-files` and inject false prompt-drift findings, so
-# the index path also excludes every `.claude/` path. The find fallback already
-# prunes `.claude/worktrees/`.
+# the index path also excludes every `.claude/` path. The find fallback prunes
+# the whole `.claude/` directory (not just `.claude/worktrees/`), so non-worktree
+# `.claude/<x>/` template copies cannot leak either (issue #272).
 
 set -euo pipefail
 
@@ -51,7 +52,7 @@ find "$repo_root" \
     -name .npm -o \
     -name cleanup-discovery -o \
     -name graphify-out -o \
-    -name '.graphify*' \
+    -name '.graphify*' -o \
     -name '.claude' \
   \) -o -path '*/.claude/worktrees' \) -prune \) \
   -o \( -type f -name '*.md' ! -path "$repo_root/progress.md" ! -path '*/.graphify*' -print0 \)

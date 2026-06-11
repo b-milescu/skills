@@ -219,6 +219,59 @@ if grep -E '/\.claude/worktrees/' "$worktree_noise_scan"; then
   cat "$worktree_noise_scan" >&2
   exit 1
 fi
+
+# Issue #272 (find fallback path): a NON-Git fixture checkout forces the `find`
+# fallback enumeration, not the `git ls-files` index path. A NON-worktree
+# `.claude/<x>/...` copy of a canonical template (i.e. NOT under
+# `.claude/worktrees/`, which has its own `-path` prune) must still be excluded:
+# the find prune group must drop EVERY `.claude/` path, mirroring the git-index
+# path's `.claude/` exclusion. Without the fix the find fallback only prunes
+# `.claude/worktrees/`, so this non-worktree copy leaks and trips prompt-drift —
+# the exact false-FAIL class issue #272 removes.
+fallback_claude_repo="$TMP_ROOT/fallback-claude-repo"
+fallback_claude_scan="$TMP_ROOT/fallback-claude-scan.list"
+fallback_claude_home="$TMP_ROOT/fallback-claude-home"
+fallback_claude_output="$TMP_ROOT/fallback-claude.out"
+copy_repo "$fallback_claude_repo"
+# No `git init`: force the non-git / find-fallback enumeration code path.
+if git -C "$fallback_claude_repo" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "expected fallback-claude fixture to NOT be a Git work tree (find fallback path)" >&2
+  exit 1
+fi
+mkdir -p \
+  "$fallback_claude_repo/.claude/agent-stray/start-build/templates" \
+  "$fallback_claude_repo/.claude/agent-stray/start-review/templates"
+cp "$fallback_claude_repo/start-build/templates/reviewer-lift-schema.md" \
+  "$fallback_claude_repo/.claude/agent-stray/start-build/templates/reviewer-lift-schema.md"
+cp "$fallback_claude_repo/start-review/templates/review-report.md" \
+  "$fallback_claude_repo/.claude/agent-stray/start-review/templates/review-report.md"
+# The enumerator resolves symlinks via `pwd -P`, so compare against the
+# resolved repo root (e.g. /var -> /private/var on macOS).
+fallback_claude_real="$(cd "$fallback_claude_repo" && pwd -P)"
+fallback_canonical_md="$fallback_claude_real/start-build/templates/reviewer-lift-schema.md"
+bash "$fallback_claude_repo/scripts/list-prompt-drift-markdown.sh" "$fallback_claude_repo" |
+  tr '\0' '\n' |
+  sed '/^$/d' > "$fallback_claude_scan"
+# No `.claude/` path (worktree or not) may leak through the find fallback.
+if grep -E '/\.claude/' "$fallback_claude_scan"; then
+  echo "expected find fallback to ignore every .claude/ path (non-worktree copy leaked)" >&2
+  echo "--- scan list ---" >&2
+  cat "$fallback_claude_scan" >&2
+  exit 1
+fi
+# No over-pruning: a NON-`.claude` canonical Markdown file is still enumerated.
+if ! grep -Fq "$fallback_canonical_md" "$fallback_claude_scan"; then
+  echo "expected find fallback to still list non-.claude canonical Markdown (over-pruned)" >&2
+  echo "--- scan list ---" >&2
+  cat "$fallback_claude_scan" >&2
+  exit 1
+fi
+# End-to-end: agent-check must PASS via the find fallback with no .claude leak.
+prepare_installed_agents "$fallback_claude_repo" "$fallback_claude_home" yes
+run_check_ok "$fallback_claude_repo" "$fallback_claude_home" "$fallback_claude_output"
+assert_contains "$fallback_claude_output" "agent-check: PASS"
+assert_not_contains "$fallback_claude_output" ".claude/agent-stray"
+
 run_check_ok "$git_noise_repo" "$git_noise_home" "$git_noise_output"
 assert_contains "$git_noise_output" "agent-check: PASS"
 if ! (cd "$git_noise_repo" && bash tests/reviewer-lift-schema.sh) >"$git_noise_schema_output" 2>&1; then
