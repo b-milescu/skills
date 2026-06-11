@@ -4,6 +4,8 @@ Small, self-contained path for child builders delegated by a parent orchestrator
 
 ## Authority boundary
 
+The child reads the gate-ownership mode from the launch prompt's `Gate owner` field (`child` = builder-owned gate, `parent` = parent-owned gate; omitted defaults to `child`/builder-owned). It must not infer gate ownership from "finish authority" or other merge/finish-authority prose. The per-mode semantics stay owned by [parent-owned-gate.md](parent-owned-gate.md); this field only names the selection.
+
 The child builder implements one issue and opens/maintains one Draft MR. By default it may mark ready only after the local gate is green or explicitly N/A with rationale. When parent-owned gate mode is active, the child follows the ownership contract in [parent-owned-gate.md](parent-owned-gate.md#ownership-contract): open/update the Draft MR and final handoff, do not claim gate pass/fail, and do not mark ready unless explicit parent/human delegation is recorded first. The parent orchestrator owns the mandatory review gate and any approval, merge, auto-merge, source-branch cleanup, or post-merge verification allowed by policy; the child must not start a reviewer, approve, merge, queue auto-merge, delete remote branches, or claim the review gate is complete unless an explicit parent/human instruction changes the role scope and that instruction is recorded in the MR and final handoff.
 
 Project-profile hooks may specialize gate policy, labels, branch naming, CI
