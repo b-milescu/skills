@@ -70,7 +70,9 @@
     "label_vocabulary": {
       "label_profile_ref": "docs/agents/triage-labels.md#live-label-inventory",
       "triage_role_labels": {
-        "afk_ready": "ready-for-agent"
+        "afk_ready": "ready-for-agent",
+        "needs_info": "needs-info",
+        "human_decision": "human-decision"
       },
       "kind_labels": {
         "docs": "docs",
