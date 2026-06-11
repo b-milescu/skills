@@ -11,6 +11,8 @@ fallback correctness.
 
 Verified on 2026-06-11 with `glab label list`:
 
+## Live label inventory
+
 | Label | Category | Meaning / use |
 | --- | --- | --- |
 | `docs` | kind | Documentation-only or documentation-focused work. |
