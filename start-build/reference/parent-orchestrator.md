@@ -110,7 +110,7 @@ Target branch: <default branch>
 Mode: child mr-builder
 Stop condition: return the final handoff after updating the Draft/ready MR for this issue.
 Expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
-Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail.
+Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail; in parent-owned gate mode do not mark the MR ready or perform any draft→ready transition — leave it Draft for the parent's Gate Receipt and ready transition.
 Evidence pointers: project rulebook path, repo Check Gate path, MR URL if it already exists, and any narrowly relevant issue-linked docs/tests.
 ```
 
