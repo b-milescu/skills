@@ -67,6 +67,8 @@ assert(defaultProfile.tracker.project_path === 'agents/skills', 'default project
 assert(defaultProfile.agent_setup_docs.root === 'docs/agents', 'default Agent Setup Docs root drifted');
 assert(defaultProfile.label_vocabulary.label_profile_ref === 'docs/agents/triage-labels.md#live-label-inventory', 'default label_profile_ref drifted');
 assert(defaultProfile.label_vocabulary.triage_role_labels.afk_ready === 'ready-for-agent', 'this repo AFK-ready label mapping drifted');
+assert(defaultProfile.label_vocabulary.triage_role_labels.needs_info === 'needs-info', 'this repo needs-info label mapping drifted');
+assert(defaultProfile.label_vocabulary.triage_role_labels.human_decision === 'human-decision', 'this repo human-decision label mapping drifted');
 assert(defaultProfile.check_gate.gate_policy_ref === 'docs/agents/check-gate.md#full-local-gate', 'default gate_policy_ref drifted');
 assert(defaultProfile.check_gate.command === 'npm run check', 'default Check Gate command drifted');
 assert(defaultProfile.dev_workflows.path === 'docs/agents/dev-workflows.md', 'default Dev Workflow path drifted');
@@ -129,6 +131,8 @@ for (const file of [
 
 const liveLabels = read('docs/agents/triage-labels.md');
 assert(liveLabels.includes('| `afk_ready` | `ready-for-agent` |'), 'live docs must map afk_ready Triage Role to this repo label');
+assert(liveLabels.includes('| `needs_info` | `needs-info` |'), 'live docs must map needs_info Triage Role to the needs-info label, not N/A');
+assert(liveLabels.includes('| `human_decision` | `human-decision` |'), 'live docs must map human_decision Triage Role to the human-decision label, not N/A');
 assert(liveLabels.includes('reusable skills must read `project_profile.label_profile_ref`'), 'live labels doc must forbid global label assumptions');
 
 const liveDevWorkflows = read('docs/agents/dev-workflows.md');

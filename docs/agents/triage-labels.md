@@ -9,11 +9,13 @@ authority source, independent review, child-builder boundaries, verifier
 read-only boundaries, or MCP-first transport correctness plus help-first `glab`
 fallback correctness.
 
-Verified on 2026-05-27 with `glab label list`:
+Verified on 2026-06-11 with `glab label list`:
 
 | Label | Category | Meaning / use |
 | --- | --- | --- |
 | `docs` | kind | Documentation-only or documentation-focused work. |
+| `human-decision` | triage role | Issue needs a maintainer decision before AFK work. |
+| `needs-info` | triage role | Issue needs more information before AFK work. |
 | `ready` | status | Existing generic readiness label. Meaning is not yet specialised; ask before using when `ready-for-agent` would also fit. |
 | `ready-for-agent` | triage role | Fully specified and safe for AFK agent implementation without new human decisions; requires an Agent Readiness pass or maintainer waiver. |
 | `refactor` | kind | Refactoring or structure-improvement work. |
@@ -24,8 +26,8 @@ Verified on 2026-05-27 with `glab label list`:
 | Triage Role | Live label | Notes |
 | --- | --- | --- |
 | `afk_ready` | `ready-for-agent` | Fully specified and safe for AFK agent implementation without new human decisions; requires an Agent Readiness pass or maintainer waiver. |
-| `needs_info` | `N/A` | No live label exists; record the need for information in issue/MR prose. |
-| `human_decision` | `N/A` | No live label exists; record the maintainer decision request in issue/MR prose. |
+| `needs_info` | `needs-info` | Issue needs more information before AFK work; apply the live label and state the missing information in issue/MR prose. |
+| `human_decision` | `human-decision` | Issue needs a maintainer decision before AFK work; apply the live label and state the decision request in issue/MR prose. |
 
 These values are this repo's project-specific vocabulary and match `setup-dev-skills/reference/project-profile-facts.json`; reusable skills must read `project_profile.label_profile_ref` instead of assuming these label strings globally.
 
@@ -34,8 +36,10 @@ These values are this repo's project-specific vocabulary and match `setup-dev-sk
 - Apply only labels listed above. Do not rely on GitLab lazy label creation.
 - Use `ready-for-agent` only for AFK-ready issues with a passing or explicitly waived [Agent Readiness scorecard](agent-readiness-scorecard.md).
 - Use `docs` or `refactor` as optional kind labels when the slice fits.
-- Do not apply `needs-triage`, `needs-info`, `ready-for-human`, `wontfix`, `needs-revision`, or `needs-unblock`; those labels do not exist in this project.
-- If work needs more information, a human decision, revision, or unblock, state that in the issue/MR body or comment and ask a maintainer whether the live vocabulary should expand.
+- Apply `needs-info` when an issue needs more information before AFK work, and state the missing information in the issue/MR body or a comment.
+- Apply `human-decision` when an issue needs a maintainer decision before AFK work, and state the decision request in the issue/MR body or a comment. Keep this distinct from the MR-level `human-decision-needed` Review Report verdict token.
+- Do not apply `needs-triage`, `ready-for-human`, `wontfix`, `needs-revision`, or `needs-unblock`; those labels do not exist in this project.
+- If work needs revision or unblock, state that in the issue/MR body or comment and ask a maintainer whether the live vocabulary should expand.
 
 ## Agent Readiness
 
