@@ -191,6 +191,20 @@ for v in "docs:docs-read" "prompt:test, transport:ci" "none"; do
   assert_status 0
 done
 
+# Values wrapped in a markdown code span (`value`) — as in the generated-copy
+# template — are accepted: a surrounding backtick pair is stripped before the
+# membership check.
+run_validator "$(build_block_override "Merge authority" '`project default: parent owns merge`')"
+assert_status 0
+run_validator "$(build_block_override "Gate coverage" '`full-local`')"
+assert_status 0
+run_validator "$(build_block_override "Acceptance surfaces" '`docs:docs-read, prompt:test`')"
+assert_status 0
+# A backtick-wrapped BAD value still fails closed (no smuggling past the check).
+run_validator "$(build_block_override "Gate owner" '`reviewer`')"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Gate owner"
+
 # Every surface token currently in the live vocabulary must be accepted, proving
 # the helper reads the vocabulary at runtime rather than hardcoding a list.
 mapfile -t VOCAB_SURFACES < <(VOCAB="$VOCAB" node -e '

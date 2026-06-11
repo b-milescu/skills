@@ -235,8 +235,21 @@ if (missing.length > 0) {
 // Fixed enums are owned by the schema field definitions; the acceptance-surface
 // vocabulary is read at runtime from the project doc so it auto-tracks additions.
 
+// Lift values are commonly wrapped in a markdown code span (`value`), as in the
+// generated-copy template. Strip a single surrounding backtick pair (and outer
+// whitespace) so membership is checked against the literal value, not its
+// markdown presentation. This does not alter inner text.
+function unwrap(v) {
+  if (v === undefined) return undefined;
+  let s = v.trim();
+  if (s.length >= 2 && s.startsWith('`') && s.endsWith('`')) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
+}
+
 function valueOf(rowName) {
-  return values.get(rowName.toLowerCase());
+  return unwrap(values.get(rowName.toLowerCase()));
 }
 
 // Merge authority accepts a fixed enum plus the open `project default: <...>`
