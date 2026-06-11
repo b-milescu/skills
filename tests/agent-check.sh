@@ -333,4 +333,72 @@ run_check_fail "$missing_tdd_repo" "$missing_tdd_home" "$missing_tdd_output"
 assert_contains "$missing_tdd_output" "missing required external skill tdd"
 assert_contains "$missing_tdd_output" "Install external skill 'tdd' into"
 
+# Issue #272: in a real Git checkout, parallel agent worktrees leave copies of
+# canonical templates under .claude/worktrees/<id>/. Because `.claude/` is not in
+# `.gitignore`, a `git add .` in the parent worktree can accidentally STAGE those
+# copies, which then leak into `git ls-files` and produce spurious "stale
+# duplicate table" / "stale structure" FAILs unrelated to the change under test.
+# agent-check must enumerate its inputs from tracked files but exclude
+# `.claude/` paths so untracked/ignored or accidentally-tracked worktree copies
+# cannot inject findings, while every real check on genuine tracked files stays
+# intact.
+untracked_worktree_repo="$TMP_ROOT/untracked-worktree-repo"
+untracked_worktree_home="$TMP_ROOT/untracked-worktree-home"
+untracked_worktree_output="$TMP_ROOT/untracked-worktree.out"
+copy_repo "$untracked_worktree_repo"
+git -C "$untracked_worktree_repo" init -q
+git -C "$untracked_worktree_repo" add .
+git -C "$untracked_worktree_repo" -c user.email=check@example.com -c user.name=check \
+  commit -qm "baseline"
+# Stray agent-worktree copies of canonical templates under .claude/worktrees/.
+mkdir -p \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-build/templates" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-review/templates"
+cp "$untracked_worktree_repo/start-build/templates/reviewer-lift-schema.md" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md"
+cp "$untracked_worktree_repo/start-review/templates/review-report.md" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-review/templates/review-report.md"
+# `.gitignore` must keep `.claude/` out of `git status`, even forced via `git add .`.
+git -C "$untracked_worktree_repo" add .
+untracked_worktree_status="$TMP_ROOT/untracked-worktree-status.out"
+git -C "$untracked_worktree_repo" status --porcelain > "$untracked_worktree_status"
+if grep -q '\.claude/' "$untracked_worktree_status"; then
+  echo "expected .gitignore to keep .claude/ out of git status after 'git add .'" >&2
+  echo "--- git status --porcelain ---" >&2
+  cat "$untracked_worktree_status" >&2
+  exit 1
+fi
+# Even if a stray copy is force-staged, it must not inject a stale-structure FAIL.
+git -C "$untracked_worktree_repo" add -f \
+  ".claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md" \
+  ".claude/worktrees/agent-stray/start-review/templates/review-report.md"
+prepare_installed_agents "$untracked_worktree_repo" "$untracked_worktree_home" yes
+run_check_ok "$untracked_worktree_repo" "$untracked_worktree_home" "$untracked_worktree_output"
+assert_contains "$untracked_worktree_output" "agent-check: PASS"
+assert_not_contains "$untracked_worktree_output" ".claude/worktrees"
+
+# No coverage loss: a genuine TRACKED stale-structure violation still FAILS even
+# with the `.claude/` exclusion in place.
+tracked_violation_repo="$TMP_ROOT/tracked-violation-repo"
+tracked_violation_home="$TMP_ROOT/tracked-violation-home"
+tracked_violation_output="$TMP_ROOT/tracked-violation.out"
+copy_repo "$tracked_violation_repo"
+cat >> "$tracked_violation_repo/agents/omp/mr-builder.md" <<'DRIFT'
+
+| Field | Value |
+|---|---|
+| Reviewed SHA | stale |
+| Review gate | stale |
+| CI pipeline | stale |
+| Local gate | stale |
+DRIFT
+git -C "$tracked_violation_repo" init -q
+git -C "$tracked_violation_repo" add .
+git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=check \
+  commit -qm "baseline with tracked violation"
+prepare_installed_agents "$tracked_violation_repo" "$tracked_violation_home" yes
+run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
+assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
+assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"
+
 echo "agent-check: PASS"
