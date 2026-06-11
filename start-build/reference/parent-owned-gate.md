@@ -167,3 +167,16 @@ The Gate Receipt MR comment is the canonical record of the parent-owned gate res
 - Token-heavy full MR description rewrites duplicate canonical evidence, create reviewer confusion about which record to trust, and inflate context with stale parent reasoning. Keep post-receipt updates minimal.
 
 This rule does not reduce required Reviewer Lift fields: all required fields must remain present and current. It governs only the verbosity of post-receipt description updates.
+
+## Stale exact-SHA evidence fails closed after a revision push
+
+A Gate Receipt binds its `result: "PASS"` to one exact `checkout_sha`. After any post-ready revision push moves the MR head, that receipt is tied to an **older SHA** and is **stale evidence** for the new reviewed SHA. It does not count as gate evidence for the new SHA **until a new exact-SHA Gate Receipt** with `checkout_sha` equal to the new reviewed SHA exists. The reviewer must not re-derive a current receipt from GitLab history; re-review fails closed on stale exact-SHA evidence rather than proceeding from it.
+
+So on every post-ready revision push in parent-owned gate mode, the parent or builder must refresh the exact-SHA pointers in the Reviewer Lift before re-review is requested:
+
+- `Reviewed SHA` → the new head SHA.
+- CI pointer (`CI pipeline` / `Gate coverage rationale` CI mapping) → rebound to the new SHA; older-SHA CI is stale until rebound.
+- Gate Receipt pointer → point at the new exact-SHA Gate Receipt comment; the older-SHA receipt pointer is stale and must not be presented as current gate evidence.
+- `Delta since last ready push` → old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive.
+
+This stays delta-sized: refresh only the pointer fields and post the new Gate Receipt as its own MR comment. Do not duplicate the Gate Receipt body into the MR description.

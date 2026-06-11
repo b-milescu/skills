@@ -48,4 +48,4 @@ The Reviewer Lift block is a hard child seam: copy the tier's generated-copy Rev
 
 ## Post-ready push rule
 
-If any commit is pushed after ready-marking, post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive. Update Reviewer Lift `Reviewed SHA`, `CI pipeline`, and `Delta since last ready push` before asking the parent to continue. Silent post-ready pushes make the reviewer SHA stale.
+If any commit is pushed after ready-marking, post an MR comment naming old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive. Before asking the parent to continue, refresh every exact-SHA Reviewer Lift field so re-review starts from current evidence: `Reviewed SHA`, `CI pipeline` (rebound to the new SHA), `Delta since last ready push`, and, in parent-owned gate mode, the Gate Receipt pointer — point it at a new exact-SHA Gate Receipt, since a Gate Receipt tied to an older SHA is stale evidence per [parent-owned-gate.md](parent-owned-gate.md#stale-exact-sha-evidence-fails-closed-after-a-revision-push). Silent post-ready pushes make the reviewer SHA stale.
