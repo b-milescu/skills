@@ -52,7 +52,7 @@ const RETIRED_PI_FIELDS = new Set([
   'maxSubagentDepth',
 ]);
 
-const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools-mcp__*']);
+const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools__*']);
 const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
 
 const OMP_MCP_TOOLS = new Set([

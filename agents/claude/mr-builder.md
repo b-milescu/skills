@@ -1,7 +1,7 @@
 ---
 name: mr-builder
 description: GitLab issue implementation specialist for child-builder mode. Knows the start-build procedure, Review Packet templates, TDD integration, check gate discovery, and parent-owned mandatory review-gate handoff. Designed for parallel invocation — one builder per issue/worktree.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
 skills: start-build, tdd, gitlab
 model: inherit
 effort: high
