@@ -78,7 +78,7 @@ gate_receipt:
   checkout_sha: "1111111111111111111111111111111111111111"
   status_before: "draft"
   status_after: "ready"
-  command: "npm run check"
+  command: "<target repo Check Gate command per docs/agents/check-gate.md>"
   result: "PASS"
   summary: "full project Check Gate completed successfully"
   preflight_checks:
