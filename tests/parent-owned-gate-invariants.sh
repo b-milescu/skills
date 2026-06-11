@@ -122,4 +122,32 @@ require_text "$gate_doc" 'canonical gate evidence' 'Gate Receipt canonical gate 
 require_text "$gate_doc" 'delta-only' 'delta-only post-receipt MR description update rule'
 require_text "$gate_doc" 'Gate Receipt as canonical gate evidence' 'Gate Receipt canonical gate evidence section heading'
 
+# #275 Fail closed on stale Reviewer Lift exact-SHA fields after a revision push.
+#
+# The post-ready/post-revision refresh contract must name the Gate Receipt
+# pointer alongside the other exact-SHA fields (Reviewed SHA, CI pointer, Delta
+# since last ready push), and the docs must state that a Gate Receipt bound to an
+# older SHA is stale evidence for a new reviewed SHA until a new exact-SHA Gate
+# Receipt exists. Without these, a revision push can leave stale exact-SHA Lift /
+# Gate Receipt pointers behind and push cleanup onto the reviewer.
+
+# The canonical parent-owned gate seam must declare older-SHA Gate Receipts stale
+# for a new reviewed SHA until a new exact-SHA receipt is posted.
+require_text "$gate_doc" 'older[[:space:]]+SHA' 'parent-owned gate older-SHA staleness rule'
+require_text "$gate_doc" 'stale evidence' 'parent-owned gate stale-evidence statement'
+require_text "$gate_doc" 'until a new exact-SHA Gate Receipt' 'parent-owned gate new-receipt freshness condition'
+# The seam must require refreshing the Gate Receipt pointer on post-ready pushes
+# in parent-owned mode, not only Reviewed SHA / CI.
+require_text "$gate_doc" 'Gate Receipt pointer' 'parent-owned gate post-revision Gate Receipt pointer refresh'
+
+# The post-ready push refresh lists in the build flows must name the Gate Receipt
+# pointer (parent-owned mode) in addition to Reviewed SHA, CI, and Delta.
+impl_flow="start-build/reference/implementation-flow.md"
+require_text "$impl_flow" 'Gate Receipt pointer' 'implementation-flow post-ready Gate Receipt pointer refresh'
+require_text "$child_doc" 'Gate Receipt pointer' 'child-builder post-ready Gate Receipt pointer refresh'
+
+# The Reviewer Lift schema freshness semantics must name the Gate Receipt pointer
+# as one of the exact-SHA fields that goes stale on a push.
+require_text "$reviewer_lift" 'Gate Receipt pointer' 'reviewer-lift schema Gate Receipt pointer freshness'
+
 printf 'parent-owned-gate-invariants: PASS\n'
