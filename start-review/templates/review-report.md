@@ -1,6 +1,6 @@
 # Review Report
 
-<!-- Post this filled report as an MR note with `gitlab` Snippet: mr-note-create. -->
+<!-- Post this filled report as a plain (non-resolvable) MR note with `gitlab` Snippet: mr-note-create. Do NOT post as a discussion thread — the Review Report is informational and must never leave an unresolved thread that blocks merge. Only genuine change-request threads (Must Fix / Should Fix items the builder must answer) should remain open as resolvable discussions. If the report was accidentally posted as a resolvable thread, resolve it immediately. -->
 
 ## Decision Summary
 
