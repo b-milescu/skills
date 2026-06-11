@@ -4,3 +4,9 @@ node_modules/
 # Local agent/runtime artifacts
 graphify-out/
 .graphify*
+
+# Claude Code agent runtime state and isolation worktrees. Parallel agent
+# worktrees live under .claude/worktrees/<id>/ and carry copies of canonical
+# templates; keeping .claude/ untracked stops `git add .` from staging those
+# copies and injecting false Check Gate findings (issue #272).
+.claude/

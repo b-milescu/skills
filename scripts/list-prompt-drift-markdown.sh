@@ -8,6 +8,14 @@
 # `git worktree` copies under `.claude/worktrees/`. Stale worktrees carry copies
 # of tracked Markdown; scanning them produced false prompt-drift failures on main
 # (issue #246), so the fallback prunes them too.
+#
+# `.claude/` is Claude Code runtime state (issue #272): it is gitignored, but a
+# `git add .` in a parent worktree can still force-stage agent-worktree template
+# copies under `.claude/worktrees/<id>/`. Such accidentally-tracked copies would
+# otherwise leak into `git ls-files` and inject false prompt-drift findings, so
+# the index path also excludes every `.claude/` path. The find fallback prunes
+# the whole `.claude/` directory (not just `.claude/worktrees/`), so non-worktree
+# `.claude/<x>/` template copies cannot leak either (issue #272).
 
 set -euo pipefail
 
@@ -28,6 +36,9 @@ if git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     git -C "$repo_root" ls-files -z '*.md' |
     while IFS= read -r -d '' path; do
       [[ -f "$repo_root/$path" ]] || continue
+      case "$path" in
+        .claude/*) continue ;;
+      esac
       printf '%s\0' "$repo_root/$path"
     done
     exit 0
@@ -41,6 +52,7 @@ find "$repo_root" \
     -name .npm -o \
     -name cleanup-discovery -o \
     -name graphify-out -o \
-    -name '.graphify*' \
+    -name '.graphify*' -o \
+    -name '.claude' \
   \) -o -path '*/.claude/worktrees' \) -prune \) \
   -o \( -type f -name '*.md' ! -path "$repo_root/progress.md" ! -path '*/.graphify*' -print0 \)

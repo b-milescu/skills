@@ -219,6 +219,59 @@ if grep -E '/\.claude/worktrees/' "$worktree_noise_scan"; then
   cat "$worktree_noise_scan" >&2
   exit 1
 fi
+
+# Issue #272 (find fallback path): a NON-Git fixture checkout forces the `find`
+# fallback enumeration, not the `git ls-files` index path. A NON-worktree
+# `.claude/<x>/...` copy of a canonical template (i.e. NOT under
+# `.claude/worktrees/`, which has its own `-path` prune) must still be excluded:
+# the find prune group must drop EVERY `.claude/` path, mirroring the git-index
+# path's `.claude/` exclusion. Without the fix the find fallback only prunes
+# `.claude/worktrees/`, so this non-worktree copy leaks and trips prompt-drift —
+# the exact false-FAIL class issue #272 removes.
+fallback_claude_repo="$TMP_ROOT/fallback-claude-repo"
+fallback_claude_scan="$TMP_ROOT/fallback-claude-scan.list"
+fallback_claude_home="$TMP_ROOT/fallback-claude-home"
+fallback_claude_output="$TMP_ROOT/fallback-claude.out"
+copy_repo "$fallback_claude_repo"
+# No `git init`: force the non-git / find-fallback enumeration code path.
+if git -C "$fallback_claude_repo" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "expected fallback-claude fixture to NOT be a Git work tree (find fallback path)" >&2
+  exit 1
+fi
+mkdir -p \
+  "$fallback_claude_repo/.claude/agent-stray/start-build/templates" \
+  "$fallback_claude_repo/.claude/agent-stray/start-review/templates"
+cp "$fallback_claude_repo/start-build/templates/reviewer-lift-schema.md" \
+  "$fallback_claude_repo/.claude/agent-stray/start-build/templates/reviewer-lift-schema.md"
+cp "$fallback_claude_repo/start-review/templates/review-report.md" \
+  "$fallback_claude_repo/.claude/agent-stray/start-review/templates/review-report.md"
+# The enumerator resolves symlinks via `pwd -P`, so compare against the
+# resolved repo root (e.g. /var -> /private/var on macOS).
+fallback_claude_real="$(cd "$fallback_claude_repo" && pwd -P)"
+fallback_canonical_md="$fallback_claude_real/start-build/templates/reviewer-lift-schema.md"
+bash "$fallback_claude_repo/scripts/list-prompt-drift-markdown.sh" "$fallback_claude_repo" |
+  tr '\0' '\n' |
+  sed '/^$/d' > "$fallback_claude_scan"
+# No `.claude/` path (worktree or not) may leak through the find fallback.
+if grep -E '/\.claude/' "$fallback_claude_scan"; then
+  echo "expected find fallback to ignore every .claude/ path (non-worktree copy leaked)" >&2
+  echo "--- scan list ---" >&2
+  cat "$fallback_claude_scan" >&2
+  exit 1
+fi
+# No over-pruning: a NON-`.claude` canonical Markdown file is still enumerated.
+if ! grep -Fq "$fallback_canonical_md" "$fallback_claude_scan"; then
+  echo "expected find fallback to still list non-.claude canonical Markdown (over-pruned)" >&2
+  echo "--- scan list ---" >&2
+  cat "$fallback_claude_scan" >&2
+  exit 1
+fi
+# End-to-end: agent-check must PASS via the find fallback with no .claude leak.
+prepare_installed_agents "$fallback_claude_repo" "$fallback_claude_home" yes
+run_check_ok "$fallback_claude_repo" "$fallback_claude_home" "$fallback_claude_output"
+assert_contains "$fallback_claude_output" "agent-check: PASS"
+assert_not_contains "$fallback_claude_output" ".claude/agent-stray"
+
 run_check_ok "$git_noise_repo" "$git_noise_home" "$git_noise_output"
 assert_contains "$git_noise_output" "agent-check: PASS"
 if ! (cd "$git_noise_repo" && bash tests/reviewer-lift-schema.sh) >"$git_noise_schema_output" 2>&1; then
@@ -332,5 +385,73 @@ prepare_installed_agents "$missing_tdd_repo" "$missing_tdd_home" no
 run_check_fail "$missing_tdd_repo" "$missing_tdd_home" "$missing_tdd_output"
 assert_contains "$missing_tdd_output" "missing required external skill tdd"
 assert_contains "$missing_tdd_output" "Install external skill 'tdd' into"
+
+# Issue #272: in a real Git checkout, parallel agent worktrees leave copies of
+# canonical templates under .claude/worktrees/<id>/. Because `.claude/` is not in
+# `.gitignore`, a `git add .` in the parent worktree can accidentally STAGE those
+# copies, which then leak into `git ls-files` and produce spurious "stale
+# duplicate table" / "stale structure" FAILs unrelated to the change under test.
+# agent-check must enumerate its inputs from tracked files but exclude
+# `.claude/` paths so untracked/ignored or accidentally-tracked worktree copies
+# cannot inject findings, while every real check on genuine tracked files stays
+# intact.
+untracked_worktree_repo="$TMP_ROOT/untracked-worktree-repo"
+untracked_worktree_home="$TMP_ROOT/untracked-worktree-home"
+untracked_worktree_output="$TMP_ROOT/untracked-worktree.out"
+copy_repo "$untracked_worktree_repo"
+git -C "$untracked_worktree_repo" init -q
+git -C "$untracked_worktree_repo" add .
+git -C "$untracked_worktree_repo" -c user.email=check@example.com -c user.name=check \
+  commit -qm "baseline"
+# Stray agent-worktree copies of canonical templates under .claude/worktrees/.
+mkdir -p \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-build/templates" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-review/templates"
+cp "$untracked_worktree_repo/start-build/templates/reviewer-lift-schema.md" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md"
+cp "$untracked_worktree_repo/start-review/templates/review-report.md" \
+  "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-review/templates/review-report.md"
+# `.gitignore` must keep `.claude/` out of `git status`, even forced via `git add .`.
+git -C "$untracked_worktree_repo" add .
+untracked_worktree_status="$TMP_ROOT/untracked-worktree-status.out"
+git -C "$untracked_worktree_repo" status --porcelain > "$untracked_worktree_status"
+if grep -q '\.claude/' "$untracked_worktree_status"; then
+  echo "expected .gitignore to keep .claude/ out of git status after 'git add .'" >&2
+  echo "--- git status --porcelain ---" >&2
+  cat "$untracked_worktree_status" >&2
+  exit 1
+fi
+# Even if a stray copy is force-staged, it must not inject a stale-structure FAIL.
+git -C "$untracked_worktree_repo" add -f \
+  ".claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md" \
+  ".claude/worktrees/agent-stray/start-review/templates/review-report.md"
+prepare_installed_agents "$untracked_worktree_repo" "$untracked_worktree_home" yes
+run_check_ok "$untracked_worktree_repo" "$untracked_worktree_home" "$untracked_worktree_output"
+assert_contains "$untracked_worktree_output" "agent-check: PASS"
+assert_not_contains "$untracked_worktree_output" ".claude/worktrees"
+
+# No coverage loss: a genuine TRACKED stale-structure violation still FAILS even
+# with the `.claude/` exclusion in place.
+tracked_violation_repo="$TMP_ROOT/tracked-violation-repo"
+tracked_violation_home="$TMP_ROOT/tracked-violation-home"
+tracked_violation_output="$TMP_ROOT/tracked-violation.out"
+copy_repo "$tracked_violation_repo"
+cat >> "$tracked_violation_repo/agents/omp/mr-builder.md" <<'DRIFT'
+
+| Field | Value |
+|---|---|
+| Reviewed SHA | stale |
+| Review gate | stale |
+| CI pipeline | stale |
+| Local gate | stale |
+DRIFT
+git -C "$tracked_violation_repo" init -q
+git -C "$tracked_violation_repo" add .
+git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=check \
+  commit -qm "baseline with tracked violation"
+prepare_installed_agents "$tracked_violation_repo" "$tracked_violation_home" yes
+run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
+assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
+assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"
 
 echo "agent-check: PASS"
