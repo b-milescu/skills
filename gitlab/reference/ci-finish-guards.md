@@ -19,6 +19,7 @@ Verdict classification policy lives in [`start-review/REVIEW-FLOW.md#ci-decision
 - Do not use `glab ci status --mr` or any `list_pipelines_for_mr` / `pipelines_for_merge_request` form that lacks an exact SHA.
 - If observed MR head differs from `reviewed_sha`, report changed-head / `stale_ci` style evidence and require a new review before any mutation guard can pass.
 - Red, failed, canceled, skipped, stale, missing, and timeout states never pass. Machine output keeps `expected_sha`, `observed_sha`, `pipeline_id`, `result`, `status`, and blocker fields so the parent/reviewer can bind evidence to `reviewed_sha`.
+- Whether a job that is *absent* from an exact-SHA success pipeline blocks (missing required job) or is approvable (a `rules:`-omitted not-applicable job in the target repo's conditional required-job set) is classified by the canonical [CI decision table](../../start-review/REVIEW-FLOW.md#ci-decision-table); this card does not restate that matrix and stays fail-closed for any absence not declared not-applicable by the target repo.
 
 ## Finish specialization (`finish-mr-authority-aware`)
 

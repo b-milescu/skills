@@ -22,12 +22,29 @@ require_text "$canonical" '^## CI and Open Question decision tables$' 'canonical
 for ci_state in \
   'exact-SHA success' \
   'exact-SHA pending under protected auto-merge' \
+  'omitted not-applicable job \(conditional required-job set\)' \
   'red/failed/canceled/skipped' \
   'missing' \
   'stale' \
   'human-waived'; do
   require_text "$canonical" "\\|[[:space:]]*${ci_state}[[:space:]]*\\|" "CI decision table row: ${ci_state}"
 done
+
+# Conditional required-job set (docs-only / rules:-omitted not-applicable jobs).
+# The reviewer must honor a target-repo-declared conditional required-job set
+# without relaxing the gate. These assertions guard the fail-closed boundary.
+require_text "$canonical" 'omitted not-applicable job[^|]*\|[^|]*(approv|merge)' \
+  'omitted not-applicable job row allows approval/finish'
+require_text "$canonical" 'required-job set is read from the target repo|read from the target repo[^|]*check-gate doc|check-gate doc[^|]*project_profile' \
+  'conditional required-job set read from target repo doc / project_profile, not hard-coded'
+require_text "$canonical" "rules:[^|]*omitted|omitted[^|]*rules:" \
+  'rules:-omitted (absent, not skipped/failed) job description'
+require_text "$canonical" 'success[^|]*at the reviewed SHA|reviewed SHA[^|]*success|exact-SHA success' \
+  'omitted not-applicable row still requires success at the reviewed SHA'
+require_text "$canonical" 'absent for any reason[^|]*other[^|]*than a declared not-applicable rule still blocks' \
+  'fail-closed: job absent for any other reason still blocks'
+require_text "$canonical" '(failed|canceled|pending)[^|]*applicable required job[^|]*block|applicable required job[^|]*(failed|canceled|pending)[^|]*block' \
+  'fail-closed: failed/canceled/pending applicable required job still blocks'
 
 require_text "$canonical" 'local gate[[:space:]]+PASS' 'pending CI local gate PASS condition'
 require_text "$canonical" 'pending pipeline[^|.]*reviewed SHA|reviewed SHA[^|.]*pending pipeline' 'pending CI reviewed-SHA condition'
