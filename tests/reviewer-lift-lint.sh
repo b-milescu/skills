@@ -250,9 +250,10 @@ run_validator "$(build_block_override "Gate owner" "reviewer")"
 assert_status "$EXPECTED_BAD_STATUS"
 assert_contains "Gate owner"
 
-# Regression (issue #270 MF-1): `child` is the launch-prompt selector, NOT a Lift
-# Gate owner value. With the enum {builder, parent}, `Gate owner: child` and any
-# other out-of-set value must still FAIL CLOSED (exit 4) naming the row.
+# Regression (issue #270 MF-1, #273): the retired `child` value is not a Lift
+# Gate owner value (and after #273 is not the launch-prompt selector either). With
+# the enum {builder, parent}, a `child` Gate owner and any other out-of-set value
+# must still FAIL CLOSED (exit 4) naming the row.
 for bad in "child" "nonsense"; do
   run_validator "$(build_block_override "Gate owner" "$bad")"
   assert_status "$EXPECTED_BAD_STATUS"
