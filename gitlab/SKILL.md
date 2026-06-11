@@ -178,7 +178,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted fallback/helper behavior fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners.
+Use the helper when the accepted fallback/helper behavior fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners. `skill://` URIs are resolved only in **foreground** Bash calls; they are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path first before launching it in the background.
 
 ```bash
 gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
@@ -316,7 +316,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper only when the exact accepted fallback/helper authority model fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners.
+Use the helper only when the exact accepted fallback/helper authority model fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners. `skill://` URIs are resolved only in **foreground** Bash calls; they are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path first before launching it in the background.
 
 ```bash
 gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"
