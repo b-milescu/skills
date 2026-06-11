@@ -10,7 +10,7 @@ cat > "$TMPDIR/good/agents/claude/mr-worker.md" <<'MD'
 ---
 name: mr-worker
 description: Claude worker fixture
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools-mcp__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
 skills: start-build, tdd, gitlab
 model: inherit
 effort: high

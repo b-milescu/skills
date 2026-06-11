@@ -43,7 +43,7 @@ runtime's native dialect.
 - Claude Code variants keep explicit `tools:` allowlists with PascalCase builtin
   tool names (`Bash`, `Read`, `Edit`, `Write`, and peers) plus scoped selectors
   for the approved servers: `mcp__gitlab-mcp__*` and
-  `mcp__wowtools-mcp__*`. Do not replace these allowlists with inherited broad
+  `mcp__wowtools__*`. Do not replace these allowlists with inherited broad
   tools or `disallowedTools`.
 - OMP variants keep explicit lowercase builtin tool lists plus exact runtime-real
   MCP tool names rooted at the configured `gitlab-mcp` and `wowtools` server
