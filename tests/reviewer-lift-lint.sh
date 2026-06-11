@@ -21,6 +21,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 VALIDATOR="$REPO_ROOT/gitlab/scripts/validate-reviewer-lift.sh"
 SCHEMA="$REPO_ROOT/start-build/templates/reviewer-lift-schema.md"
+VOCAB="$REPO_ROOT/docs/agents/dev-workflows.md"
 
 CAPTURE_STATUS=0
 CAPTURE_OUTPUT=""
@@ -51,7 +52,23 @@ assert_contains() {
 
 [[ -f "$VALIDATOR" ]] || fail "validator script missing at $VALIDATOR"
 [[ -f "$SCHEMA" ]] || fail "schema file missing at $SCHEMA"
+[[ -f "$VOCAB" ]] || fail "acceptance-surface vocabulary file missing at $VOCAB"
 command -v node >/dev/null 2>&1 || fail "node required to run this test"
+
+# valid_value_for <row> -> a membership-valid value for closed-set rows, else a
+# generic non-empty filler. Closed-set rows must carry a valid enum/vocabulary
+# value so the "valid block passes" assertions exercise value validation rather
+# than tripping over a placeholder.
+valid_value_for() {
+  case "$1" in
+    "Merge authority")      printf 'approval-only' ;;
+    "Review gate")          printf 'mandatory' ;;
+    "Gate owner")           printf 'parent' ;;
+    "Gate coverage")        printf 'full-local' ;;
+    "Acceptance surfaces")  printf 'docs:docs-read' ;;
+    *)                      printf 'filled-value' ;;
+  esac
+}
 
 # === Source of truth: extract the required rows from the schema markdown. ===
 # The test derives the expected required-row list straight from the schema so it
@@ -87,7 +104,23 @@ build_block() {
   local row
   for row in "${REQUIRED_ROWS[@]}"; do
     [[ "$row" == "$omit" ]] && continue
-    printf '| %s | filled-value |\n' "$row"
+    printf '| %s | %s |\n' "$row" "$(valid_value_for "$row")"
+  done
+}
+
+# build_block_override prints a full, present Lift block but replaces a single
+# named row's value with $2 (used to inject a bad closed-set value).
+build_block_override() {
+  local target="$1" value="$2"
+  printf '| Field | Value |\n'
+  printf '|---|---|\n'
+  local row
+  for row in "${REQUIRED_ROWS[@]}"; do
+    if [[ "$row" == "$target" ]]; then
+      printf '| %s | %s |\n' "$row" "$value"
+    else
+      printf '| %s | %s |\n' "$row" "$(valid_value_for "$row")"
+    fi
   done
 }
 
@@ -125,6 +158,125 @@ run_validator ''
 
 run_validator 'no table here, just prose'
 [[ "$CAPTURE_STATUS" -ne 0 ]] || fail "input with no Lift table should fail closed"
+
+# === Closed-set ROW VALUE validation (issue #270). ===
+# Membership only: each closed-set row's value must be drawn from its allowed
+# set. The acceptance-surface vocabulary is read at runtime from the project
+# acceptance_surfaces_ref doc, so it auto-tracks vocabulary additions.
+
+EXPECTED_BAD_STATUS=4
+
+# A block with all-valid enum/vocab values passes (already exercised by
+# build_block above, but assert the closed-set variants explicitly).
+for v in "approval-only" "reviewer may merge" "queue auto-merge" "human release" "project default: minister approval"; do
+  run_validator "$(build_block_override "Merge authority" "$v")"
+  assert_status 0
+done
+for v in "mandatory" "bypassed (human override)"; do
+  run_validator "$(build_block_override "Review gate" "$v")"
+  assert_status 0
+done
+for v in "builder" "parent"; do
+  run_validator "$(build_block_override "Gate owner" "$v")"
+  assert_status 0
+done
+# Regression (issue #270 MF-1): the canonical Gate owner enum is {builder, parent}
+# per reviewer-lift-schema.md:11. An otherwise-valid Lift whose Gate owner is
+# `builder` (the default builder-owned path) MUST pass; the prior {child, parent}
+# predicate wrongly failed this schema-correct value closed with exit 4.
+run_validator "$(build_block_override "Gate owner" "builder")"
+assert_status 0
+for v in "full-local" "hybrid" "ci-only"; do
+  run_validator "$(build_block_override "Gate coverage" "$v")"
+  assert_status 0
+done
+# Acceptance surfaces: valid vocabulary tokens (single, multi, and `none`),
+# each bound to an evidence status.
+for v in "docs:docs-read" "prompt:test, transport:ci" "none"; do
+  run_validator "$(build_block_override "Acceptance surfaces" "$v")"
+  assert_status 0
+done
+
+# Values wrapped in a markdown code span (`value`) — as in the generated-copy
+# template — are accepted: a surrounding backtick pair is stripped before the
+# membership check.
+run_validator "$(build_block_override "Merge authority" '`project default: parent owns merge`')"
+assert_status 0
+run_validator "$(build_block_override "Gate coverage" '`full-local`')"
+assert_status 0
+run_validator "$(build_block_override "Acceptance surfaces" '`docs:docs-read, prompt:test`')"
+assert_status 0
+# A backtick-wrapped BAD value still fails closed (no smuggling past the check).
+run_validator "$(build_block_override "Gate owner" '`reviewer`')"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Gate owner"
+
+# Every surface token currently in the live vocabulary must be accepted, proving
+# the helper reads the vocabulary at runtime rather than hardcoding a list.
+mapfile -t VOCAB_SURFACES < <(VOCAB="$VOCAB" node -e '
+  const fs = require("fs");
+  const lines = fs.readFileSync(process.env.VOCAB, "utf8").split(/\r?\n/);
+  let state = "";
+  const rows = [];
+  for (const l of lines) {
+    if (/^### Acceptance-surface vocabulary/.test(l)) { state = "pre"; continue; }
+    if (state === "pre" && /^\|\s*Surface value\s*\|/.test(l)) { state = "head"; continue; }
+    if (state === "head" && /^\|\s*-+\s*\|/.test(l)) { state = "rows"; continue; }
+    if (state === "rows") {
+      if (/^\|/.test(l)) {
+        const cell = l.split("|")[1].trim().replace(/`/g, "");
+        if (cell) rows.push(cell);
+      } else if (l.trim() === "") { break; }
+    }
+  }
+  process.stdout.write(rows.join("\n"));
+')
+[[ "${#VOCAB_SURFACES[@]}" -ge 1 ]] || fail "extracted no surface tokens from $VOCAB"
+for surface in "${VOCAB_SURFACES[@]}"; do
+  run_validator "$(build_block_override "Acceptance surfaces" "${surface}:docs-read")"
+  assert_status 0
+done
+
+# Negative: for EACH closed-set row, a bad value fails closed naming that row.
+run_validator "$(build_block_override "Merge authority" "default-after-pass")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Merge authority"
+
+run_validator "$(build_block_override "Review gate" "optional")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Review gate"
+
+run_validator "$(build_block_override "Gate owner" "reviewer")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Gate owner"
+
+# Regression (issue #270 MF-1): `child` is the launch-prompt selector, NOT a Lift
+# Gate owner value. With the enum {builder, parent}, `Gate owner: child` and any
+# other out-of-set value must still FAIL CLOSED (exit 4) naming the row.
+for bad in "child" "nonsense"; do
+  run_validator "$(build_block_override "Gate owner" "$bad")"
+  assert_status "$EXPECTED_BAD_STATUS"
+  assert_contains "Gate owner"
+done
+
+run_validator "$(build_block_override "Gate coverage" "parent-owned")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Gate coverage"
+
+run_validator "$(build_block_override "Acceptance surfaces" "dev-workflow:docs-read")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Acceptance surfaces"
+
+# A bad surface token mixed with a valid one still fails closed naming the row.
+run_validator "$(build_block_override "Acceptance surfaces" "docs:docs-read, bogus-surface:test")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Acceptance surfaces"
+
+# Presence still wins precedence: a missing required row reports missing_row (3),
+# not a value error, so the #265 presence contract is unchanged.
+run_validator "$(build_block "Merge authority")"
+assert_status 3
+assert_contains "Merge authority"
 
 # === No network call: helper must not reference glab/curl/wget. ===
 if grep -Eq '(^|[^a-zA-Z_])(glab|curl|wget)([^a-zA-Z_]|$)' "$VALIDATOR"; then
