@@ -6,6 +6,8 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitLab CI `node:22` image. `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which runs:
 
+**Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Switch to Node 22 per `.nvmrc` (e.g. `nvm use 22`), then run `npm ci` to install dependencies from `package-lock.json`, then run `npm run check`. Skipping either bootstrap step produces spurious failures (wrong Node version or missing `node_modules`).
+
 - `bash -n install.sh`
 - `npm run check:agents-schema`
 - `bash agents/check.sh`
@@ -198,6 +200,8 @@ Required evidence: run `HOME=<tmpdir> ./install.sh` and verify that expected age
 For parent-owned gate evidence, name `./install.sh` or a temp-HOME installer smoke as the expected confirmation when `install_surface` is present.
 
 `tests/install-symlink-ownership.sh` regression covers symlink ownership including OMP-only routed agents (GPT routes linked in OMP, absent from Claude) under `npm run check`. A live temp-HOME installer smoke supplements rather than replaces it.
+
+**Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 
 ## When the gate cannot be run
 
