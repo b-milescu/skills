@@ -119,9 +119,10 @@ Agent: <mr-builder-sonnet-low | mr-builder-opus48 | mr-builder-opus48-high>
 Worktree: <absolute worktree path>
 Target branch: <default branch>
 Mode: child mr-builder
+Gate owner: <child | parent>
 Stop condition: return the final handoff after updating the Draft/ready MR for this issue.
 Expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
-Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail; in parent-owned gate mode do not mark the MR ready or perform any draft→ready transition — leave it Draft for the parent's Gate Receipt and ready transition.
+Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail; when Gate owner is parent: do not mark the MR ready or perform any draft→ready transition — leave it Draft for the parent's Gate Receipt and ready transition; when Gate owner is child: run the gate and mark ready per standard flow.
 Evidence pointers: project rulebook path, repo Check Gate path, MR URL if it already exists, and any narrowly relevant issue-linked docs/tests.
 ```
 
