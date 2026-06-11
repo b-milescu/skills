@@ -25,7 +25,7 @@ the missing context is resolved.
 
 | Field | Readiness check |
 | --- | --- |
-| Acceptance criteria | Criteria are concrete, independently verifiable, and tied to user/operator-visible behavior or docs outcomes. |
+| Acceptance criteria | Criteria are concrete, independently verifiable, and tied to user/operator-visible behavior or docs outcomes. Any command-based AC (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted into the brief. |
 | Current-state / repro evidence | Bugs name reproduction evidence; enhancements/docs name the current baseline or gap; non-applicable cases say why. |
 | Test strategy | Expected targeted checks and the full local Check Gate are named, including docs/link/read/grep evidence when no executable behavior changes. |
 | Risk surface | Affected surfaces are explicit: docs, CLI, Dev Workflow, state, migration, external integration, credentials, deploy, or other. |
