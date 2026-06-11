@@ -12,6 +12,8 @@ Match the ceremony of a change to its **risk × blast radius**. Spend tokens, ag
 
 **Design phase = the analyst/refuter fan-out** (parallel agents exploring approaches or adversarially refuting a proposal). It is *not* keyed to how many files change: a one-line edit with an obvious form is trivial even when it touches a load-bearing file. Run a panel only at the high-risk tier *and* only when the solution space is genuinely wide (multiple viable approaches, unclear tradeoffs). For trivial/moderate work, reason it through in a single pass; a panel on a settled one-line change is the most common discretionary waste.
 
+**Tier also sets reviewer-launch timing, not just depth.** When a parent orchestrator launches the final reviewer, *when* it launches is tier-dependent: the `trivial` tier waits for exact-SHA terminal-green CI before launch, while `moderate`/`high-risk` launch in parallel with CI. See the canonical rule in [parent-orchestrator §CI-aware reviewer launch](skill://start-build/reference/parent-orchestrator.md#ci-aware-reviewer-launch); it is parent-side sequencing only and does not change the mandatory review gate or any reviewer CI guard below.
+
 ## Hard floors (never scaled away)
 
 - The **mandatory independent review gate** applies to every behavior-touching change regardless of tier; only discovery, packet, design, and verification *depth* scale.
