@@ -18,6 +18,8 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 ## Acceptance criteria
 
+<!-- Command-based ACs (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted here. See docs/agents/agent-readiness-scorecard.md#scorecard. -->
+
 - [ ] Criterion 1
 - [ ] Criterion 2
 - [ ] Criterion 3
