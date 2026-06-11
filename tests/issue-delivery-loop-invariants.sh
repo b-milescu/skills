@@ -152,6 +152,23 @@ for needle in \
   require_parent_contains "$needle"
 done
 
+# #274 wide-surface test-refactor routing: a broad multi-file / shared-harness
+# test refactor is NOT eligible for the trivial path just because it is test-only
+# and runs no runtime code. The trivial criteria must carry the test-blast-radius
+# exclusion, and an objective blast-radius signal must route this class to at
+# least `moderate`. Tokens are mirrored in both criteria owners (the loop SKILL
+# and the canonical parent seam) so the rule fails closed if either re-opens the
+# trivial path. Canonical route-name ownership stays in parent-orchestrator.md
+# and is unchanged by this rule.
+for needle in \
+  'no broad multi-file or shared-harness test refactor' \
+  'broad test-only refactor' \
+  '>=10' \
+  'route it at least `moderate`'; do
+  require_contains "$needle"
+  require_parent_contains "$needle"
+done
+
 require_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
 require_parent_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
 require_contains 'Manual direct agent selection is outside this enforcement surface'

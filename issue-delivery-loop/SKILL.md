@@ -37,9 +37,11 @@ Skill-only routing applies only to flows launched through this parent delivery l
 
 Before launching any child builder, classify each target issue/MR:
 
-- `trivial` requires all criteria to be true: docs/prose/templates/labels/inventory/checklist or other mechanical no-runtime work; no runtime behavior; no security/auth/permissions/billing; no schema/migration/persistence; no deploy/runtime/CI semantic change; no concurrency/state-machine/locking impact; no broad architecture/cross-file coupling; clear acceptance criteria.
+- `trivial` requires all criteria to be true: docs/prose/templates/labels/inventory/checklist or other mechanical no-runtime work; no runtime behavior; no security/auth/permissions/billing; no schema/migration/persistence; no deploy/runtime/CI semantic change; no concurrency/state-machine/locking impact; no broad architecture/cross-file coupling; no broad multi-file or shared-harness test refactor; clear acceptance criteria.
 - `high-risk` applies when any trigger is present: auth/security/crypto/secrets; migrations/schema/data-loss; deploy/runtime/infra/CI semantics; concurrency/locking/state machines/queues; billing/permissions/access control; large diff (`>=20` files or `>=1000` diff lines); unclear acceptance criteria.
 - `moderate` is the default when work is neither `trivial` nor `high-risk`.
+
+Test surface alone does not lower the tier: route by blast radius, not by runtime-vs-test surface. A broad test-only refactor — many touched test files (objective signal: `>=10` test files) or a shared test-harness / cross-file test-coupling change — is **not** `trivial` even though it is test-only and runs no runtime code; route it at least `moderate` so a large semantic test refactor takes the higher-effort build/review path instead of bouncing through avoidable review rounds. (A broad test refactor that also trips a `high-risk` trigger above — for example `>=20` touched files — still routes `high-risk`.)
 
 The exact per-tier builder route names live in one canonical table, owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md) — the launch seam this loop dispatches through. This loop classifies the tier; do not restate the route-name rows here.
 
