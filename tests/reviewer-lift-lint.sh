@@ -176,10 +176,16 @@ for v in "mandatory" "bypassed (human override)"; do
   run_validator "$(build_block_override "Review gate" "$v")"
   assert_status 0
 done
-for v in "child" "parent"; do
+for v in "builder" "parent"; do
   run_validator "$(build_block_override "Gate owner" "$v")"
   assert_status 0
 done
+# Regression (issue #270 MF-1): the canonical Gate owner enum is {builder, parent}
+# per reviewer-lift-schema.md:11. An otherwise-valid Lift whose Gate owner is
+# `builder` (the default builder-owned path) MUST pass; the prior {child, parent}
+# predicate wrongly failed this schema-correct value closed with exit 4.
+run_validator "$(build_block_override "Gate owner" "builder")"
+assert_status 0
 for v in "full-local" "hybrid" "ci-only"; do
   run_validator "$(build_block_override "Gate coverage" "$v")"
   assert_status 0
@@ -243,6 +249,15 @@ assert_contains "Review gate"
 run_validator "$(build_block_override "Gate owner" "reviewer")"
 assert_status "$EXPECTED_BAD_STATUS"
 assert_contains "Gate owner"
+
+# Regression (issue #270 MF-1): `child` is the launch-prompt selector, NOT a Lift
+# Gate owner value. With the enum {builder, parent}, `Gate owner: child` and any
+# other out-of-set value must still FAIL CLOSED (exit 4) naming the row.
+for bad in "child" "nonsense"; do
+  run_validator "$(build_block_override "Gate owner" "$bad")"
+  assert_status "$EXPECTED_BAD_STATUS"
+  assert_contains "Gate owner"
+done
 
 run_validator "$(build_block_override "Gate coverage" "parent-owned")"
 assert_status "$EXPECTED_BAD_STATUS"

@@ -13,7 +13,7 @@
 #   - Merge authority  ∈ {approval-only, reviewer may merge, queue auto-merge,
 #                         human release, project default: <...>}
 #   - Review gate      ∈ {mandatory, bypassed (human override)}
-#   - Gate owner       ∈ {child, parent}
+#   - Gate owner       ∈ {builder, parent}
 #   - Gate coverage    ∈ {full-local, hybrid, ci-only}
 #   - Acceptance surfaces: each `surface[:evidence]` token's surface is drawn
 #     from the project acceptance_surfaces_ref vocabulary (read at runtime), or
@@ -268,7 +268,7 @@ function mergeAuthorityOk(v) {
 const enumRows = [
   { row: 'Merge authority', ok: mergeAuthorityOk },
   { row: 'Review gate', ok: (v) => v === 'mandatory' || v === 'bypassed (human override)' },
-  { row: 'Gate owner', ok: (v) => v === 'child' || v === 'parent' },
+  { row: 'Gate owner', ok: (v) => v === 'builder' || v === 'parent' },
   { row: 'Gate coverage', ok: (v) => v === 'full-local' || v === 'hybrid' || v === 'ci-only' },
 ];
 
