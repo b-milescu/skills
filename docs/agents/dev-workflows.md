@@ -78,6 +78,7 @@ evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
 | `authority` | Authority verification, approval, or merge authority logic changed. |
 | `ci_finish` | CI watch, finish guard, or CI-verdict logic changed. |
 | `mutation_guard` | GitLab mutation guard or safe-text handling changed. |
+| `tooling` | Repo-local helper script, validator, test harness, or dev-workflow tooling changed. |
 
 When no surface above is touched, declare `acceptance_surfaces` as `[]`/`none`. A
 declared surface without evidence, or an observably-changed surface that is not
