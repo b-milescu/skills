@@ -294,6 +294,18 @@ for bad in "wire-protcol" "protocol" "bogus-surface" "state, bogus-surface"; do
   assert_status "$EXPECTED_BAD_STATUS"
   assert_contains "Touched safety surfaces"
 done
+# Blank/whitespace value fails closed naming the row (issue #283 MF-1): the only
+# empty-equivalents are explicit `none` / `[]`; a present-but-empty required row
+# is an invalid value, not a free pass.
+for blank in "" "   "; do
+  run_validator "$(build_block_override "Touched safety surfaces" "$blank")"
+  assert_status "$EXPECTED_BAD_STATUS"
+  assert_contains "Touched safety surfaces"
+done
+# An annotation-only value (no real surface token) also fails closed.
+run_validator "$(build_block_override "Touched safety surfaces" "(just a note)")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Touched safety surfaces"
 
 # Presence still wins precedence: a missing required row reports missing_row (3),
 # not a value error, so the #265 presence contract is unchanged.

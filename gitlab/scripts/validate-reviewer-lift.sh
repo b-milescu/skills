@@ -15,10 +15,12 @@
 #   - Review gate      ∈ {mandatory, bypassed (human override)}
 #   - Gate owner       ∈ {builder, parent}
 #   - Gate coverage    ∈ {full-local, hybrid, ci-only}
-#   - Touched safety surfaces: `none`/`[]`, or a comma-separated list whose
-#     tokens are drawn from {external-system, credentials, state, migration,
-#     gates, locks, deploy, wire-protocol, other}; `other` is the free-text
-#     catch-all and may carry a parenthetical annotation.
+#   - Touched safety surfaces: explicit `none`/`[]`, or a comma-separated list
+#     whose tokens are drawn from {external-system, credentials, state,
+#     migration, gates, locks, deploy, wire-protocol, other}; `other` is the
+#     free-text catch-all and may carry a parenthetical annotation. A blank /
+#     whitespace-only / annotation-only value fails closed (only `none`/`[]`
+#     are empty-equivalents).
 #   - Acceptance surfaces: each `surface[:evidence]` token's surface is drawn
 #     from the project acceptance_surfaces_ref vocabulary (read at runtime), or
 #     the whole value is `none`/`[]`.
@@ -306,13 +308,18 @@ const safetyRow = 'Touched safety surfaces';
 const safetyValue = valueOf(safetyRow);
 if (safetyValue !== undefined) {
   const normalized = safetyValue.trim();
-  // `none` / `[]` means no surface declared and is always allowed.
-  if (normalized !== 'none' && normalized !== '[]' && normalized !== '') {
+  // The only empty-equivalents are explicit `none` / `[]`. A present-but-blank
+  // (or whitespace-only, or annotation-only) value is an out-of-set value, not a
+  // free pass: it must yield at least one in-vocabulary surface token.
+  if (normalized !== 'none' && normalized !== '[]') {
     const tokens = normalized
       .replace(/\([^)]*\)/g, ' ') // drop free-text annotations before splitting
       .split(',')
       .map((t) => t.trim())
       .filter((t) => t !== '');
+    if (tokens.length === 0) {
+      failInvalidValue(safetyRow, safetyValue, 'detail=empty_safety_surface_value');
+    }
     for (const tok of tokens) {
       if (!safetySurfaceVocab.has(tok)) {
         failInvalidValue(safetyRow, safetyValue, `detail=surface_not_in_vocabulary surface=${tok}`);
