@@ -53,6 +53,16 @@ require_text "$contract" 'Post-mutation MCP re-read' 'post-mutation MCP re-read 
 require_text "$contract" 'via=mcp' 'MCP transport evidence token'
 require_text "$contract" 'via=glab-fallback' 'fallback transport evidence token'
 
+# Slim guard-read path for repeated SHA/state guards (agents/skills #286): one
+# sanctioned interim path, first per-MR read stays full, repeated guards go slim,
+# and the bounded fallback names the documented full-body re-read gap.
+require_text gitlab/SKILL.md '## Slim guard-read for repeated SHA/state guards' 'slim guard-read section'
+require_text gitlab/SKILL.md 'is unchanged. Read the whole response' 'slim path keeps first per-MR full read unchanged'
+require_text gitlab/SKILL.md 'agents/gitlab-mcp/-/issues/87' 'linked gitlab-mcp projection issue reference'
+require_text gitlab/SKILL.md 'repeated SHA/state guard re-reads where the MCP read returns full bodies' 'documented repeated-guard fallback gap wording'
+require_text gitlab/reference/mutation-guard.md 'slim guard-read path' 'Mutation Guard re-read points at slim path for repeated guards'
+require_text gitlab/reference/snippet-transports.md 'slim guard-read path' 'snippet-transports names the slim guard-read path'
+
 require_text gitlab/reference/mutation-guard.md 'GitLab Mutation Guard' 'canonical Mutation Guard document'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_merge_robustness_gap' 'Mutation Guard MCP merge robustness gap token'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_pagination_gap' 'Mutation Guard MCP pagination gap token'
