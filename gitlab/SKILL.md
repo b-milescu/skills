@@ -16,6 +16,16 @@ Use from the GitLab-backed worktree. GitLab API actions use this transport order
 
 Known MCP gaps: `merge_merge_request` has an observed robustness/error-normalization gap for one `Branch cannot be merged` case where SHA-bound `glab` merge succeeded, and exposed `list_*` tools do not provide reliable pagination controls for exhaustive lists. Treat those as documented fallback conditions only; never weaken reviewed-SHA binding, exact-SHA CI, authority, caller-identity/token-stability, context-firewall, or content-byte safeguards to use a fallback.
 
+## Slim guard-read for repeated SHA/state guards
+
+The GitLab Mutation Guard re-reads the target MR before every mutation, and `sha-guard` re-checks head equality at every repeated guard. The MCP-first read for those checks is `get_merge_request`, which returns the small decision-grade fields a guard needs (`sha`, `draft`, `state`, `detailedMergeStatus`, plus `mergeStatus`, `sourceBranch`, `targetBranch`, `mergeCommitSha`) **alongside the entire `description`**. On MRs carrying a full Review Packet + Reviewer Lift the description is ~3-4k tokens, so re-fetching it for each repeated guard is a real context-pressure source on long multi-MR batches.
+
+`get_merge_request` has no server-side projection/slim parameter today (it takes only project + MR IID and always returns the full body); a true slim response would require a gitlab-mcp server change tracked in [`agents/gitlab-mcp#87`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/87). Until that lands, use this one sanctioned interim slim guard-read path:
+
+- **First read per MR stays full.** The first `get_merge_request` for an MR — the one a parent/reviewer genuinely needs for Review Packet / Reviewer Lift spot-checks — is unchanged. Read the whole response.
+- **Repeated guard re-reads are slim.** For every *subsequent* SHA/state guard on the same MR (the Mutation Guard current-target re-read and each repeated `sha-guard`), call MCP `get_merge_request` and consume **only** the small top-level fields (`sha` / `draft` / `state` / `detailedMergeStatus`); ignore the `description` body. This is a read-discipline rule, not a transport change: it never substitutes for the decision-grade full read where spot-check fields are required.
+- **Bounded fallback.** When the repeated guard re-read returns the full body and that body is itself the context-pressure problem — the documented gap "repeated SHA/state guard re-reads where the MCP read returns full bodies" — the `safe-mr-json` snippet (wrapper `safe_mr_json`) is the bounded fallback that projects exactly the decision-grade fields. As always, fallback is second to MCP and re-checks SHA/CI/authority/identity/project binding per the transport order above; it never weakens any guard.
+
 ## Guarded glab fallback and help-first rule
 
 Before any flagged fallback `glab` command, run exact command help and verify every flag:
@@ -246,6 +256,8 @@ gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
 ```
 
 ### Snippet: sha-guard
+
+MCP primary is `get_merge_request`; read only its top-level `sha`. The fallback below is shown for the MCP-unavailable case. For *repeated* SHA/state guards on the same MR, follow the [slim guard-read path](#slim-guard-read-for-repeated-shastate-guards): keep the first per-MR read full, then consume only `sha` / `draft` / `state` / `detailedMergeStatus` on each subsequent re-read instead of re-fetching the full description.
 
 ```bash
 reviewed_sha="<sha-you-reviewed>"

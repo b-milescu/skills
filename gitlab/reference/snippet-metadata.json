@@ -490,7 +490,7 @@
         "inputs": "MR IID, project path, repo URL/project binding.",
         "outputs": "Decision-grade MR JSON-equivalent metadata.",
         "required_guards": "Fail on project binding, SHA, pipeline, merge-status, branch, JSON/control-char drift.",
-        "fallback_conditions": "`safe_mr_json` helper when MCP read is unavailable or wrapper validation is required.",
+        "fallback_conditions": "`safe_mr_json` helper when MCP read is unavailable, when wrapper validation is required, or as the bounded fallback for repeated SHA/state guard re-reads where the MCP read returns full bodies (slim guard-read path).",
         "post_mutation_reread": "N/A — read-only."
       }
     },
@@ -557,7 +557,7 @@
       "markdown": {
         "mcp_primary_tools": "`get_merge_request`.",
         "inputs": "Bound MR IID/URL, reviewed SHA.",
-        "outputs": "Pass/fail head SHA equality.",
+        "outputs": "Pass/fail head SHA equality; repeated guards read only `sha`/`draft`/`state`/`detailedMergeStatus` per the slim guard-read path, keeping the first per-MR full read unchanged.",
         "required_guards": "Any mismatch is stale review; no approval/merge/queue.",
         "fallback_conditions": "`glab mr view` fallback only when MCP read unavailable; still bind explicit repo/full URL.",
         "post_mutation_reread": "N/A — read-only."
