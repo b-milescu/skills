@@ -141,6 +141,12 @@ while :; do
   current_sha="$(json_value "$mr_json" sha "")"
 
   if [[ "$mr_state" == "merged" ]]; then
+    # Fail closed before claiming success: a merge whose observed head is not the
+    # reviewed SHA merged an unreviewed commit, so it is head_changed, not merged.
+    if [[ "$current_sha" != "$reviewed_sha" ]]; then
+      emit_result "head_changed" "${current_sha:-none}" "$pipeline_id" "$pipeline_status" "$pipeline_url" "$failed_jobs" \
+        "CI_WATCH result=head_changed current=${current_sha:-none} reviewed=$reviewed_sha" 2 "head_changed"
+    fi
     merge_commit="$(json_value "$mr_json" merge_commit_sha "none")"
     if [[ "$merge_commit" == "none" ]]; then
       merge_commit="$(json_value "$mr_json" squash_commit_sha "none")"

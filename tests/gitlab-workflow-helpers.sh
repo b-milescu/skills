@@ -91,6 +91,17 @@ test_ci_watch_reports_merged_terminal_state() {
   run_ci_watch_fixture "$dir" abc123
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
+
+  # MF-1: merged but observed head != reviewed SHA must fail closed as
+  # head_changed (exit 2), never terminal success, so an unreviewed commit
+  # cannot be reported as a clean merge.
+  dir="$(make_fixture_dir ci-merged-stale-head)"
+  write_mr_json "$dir/mr.json" merged changedsha success changedsha mergec0mmit789
+  write_branch_json "$dir/branch.json" success changedsha
+  run_ci_watch_fixture "$dir" abc123
+  assert_status 2
+  assert_contains "$CAPTURE_OUTPUT" "result=head_changed"
+  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
 }
 
 test_finish_builder_handoff_never_approves_or_merges() {
