@@ -161,6 +161,7 @@ agent_handoff:
     command: "npm run check"
     not_run_reason: "parent-owned"
     summary: "parent owns final local gate and ready transition"
+  gate_owner_received: "parent"
   gate_ownership:
     local_gate_owner: "parent"
     builder_gate_status:
@@ -237,6 +238,16 @@ agent_handoff:
   `not_run_reason: "parent-owned"` per
   `start-build/reference/parent-owned-gate.md`.
   `N/A` still needs a concrete reason.
+- `gate_owner_received` echoes the literal value the child read from the launch
+  prompt's `Gate owner` line (`builder` or `parent`; when the line was omitted,
+  echo the documented default `builder`). It records the selection the child was
+  given, distinct from the gate mode the child actually operated in
+  (`gate_ownership.local_gate_owner`). The parent spot-check compares this echo
+  against the value it launched with: a mismatch is a rejectable handoff defect
+  per `start-build/reference/parent-orchestrator.md`, because it means the child
+  did not bind to the explicit selection. Do not derive this field from
+  finish-authority or other merge/finish prose; copy it from the `Gate owner`
+  line alone.
 - `gate_ownership` records the parent-owned ownership contract from
   `start-build/reference/parent-owned-gate.md`: `local_gate_owner`,
   `builder_gate_status`, and `ready_transition_owner`.

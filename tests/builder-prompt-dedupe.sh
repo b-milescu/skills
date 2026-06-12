@@ -65,6 +65,11 @@ for prompt in "${builder_prompts[@]}"; do
   require_text "$prompt" 'Child mode authority boundary|child-builder authority boundary' 'child-mode authority boundary invariant'
   require_text "$prompt" 'approve[^.]*merge[^.]*queue auto-merge|queue auto-merge[^.]*approve[^.]*merge' 'approval/merge/auto-merge authority boundary'
   require_text "$prompt" 'parent-owned gate mode' 'parent-owned gate invariant'
+  # The launch-prompt `Gate owner` line is the sole binding gate-mode selector;
+  # builders must not infer gate ownership from finish-authority prose (#285).
+  require_text "$prompt" '`Gate owner`' 'Gate owner field binding reference'
+  require_text "$prompt" 'sole|binding|only' 'Gate owner sole/binding selection wording'
+  require_text "$prompt" 'not infer[^.]*finish[ -]authority|finish[ -]authority[^.]*not[^.]*(infer|influence|select)' 'forbid inferring gate ownership from finish-authority prose'
   require_text "$prompt" 'Review Packet' 'Review Packet handoff invariant'
   require_text "$prompt" 'final handoff' 'final handoff invariant'
   require_text "$prompt" 'authority' 'authority evidence invariant'

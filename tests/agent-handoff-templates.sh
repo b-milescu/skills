@@ -23,6 +23,7 @@ builder_expected=(
   candidate_sha
   pipeline
   local_gate
+  gate_owner_received
   gate_ownership
   gate_coverage
   tdd
@@ -170,6 +171,16 @@ for (const file of process.argv.slice(2)) {
     }
     if (!content.includes('`reviewed_sha` is the same commit as `head_sha`')) {
       throw new Error(`${file}: missing explicit reviewed_sha/head_sha equality semantics`);
+    }
+
+    if (!('gate_owner_received' in handoff)) {
+      throw new Error(`${file}: builder handoff must echo the launch-prompt gate-owner selection as gate_owner_received`);
+    }
+    if (!['builder', 'parent'].includes(handoff.gate_owner_received)) {
+      throw new Error(`${file}: gate_owner_received must echo the literal Gate owner value (builder | parent), got: ${handoff.gate_owner_received}`);
+    }
+    if (!content.includes('`gate_owner_received`')) {
+      throw new Error(`${file}: missing field guidance for gate_owner_received echo semantics`);
     }
 
     const pipeValues = [];
