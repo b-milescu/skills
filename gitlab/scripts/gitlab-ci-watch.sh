@@ -100,7 +100,7 @@ yaml_escape() {
 }
 
 emit_yaml() {
-  local result="$1" observed_sha="$2" pipeline_id="$3" status="$4" url="$5" failed_jobs="$6" blocker="${7:-}"
+  local result="$1" observed_sha="$2" pipeline_id="$3" status="$4" url="$5" failed_jobs="$6" blocker="${7:-}" merge_commit="${8:-}"
   printf 'result: %s\n' "$result"
   printf 'mr: %s\n' "$(yaml_escape "$mr_iid")"
   printf 'expected_sha: %s\n' "$(yaml_escape "$reviewed_sha")"
@@ -110,12 +110,13 @@ emit_yaml() {
   printf 'url: %s\n' "$(yaml_escape "$url")"
   printf 'failed_jobs: %s\n' "$(yaml_escape "${failed_jobs:-none}")"
   [[ -z "$blocker" ]] || printf 'blocker: %s\n' "$(yaml_escape "$blocker")"
+  [[ -z "$merge_commit" || "$merge_commit" == "none" ]] || printf 'merge_commit: %s\n' "$(yaml_escape "$merge_commit")"
 }
 
 emit_result() {
-  local result="$1" observed_sha="$2" pipeline_id="$3" status="$4" url="$5" failed_jobs="$6" message="$7" code="$8" blocker="${9:-}"
+  local result="$1" observed_sha="$2" pipeline_id="$3" status="$4" url="$5" failed_jobs="$6" message="$7" code="$8" blocker="${9:-}" merge_commit="${10:-}"
   if [[ "$output_format" == "yaml" ]]; then
-    emit_yaml "$result" "$observed_sha" "$pipeline_id" "$status" "$url" "$failed_jobs" "$blocker"
+    emit_yaml "$result" "$observed_sha" "$pipeline_id" "$status" "$url" "$failed_jobs" "$blocker" "$merge_commit"
   else
     if [[ "$code" -eq 0 ]]; then
       echo "$message"
@@ -138,6 +139,15 @@ while :; do
   mr_json="$(glab mr view "$mr_iid" -F json)"
   mr_state="$(json_value "$mr_json" state "")"
   current_sha="$(json_value "$mr_json" sha "")"
+
+  if [[ "$mr_state" == "merged" ]]; then
+    merge_commit="$(json_value "$mr_json" merge_commit_sha "none")"
+    if [[ "$merge_commit" == "none" ]]; then
+      merge_commit="$(json_value "$mr_json" squash_commit_sha "none")"
+    fi
+    emit_result "merged" "${current_sha:-none}" "$pipeline_id" "$pipeline_status" "$pipeline_url" "$failed_jobs" \
+      "CI_WATCH result=merged mr=$mr_iid merge_commit=$merge_commit" 0 "" "$merge_commit"
+  fi
 
   if [[ "$mr_state" != "opened" ]]; then
     emit_result "unknown_mr_state" "${current_sha:-none}" "$pipeline_id" "$pipeline_status" "$pipeline_url" "$failed_jobs" \

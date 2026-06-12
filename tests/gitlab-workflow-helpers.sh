@@ -54,6 +54,45 @@ test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state() {
   assert_contains "$CAPTURE_OUTPUT" "reason=unknown_mr_state"
 }
 
+test_ci_watch_reports_merged_terminal_state() {
+  local dir
+
+  # Human format: merge-commit SHA readable -> result=merged + exit 0.
+  dir="$(make_fixture_dir ci-merged-human)"
+  write_mr_json "$dir/mr.json" merged abc123 success abc123 mergec0mmit789
+  write_branch_json "$dir/branch.json" success abc123
+  run_ci_watch_fixture "$dir" abc123
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit=mergec0mmit789"
+
+  # YAML format: merged result and merge-commit SHA both surface.
+  dir="$(make_fixture_dir ci-merged-yaml)"
+  write_mr_json "$dir/mr.json" merged abc123 success abc123 mergec0mmit789
+  write_branch_json "$dir/branch.json" success abc123
+  run_ci_watch_fixture "$dir" abc123 0 yaml
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "result: merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit: \"mergec0mmit789\""
+
+  # Squash merge: merge_commit_sha absent, squash_commit_sha used as the SHA.
+  dir="$(make_fixture_dir ci-merged-squash)"
+  write_mr_json "$dir/mr.json" merged abc123 success abc123 "" squashc0mmit456
+  write_branch_json "$dir/branch.json" success abc123
+  run_ci_watch_fixture "$dir" abc123
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit=squashc0mmit456"
+
+  # Merged with no readable merge/squash SHA still terminal pass, exit 0.
+  dir="$(make_fixture_dir ci-merged-no-sha)"
+  write_mr_json "$dir/mr.json" merged abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_ci_watch_fixture "$dir" abc123
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
+}
+
 test_finish_builder_handoff_never_approves_or_merges() {
   local dir
   dir="$(make_fixture_dir finish-builder)"
@@ -947,6 +986,7 @@ test_post_merge_snapshot_reports_validation_not_run_cases() {
 
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
+test_ci_watch_reports_merged_terminal_state
 test_finish_builder_handoff_never_approves_or_merges
 test_finish_reports_issue_state_on_handoff_when_issue_iid_is_supplied
 test_finish_yaml_format_reports_structured_handoff
