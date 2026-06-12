@@ -178,7 +178,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted fallback/helper behavior fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners. `skill://` URIs are resolved only in **foreground** Bash calls; they are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path first before launching it in the background.
+Use the helper when the accepted fallback/helper behavior fits. In agent-run shell commands, use the full script URI — bare first-word, quoted direct, or variable-assigned forms all resolve in **foreground** Bash calls (see [skill:// URI invocation matrix](#skill-uri-invocation-matrix) below). Do **not** assign `skill://gitlab` (the bare skill root) to a variable — it resolves to `SKILL.md`, not the `scripts/` directory. `skill://` URIs are **not** resolved in `run_in_background` invocations — use the variable-assigned form first (the harness expands the URI at assignment, leaving the variable as an absolute path) before launching in the background.
 
 ```bash
 gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
@@ -316,7 +316,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper only when the exact accepted fallback/helper authority model fits. In agent-run shell commands, use the full script URI; do **not** assign `skill://gitlab` to a directory variable because bare skill URIs resolve to `SKILL.md` in shell runners. `skill://` URIs are resolved only in **foreground** Bash calls; they are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path first before launching it in the background.
+Use the helper only when the exact accepted fallback/helper authority model fits. In agent-run shell commands, use the full script URI — bare first-word, quoted direct, or variable-assigned forms all resolve in **foreground** Bash calls (see [skill:// URI invocation matrix](#skill-uri-invocation-matrix) below). Do **not** assign `skill://gitlab` (the bare skill root) to a variable — it resolves to `SKILL.md`. `skill://` URIs are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path (use the variable-assigned form) before launching in the background.
 
 ```bash
 gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"
@@ -337,6 +337,32 @@ For raw-command adaptation, keep the Mutation Guard order from [`skill://gitlab/
 ## Optional helper scripts
 
 This skill also ships optional fallback/helper wrappers in `scripts/` for accepted helper behaviors. Use them when the exact behavior fits and repeatable guardrails help; prefer MCP primary tools for normal GitLab API actions, and use raw fallback snippets only for documented gaps, project-specific policy or human waiver, step-by-step troubleshooting, or changes to accepted workflow behavior.
+
+## skill:// URI invocation matrix
+
+The OMP harness pre-processes `skill://` URIs in Bash command text **before** the shell receives it, but only in **foreground** Bash tool calls. Verified foreground behavior on OMP/darwin (2026-06-12, using real full script URIs):
+
+| Form | Example | Foreground result | Notes |
+|---|---|---|---|
+| Bare first-word | `skill://gitlab/scripts/gitlab-wrappers.sh cmd` | **Works** — URI resolved to absolute path | Full script URI must be used; a bare skill root (`skill://gitlab`) or placeholder resolves differently |
+| Quoted direct | `"skill://gitlab/scripts/gitlab-wrappers.sh" cmd` | **Works** — URI resolved to absolute path | Equivalent to bare first-word; quotes have no effect on harness expansion |
+| Variable-assigned | `s="skill://gitlab/scripts/gitlab-wrappers.sh"; "$s" cmd` | **Works** — URI resolved to absolute path at assignment | Variable holds the expanded absolute path; **recommended** for multi-line invocations and background-safe handoff |
+| In `run_in_background` | any form | **Not resolved** — harness URI pre-processor is not active | Resolve to absolute path in foreground first (variable-assigned form), then pass the variable |
+
+**Recommended practice:**
+- Use the **variable-assigned** form for multi-line helper invocations: the variable holds the resolved absolute path and is safe to pass to background launchers without re-resolution.
+- All three foreground forms are equivalent for single-line calls; variable-assigned is preferred for clarity and background safety.
+- **Never** assign `skill://gitlab` (the bare skill root without a file path) to a variable — it resolves to `SKILL.md`, not the `scripts/` directory.
+- To launch a helper in the background: resolve first in foreground (variable-assigned form), then pass the variable.
+
+Example — resolve then background:
+
+```bash
+# Resolve in foreground (harness expands the URI at assignment)
+gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
+# $gitlab_ci_watch_script is now an absolute path; safe to pass to a background launcher
+run_in_background "$gitlab_ci_watch_script" --mr-iid "$mr_iid" ...
+```
 
 ## Troubleshooting
 
