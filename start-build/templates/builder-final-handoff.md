@@ -254,7 +254,7 @@ agent_handoff:
 - `changed_files`, `safety_surfaces`, `decoupling`, and `reviewer_focus` must
   match the MR description's Reviewer Lift values. `safety_surfaces` entries are
   `none`, `credentials`, `external-system`, `state`, `migration`, `gates`,
-  `locks`, `deploy`, or `other`.
+  `locks`, `deploy`, `wire-protocol`, or `other`.
 - `approval_authority` records the quoted approval policy claim. Use
   `default-after-pass` when repo policy allows reviewer approval after a passing
   review unless explicitly restricted; use `restricted: <reason/source>` when an

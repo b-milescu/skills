@@ -66,6 +66,7 @@ valid_value_for() {
     "Gate owner")           printf 'parent' ;;
     "Gate coverage")        printf 'full-local' ;;
     "Acceptance surfaces")  printf 'docs:docs-read' ;;
+    "Touched safety surfaces") printf 'wire-protocol' ;;
     *)                      printf 'filled-value' ;;
   esac
 }
@@ -272,6 +273,27 @@ assert_contains "Acceptance surfaces"
 run_validator "$(build_block_override "Acceptance surfaces" "docs:docs-read, bogus-surface:test")"
 assert_status "$EXPECTED_BAD_STATUS"
 assert_contains "Acceptance surfaces"
+
+# === Touched safety surfaces closed-set (issue #283). ===
+# `wire-protocol` is a first-class safety-surface value (wire formats, opcode
+# encoders/decoders, on-the-wire byte layout). `other` keeps catch-all semantics
+# and may carry a free-text parenthetical annotation; multiple comma-separated
+# surfaces are allowed; `none` declares no surface.
+for v in "wire-protocol" "none" "[]" "other" "state, gates" "wire-protocol, state" \
+         "other (wire-protocol encoder bytes: foo, bar)" "deploy, other (notes)"; do
+  run_validator "$(build_block_override "Touched safety surfaces" "$v")"
+  assert_status 0
+done
+# Backtick-wrapped value is accepted (matches generated-copy presentation).
+run_validator "$(build_block_override "Touched safety surfaces" '`wire-protocol`')"
+assert_status 0
+# Unknown safety surface fails closed naming the row; `other` catch-all does not
+# leak to typos or invented values.
+for bad in "wire-protcol" "protocol" "bogus-surface" "state, bogus-surface"; do
+  run_validator "$(build_block_override "Touched safety surfaces" "$bad")"
+  assert_status "$EXPECTED_BAD_STATUS"
+  assert_contains "Touched safety surfaces"
+done
 
 # Presence still wins precedence: a missing required row reports missing_row (3),
 # not a value error, so the #265 presence contract is unchanged.

@@ -15,6 +15,10 @@
 #   - Review gate      ∈ {mandatory, bypassed (human override)}
 #   - Gate owner       ∈ {builder, parent}
 #   - Gate coverage    ∈ {full-local, hybrid, ci-only}
+#   - Touched safety surfaces: `none`/`[]`, or a comma-separated list whose
+#     tokens are drawn from {external-system, credentials, state, migration,
+#     gates, locks, deploy, wire-protocol, other}; `other` is the free-text
+#     catch-all and may carry a parenthetical annotation.
 #   - Acceptance surfaces: each `surface[:evidence]` token's surface is drawn
 #     from the project acceptance_surfaces_ref vocabulary (read at runtime), or
 #     the whole value is `none`/`[]`.
@@ -277,6 +281,43 @@ for (const { row, ok } of enumRows) {
   if (v === undefined) continue; // presence already enforced for required rows
   if (!ok(v)) {
     failInvalidValue(row, v, `detail=not_in_allowed_set`);
+  }
+}
+
+// Touched safety surfaces: fixed closed-set membership. The vocabulary is owned
+// by start-build/templates/reviewer-lift-schema.md (Touched safety surfaces row)
+// and mirrored here like the other fixed enums above. The value is `none`/`[]`
+// or a comma-separated list of surfaces; `other` is the free-text catch-all and
+// may carry a parenthetical annotation. Parenthetical annotations (which can
+// themselves contain commas) are stripped before the list is split, so a
+// catch-all annotation never trips the membership check.
+const safetySurfaceVocab = new Set([
+  'external-system',
+  'credentials',
+  'state',
+  'migration',
+  'gates',
+  'locks',
+  'deploy',
+  'wire-protocol',
+  'other',
+]);
+const safetyRow = 'Touched safety surfaces';
+const safetyValue = valueOf(safetyRow);
+if (safetyValue !== undefined) {
+  const normalized = safetyValue.trim();
+  // `none` / `[]` means no surface declared and is always allowed.
+  if (normalized !== 'none' && normalized !== '[]' && normalized !== '') {
+    const tokens = normalized
+      .replace(/\([^)]*\)/g, ' ') // drop free-text annotations before splitting
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t !== '');
+    for (const tok of tokens) {
+      if (!safetySurfaceVocab.has(tok)) {
+        failInvalidValue(safetyRow, safetyValue, `detail=surface_not_in_vocabulary surface=${tok}`);
+      }
+    }
   }
 }
 
