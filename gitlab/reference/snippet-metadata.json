@@ -521,7 +521,7 @@
         "requirement": "Record via=mcp or via=glab-fallback for the auto-merge queue mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "Prefer `merge_merge_request(auto_merge=true, sha=reviewed_sha, confirm=true)`, then `get_merge_request`.",
+        "mcp_primary_tools": "Prefer `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`, then `get_merge_request`.",
         "inputs": "Bound MR, reviewed SHA, source/target branches, queue authority/source, caller role/identity.",
         "outputs": "Auto-merge queued or blocked handoff.",
         "required_guards": "Fresh MCP re-read of SHA, exact-SHA CI/protected policy, authority/source, caller identity/token-stability, and context-firewall eligibility before action.",
@@ -663,11 +663,11 @@
         "requirement": "Record via=mcp or via=glab-fallback for the auto-merge queue mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "`merge_merge_request(sha=reviewed_sha, confirm=true, auto_merge=true)`, then `get_merge_request`.",
+        "mcp_primary_tools": "`merge_merge_request(sha=reviewed_sha, confirm=true, auto_merge=true, should_remove_source_branch=true)`, then `get_merge_request`.",
         "inputs": "Bound MR, reviewed SHA, protected auto-merge policy, queue authority/source, caller identity.",
         "outputs": "Auto-merge queued or blocked handoff.",
         "required_guards": "Fresh MCP re-read of head, exact-SHA pending/green protected policy, queue authority/source, caller identity/token-stability, and context-firewall eligibility.",
-        "fallback_conditions": "`glab mr merge --auto-merge --sha` or `auto_merge_api_fallback` only for documented MCP/CLI 405 gap after all guards.",
+        "fallback_conditions": "`glab mr merge --auto-merge --sha --remove-source-branch` or `auto_merge_api_fallback` only for documented MCP/CLI 405 gap after all guards.",
         "post_mutation_reread": "Required: re-read MR; record queue state and `via=...`."
       }
     },

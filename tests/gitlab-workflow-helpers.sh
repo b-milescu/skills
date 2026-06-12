@@ -725,8 +725,8 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "AUTO_MERGE result=auto_merge_queued"
   assert_contains "$CAPTURE_OUTPUT" "via=api"
-  assert_log_contains "$dir/glab.log" "glab mr merge 59 -R git@gitlab.example.com:agents/skills.git --auto-merge --yes --sha $good_sha"
-  assert_log_contains "$dir/glab.log" "glab api --hostname gitlab.example.com --method PUT projects/agents%2Fskills/merge_requests/59/merge --field sha=$good_sha --field auto_merge=true --silent"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 -R git@gitlab.example.com:agents/skills.git --auto-merge --yes --sha $good_sha --remove-source-branch"
+  assert_log_contains "$dir/glab.log" "glab api --hostname gitlab.example.com --method PUT projects/agents%2Fskills/merge_requests/59/merge --field sha=$good_sha --field auto_merge=true --field should_remove_source_branch=true --silent"
   assert_log_not_contains "$dir/glab.log" "approve"
 
   dir="$(make_wrapper_fixture_dir wrapper-auto-merge-missing-host)"
@@ -781,6 +781,31 @@ test_auto_merge_api_fallback_preserves_guards_and_blocks_builders() {
   assert_status 2
   assert_contains "$CAPTURE_OUTPUT" "reason=head_changed"
   assert_log_not_contains "$dir/glab.log" "mr merge"
+}
+
+test_auto_merge_api_fallback_requests_source_branch_removal_on_glab_success() {
+  local dir good_sha
+  good_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+  dir="$(make_wrapper_fixture_dir wrapper-auto-merge-removal)"
+  write_safe_mr_json "$dir/mr.json" "$good_sha" running "$good_sha" issue-173-gitlab-wrappers main
+  run_wrapper_fixture "$dir" \
+    auto_merge_api_fallback \
+    --repo git@gitlab.example.com:agents/skills.git \
+    --project-path agents/skills \
+    --mr-iid 59 \
+    --reviewed-sha "$good_sha" \
+    --source-branch issue-173-gitlab-wrappers \
+    --target-branch main \
+    --merge-authority "queue auto-merge" \
+    --authority-source "parent task prompt: queue auto-merge" \
+    --authority-verified true \
+    --caller-role authorized-parent
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "AUTO_MERGE result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "via=glab"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 -R git@gitlab.example.com:agents/skills.git --auto-merge --yes --sha $good_sha --remove-source-branch"
+  assert_log_not_contains "$dir/glab.log" "glab api"
 }
 
 test_post_merge_snapshot_reports_merged_closed_cleaned() {
@@ -937,6 +962,7 @@ test_wrappers_fail_closed_for_note_validation_without_glab_calls
 test_label_reconcile_adds_and_removes_without_replace_assumption
 test_safe_mr_json_returns_decision_grade_metadata_and_fails_closed
 test_auto_merge_api_fallback_preserves_guards_and_blocks_builders
+test_auto_merge_api_fallback_requests_source_branch_removal_on_glab_success
 test_post_merge_snapshot_reports_merged_closed_cleaned
 test_post_merge_snapshot_reports_issue_closure_pending
 test_post_merge_snapshot_reports_branch_cleanup_pending

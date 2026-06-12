@@ -16,7 +16,7 @@ Wrappers:
   mr_note_create             Post an MR note from --message-file.
   label_reconcile            Add/remove issue labels without replacement assumptions.
   safe_mr_json               Emit validated decision-grade MR metadata JSON.
-  auto_merge_api_fallback    Queue auto-merge, falling back to the API for known 405s.
+  auto_merge_api_fallback    Queue auto-merge (requesting source-branch removal), falling back to the API for known 405s.
 
 Run gitlab help-first checks for the underlying glab commands before use.
 USAGE
@@ -443,7 +443,7 @@ auto_merge_api_fallback() {
     *) fail AUTO_MERGE 3 ci_not_queueable ;;
   esac
   set +e
-  merge_output="$(glab mr merge "$mr_iid" -R "$repo" --auto-merge --yes --sha "$reviewed_sha" 2>&1)"
+  merge_output="$(glab mr merge "$mr_iid" -R "$repo" --auto-merge --yes --sha "$reviewed_sha" --remove-source-branch 2>&1)"
   merge_status=$?
   set -e
   if [[ "$merge_status" -eq 0 ]]; then
@@ -455,7 +455,7 @@ auto_merge_api_fallback() {
   fi
   project_encoded="$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$project_path")"
   set +e
-  api_output="$(glab api --hostname "$api_hostname" --method PUT "projects/${project_encoded}/merge_requests/${mr_iid}/merge" --field "sha=$reviewed_sha" --field "auto_merge=true" --silent 2>&1)"
+  api_output="$(glab api --hostname "$api_hostname" --method PUT "projects/${project_encoded}/merge_requests/${mr_iid}/merge" --field "sha=$reviewed_sha" --field "auto_merge=true" --field "should_remove_source_branch=true" --silent 2>&1)"
   api_status=$?
   set -e
   if [[ "$api_status" -ne 0 ]]; then

@@ -87,6 +87,7 @@ After all MRs in the batch are merged, queued, or blocked, sweep the following b
 - [ ] Run-worktrees removed: follow the cleanup-order rules in [parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md) — fetch origin, fast-forward local default, then remove each clean worktree. Retain any unclean worktree and report `cleanup_pending`.
 - [ ] `refs/tmp/review/*` cleared: follow the [reviewer temp-ref removal rules](skill://start-review/REVIEW-FLOW.md) — delete each temp ref only after its review worktree is removed and no other review uses it (`git update-ref -d refs/tmp/review/mr-<iid>`).
 - [ ] Local source branches handled per project policy: delete only when the policy and default-branch safety check permit (see §Fresh default and cleanup order above).
+- [ ] Remote source branches gone after merge: for each merged MR, confirm the finish path removed its remote source branch (`git ls-remote origin <source_branch>` returns nothing). If a branch remains, delete it only after the merged-SHA containment / default-branch safety check in [parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md) passes; otherwise report `cleanup_pending`.
 - [ ] Check Gate green on a fresh default branch: `git fetch origin && git checkout <default_branch> && git merge --ff-only origin/<default_branch>` then run the target repo's Check Gate per `project_profile.gate_policy_ref` (see `docs/agents/check-gate.md` in the target repo).
 
 ## Handoff
