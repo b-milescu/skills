@@ -235,7 +235,7 @@ gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
 
 ### Snippet: auto-merge-api-fallback
 
-Authorized non-builders may use wrapper `auto_merge_api_fallback` only for `queue auto-merge`; it preserves SHA/CI guards and falls back to the GitLab API only for the known `glab mr merge --auto-merge` 405 path.
+Authorized non-builders may use wrapper `auto_merge_api_fallback` only for `queue auto-merge`; it preserves SHA/CI guards and falls back to the GitLab API only for the known `glab mr merge --auto-merge` 405 path. It requests source-branch removal on merge (`--remove-source-branch` on the `glab` path, `should_remove_source_branch=true` on the API path), matching the primary finish path so the remote source branch is gone once the queued merge completes.
 
 ```bash
 gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
@@ -277,12 +277,12 @@ glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false
 
 ### Snippet: sha-bound-auto-merge-queue
 
-Use only when the reviewed SHA is current, project policy permits protected auto-merge, and explicit authority permits queueing auto-merge.
+Use only when the reviewed SHA is current, project policy permits protected auto-merge, and explicit authority permits queueing auto-merge. Request source-branch removal on merge with `--remove-source-branch` (MCP primary: `should_remove_source_branch=true`), matching the primary finish path so the remote source branch is gone once the queued merge completes.
 
 ```bash
 mr_iid="<id>"
 reviewed_sha="<sha-you-reviewed>"
-glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha"
+glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha" --remove-source-branch
 ```
 
 ### Snippet: approval-confirmation
