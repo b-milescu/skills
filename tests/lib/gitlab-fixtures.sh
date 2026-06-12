@@ -122,7 +122,7 @@ JSON
 }
 
 run_ci_watch_fixture() {
-  local dir="$1" expected_sha="$2" timeout="${3:-0}"
+  local dir="$1" expected_sha="$2" timeout="${3:-0}" format="${4:-human}"
   run_capture env \
     FAKE_MR_JSON_FILE="$dir/mr.json" \
     FAKE_BRANCH_JSON_FILE="$dir/branch.json" \
@@ -133,7 +133,8 @@ run_ci_watch_fixture() {
       --source-branch build/61 \
       --reviewed-sha "$expected_sha" \
       --timeout-seconds "$timeout" \
-      --poll-seconds 0
+      --poll-seconds 0 \
+      --format "$format"
 }
 
 run_finish_fixture() {
