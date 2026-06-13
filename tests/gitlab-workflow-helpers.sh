@@ -1017,11 +1017,10 @@ test_post_merge_snapshot_reports_validation_not_run_cases() {
 }
 
 test_post_merge_snapshot_resolves_colon_closes_via_description_scrape() {
-  # Regression for the RF-4 false not_linked: a merged MR whose description uses
-  # the GitLab-valid colon form (`**Closes:** #88`) must resolve to its issue and
-  # report the true closure_status, even when closes_issues returns nothing
-  # authoritative (the observed merged-MR behavior). The widened scrape is the
-  # safety net.
+  # Regression for RF-4: when the authoritative closes_issues read is
+  # unavailable, the widened scrape must still resolve a GitLab-valid colon form
+  # (`**Closes:** #88`) so a merged MR reports the true closure_status instead of
+  # a false not_linked.
   local dir reviewed target
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -1029,11 +1028,32 @@ test_post_merge_snapshot_resolves_colon_closes_via_description_scrape() {
   write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete '**Closes:** #88'
   write_snapshot_issue_json "$dir/issue.json" closed
 
-  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" run_snapshot_fixture "$dir" "$reviewed"
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_CLOSES_ISSUES_FAIL=true \
+    run_snapshot_fixture "$dir" "$reviewed"
 
   assert_status 0
   assert_json_field post_merge_snapshot.linked_issue.iid 88
   assert_json_field post_merge_snapshot.linked_issue.closure_status closed
+}
+
+test_post_merge_snapshot_trusts_empty_closes_issues_over_description() {
+  # A successful-but-empty closes_issues read is authoritative: GitLab returns the
+  # closed issue for merged MRs, so an empty result means the MR truly closes no
+  # issue. The description scrape must NOT override it, even when the description
+  # carries a colon closing form.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-empty-closes-issues)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete '**Closes:** #88'
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  # No FAKE_CLOSES_ISSUES_FILE => the fake glab api returns an authoritative [].
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid ""
+  assert_json_field post_merge_snapshot.linked_issue.closure_status not_linked
 }
 
 test_post_merge_snapshot_resolves_link_via_closes_issues_api() {
@@ -1075,6 +1095,25 @@ test_post_merge_snapshot_reports_link_undeterminable() {
   assert_json_array_contains post_merge_snapshot.pending_items linked_issue_undeterminable
 }
 
+test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form() {
+  # The widened fallback regex matches GitLab's closing forms only. `Fixe #88`
+  # is not a GitLab closing keyword and must not resolve a link; with
+  # closes_issues unavailable this yields link_undeterminable, not a false link.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-fixe-non-closing)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'Fixe #88 is not a closing keyword.'
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_CLOSES_ISSUES_FAIL=true \
+    run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid ""
+  assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
+}
+
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_ci_watch_reports_merged_terminal_state
@@ -1102,7 +1141,9 @@ test_post_merge_snapshot_reports_explicit_and_missing_containment
 test_post_merge_snapshot_fails_closed_on_non_git_fetchable_repo
 test_post_merge_snapshot_reports_validation_not_run_cases
 test_post_merge_snapshot_resolves_colon_closes_via_description_scrape
+test_post_merge_snapshot_trusts_empty_closes_issues_over_description
 test_post_merge_snapshot_resolves_link_via_closes_issues_api
 test_post_merge_snapshot_reports_link_undeterminable
+test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form
 
 echo "gitlab-workflow-helpers: PASS"

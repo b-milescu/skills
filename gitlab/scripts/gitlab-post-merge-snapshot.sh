@@ -65,17 +65,18 @@ NODE
 }
 
 # Fallback linked-issue derivation: scrape the MR description for a closing
-# keyword + issue reference. Widened to GitLab's documented closing pattern so a
-# colon (`Closes: #N` / `**Closes:** #N`) and the gerund forms
-# (closing/fixing/resolving) are accepted, and intervening markdown emphasis
-# (`*`, `_`) between the keyword and the reference does not break the match. This
-# is the secondary path; the authoritative source is closes_issues (see below).
+# keyword + issue reference. Used ONLY when the authoritative closes_issues read
+# below is undeterminable/unavailable; a successful closes_issues read (even an
+# empty one) is authoritative and is never overridden by this scrape. Matches
+# GitLab's documented closing pattern: the colon form (`Closes: #N` /
+# `**Closes:** #N`), the gerund forms (closing/fixing/resolving), and tolerates
+# intervening markdown emphasis (`*`, `_`) between the keyword and the reference.
 infer_issue_iid() {
   local json="$1"
   JSON_PAYLOAD="$json" node <<'NODE'
 const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
 const description = typeof data.description === 'string' ? data.description : '';
-const match = description.match(/\b(?:clos(?:e[sd]?|ing)|fix(?:e[sd]?|ing)?|resolv(?:e[sd]?|ing))\b[*_:\s]*#(\d+)\b/iu);
+const match = description.match(/\b(?:clos(?:e[sd]?|ing)|fix(?:es|ed|ing)?|resolv(?:e[sd]?|ing))\b[*_:\s]*#(\d+)\b/iu);
 if (match) process.stdout.write(match[1]);
 NODE
 }
@@ -192,17 +193,19 @@ force_remove_source_branch="$(json_value "$mr_json" force_remove_source_branch u
 remove_source_branch="$(json_value "$mr_json" remove_source_branch unknown)"
 [[ -n "$default_branch" ]] || default_branch="$target_branch"
 # Resolve the linked issue when no explicit --issue-iid override was given.
-# Primary: the authoritative GitLab closes_issues relationship (immune to
-# description formatting and body elision). Fallback: a widened MR-description
-# scrape. A read that can determine neither is reported below as
-# link_undeterminable, distinct from a true not_linked where the MR
-# authoritatively closes no issue. This is read-only (GET closes_issues).
+# Primary + authoritative: the GitLab closes_issues relationship. A successful
+# read is authoritative even when empty (the MR closes no issue => true
+# not_linked); GitLab returns the closed issue for merged MRs too, so a
+# successful-empty read is NOT second-guessed by the description.
+# Fallback: the widened MR-description scrape runs ONLY when the closes_issues
+# read is undeterminable/unavailable (locator underivable or the API errored).
+# A read that resolves nothing and could not be determined is reported below as
+# link_undeterminable, distinct from a true not_linked. Read-only (GET).
 link_determinable="true"
 if [[ -z "$issue_iid" ]]; then
   locator="$(mr_project_locator "$mr_json")"
   project_host="${locator%% *}"
   project_path_enc="${locator##* }"
-  closes_issues_iid=""
   closes_issues_determinable="false"
   if [[ -n "$locator" && -n "$project_host" && -n "$project_path_enc" ]]; then
     set +e
@@ -211,16 +214,15 @@ if [[ -z "$issue_iid" ]]; then
     set -e
     if [[ "$closes_status" -eq 0 ]]; then
       closes_issues_determinable="true"
-      closes_issues_iid="$(first_closes_issue_iid "$closes_json")"
+      issue_iid="$(first_closes_issue_iid "$closes_json")"
     fi
   fi
-  if [[ -n "$closes_issues_iid" ]]; then
-    issue_iid="$closes_issues_iid"
-  else
+  if [[ -z "$issue_iid" && "$closes_issues_determinable" != "true" ]]; then
+    # closes_issues was undeterminable/unavailable: fall back to the widened
+    # description scrape. A successful-but-empty closes_issues read is left as an
+    # authoritative not_linked and is never overridden here.
     issue_iid="$(infer_issue_iid "$mr_json")"
-    if [[ -z "$issue_iid" && "$closes_issues_determinable" != "true" ]]; then
-      link_determinable="false"
-    fi
+    [[ -n "$issue_iid" ]] || link_determinable="false"
   fi
 fi
 
