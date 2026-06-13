@@ -6,6 +6,30 @@ Detailed mandatory review gate for standalone `/start-build` sessions. Stable co
 
 In standalone `/start-build` mode, the builder owns reviewer handoff and must start a fresh reviewer through whatever orchestration mechanism the runtime provides; this gate is mandatory, not optional. If that runtime has no reviewer-launch mechanism, stop and report the blocker instead of self-reviewing. In child `mr-builder` mode, the parent orchestrator owns this gate after the child returns its final handoff; the child builder must not start a reviewer unless explicitly instructed. The builder never self-approves or self-merges. Builder and reviewer may share the same GitLab username/PAT — review independence comes from session/context separation, not GitLab identity. Concrete parent-managed discovery guidance lives in [parent-orchestrator.md](parent-orchestrator.md), not in child-builder instructions.
 
+## Note-deliverable review path
+
+The mandatory review gate above is **MR-centric**, and the MR path is the **default for any code or docs-in-repo change**. Some issues have no repo change at all: an **analysis-only `kind:meta` issue** whose deliverable is a **tracker note** (an audit, a retro finding, a research summary recorded as a GitLab issue note) rather than a commit. For that case the artifact is the note, so there is no MR to spawn `start-review` on, and the gate takes the note-deliverable shape below.
+
+**When this path applies (and only then):**
+
+- The issue is analysis-only `kind:meta` (or the project's equivalent no-code analysis kind), and
+- the deliverable is a tracker note, **not** a repo change. Any code or docs-in-repo change — including documentation committed to the repository — stays on the **default MR path** and its MR-centric gate. When an issue mixes a note with a repo change, the repo change goes through an MR; do not use the note path to skip MR review for committed changes.
+
+**The gate (note-deliverable shape):**
+
+- **Artifact** = the tracker note posted to the issue.
+- **Gate** = a **fresh independent reviewer** verifies the note against the issue acceptance criteria — citations resolve, `Refs:` / redaction present, no overclaim, and acceptance-criteria coverage — **plus** a Review Gate Summary recorded on the issue (use the same [Review Gate Summary](#review-gate-summary) shape, posted as an issue note instead of an MR comment).
+
+**Preserved invariants (verbatim, not relaxed).** The note path **adds** a gate where none was previously defined; it never weakens one. The following floors hold exactly as on the MR path:
+
+- **Mandatory independent review.** The note is reviewed by a fresh independent reviewer session; this gate is mandatory, not optional, and review independence comes from session/context separation (the builder and reviewer may share the same GitLab identity).
+- **No builder self-approval.** The builder must not approve its own note deliverable or sign off on its own Review Gate Summary; the verdict comes from the independent reviewer.
+- **Context Firewall intact.** The reviewer does not treat builder/parent reasoning as evidence; the builder's note prose and handoff are a map to verify against the issue acceptance criteria, not truth.
+
+A reader must not mistake the no-MR note path for a relaxed gate: it is the same independent-review floor applied to a note artifact.
+
+**Worked example.** The exampleproject `#314` `/start-build` batch was a `kind:meta`, no-code analysis issue whose deliverable was the `#188` tracker note (no MR). The builder improvised exactly this shape — a fresh independent reviewer over the note verifying citations resolve, redaction, no overclaim, and acceptance-criteria coverage, plus a Review Gate Summary recorded on the issue. The review passed and caught 2 nits, confirming the independent-review pattern works on a note artifact. This section documents that pattern as first-class so subsequent `kind:meta` no-code issues do not re-improvise it.
+
 ## Reviewer launch protocol
 
 When you own this gate after the MR is ready:
