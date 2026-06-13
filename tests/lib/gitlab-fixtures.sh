@@ -367,16 +367,34 @@ make_snapshot_fake_glab() {
 #!/usr/bin/env bash
 set -euo pipefail
 printf 'glab %s\n' "$*" >> "$FAKE_GLAB_LOG"
-case "${1:-} ${2:-}" in
-  "mr view")
-    cat "$FAKE_MR_JSON_FILE"
+case "${1:-}" in
+  api)
+    # Read-only closes_issues derivation. FAKE_CLOSES_ISSUES_FAIL simulates an
+    # undeterminable read; FAKE_CLOSES_ISSUES_FILE supplies the payload; the
+    # default is an authoritative empty relationship.
+    if [[ "${FAKE_CLOSES_ISSUES_FAIL:-false}" == "true" ]]; then
+      echo "fake glab api failure" >&2
+      exit 22
+    fi
+    if [[ -n "${FAKE_CLOSES_ISSUES_FILE:-}" && -f "${FAKE_CLOSES_ISSUES_FILE:-}" ]]; then
+      cat "$FAKE_CLOSES_ISSUES_FILE"
+    else
+      printf '[]\n'
+    fi
     ;;
-  "issue view")
-    cat "$FAKE_ISSUE_JSON_FILE"
+  mr)
+    case "${2:-}" in
+      view) cat "$FAKE_MR_JSON_FILE" ;;
+      approve|merge) echo "mutating glab command attempted: $*" >&2; exit 97 ;;
+      *) echo "unexpected glab command: $*" >&2; exit 99 ;;
+    esac
     ;;
-  "mr approve"|"mr merge"|"issue close"|"issue update")
-    echo "mutating glab command attempted: $*" >&2
-    exit 97
+  issue)
+    case "${2:-}" in
+      view) cat "$FAKE_ISSUE_JSON_FILE" ;;
+      close|update) echo "mutating glab command attempted: $*" >&2; exit 97 ;;
+      *) echo "unexpected glab command: $*" >&2; exit 99 ;;
+    esac
     ;;
   *)
     echo "unexpected glab command: $*" >&2
@@ -457,6 +475,12 @@ write_snapshot_issue_json() {
   local file="$1" state="$2"
   cat > "$file" <<JSON
 {"iid":88,"state":"$state","web_url":"https://gitlab.example.com/agents/skills/-/work_items/88"}
+JSON
+}
+write_snapshot_closes_issues_json() {
+  local file="$1" iid="$2"
+  cat > "$file" <<JSON
+[{"iid":$iid,"state":"closed","web_url":"https://gitlab.example.com/agents/skills/-/work_items/$iid"}]
 JSON
 }
 
