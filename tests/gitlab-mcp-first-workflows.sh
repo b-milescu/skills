@@ -60,6 +60,12 @@ require_text gitlab/SKILL.md '## Slim guard-read for repeated SHA/state guards' 
 require_text gitlab/SKILL.md 'is unchanged. Read the whole response' 'slim path keeps first per-MR full read unchanged'
 require_text gitlab/SKILL.md 'agents/gitlab-mcp/-/issues/87' 'linked gitlab-mcp projection issue reference'
 require_text gitlab/SKILL.md 'repeated SHA/state guard re-reads where the MCP read returns full bodies' 'documented repeated-guard fallback gap wording'
+# Elided-body fallback for first full reads (agents/skills #287): when the first
+# get_merge_request returns an elided description body, the first-read rule is not
+# satisfied; safe-mr-json bounded fallback is used to retrieve the actual content.
+require_text gitlab/SKILL.md 'elided.*body.*fallback.*first|Elided-body fallback for first' 'elided-body fallback condition for first full reads section'
+require_text gitlab/SKILL.md 'elided MCP body on first full description read' 'documented elided-body first-read gap wording'
+require_text gitlab/SKILL.md 'safe-mr-json.*bounded fallback.*retrieve.*actual description|safe-mr-json.*retrieve.*actual description|retrieve.*actual description.*safe-mr-json' 'elided-body fallback names safe-mr-json'
 require_text gitlab/reference/mutation-guard.md 'slim guard-read path' 'Mutation Guard re-read points at slim path for repeated guards'
 require_text gitlab/reference/snippet-transports.md 'slim guard-read path' 'snippet-transports names the slim guard-read path'
 
