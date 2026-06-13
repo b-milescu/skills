@@ -27,6 +27,26 @@ The GitLab Mutation Guard re-reads the target MR before every mutation, and `sha
 - **Bounded fallback.** When the repeated guard re-read returns the full body and that body is itself the context-pressure problem — the documented gap "repeated SHA/state guard re-reads where the MCP read returns full bodies" — the `safe-mr-json` snippet (wrapper `safe_mr_json`) is the bounded fallback that projects exactly the decision-grade fields. As always, fallback is second to MCP and re-checks SHA/CI/authority/identity/project binding per the transport order above; it never weakens any guard.
 - **Elided-body fallback for first full reads.** When the first `get_merge_request` read returns an elided description body — a compressed or placeholder token such as `<<ccr:...>>` instead of the full text — the "first read stays full" rule is not satisfied; the description was not actually received. In that case, use the `safe-mr-json` bounded fallback (wrapper `safe_mr_json`) to retrieve the actual description content. This is the documented gap "elided MCP body on first full description read". The fallback re-checks project binding and SHA per the transport order; it does not alter transport order, slim guard-read semantics, or the safety-floor litany.
 
+## Elided-body fallback for issue notes and issue descriptions
+
+`get_issue_note` (and `get_issue`) can return an elided `<<ccr:…>>` token instead of the actual note or description body when the content is large. This is the same class of MCP context-compression gap as the MR elided-body case above, tracked in [`agents/gitlab-mcp#87`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/87). When elision is observed, the MCP-first read did not deliver the actual content; fall back to the raw GitLab API via `glab api` to retrieve it.
+
+Fallback for an issue note body:
+
+```bash
+# Verify the --help flag before use: glab api --help
+glab api "projects/:id/issues/:iid/notes/:note_id" | jq -r '.body'
+```
+
+Fallback for an issue description body:
+
+```bash
+# Verify the --help flag before use: glab api --help
+glab api "projects/:id/issues/:iid" | jq -r '.description'
+```
+
+Replace `:id` with the URL-encoded project path (e.g. `agents%2Fskills`) or numeric project ID, `:iid` with the project-scoped issue number, and `:note_id` with the global note ID. These fallbacks follow the standard guarded transport order (MCP first, `glab api` fallback second, help-first flag verification); they do not alter transport order, the safety-floor litany, or any mutation guard.
+
 ## Guarded glab fallback and help-first rule
 
 Before any flagged fallback `glab` command, run exact command help and verify every flag:
