@@ -189,7 +189,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted fallback/helper behavior fits. In agent-run shell commands, use the full script URI — bare first-word, quoted direct, or variable-assigned forms all resolve in **foreground** Bash calls (see [skill:// URI invocation matrix](#skill-uri-invocation-matrix) below). Do **not** assign `skill://gitlab` (the bare skill root) to a variable — it resolves to `SKILL.md`, not the `scripts/` directory. `skill://` URIs are **not** resolved in `run_in_background` invocations — use the variable-assigned form first (the harness expands the URI at assignment, leaving the variable as an absolute path) before launching in the background.
+Use the helper when the accepted fallback/helper behavior fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section.
 
 ```bash
 gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
@@ -329,7 +329,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper only when the exact accepted fallback/helper authority model fits. In agent-run shell commands, use the full script URI — bare first-word, quoted direct, or variable-assigned forms all resolve in **foreground** Bash calls (see [skill:// URI invocation matrix](#skill-uri-invocation-matrix) below). Do **not** assign `skill://gitlab` (the bare skill root) to a variable — it resolves to `SKILL.md`. `skill://` URIs are **not** resolved in `run_in_background` invocations — resolve the helper to its absolute path (use the variable-assigned form) before launching in the background.
+Use the helper only when the exact accepted fallback/helper authority model fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section.
 
 ```bash
 gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"
@@ -353,6 +353,8 @@ This skill also ships optional fallback/helper wrappers in `scripts/` for accept
 
 ## skill:// URI invocation matrix
 
+**Applies to: OMP harness only.** The table below is verified for the OMP (claude.ai / api.anthropic.com) harness; see the non-OMP rule at the end of this section for Claude Code and other runtimes.
+
 The OMP harness pre-processes `skill://` URIs in Bash command text **before** the shell receives it, but only in **foreground** Bash tool calls. Verified foreground behavior on OMP/darwin (2026-06-12, using real full script URIs):
 
 | Form | Example | Foreground result | Notes |
@@ -362,11 +364,13 @@ The OMP harness pre-processes `skill://` URIs in Bash command text **before** th
 | Variable-assigned | `s="skill://gitlab/scripts/gitlab-wrappers.sh"; "$s" cmd` | **Works** — URI resolved to absolute path at assignment | Variable holds the expanded absolute path; **recommended** for multi-line invocations and background-safe handoff |
 | In `run_in_background` | any form | **Not resolved** — harness URI pre-processor is not active | Resolve to absolute path in foreground first (variable-assigned form), then pass the variable |
 
-**Recommended practice:**
+**Recommended practice (OMP):**
 - Use the **variable-assigned** form for multi-line helper invocations: the variable holds the resolved absolute path and is safe to pass to background launchers without re-resolution.
 - All three foreground forms are equivalent for single-line calls; variable-assigned is preferred for clarity and background safety.
 - **Never** assign `skill://gitlab` (the bare skill root without a file path) to a variable — it resolves to `SKILL.md`, not the `scripts/` directory.
 - To launch a helper in the background: resolve first in foreground (variable-assigned form), then pass the variable.
+
+**Non-OMP runtimes (Claude Code and others):** `skill://` URIs are not resolved in Bash — foreground or background — in Claude Code or any runtime outside the OMP harness. Resolve helper scripts via the installed-skill absolute path instead (e.g. the absolute path where your skill manager installed the skill's `scripts/` directory). The variable-assigned form is still recommended: assign the absolute path to a variable and pass that variable to background launchers.
 
 Example — resolve then background:
 
