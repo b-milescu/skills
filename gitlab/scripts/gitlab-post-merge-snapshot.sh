@@ -70,13 +70,16 @@ NODE
 # empty one) is authoritative and is never overridden by this scrape. Matches
 # GitLab's documented closing pattern: the colon form (`Closes: #N` /
 # `**Closes:** #N`), the gerund forms (closing/fixing/resolving), and tolerates
-# intervening markdown emphasis (`*`, `_`) between the keyword and the reference.
+# intervening markdown emphasis (`*`, `_`) — but requires at least one
+# GitLab-compatible separator (whitespace or colon) between the keyword and the
+# `#N` reference, so a no-separator string like `Closes#88` / `fix#88` does not
+# match.
 infer_issue_iid() {
   local json="$1"
   JSON_PAYLOAD="$json" node <<'NODE'
 const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
 const description = typeof data.description === 'string' ? data.description : '';
-const match = description.match(/\b(?:clos(?:e[sd]?|ing)|fix(?:es|ed|ing)?|resolv(?:e[sd]?|ing))\b[*_:\s]*#(\d+)\b/iu);
+const match = description.match(/\b(?:clos(?:e[sd]?|ing)|fix(?:es|ed|ing)?|resolv(?:e[sd]?|ing))\b[*_:\s]*[:\s][*_:\s]*#(\d+)\b/iu);
 if (match) process.stdout.write(match[1]);
 NODE
 }

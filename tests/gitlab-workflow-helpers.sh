@@ -1114,6 +1114,25 @@ test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form() {
   assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
 }
 
+test_post_merge_snapshot_scrape_requires_separator_before_issue_ref() {
+  # MF-1 regression: a no-separator string like `Closes#88` / `fix#88` is not a
+  # GitLab closing reference and must not resolve a link. With closes_issues
+  # unavailable this yields link_undeterminable, not a false link.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-no-separator)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'Closes#88 and fix#99 have no separator.'
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_CLOSES_ISSUES_FAIL=true \
+    run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid ""
+  assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
+}
+
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_ci_watch_reports_merged_terminal_state
@@ -1145,5 +1164,6 @@ test_post_merge_snapshot_trusts_empty_closes_issues_over_description
 test_post_merge_snapshot_resolves_link_via_closes_issues_api
 test_post_merge_snapshot_reports_link_undeterminable
 test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form
+test_post_merge_snapshot_scrape_requires_separator_before_issue_ref
 
 echo "gitlab-workflow-helpers: PASS"
