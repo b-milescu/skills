@@ -25,8 +25,12 @@
 #   - Acceptance surfaces: each `surface[:evidence]` token's surface is drawn
 #     from the project acceptance_surfaces_ref vocabulary (read at runtime), or
 #     the whole value is `none`/`[]`.
-# It does NOT judge SEMANTIC correctness (e.g. whether a declared acceptance
-# surface actually matches the diff) — that stays parent/reviewer judgment.
+# It does NOT fail closed on SEMANTIC correctness (e.g. whether a declared
+# acceptance surface actually matches the diff) — that stays parent/reviewer
+# judgment. The single exception is an ADVISORY (warn-only) heuristic: when
+# `Merge authority` is a finish-authority-granting value but the paired
+# `Merge authority source` cell carries no quotable affirmative grant, it writes
+# one stderr diagnostic naming the offending row and STILL EXITS 0 (issue #294).
 #
 # Makes NO network call: it only reads local files (schema, acceptance-surface
 # vocabulary) and the input text. The schema markdown is the single source of
@@ -364,6 +368,66 @@ function extractVocabColumn(text, headingRe) {
     }
   }
   return rows;
+}
+
+// --- Merge-authority source affirmative-grant WARNING (issue #294). ----------
+// Warn-only, heuristic, layered on top of the closed-set membership check above
+// (#270) and the RF-1 fail-closed default (#293). When `Merge authority` is a
+// finish-authority-GRANTING value AND the paired `Merge authority source` cell
+// carries no quotable affirmative grant, emit an advisory stderr diagnostic
+// naming the offending row and KEEP GOING (exit 0). This NEVER fails closed and
+// NEVER blocks ready/merge; false positives are low-stakes precisely because the
+// check is advisory. Maintainer decision recorded on issue #294 (note 25512).
+//
+// Granting values (in scope): `reviewer may merge`, `queue auto-merge`, and a
+// `project default: <policy>` whose policy text grants merge/auto-merge. The
+// three NON-granting values — `none — requires explicit human/parent
+// instruction`, `approval-only`, `human release` — must never warn, and a
+// `project default:` that is silent on (or disclaims) merge is not granting.
+function mergeAuthorityGrants(v) {
+  if (v === 'reviewer may merge' || v === 'queue auto-merge') return true;
+  const m = /^project default:\s*(.+)$/.exec(v);
+  if (m) {
+    // A project-default policy is "granting" only when its text actually grants
+    // a merge/auto-merge action. Match the `merge` stem (covers "merge",
+    // "merges", "auto-merge") so non-granting defaults that never mention merge
+    // (e.g. approval-only / human-release policies) stay silent.
+    return /merge/i.test(m[1]);
+  }
+  return false;
+}
+
+// "Quotable affirmative grant" heuristic — deliberately PERMISSIVE so the
+// advisory warning stays low-noise. The source cell satisfies the heuristic when
+// it contains either:
+//   - a quoted span: a straight "..." pair, a smart “...”/‘...’ pair, or a
+//     markdown `...` code span (a quoted rulebook sentence), OR
+//   - a recorded human/parent instruction marker: the words `human` or `parent`,
+//     or an http(s) URL (e.g. an MR/comment link).
+// Anything else (empty-equivalent, a bare policy mention, or a disclaiming
+// "these docs do not grant finish authority" sentence with no quote/marker) is
+// treated as carrying no quotable affirmative grant and triggers the warning.
+function sourceHasAffirmativeGrant(src) {
+  if (src === undefined) return false;
+  const s = src.trim();
+  if (s === '') return false;
+  const hasStraightQuote = /"[^"]+"/.test(s);
+  const hasSmartQuote = /[“‘][^”’]+[”’]/.test(s);
+  const hasCodeSpan = /`[^`]+`/.test(s);
+  const hasInstructionMarker = /\b(human|parent)\b/i.test(s) || /https?:\/\/\S+/i.test(s);
+  return hasStraightQuote || hasSmartQuote || hasCodeSpan || hasInstructionMarker;
+}
+
+const mergeAuthorityValue = valueOf('Merge authority');
+if (mergeAuthorityValue !== undefined && mergeAuthorityGrants(mergeAuthorityValue)) {
+  const mergeSource = valueOf('Merge authority source');
+  if (!sourceHasAffirmativeGrant(mergeSource)) {
+    // Advisory only: name the offending row, then keep going (exit 0).
+    process.stderr.write(
+      'REVIEWER_LIFT result=warn reason=merge_authority_unquoted_grant ' +
+        'row=Merge authority source detail=granting_merge_authority_without_quotable_affirmative_grant\n'
+    );
+  }
 }
 
 const acceptanceRow = 'Acceptance surfaces';
