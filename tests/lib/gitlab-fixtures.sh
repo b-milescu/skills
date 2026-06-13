@@ -410,7 +410,21 @@ case "${1:-}" in
     esac
     ;;
   ls-remote)
-    ref="${3:-}"
+    # Drop a leading --quiet so positional repo/ref parsing is flag-agnostic.
+    shift
+    [[ "${1:-}" != "--quiet" ]] || shift
+    repo_arg="${1:-}"
+    ref="${2:-}"
+    # An up-front repo-fetchability probe carries HEAD (or no ref); honor the
+    # FAKE_REPO_FETCHABLE signal so a non-git-fetchable --repo form can be tested.
+    if [[ -z "$ref" || "$ref" == "HEAD" ]]; then
+      if [[ "${FAKE_REPO_FETCHABLE:-true}" != "true" ]]; then
+        echo "fatal: repository '$repo_arg' does not exist" >&2
+        exit 128
+      fi
+      printf '%s\tHEAD\n' "${FAKE_TARGET_SHA:-dddddddddddddddddddddddddddddddddddddddd}"
+      exit 0
+    fi
     if [[ "$ref" == "refs/heads/${FAKE_SOURCE_BRANCH:-issue-176-post-merge-snapshot}" && "${FAKE_SOURCE_REF_EXISTS:-false}" == "true" ]]; then
       printf '%s\t%s\n' "${FAKE_SOURCE_SHA:-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}" "$ref"
     fi
@@ -494,9 +508,10 @@ run_snapshot_fixture() {
     FAKE_SOURCE_REF_EXISTS="${FAKE_SOURCE_REF_EXISTS:-false}" \
     FAKE_SOURCE_SHA="${FAKE_SOURCE_SHA:-eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}" \
     FAKE_FETCH_FAIL="${FAKE_FETCH_FAIL:-false}" \
+    FAKE_REPO_FETCHABLE="${FAKE_REPO_FETCHABLE:-true}" \
     PATH="$dir/bin:$PATH" \
     "$REPO_ROOT/gitlab/scripts/gitlab-post-merge-snapshot.sh" \
-      --repo git@gitlab.example.com:agents/skills.git \
+      --repo "${SNAPSHOT_REPO:-git@gitlab.example.com:agents/skills.git}" \
       --mr-iid 59 \
       --reviewed-sha "$reviewed_sha" \
       "$@"

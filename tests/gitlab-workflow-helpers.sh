@@ -964,6 +964,27 @@ test_post_merge_snapshot_reports_explicit_and_missing_containment() {
   assert_json_array_contains post_merge_snapshot.pending_items default_branch_containment_unknown
 }
 
+test_post_merge_snapshot_fails_closed_on_non_git_fetchable_repo() {
+  local dir reviewed
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+  # A host/path --repo form that glab accepts but git cannot fetch must fail
+  # closed with a clear diagnostic naming the offending form, instead of
+  # emitting an unknown-containment snapshot as success (issue #289).
+  dir="$(make_snapshot_fixture_dir snapshot-non-fetchable-repo)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main retain
+  write_snapshot_issue_json "$dir/issue.json" closed
+  SNAPSHOT_REPO="gitlab.example.com/agents/skills" FAKE_REPO_FETCHABLE=false \
+    run_snapshot_fixture "$dir" "$reviewed" --issue-iid 88
+  assert_status 64
+  assert_contains "$CAPTURE_OUTPUT" "reason=repo_not_git_fetchable:gitlab.example.com/agents/skills"
+  # No snapshot JSON is emitted on the fail-closed path.
+  assert_not_contains "$CAPTURE_OUTPUT" "post-merge-snapshot"
+  # Stays read-only: no mutating git/glab attempts before failing closed.
+  assert_log_not_contains "$dir/git.log" "fetch"
+  assert_log_not_contains "$dir/glab.log" "mr merge"
+}
+
 test_post_merge_snapshot_reports_validation_not_run_cases() {
   local dir reviewed
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -1019,6 +1040,7 @@ test_post_merge_snapshot_reports_issue_closure_pending
 test_post_merge_snapshot_reports_branch_cleanup_pending
 test_post_merge_snapshot_reports_retained_by_policy_or_unknown
 test_post_merge_snapshot_reports_explicit_and_missing_containment
+test_post_merge_snapshot_fails_closed_on_non_git_fetchable_repo
 test_post_merge_snapshot_reports_validation_not_run_cases
 
 echo "gitlab-workflow-helpers: PASS"
