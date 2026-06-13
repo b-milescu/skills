@@ -1115,14 +1115,16 @@ test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form() {
 }
 
 test_post_merge_snapshot_scrape_requires_separator_before_issue_ref() {
-  # MF-1 regression: a no-separator string like `Closes#88` / `fix#88` is not a
-  # GitLab closing reference and must not resolve a link. With closes_issues
-  # unavailable this yields link_undeterminable, not a false link.
+  # MF-1 regression: a no-whitespace string like `Closes#88`, `Closes:#88` (bare
+  # colon) or `fix#88` is not a GitLab closing reference and must not resolve a
+  # link. GitLab's default closing pattern requires an optional colon followed by
+  # one-or-more spaces before `#N`, so a colon alone is not a separator. With
+  # closes_issues unavailable this yields link_undeterminable, not a false link.
   local dir reviewed target
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   dir="$(make_snapshot_fixture_dir snapshot-no-separator)"
-  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'Closes#88 and fix#99 have no separator.'
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'Closes#88, Closes:#77 and fix#99 have no whitespace separator.'
   write_snapshot_issue_json "$dir/issue.json" closed
 
   FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_CLOSES_ISSUES_FAIL=true \
