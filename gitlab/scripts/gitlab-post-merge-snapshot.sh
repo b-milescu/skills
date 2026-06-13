@@ -9,7 +9,11 @@ usage() {
 Usage: gitlab-post-merge-snapshot.sh --repo <repo> --mr-iid <iid> --reviewed-sha <sha> [options]
 
 Required:
-  --repo <repo>                  GitLab repository URL/path accepted by glab and git.
+  --repo <repo>                  GitLab repository URL accepted by glab and git.
+                                 Validated up front with a read-only git ls-remote
+                                 probe; a glab-only host/path form that git cannot
+                                 fetch fails closed instead of degrading to an
+                                 unknown-containment snapshot.
   --mr-iid <iid>                 Merge request IID to inspect.
   --reviewed-sha <sha>           SHA approved/reviewed before merge.
 
@@ -126,6 +130,18 @@ command -v git >/dev/null || fail dependency_missing_git 127
 command -v node >/dev/null || fail dependency_missing_node 127
 
 reviewed_sha="$(node -e 'process.stdout.write(process.argv[1].toLowerCase())' "$reviewed_sha")"
+
+# The --help contract requires --repo be accepted by both glab and git, but glab
+# tolerates host/path forms (e.g. gitlab.example.com/group/project) that git cannot
+# fetch. Probe git-fetchability up front so a non-git-fetchable --repo fails closed
+# with a clear diagnostic instead of silently degrading to an unknown-containment
+# snapshot. Read-only: ls-remote only inspects remote refs.
+set +e
+git ls-remote --quiet "$repo" HEAD >/dev/null 2>&1
+repo_fetchable_status=$?
+set -e
+[[ "$repo_fetchable_status" -eq 0 ]] || fail "repo_not_git_fetchable:$repo"
+
 mr_json="$(glab mr view "$mr_iid" -R "$repo" -F json)"
 mr_state="$(json_value "$mr_json" state unknown)"
 mr_url="$(json_value "$mr_json" web_url "")"
