@@ -320,6 +320,92 @@ run_validator "$(build_block "Merge authority")"
 assert_status 3
 assert_contains "Merge authority"
 
+# === Merge-authority source affirmative-grant WARNING (issue #294). ===
+# Warn-only, heuristic, layered on top of the closed-set membership check (#270)
+# and RF-1 default (#293). When `Merge authority` is a finish-authority-GRANTING
+# value (`reviewer may merge`, `queue auto-merge`, or a granting
+# `project default: <policy>`) AND the paired `Merge authority source` cell
+# carries NO quotable affirmative grant, the linter emits an advisory stderr
+# diagnostic naming the offending row and EXITS 0 — it never fails closed and
+# never blocks. The three non-granting values must NEVER warn. (Maintainer
+# decision recorded on issue #294 note 25512.)
+
+# build_block_override2 prints a full, present Lift block but replaces TWO named
+# rows' values, so a granting Merge authority can be paired with a chosen
+# Merge authority source.
+build_block_override2() {
+  local t1="$1" v1="$2" t2="$3" v2="$4"
+  printf '| Field | Value |\n'
+  printf '|---|---|\n'
+  local row
+  for row in "${REQUIRED_ROWS[@]}"; do
+    if [[ "$row" == "$t1" ]]; then
+      printf '| %s | %s |\n' "$row" "$v1"
+    elif [[ "$row" == "$t2" ]]; then
+      printf '| %s | %s |\n' "$row" "$v2"
+    else
+      printf '| %s | %s |\n' "$row" "$(valid_value_for "$row")"
+    fi
+  done
+}
+
+WARN_TOKEN="merge_authority_unquoted_grant"
+
+# --- Granting authority + NO quotable affirmative grant in source => WARN + exit 0.
+for granting in "reviewer may merge" "queue auto-merge" "project default: reviewer merges on green"; do
+  # An empty-equivalent / disclaiming / bare-path source has no quotable grant.
+  for weak_source in "none" "n/a" "setup docs do not grant finish authority"; do
+    run_validator "$(build_block_override2 "Merge authority" "$granting" "Merge authority source" "$weak_source")"
+    assert_status 0
+    assert_contains "$WARN_TOKEN"
+    assert_contains "Merge authority source"
+  done
+done
+
+# A backtick-wrapped granting value with a weak source still warns (presentation
+# is stripped before the grant check, matching the membership check).
+run_validator "$(build_block_override2 "Merge authority" '`queue auto-merge`' "Merge authority source" "none")"
+assert_status 0
+assert_contains "$WARN_TOKEN"
+
+# --- Granting authority WITH a quotable affirmative grant => NO warn, exit 0.
+# A quoted rulebook sentence granting merge, or a recorded human/parent
+# instruction, satisfies the heuristic. The advisory token must NOT appear.
+for good_source in \
+  'rulebook: "the reviewer may merge after a passing review"' \
+  'parent task prompt: reviewer may merge on green' \
+  'human MR comment https://gitlab.example.com/agents/skills/-/merge_requests/1#note_1' \
+  '“queue auto-merge once CI is green”'; do
+  run_validator "$(build_block_override2 "Merge authority" "reviewer may merge" "Merge authority source" "$good_source")"
+  assert_status 0
+  [[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
+    fail "granting value WITH affirmative grant must not warn; got: $CAPTURE_OUTPUT"
+done
+
+# --- The three NON-GRANTING values must NEVER warn, regardless of source. ---
+# Even with an empty/disclaiming source, a non-granting authority is silent.
+for nongranting in "none — requires explicit human/parent instruction" "approval-only" "human release"; do
+  for src in "none" "setup docs do not grant finish authority" ""; do
+    run_validator "$(build_block_override2 "Merge authority" "$nongranting" "Merge authority source" "$src")"
+    assert_status 0
+    [[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
+      fail "non-granting value '$nongranting' must never warn; got: $CAPTURE_OUTPUT"
+  done
+done
+
+# --- A non-granting `project default: <policy>` (silent on / disclaiming
+# merge) must NOT warn: only granting project-default policies are in scope.
+run_validator "$(build_block_override2 "Merge authority" "project default: approval-only, human releases" "Merge authority source" "none")"
+assert_status 0
+[[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
+  fail "non-granting project default must not warn; got: $CAPTURE_OUTPUT"
+
+# --- The warning is advisory only: closed-set membership still fails closed
+# first. A bad (out-of-set) Merge authority reports invalid_value (4), not warn.
+run_validator "$(build_block_override2 "Merge authority" "default-after-pass" "Merge authority source" "none")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Merge authority"
+
 # === No network call: helper must not reference glab/curl/wget. ===
 if grep -Eq '(^|[^a-zA-Z_])(glab|curl|wget)([^a-zA-Z_]|$)' "$VALIDATOR"; then
   fail "validator must make no network call (found glab/curl/wget reference)"
