@@ -18,16 +18,19 @@ Required:
   --reviewed-sha <sha>           SHA approved/reviewed before merge.
 
 Options:
-  --issue-iid <iid>              Linked issue/work-item IID. Defaults to first Closes #N in MR description.
+  --issue-iid <iid>              Linked issue/work-item IID. When omitted, derived
+                                 from the authoritative GitLab closes_issues
+                                 relationship, then a widened MR-description scrape.
   --default-branch <branch>      Default/target branch to inspect. Defaults to MR target_branch.
   --validation-command <command> Run a documented non-mutating post-merge validation command.
   --validation-source <source>   Documentation/source proving the validation command is non-mutating.
   -h, --help                     Show this help.
 
 The helper is read-only with respect to GitLab and product/runtime systems: it
-only reads MR/issue metadata, fetches/inspects Git refs for containment, checks
-remote branch refs, and optionally runs a caller-supplied validation command when
-that command has a documented non-mutating source.
+only reads MR/issue metadata and the MR closes_issues relationship, fetches and
+inspects Git refs for containment, checks remote branch refs, and optionally runs
+a caller-supplied validation command when that command has a documented
+non-mutating source.
 USAGE
 }
 
@@ -61,13 +64,47 @@ if (value === undefined || value === null || value === '') {
 NODE
 }
 
+# Fallback linked-issue derivation: scrape the MR description for a closing
+# keyword + issue reference. Widened to GitLab's documented closing pattern so a
+# colon (`Closes: #N` / `**Closes:** #N`) and the gerund forms
+# (closing/fixing/resolving) are accepted, and intervening markdown emphasis
+# (`*`, `_`) between the keyword and the reference does not break the match. This
+# is the secondary path; the authoritative source is closes_issues (see below).
 infer_issue_iid() {
   local json="$1"
   JSON_PAYLOAD="$json" node <<'NODE'
 const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
 const description = typeof data.description === 'string' ? data.description : '';
-const match = description.match(/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)\b/iu);
+const match = description.match(/\b(?:clos(?:e[sd]?|ing)|fix(?:e[sd]?|ing)?|resolv(?:e[sd]?|ing))\b[*_:\s]*#(\d+)\b/iu);
 if (match) process.stdout.write(match[1]);
+NODE
+}
+
+# Authoritative linked-issue derivation: parse the GitLab closes_issues payload
+# (an array of the issues the MR closes) and emit the first issue IID. Immune to
+# MR description formatting and to body elision.
+first_closes_issue_iid() {
+  local json="$1"
+  JSON_PAYLOAD="$json" node <<'NODE'
+let data;
+try { data = JSON.parse(process.env.JSON_PAYLOAD || '[]'); } catch (e) { process.exit(0); }
+if (!Array.isArray(data)) process.exit(0);
+const first = data.find((item) => item && item.iid !== undefined && item.iid !== null);
+if (first) process.stdout.write(String(first.iid));
+NODE
+}
+
+# Derive "<hostname> <url-encoded-project-path>" from the MR web_url so the
+# authoritative closes_issues endpoint can be addressed via `glab api` without
+# depending on the current working directory's git remote.
+mr_project_locator() {
+  local json="$1"
+  JSON_PAYLOAD="$json" node <<'NODE'
+const data = JSON.parse(process.env.JSON_PAYLOAD || '{}');
+const url = typeof data.web_url === 'string' ? data.web_url : '';
+const match = url.match(/^https?:\/\/([^/]+)\/(.+?)\/-\/merge_requests\/\d+/);
+if (!match) process.exit(0);
+process.stdout.write(match[1] + ' ' + encodeURIComponent(match[2]));
 NODE
 }
 
@@ -154,7 +191,38 @@ should_remove_source_branch="$(json_value "$mr_json" should_remove_source_branch
 force_remove_source_branch="$(json_value "$mr_json" force_remove_source_branch unknown)"
 remove_source_branch="$(json_value "$mr_json" remove_source_branch unknown)"
 [[ -n "$default_branch" ]] || default_branch="$target_branch"
-[[ -n "$issue_iid" ]] || issue_iid="$(infer_issue_iid "$mr_json")"
+# Resolve the linked issue when no explicit --issue-iid override was given.
+# Primary: the authoritative GitLab closes_issues relationship (immune to
+# description formatting and body elision). Fallback: a widened MR-description
+# scrape. A read that can determine neither is reported below as
+# link_undeterminable, distinct from a true not_linked where the MR
+# authoritatively closes no issue. This is read-only (GET closes_issues).
+link_determinable="true"
+if [[ -z "$issue_iid" ]]; then
+  locator="$(mr_project_locator "$mr_json")"
+  project_host="${locator%% *}"
+  project_path_enc="${locator##* }"
+  closes_issues_iid=""
+  closes_issues_determinable="false"
+  if [[ -n "$locator" && -n "$project_host" && -n "$project_path_enc" ]]; then
+    set +e
+    closes_json="$(glab api --hostname "$project_host" "projects/${project_path_enc}/merge_requests/${mr_iid}/closes_issues" 2>/dev/null)"
+    closes_status=$?
+    set -e
+    if [[ "$closes_status" -eq 0 ]]; then
+      closes_issues_determinable="true"
+      closes_issues_iid="$(first_closes_issue_iid "$closes_json")"
+    fi
+  fi
+  if [[ -n "$closes_issues_iid" ]]; then
+    issue_iid="$closes_issues_iid"
+  else
+    issue_iid="$(infer_issue_iid "$mr_json")"
+    if [[ -z "$issue_iid" && "$closes_issues_determinable" != "true" ]]; then
+      link_determinable="false"
+    fi
+  fi
+fi
 
 target_observed_sha=""
 default_branch_fetch_status="not-run"
@@ -220,6 +288,8 @@ if [[ -n "$issue_iid" ]]; then
     issue_state="unknown"
     closure_status="unknown"
   fi
+elif [[ "$link_determinable" != "true" ]]; then
+  closure_status="link_undeterminable"
 fi
 
 source_branch_exists="unknown"
@@ -328,6 +398,7 @@ if (mrState !== 'merged') pending.push('mr_not_merged');
 if (fetchStatus !== 'fetched' || satisfiedBy === 'unknown') pending.push('default_branch_containment_unknown');
 if (mrState === 'merged' && satisfiedBy === 'none') pending.push('default_branch_containment_missing');
 if (closureStatus === 'issue_closure_pending') pending.push('issue_closure_pending');
+if (closureStatus === 'link_undeterminable') pending.push('linked_issue_undeterminable');
 if (cleanupStatus === 'source_branch_cleanup_pending') pending.push('source_branch_cleanup_pending');
 if (cleanupStatus === 'source_branch_retained_by_policy_or_unknown') pending.push('source_branch_retained_by_policy_or_unknown');
 if (validationStatus === 'not-run') pending.push('post_merge_validation_not_run');

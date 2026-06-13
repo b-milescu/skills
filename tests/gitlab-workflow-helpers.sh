@@ -1016,6 +1016,65 @@ test_post_merge_snapshot_reports_validation_not_run_cases() {
   assert_json_field post_merge_snapshot.validation.not_run_reason N/A
 }
 
+test_post_merge_snapshot_resolves_colon_closes_via_description_scrape() {
+  # Regression for the RF-4 false not_linked: a merged MR whose description uses
+  # the GitLab-valid colon form (`**Closes:** #88`) must resolve to its issue and
+  # report the true closure_status, even when closes_issues returns nothing
+  # authoritative (the observed merged-MR behavior). The widened scrape is the
+  # safety net.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-colon-closes-scrape)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete '**Closes:** #88'
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid 88
+  assert_json_field post_merge_snapshot.linked_issue.closure_status closed
+}
+
+test_post_merge_snapshot_resolves_link_via_closes_issues_api() {
+  # The authoritative closes_issues relationship resolves the linked issue even
+  # when the MR description carries no closing keyword the scrape could match.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-closes-issues-api)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'See linked work item for context.'
+  write_snapshot_issue_json "$dir/issue.json" closed
+  write_snapshot_closes_issues_json "$dir/closes_issues.json" 88
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" \
+    FAKE_CLOSES_ISSUES_FILE="$dir/closes_issues.json" \
+    run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid 88
+  assert_json_field post_merge_snapshot.linked_issue.closure_status closed
+}
+
+test_post_merge_snapshot_reports_link_undeterminable() {
+  # When neither the closes_issues read nor the description scrape can resolve a
+  # link, report link_undeterminable (not a false not_linked) and surface it.
+  local dir reviewed target
+  reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  dir="$(make_snapshot_fixture_dir snapshot-link-undeterminable)"
+  write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete 'No closing reference here.'
+  write_snapshot_issue_json "$dir/issue.json" closed
+
+  FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" FAKE_CLOSES_ISSUES_FAIL=true \
+    run_snapshot_fixture "$dir" "$reviewed"
+
+  assert_status 0
+  assert_json_field post_merge_snapshot.linked_issue.iid ""
+  assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
+  assert_json_array_contains post_merge_snapshot.pending_items linked_issue_undeterminable
+}
+
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_ci_watch_reports_merged_terminal_state
@@ -1042,5 +1101,8 @@ test_post_merge_snapshot_reports_retained_by_policy_or_unknown
 test_post_merge_snapshot_reports_explicit_and_missing_containment
 test_post_merge_snapshot_fails_closed_on_non_git_fetchable_repo
 test_post_merge_snapshot_reports_validation_not_run_cases
+test_post_merge_snapshot_resolves_colon_closes_via_description_scrape
+test_post_merge_snapshot_resolves_link_via_closes_issues_api
+test_post_merge_snapshot_reports_link_undeterminable
 
 echo "gitlab-workflow-helpers: PASS"
