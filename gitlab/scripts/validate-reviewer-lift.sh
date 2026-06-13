@@ -10,7 +10,8 @@
 # This is a presence/shape + closed-set MEMBERSHIP check. It validates that each
 # required row name appears as a table row, and that the closed-set rows below
 # hold an allowed value:
-#   - Merge authority  ∈ {approval-only, reviewer may merge, queue auto-merge,
+#   - Merge authority  ∈ {none — requires explicit human/parent instruction,
+#                         approval-only, reviewer may merge, queue auto-merge,
 #                         human release, project default: <...>}
 #   - Review gate      ∈ {mandatory, bypassed (human override)}
 #   - Gate owner       ∈ {builder, parent}
@@ -259,8 +260,12 @@ function valueOf(rowName) {
 }
 
 // Merge authority accepts a fixed enum plus the open `project default: <...>`
-// form, so it is checked with a predicate rather than a flat set.
+// form, so it is checked with a predicate rather than a flat set. The fail-closed
+// default is `none — requires explicit human/parent instruction` (RF-1, issue
+// #293): a bare `none` is NOT accepted — the value must carry the explicit
+// human/parent-instruction qualifier so it cannot be confused with a silent grant.
 const mergeAuthorityFixed = new Set([
+  'none — requires explicit human/parent instruction',
   'approval-only',
   'reviewer may merge',
   'queue auto-merge',

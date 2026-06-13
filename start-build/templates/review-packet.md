@@ -19,6 +19,13 @@ section-by-section instructions and the conditional-section triggers.
 | Blocks | |
 | Blocked by | |
 
+The issue-closing reference must be a plain, unbolded `Closes #N` on its own line
+(e.g. `Closes #123`). Do not bold or wrap the keyword (`**Closes:** #N` and
+`` `Closes #N` `` are not matched by GitLab's auto-close regex and leave the issue
+open after merge).
+
+Closes #N
+
 ## Reviewer Lift
 
 Field names, order, and required semantics are canonical in `reviewer-lift-schema.md`; parent-owned Gate Receipt / Check Gate ownership is canonical in `../reference/parent-owned-gate.md`.
@@ -43,8 +50,8 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
 | Approval authority | `<default-after-pass / restricted: source-or-reason>` |
 | Approval authority source | `<stable repo policy ref, e.g. start-review/REVIEW-FLOW.md#approval-authority-policy / parent task prompt / human or MR comment URL / project rulebook path+section>` |
-| Merge authority | `<quoted claim: approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
-| Merge authority source | `<parent task prompt / human MR comment URL / rulebook path+section / project default source>` |
+| Merge authority | `<quoted claim; defaults to none — requires explicit human/parent instruction; a granting value (reviewer may merge / queue auto-merge / project default: ...) needs an affirmative quoted grant in the source: approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
+| Merge authority source | `<parent task prompt / human MR comment URL / rulebook path+section / project default source; for any non-none value must quote an affirmative merge/auto-merge grant — a disclaiming/silent source forces the none default>` |
 | Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 

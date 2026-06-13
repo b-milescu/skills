@@ -169,10 +169,17 @@ EXPECTED_BAD_STATUS=4
 
 # A block with all-valid enum/vocab values passes (already exercised by
 # build_block above, but assert the closed-set variants explicitly).
-for v in "approval-only" "reviewer may merge" "queue auto-merge" "human release" "project default: minister approval"; do
+for v in "approval-only" "reviewer may merge" "queue auto-merge" "human release" "project default: minister approval" "none — requires explicit human/parent instruction"; do
   run_validator "$(build_block_override "Merge authority" "$v")"
   assert_status 0
 done
+# RF-1 (issue #293): the fail-closed default value
+# `none — requires explicit human/parent instruction` is a member of the Merge
+# authority closed set. A bare `none` is NOT a member (the value must carry the
+# explicit-instruction qualifier so it cannot be confused with a silent grant).
+run_validator "$(build_block_override "Merge authority" "none")"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Merge authority"
 for v in "mandatory" "bypassed (human override)"; do
   run_validator "$(build_block_override "Review gate" "$v")"
   assert_status 0
