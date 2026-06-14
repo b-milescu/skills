@@ -102,11 +102,14 @@ Stop condition: post one Review Report and return the final handoff after any au
 Expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
 Forbidden actions: do not treat parent/builder reasoning as evidence; do not approve when approval authority is restricted or unverified; do not merge, queue auto-merge, or close without separate verified merge authority/source plus fresh SHA/CI guards.
 Evidence pointers: Reviewer Lift block in the MR description, Gate Receipt comment when present, and project rulebook path.
+Merge authority grant (only when granted): <orchestrator/parent merge-authority grant relayed for this MR — the granted value plus its source provenance (the human/parent instruction that granted it). An accepted parent task prompt (parent-explicit) source the reviewer verifies through gitlab/reference/authority-verification.md before finishing. Omit this line when no merge authority was granted.>
 Fallback: on OMP, mr-reviewer-opus48-xhigh only with an explicit parent/operator provider-failure decision token; never a cost downgrade. Claude Code uses mr-reviewer-opus48-xhigh as its primary final reviewer, not a fallback.
 Scout note: mr-review-scout-gpt54-low is the OMP-only optional trivial pre-review scout; it is non-gate and cannot satisfy independent review. Claude Code has no openai-codex/* scout route.
 ```
 
 Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
+
+A merge-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent merge-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [authority-verification.md](../../gitlab/reference/authority-verification.md) — so the reviewer has a verifiable merge-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 
 ## Minimal child-builder launch prompt
 
