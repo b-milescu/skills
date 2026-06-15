@@ -104,6 +104,125 @@ test_ci_watch_reports_merged_terminal_state() {
   assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
 }
 
+test_merge_watch_reports_merge_completion_terminals() {
+  local dir good_sha old_sha merge_sha squash_sha
+  good_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  old_sha=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  merge_sha=cccccccccccccccccccccccccccccccccccccccc
+  squash_sha=dddddddddddddddddddddddddddddddddddddddd
+
+  # Merged at the reviewed SHA -> result=merged + merge_commit, exit 0.
+  dir="$(make_wrapper_fixture_dir merge-watch-merged-human)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$good_sha" success "$good_sha" "$merge_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "MERGE_WATCH result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit=$merge_sha"
+
+  # YAML format surfaces the merged result and merge-commit SHA.
+  dir="$(make_wrapper_fixture_dir merge-watch-merged-yaml)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$good_sha" success "$good_sha" "$merge_sha"
+  run_merge_watch_fixture "$dir" "$good_sha" 0 yaml
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "result: merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit: \"$merge_sha\""
+
+  # Squash merge: no merge_commit_sha, squash_commit_sha is used.
+  dir="$(make_wrapper_fixture_dir merge-watch-merged-squash)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$good_sha" success "$good_sha" "" "$squash_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit=$squash_sha"
+
+  # Merged with no readable merge/squash SHA still terminal pass, exit 0.
+  dir="$(make_wrapper_fixture_dir merge-watch-merged-no-sha)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$good_sha" success "$good_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "merge_commit=none"
+
+  # Reviewed-SHA pipeline failed -> blocked (auto-merge will not complete), exit 1.
+  dir="$(make_wrapper_fixture_dir merge-watch-ci-failed)"
+  write_merge_watch_mr_json "$dir/mr.json" opened "$good_sha" failed "$good_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 1
+  assert_contains "$CAPTURE_OUTPUT" "result=ci_failed"
+  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
+
+  # Reviewed-SHA pipeline canceled also blocks, exit 1.
+  dir="$(make_wrapper_fixture_dir merge-watch-ci-canceled)"
+  write_merge_watch_mr_json "$dir/mr.json" opened "$good_sha" canceled "$good_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 1
+  assert_contains "$CAPTURE_OUTPUT" "result=ci_failed"
+
+  # Head drifted off the reviewed SHA -> head_changed, exit 2.
+  dir="$(make_wrapper_fixture_dir merge-watch-head-changed)"
+  write_merge_watch_mr_json "$dir/mr.json" opened "$old_sha" success "$old_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 2
+  assert_contains "$CAPTURE_OUTPUT" "result=head_changed"
+
+  # Merged but observed head != reviewed SHA must fail closed as head_changed
+  # (exit 2), never report a clean merge of an unreviewed commit.
+  dir="$(make_wrapper_fixture_dir merge-watch-merged-stale-head)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$old_sha" success "$old_sha" "$merge_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 2
+  assert_contains "$CAPTURE_OUTPUT" "result=head_changed"
+  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
+
+  # Still opened with a pending pipeline at the reviewed SHA -> timeout, exit 4.
+  dir="$(make_wrapper_fixture_dir merge-watch-timeout)"
+  write_merge_watch_mr_json "$dir/mr.json" opened "$good_sha" running "$good_sha"
+  run_merge_watch_fixture "$dir" "$good_sha" 0
+  assert_status 4
+  assert_contains "$CAPTURE_OUTPUT" "result=timeout"
+
+  # Closed without merging -> unknown_mr_state, exit 5, never success.
+  dir="$(make_wrapper_fixture_dir merge-watch-closed)"
+  write_merge_watch_mr_json "$dir/mr.json" closed "$good_sha" success "$good_sha"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=unknown_mr_state"
+  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
+}
+
+test_merge_watch_fails_closed_on_control_char_body() {
+  local dir good_sha merge_sha cc_desc
+  good_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  merge_sha=cccccccccccccccccccccccccccccccccccccccc
+  cc_desc=$'Review Packet\001body'
+
+  # The retro defect: a hand-rolled `glab ... -F json | jq` background waiter
+  # parse-errors on every poll when the MR description carries raw control
+  # characters and silently never observes the merge. Over safe_mr_json the
+  # watcher fails closed with a clear terminal instead of looping or claiming
+  # success, even though the MR is merged.
+  dir="$(make_wrapper_fixture_dir merge-watch-control-char)"
+  write_merge_watch_mr_json "$dir/mr.json" merged "$good_sha" success "$good_sha" "$merge_sha" "" "$cc_desc"
+  run_merge_watch_fixture "$dir" "$good_sha"
+  assert_status 3
+  assert_contains "$CAPTURE_OUTPUT" "result=blocked"
+  assert_contains "$CAPTURE_OUTPUT" "reason=invalid_control_character"
+  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
+}
+
+test_merge_watch_reads_via_safe_mr_json_not_jq() {
+  local helper
+  helper="$REPO_ROOT/gitlab/scripts/gitlab-merge-watch.sh"
+  assert_path_readable "$helper" "merge-watch helper"
+  # Acceptance invariant: read state through safe_mr_json, never raw jq on the
+  # full MR body. Comments may reference the avoided `glab ... | jq` pattern, so
+  # only flag jq used in executable (non-comment) lines.
+  assert_file_contains "$helper" "safe_mr_json" "safe_mr_json read path"
+  if awk '!/^[[:space:]]*#/ && /jq/ { found = 1 } END { exit found ? 0 : 1 }' "$helper"; then
+    fail "gitlab-merge-watch.sh must not parse the MR body with jq in executable code"
+  fi
+}
+
 test_finish_builder_handoff_never_approves_or_merges() {
   local dir
   dir="$(make_fixture_dir finish-builder)"
@@ -1138,6 +1257,9 @@ test_post_merge_snapshot_scrape_requires_separator_before_issue_ref() {
 test_ci_watch_passes_for_matching_green_pipeline
 test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
 test_ci_watch_reports_merged_terminal_state
+test_merge_watch_reports_merge_completion_terminals
+test_merge_watch_fails_closed_on_control_char_body
+test_merge_watch_reads_via_safe_mr_json_not_jq
 test_finish_builder_handoff_never_approves_or_merges
 test_finish_reports_issue_state_on_handoff_when_issue_iid_is_supplied
 test_finish_yaml_format_reports_structured_handoff

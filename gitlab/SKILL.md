@@ -211,7 +211,7 @@ Implementation body lives inside this skill:
 - Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
 - Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
 
-Use the helper when the accepted fallback/helper behavior fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section.
+Use the helper when the accepted fallback/helper behavior fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section. For merge-completion watching — polling a bound MR to a terminal merge state (`merged` / reviewed-SHA pipeline `failed`/`canceled` / head drift / timeout) over the control-char-safe `safe_mr_json` read instead of a raw `glab … -F json | jq` of the full MR body — use the sibling helper [`skill://gitlab/scripts/gitlab-merge-watch.sh`](skill://gitlab/scripts/gitlab-merge-watch.sh), which is background-safe via absolute-path invocation and references, rather than duplicates, the slim guard-read / `safe_mr_json` guidance.
 
 ```bash
 gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
