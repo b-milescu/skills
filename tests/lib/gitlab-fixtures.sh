@@ -361,6 +361,54 @@ assert_validation_failure_without_glab_call() {
   assert_log_not_contains "$dir/glab.log" "glab"
 }
 
+# Full safe_mr_json-compatible MR JSON for gitlab-merge-watch.sh fixtures. The
+# optional `description` argument can embed raw control characters to exercise
+# the control-char-safe read path.
+write_merge_watch_mr_json() {
+  local file="$1" state="$2" sha="$3" pipeline_status="$4" pipeline_sha="$5"
+  local merge_commit_sha="${6:-}" squash_commit_sha="${7:-}" description="${8:-Review Packet body}"
+  local source_branch="${9:-issue-298-merge-completion-watcher}" target_branch="${10:-main}"
+  local merge_line="" squash_line=""
+  [[ -z "$merge_commit_sha" ]] || merge_line=", \"merge_commit_sha\": \"$merge_commit_sha\""
+  [[ -z "$squash_commit_sha" ]] || squash_line=", \"squash_commit_sha\": \"$squash_commit_sha\""
+  cat > "$file" <<JSON
+{
+  "iid": 59,
+  "state": "$state",
+  "draft": false,
+  "sha": "$sha",
+  "source_branch": "$source_branch",
+  "target_branch": "$target_branch",
+  "detailed_merge_status": "mergeable",
+  "description": "$description",
+  "web_url": "https://gitlab.example.com/agents/skills/-/merge_requests/59",
+  "project_id": 16,
+  "source_project_id": 16,
+  "target_project_id": 16,
+  "references": {"full": "agents/skills!59"},
+  "pipeline": {"id": 7, "status": "$pipeline_status", "sha": "$pipeline_sha", "web_url": "https://gitlab.example.com/agents/skills/-/pipelines/7"}$merge_line$squash_line
+}
+JSON
+}
+
+run_merge_watch_fixture() {
+  local dir="$1" reviewed_sha="$2" timeout="${3:-0}" format="${4:-human}"
+  run_capture env \
+    FAKE_MR_JSON_FILE="$dir/mr.json" \
+    FAKE_GLAB_LOG="$dir/glab.log" \
+    PATH="$dir/bin:$PATH" \
+    "$REPO_ROOT/gitlab/scripts/gitlab-merge-watch.sh" \
+      --mr-iid 59 \
+      --repo git@gitlab.example.com:agents/skills.git \
+      --project-path agents/skills \
+      --reviewed-sha "$reviewed_sha" \
+      --source-branch issue-298-merge-completion-watcher \
+      --target-branch main \
+      --timeout-seconds "$timeout" \
+      --poll-seconds 0 \
+      --format "$format"
+}
+
 make_snapshot_fake_glab() {
   local bin_dir="$1"
   cat > "$bin_dir/glab" <<'FAKE_GLAB'
