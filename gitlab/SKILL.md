@@ -230,7 +230,7 @@ Wrapper bodies for the next five snippets also live in [`skill://gitlab/scripts/
 
 ### Snippet: mr-note-create
 
-Use wrapper `mr_note_create` for MR comments only. Require explicit `--repo` and `--mr-iid`; the message is file-backed and the wrapper output does not print it.
+Use wrapper `mr_note_create` MR comments only. explicit `--repo` `--mr-iid`; message file-backed wrapper output not print it; helper posts non-resolvable MR notes for durable Review Reports/status comments.
 
 ```bash
 gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"

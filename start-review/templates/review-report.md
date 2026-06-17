@@ -1,6 +1,6 @@
 # Review Report
 
-<!-- Post this filled report as a plain (non-resolvable) MR note with `gitlab` Snippet: mr-note-create. Do NOT post as a discussion thread — the Review Report is informational and must never leave an unresolved thread that blocks merge. Only genuine change-request threads (Must Fix / Should Fix items the builder must answer) should remain open as resolvable discussions. If the report was accidentally posted as a resolvable thread, resolve it immediately. -->
+<!-- Post this filled report as one top-level plain (non-resolvable) MR note through canonical file-backed `gitlab` Snippet: mr-note-create (`mr_note_create --message-file`). Large Review Report bodies MUST NOT be posted inline via MCP `create_merge_request_note` strings. Read back the created MR note and verify body matches this source report file/content before it counts as durable/posted; placeholder/partial/literal-expansion/body-mismatch notes fail closed: repost file-backed or record transport blocker. Do NOT post discussion thread — Review Report informational must never leave unresolved thread blocks merge. Only genuine change-request threads (Must Fix / Should Fix items builder must answer) should remain open resolvable discussions. If report accidentally posted resolvable thread, resolve it immediately. -->
 
 ## Decision Summary
 

@@ -285,7 +285,7 @@ mr_note_create() {
   validate_text_file MR_NOTE_CREATE "$message_file" message_file
   require_glab
   message="$(<"$message_file")"
-  glab mr note create "$mr_iid" -R "$repo" --message "$message"
+  glab mr note create "$mr_iid" -R "$repo" --message "$message" --resolvable=false
   echo "MR_NOTE_CREATE result=created mr=$mr_iid repo=$repo"
 }
 

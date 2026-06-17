@@ -37,6 +37,8 @@ gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
   --message-file "$message_file"
 ```
 
+`mr_note_create` posts non-resolvable MR notes for durable Review Reports/status comments; re-read the created note before using it as Review Report evidence.
+
 ## Issue note pattern
 
 ```bash
