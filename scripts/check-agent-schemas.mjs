@@ -67,6 +67,8 @@ const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opu
 const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/'];
 const ALLOWED_CLAUDE_MODELS = [...CLAUDE_MODELS].join(', ');
 const ALLOWED_OMP_MODEL_PREFIXES = OMP_MODEL_PROVIDER_PREFIXES.join(', ');
+const FORBIDDEN_ROUTE_NAME_TOKEN_RE = /(^|[-_.])(?<token>claude|anthropic|openai|codex|gpt(?:[-_.]?\d+)*|opus(?:[-_.]?\d+)*|sonnet(?:[-_.]?\d+)*)(?=$|[-_.])/iu;
+
 
 const OMP_THINKING_LEVELS = new Set(['inherit', 'off', 'minimal', 'low', 'medium', 'high', 'xhigh']);
 const ALLOWED_OMP_THINKING_LEVELS = [...OMP_THINKING_LEVELS].join(', ');
@@ -263,6 +265,7 @@ function validateAgent(file) {
   validateModel(file, data, fieldLines);
   validateOmpSemanticFields(file, data, fieldLines);
   validateNameMatchesFile(file, data, fieldLines);
+  validateRouteNameTokens(file, data, fieldLines);
   validateTools(file, data, fieldLines);
   validateBody(file, lines, frontmatter.endLine);
 }
@@ -390,7 +393,7 @@ function validateModel(file, data, fieldLines) {
       addDiagnostic(
         file,
         lineFor(fieldLines, 'model'),
-        `OMP model "${model}" is not an approved route; allowed provider prefixes: ${ALLOWED_OMP_MODEL_PREFIXES}`,
+        `OMP model "${model}" not an approved model/provider; allowed provider prefixes: ${ALLOWED_OMP_MODEL_PREFIXES}`,
       );
     }
   }
@@ -433,6 +436,35 @@ function validateNameMatchesFile(file, data, fieldLines) {
   if (data.name !== expected) {
     addDiagnostic(file, lineFor(fieldLines, 'name'), `frontmatter name "${data.name}" does not match file name "${expected}"`);
   }
+}
+
+function validateRouteNameTokens(file, data, fieldLines) {
+  const expected = path.basename(file.absolute, '.md');
+  const fileToken = forbiddenRouteNameToken(expected);
+  if (fileToken) {
+    addDiagnostic(
+      file,
+      1,
+      `file name "${expected}" must not include provider/model token "${fileToken}"; use shared model-free route name`,
+    );
+  }
+
+  if (typeof data.name !== 'string') {
+    return;
+  }
+
+  const nameToken = forbiddenRouteNameToken(data.name);
+  if (nameToken) {
+    addDiagnostic(
+      file,
+      lineFor(fieldLines, 'name'),
+      `frontmatter name "${data.name}" must not include provider/model token "${nameToken}"; use shared model-free route name`,
+    );
+  }
+}
+
+function forbiddenRouteNameToken(value) {
+  return FORBIDDEN_ROUTE_NAME_TOKEN_RE.exec(value)?.groups?.token ?? null;
 }
 
 function validateTools(file, data, fieldLines) {

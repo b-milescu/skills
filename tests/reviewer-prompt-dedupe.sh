@@ -46,10 +46,10 @@ core_step_count() {
 }
 
 final_reviewer_prompts=( $(agent_prompt_paths "${final_reviewer_prompt_names[@]}") )
-# The Claude Opus xhigh route is the primary Claude Code final-review route; it
-# carries no provider-failure fallback wording, and there is no generic reviewer
-# or review scout to check.
-claude_final_reviewer_prompt='agents/claude/mr-reviewer-opus48-xhigh.md'
+# Shared final-review route resolves in both Claude and OMP dialects; it carries
+# no provider-failure fallback wording, no generic reviewer review scout to
+# check.
+claude_final_reviewer_prompt='agents/claude/mr-reviewer-final.md'
 
 # Final reviewer prompts carry runtime/tool rules and critical fail-closed
 # invariants. Canonical review workflow policy lives in /start-review; routed
@@ -86,16 +86,16 @@ for prompt in "${final_reviewer_prompts[@]}"; do
   reject_text "$prompt" 'Full command ownership still lives|Reviewers load the small `gitlab` review cards before the full command reference' 'copied gitlab tooling prose from start-review'
 done
 
-require_text "$claude_final_reviewer_prompt" 'Claude Code final-review route' 'Claude final-review primary routing'
+require_text "$claude_final_reviewer_prompt" 'Final-review route: mandatory independent reviewer' 'Claude final-review routing contract'
 reject_text "$claude_final_reviewer_prompt" 'Provider-failure fallback only' 'Claude final reviewer labeled provider-failure fallback only'
 
-# #230 reviewer launch prompt must have route-resolution evidence field, and
-# orchestrator docs must not present GPT routes as Claude Code reviewer targets.
+# #230 reviewer launch prompt must carry route-resolution evidence field, and
+# orchestrator docs must not present old provider/model route names as launch
+# targets.
 parent_doc='start-build/reference/parent-orchestrator.md'
 require_text "$parent_doc" 'Route-resolved-at-launch' 'route-resolution evidence field in minimal reviewer launch prompt'
-require_text "$parent_doc" 'immediately before launching the reviewer' 'runtime inventory re-resolution requirement before reviewer launch'
-# Reject wording that presents the GPT route as a Claude Code reviewer option.
-reject_text "$parent_doc" 'mr-reviewer-gpt55-xhigh.*on Claude Code\|use mr-reviewer-gpt55-xhigh.*Claude Code' 'GPT route presented as Claude Code reviewer target'
+require_text "$parent_doc" 'current runtime inventory' 'runtime inventory evidence in reviewer launch prompt'
+reject_text "$parent_doc" 'mr-(builder|reviewer)-[^[:space:]`|]*(gpt|opus|sonnet)[^[:space:]`|]*' 'provider/model route target'
 
 shared_adr='templates/adr.md'
 review_adr='start-review/templates/adr.md'

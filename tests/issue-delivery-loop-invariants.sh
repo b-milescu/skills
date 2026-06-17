@@ -4,12 +4,11 @@ set -euo pipefail
 # Invariant guard for issue-delivery-loop/SKILL.md, Dev Workflow docs, and the
 # parent launch seam. Pins the POST-#151 pointer shape while also guarding the
 # #226 skill-only model-tier routing contract, the #227 runtime-aware reviewer
-# split, and the #300 routed-only cutover: classify before child launch, use the
-# exact runtime-specific builder/reviewer routes at parent-orchestrator dispatch
-# (OMP pins openai-codex/* GPT routes, Claude Code pins anthropic/* Opus/Sonnet
-# routes), route the final reviewer by runtime (mr-reviewer-opus48-xhigh on Claude
-# Code, mr-reviewer-gpt55-xhigh on OMP), with no generic fallback builder/reviewer
-# and no review scout.
+#301 shared route-name cutover: classify launch, use exact shared model-free
+# builder/reviewer route basenames at parent-orchestrator dispatch, keep
+# model/provider pins in agent frontmatter/body prose, route final reviewer
+# through `mr-reviewer-final`, no generic fallback builder/reviewer, no review
+# scout.
 # Assertions are tokens, not whole sentences.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -83,11 +82,11 @@ require_contains 'expected handoff schema'
 require_contains 'minimum evidence pointers'
 require_contains 'delivery.handoff_contract'
 
-# #226/#227 model-tier routing: the loop classifies each target and the parent
-# seam launches exact routed agents. The final review gate is runtime-specific
-# (Opus 4.8 xhigh on Claude Code, GPT-5.5 xhigh on OMP); the GPT builder/reviewer
-# routes are OMP-only and Claude Code has no openai-codex/* route, so there is no
-# generic fallback builder/reviewer and no review scout.
+# #226/#227/#301 model-free tier routing: loop classifies target, parent seam
+# launches exact shared routed agents. Final review gate uses shared
+# `mr-reviewer-final`; model/provider pins stay in selected agent
+# frontmatter/body prose, so no generic fallback builder/reviewer or review
+# scout.
 #
 # #249 single-table-owner split: the per-tier builder route NAMES live in exactly
 # one canonical table (parent-orchestrator.md). The three pointer files
@@ -96,28 +95,21 @@ require_contains 'delivery.handoff_contract'
 # builder route names on their doc surface.
 POINTER_FILES=("$SKILL_FILE" "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE")
 BUILDER_ROUTE_NAMES=(
-  'mr-builder-sonnet-low'
-  'mr-builder-opus48-high'
-  'mr-builder-opus48'
-  'mr-builder-gpt54-low'
-  'mr-builder-gpt55-high'
-  'mr-builder-gpt55'
+  'mr-builder-trivial'
+  'mr-builder-moderate'
+  'mr-builder-high-risk'
 )
 
 # Positive: the canonical table owner names every builder route. The runtime
 # reviewer routes are floor sentences and stay reachable in all four files.
 for needle in \
-  'mr-builder-sonnet-low' \
-  'mr-builder-opus48' \
-  'mr-builder-opus48-high' \
-  'mr-builder-gpt54-low' \
-  'mr-builder-gpt55' \
-  'mr-builder-gpt55-high'; do
+  'mr-builder-trivial' \
+  'mr-builder-moderate' \
+  'mr-builder-high-risk'; do
   require_parent_contains "$needle"
 done
 for needle in \
-  'mr-reviewer-gpt55-xhigh' \
-  'mr-reviewer-opus48-xhigh'; do
+  'mr-reviewer-final'; do
   require_contains "$needle"
   require_parent_contains "$needle"
 done
@@ -175,35 +167,31 @@ for needle in \
   require_parent_contains "$needle"
 done
 
-require_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
-require_parent_contains 'Classify each target issue/MR as `trivial`, `moderate`, or `high-risk`'
-require_contains 'Manual direct agent selection is outside this enforcement surface'
-require_parent_contains 'Manual direct agent selection is outside this enforcement surface'
-# Runtime-aware final reviewer: Claude Code uses the Opus route; OMP keeps the GPT
-# route. The GPT builder/reviewer routes are OMP-only (no openai-codex/* on Claude).
-require_contains 'mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
-require_contains 'pin `openai-codex/*` models that exist only on OMP'
-require_parent_contains 'mandatory independent final reviewer for every tier'
-require_parent_contains '`mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
-require_parent_contains 'Claude Code has no `openai-codex/*` route'
+require_contains 'Classify target issue/MR `trivial`, `moderate`, or `high-risk`'
+require_parent_contains 'Classify target issue/MR `trivial`, `moderate`, or `high-risk`'
+require_contains 'Manual direct agent selection outside enforcement surface'
+require_parent_contains 'Manual direct agent selection outside enforcement surface'
+# Runtime-neutral final reviewer: shared route name resolves current dialect;
+# model/provider pins live in selected agent frontmatter/body prose.
+require_contains 'mandatory independent final-reviewer route `mr-reviewer-final`'
+require_contains 'Model pins live in frontmatter; provider effort pins live too'
+require_parent_contains 'mandatory independent final reviewer tier `mr-reviewer-final`'
+require_parent_contains 'Model pins live in frontmatter; provider effort pins live too, never in route name'
 
-# #230 reviewer route resolution: parent must re-resolve from current runtime
-# inventory immediately before reviewer launch; agent_inventory changes require
-# re-resolution to avoid stale routes.
-require_parent_contains 'Immediately before launching the reviewer'
-require_parent_contains 'agent_inventory'
+# #230 reviewer route resolution: parent records route resolution from current
+# runtime inventory in the minimal reviewer launch prompt.
+require_parent_contains 'When the parent starts a fresh reviewer'
+require_parent_contains 'current runtime inventory'
 require_parent_contains 'Route-resolved-at-launch'
 
 for workflow_file in "$DEV_WORKFLOW_FILE" "$SETUP_DEV_WORKFLOW_FILE"; do
-  require_file_contains "$workflow_file" 'Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop'
-  require_file_contains "$workflow_file" 'Manual direct agent selection is outside this enforcement surface'
-  require_file_contains "$workflow_file" "frontmatter owns the model/effort pin"
-  # #249: builder route names are NOT restated here (covered by the negative
-  # POINTER_FILES loop above); the canonical table owner is parent-orchestrator.md.
-  require_file_contains "$workflow_file" 'mr-reviewer-gpt55-xhigh'
-  require_file_contains "$workflow_file" 'mr-reviewer-opus48-xhigh'
-  require_file_contains "$workflow_file" '`mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP'
-  require_file_contains "$workflow_file" 'pin `openai-codex/*` models that exist only on OMP'
+  require_file_contains "$workflow_file" 'flows launched through `/issue-delivery-loop` parent loop'
+  require_file_contains "$workflow_file" 'Manual direct agent selection outside enforcement surface'
+  require_file_contains "$workflow_file" 'Model pins live in frontmatter; provider effort pins live too'
+  # #249: builder route names NOT restated here (covered by negative
+  # POINTER_FILES above); canonical table owner is parent-orchestrator.md.
+  require_file_contains "$workflow_file" 'mandatory final-reviewer route'
+  require_file_contains "$workflow_file" 'Missing route remains route-unavailable blocker'
 done
 
 # Per-batch metrics envelope survives with retro-report-matching names and definitions.

@@ -6,9 +6,9 @@ TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 mkdir -p "$TMPDIR/good/agents/claude" "$TMPDIR/good/agents/omp"
-cat > "$TMPDIR/good/agents/claude/mr-worker.md" <<'MD'
+cat > "$TMPDIR/good/agents/claude/neutral-worker.md" <<'MD'
 ---
-name: mr-worker
+name: neutral-worker
 description: Claude worker fixture
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
 skills: start-build, tdd, gitlab
@@ -19,9 +19,9 @@ effort: high
 Claude body.
 MD
 
-cat > "$TMPDIR/good/agents/omp/mr-worker.md" <<'MD'
+cat > "$TMPDIR/good/agents/omp/neutral-worker.md" <<'MD'
 ---
-name: mr-worker
+name: neutral-worker
 description: OMP worker fixture
 tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
 model: anthropic/claude-opus-4-8
@@ -29,7 +29,7 @@ thinking-level: high
 autoload-skills: start-build, tdd, gitlab
 ---
 
-OMP body may mention irc for coordination.
+OMP body may mention irc coordination.
 MD
 
 mkdir -p "$TMPDIR/bad/agents/claude" "$TMPDIR/bad/agents/omp"
@@ -123,6 +123,94 @@ readSummarize: false
 OMP body.
 MD
 
+cat > "$TMPDIR/bad/agents/omp/forbidden-gpt-55.md" <<'MD'
+---
+name: forbidden-gpt-55
+description: OMP forbidden route-name token fixture
+tools: read
+model: openai-codex/gpt-5.5
+---
+
+OMP body.
+MD
+
+cat > "$TMPDIR/bad/agents/omp/forbidden-gpt.55.md" <<'MD'
+---
+name: forbidden-gpt.55
+description: OMP forbidden route-name token fixture
+tools: read
+model: openai-codex/gpt-5.5
+---
+
+OMP body.
+MD
+
+cat > "$TMPDIR/bad/agents/claude/forbidden-opus48.md" <<'MD'
+---
+name: forbidden-opus48
+description: Claude forbidden route-name token fixture
+tools: Read
+model: inherit
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/bad/agents/claude/forbidden-sonnet.md" <<'MD'
+---
+name: forbidden-sonnet
+description: Claude forbidden route-name token fixture
+tools: Read
+model: inherit
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/bad/agents/claude/forbidden-claude.md" <<'MD'
+---
+name: forbidden-claude
+description: Claude forbidden route-name token fixture
+tools: Read
+model: inherit
+---
+
+Claude body.
+MD
+
+cat > "$TMPDIR/bad/agents/omp/forbidden-openai.md" <<'MD'
+---
+name: forbidden-openai
+description: OMP forbidden route-name token fixture
+tools: read
+model: openai-codex/gpt-5.5
+---
+
+OMP body.
+MD
+
+cat > "$TMPDIR/bad/agents/omp/forbidden-anthropic.md" <<'MD'
+---
+name: forbidden-anthropic
+description: OMP forbidden route-name token fixture
+tools: read
+model: anthropic/claude-opus-4-8
+---
+
+OMP body.
+MD
+
+cat > "$TMPDIR/bad/agents/omp/forbidden-codex.md" <<'MD'
+---
+name: forbidden-codex
+description: OMP forbidden route-name token fixture
+tools: read
+model: openai-codex/gpt-5.5
+---
+
+OMP body.
+MD
+
 set +e
 output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/bad/agents" 2>&1)"
 status=$?
@@ -157,11 +245,27 @@ for expected in \
   "OMP MCP selector \"mcp__gitlab-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
   "OMP MCP selector \"mcp__gitlab_mcp_get_project\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
   "frontmatter YAML does not parse" \
-  "OMP model \"claude-opus-4-8\" is not an approved route; allowed provider prefixes: anthropic/, openai-codex/, pi/" \
+  "OMP model \"claude-opus-4-8\" not an approved model/provider; allowed provider prefixes: anthropic/, openai-codex/, pi/" \
   "OMP thinking-level \"med\" is not a valid value; allowed: inherit, off, minimal, low, medium, high, xhigh" \
   "OMP frontmatter field \"thinkingLevel\" must use canonical key \"thinking-level\"" \
   "OMP frontmatter field \"autoloadSkills\" must use canonical key \"autoload-skills\"" \
-  "OMP frontmatter field \"readSummarize\" must use canonical key \"read-summarize\""; do
+  "OMP frontmatter field \"readSummarize\" must use canonical key \"read-summarize\"" \
+  "file name \"forbidden-gpt-55\" must not include provider/model token \"gpt-55\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-gpt-55\" must not include provider/model token \"gpt-55\"; use shared model-free route name" \
+  "file name \"forbidden-gpt.55\" must not include provider/model token \"gpt.55\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-gpt.55\" must not include provider/model token \"gpt.55\"; use shared model-free route name" \
+  "file name \"forbidden-opus48\" must not include provider/model token \"opus48\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-opus48\" must not include provider/model token \"opus48\"; use shared model-free route name" \
+  "file name \"forbidden-sonnet\" must not include provider/model token \"sonnet\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-sonnet\" must not include provider/model token \"sonnet\"; use shared model-free route name" \
+  "file name \"forbidden-claude\" must not include provider/model token \"claude\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-claude\" must not include provider/model token \"claude\"; use shared model-free route name" \
+  "file name \"forbidden-openai\" must not include provider/model token \"openai\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-openai\" must not include provider/model token \"openai\"; use shared model-free route name" \
+  "file name \"forbidden-anthropic\" must not include provider/model token \"anthropic\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-anthropic\" must not include provider/model token \"anthropic\"; use shared model-free route name" \
+  "file name \"forbidden-codex\" must not include provider/model token \"codex\"; use shared model-free route name" \
+  "frontmatter name \"forbidden-codex\" must not include provider/model token \"codex\"; use shared model-free route name"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
     echo "--- output ---" >&2
@@ -169,7 +273,6 @@ for expected in \
     exit 1
   fi
 done
-
 clean_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good/agents")"
 if [[ "$clean_output" != "agents-schema: checked 1 Claude agent(s), 1 OMP agent(s)" ]]; then
   echo "unexpected clean output: $clean_output" >&2
@@ -177,9 +280,9 @@ if [[ "$clean_output" != "agents-schema: checked 1 Claude agent(s), 1 OMP agent(
 fi
 
 mkdir -p "$TMPDIR/good-models/agents/omp"
-cat > "$TMPDIR/good-models/agents/omp/model-anthropic.md" <<'MD'
+cat > "$TMPDIR/good-models/agents/omp/allowed-alpha.md" <<'MD'
 ---
-name: model-anthropic
+name: allowed-alpha
 description: model fixture
 tools: read
 model: anthropic/claude-opus-4-8
@@ -188,9 +291,9 @@ model: anthropic/claude-opus-4-8
 Body.
 MD
 
-cat > "$TMPDIR/good-models/agents/omp/model-codex.md" <<'MD'
+cat > "$TMPDIR/good-models/agents/omp/allowed-beta.md" <<'MD'
 ---
-name: model-codex
+name: allowed-beta
 description: model fixture
 tools: read
 model: openai-codex/gpt-5.5
@@ -199,9 +302,9 @@ model: openai-codex/gpt-5.5
 Body.
 MD
 
-cat > "$TMPDIR/good-models/agents/omp/model-role.md" <<'MD'
+cat > "$TMPDIR/good-models/agents/omp/allowed-gamma.md" <<'MD'
 ---
-name: model-role
+name: allowed-gamma
 description: model fixture
 tools: read
 model: pi/slow

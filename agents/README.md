@@ -10,12 +10,17 @@ runtime's frontmatter schema.
 - `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
-- Runtime-only exception: MR builder/reviewer routes are runtime-specific because
-  each pins a model that exists in only one runtime. OMP routes pin
-  `openai-codex/*` (GPT) and Claude Code routes pin `anthropic/*` (Opus/Sonnet),
-  so no MR route has a counterpart in the other dialect; `agents/check.sh`
-  records both the OMP-only and Claude-only allowlists. Any other agent still
-  requires a counterpart in both dialects.
+- MR builder/reviewer route basenames are shared across runtime dirs:
+  `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`,
+  and `mr-reviewer-final`.
+- The current runtime resolves the basename in its dialect directory:
+  `agents/claude/<route>.md` or `agents/omp/<route>.md`.
+- Model pins live in frontmatter, not route names; provider pins live there too.
+  Route basenames stay distinct from role/mode labels such as
+  `child mr-builder` and `mr-reviewer`.
+- Missing route has no fallback, shim, old-filename, or cross-runtime
+  substitute; treat it as route-unavailable. Any other agent still requires
+  counterpart in both dialects.
 
 ## Claude Code variant
 

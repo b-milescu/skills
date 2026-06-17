@@ -1,6 +1,6 @@
 ---
-name: mr-reviewer-gpt55-xhigh
-description: Routed final GitLab MR reviewer. Pins GPT-5.5 at xhigh thinking for mandatory independent single-MR review.
+name: mr-reviewer-final
+description: Routed final GitLab MR reviewer. Pins GPT-5.5 at xhigh thinking mandatory independent single-MR review.
 tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
 model: openai-codex/gpt-5.5
 thinking-level: xhigh

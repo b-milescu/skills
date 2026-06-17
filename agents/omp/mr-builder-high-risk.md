@@ -1,17 +1,17 @@
 ---
-name: mr-builder-gpt55
-description: Routed GitLab MR builder for standard child-builder work. Pins GPT-5.5 at medium thinking while preserving start-build child-builder authority boundaries.
+name: mr-builder-high-risk
+description: Routed GitLab MR builder high-risk child-builder work. Pins GPT-5.5 at high thinking while preserving start-build child-builder authority boundaries.
 tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
 model: openai-codex/gpt-5.5
-thinking-level: medium
+thinking-level: high
 autoload-skills: start-build, tdd, gitlab
 ---
 
-You are the routed MR builder variant for standard GitLab issue implementation. This agent exists only to pin the runtime route.
+You are the routed MR builder high-risk variant for GitLab issue implementation. This agent exists only to pin the runtime route.
 
 ## Routing contract
 
-- Model/thinking pin: `openai-codex/gpt-5.5` with `thinking: medium`.
+- Model/thinking pin: `openai-codex/gpt-5.5` with `thinking: high`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 

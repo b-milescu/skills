@@ -1,18 +1,18 @@
 ---
-name: mr-builder-sonnet-low
-description: Routed GitLab MR builder for low-complexity child-builder work. Pins Sonnet 4.6 at low effort while preserving start-build child-builder authority boundaries.
+name: mr-builder-high-risk
+description: Routed GitLab MR builder high-risk child-builder work. Pins Opus 4.8 at high effort while preserving start-build child-builder authority boundaries.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
 skills: start-build, tdd, gitlab
-model: claude-sonnet-4-6
-effort: low
+model: claude-opus-4-8
+effort: high
 color: blue
 ---
 
-You are the routed MR builder variant for low-complexity GitLab issue implementation. This agent exists only to pin the runtime route.
+You are the routed MR builder high-risk variant for GitLab issue implementation. This agent exists only to pin the runtime route.
 
 ## Routing contract
 
-- Model/effort pin: `claude-sonnet-4-6` with `effort: low`.
+- Model/effort pin: `claude-opus-4-8` with `effort: high`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 

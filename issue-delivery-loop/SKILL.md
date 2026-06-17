@@ -18,7 +18,7 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 
 1. Preflight (`skill://gitlab/SKILL.md`) and read the ready queue.
 2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work (decoupling proof before parallel work). Serial WIP-1 batches skip this step.
-3. Classify each target issue/MR as `trivial`, `moderate`, or `high-risk` using [Model-tier routing](#model-tier-routing).
+3. Classify target issue/MR `trivial`, `moderate`, or `high-risk` using [Tier routing](#tier-routing).
 4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md). Launch review as soon as the build handoff lands, in parallel with CI, for every tier — do not block-watch the pipeline to green before launching the reviewer (the merge floor is enforced by the queued auto-merge finish, not by a foreground CI watch); see [`parent-orchestrator.md` Reviewer launch timing](skill://start-build/reference/parent-orchestrator.md).
 5. On `pass` (with recorded approval action), finish by authority. The default finish is approve SHA-bound then **queue auto-merge** (merge-when-pipeline-succeeds), so GitLab completes the merge the instant the reviewed-SHA pipeline passes; the exact-SHA CI floor and fail-closed guard (a `failed`/`canceled` reviewed-SHA pipeline blocks, never queues) stay intact per the canonical flows.
 6. Hand merged work to the `skill://start-build/reference/post-merge-verifier.md` recipe.
@@ -31,9 +31,9 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 - batch delivery
 - issue-to-MR loop
 
-## Model-tier routing
+## Tier routing
 
-Skill-only routing applies only to flows launched through this parent delivery loop. Manual direct agent selection is outside this enforcement surface; selected agent frontmatter owns the model/effort pin.
+Skill-only tier routing applies only to flows launched through the parent delivery loop. Manual direct agent selection outside enforcement surface; skill docs choose exact route basenames. Model pins live in frontmatter; provider effort pins live too.
 
 Before launching any child builder, classify each target issue/MR:
 
@@ -43,16 +43,16 @@ Before launching any child builder, classify each target issue/MR:
 
 Test surface alone does not lower the tier: route by blast radius, not by runtime-vs-test surface. A broad test-only refactor — many touched test files (objective signal: `>=10` test files) or a shared test-harness / cross-file test-coupling change — is **not** `trivial` even though it is test-only and runs no runtime code; route it at least `moderate` so a large semantic test refactor takes the higher-effort build/review path instead of bouncing through avoidable review rounds. (A broad test refactor that also trips a `high-risk` trigger above — for example `>=20` touched files — still routes `high-risk`.)
 
-The exact per-tier builder route names live in one canonical table, owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md) — the launch seam this loop dispatches through. This loop classifies the tier; do not restate the route-name rows here.
+The exact per-tier model-free route basenames live in one canonical table, owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md) — launch seams resolve those basenames from the current dialect directory (`agents/claude/<route>.md` or `agents/omp/<route>.md`). This loop classifies tier; do not restate route-name rows here. Route basenames are distinct from role/mode labels such as `child mr-builder` and `mr-reviewer`.
 
-Independent-review floors hold regardless of route: the mandatory independent final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT builder/reviewer routes pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route; there is no review scout and no generic fallback reviewer.
+Independent-review floors hold regardless route: mandatory independent final-reviewer route `mr-reviewer-final`, resolved from the current dialect directory. There is no review scout, no generic fallback reviewer, no shim, and no cross-runtime substitute; missing route remains route-unavailable blocker.
 
 ## Operating contract
 
 - Default WIP: 1 active delivery loop, serial by default.
 - Run the parent loop per `skill://start-build/reference/parent-orchestrator.md` — proving the decoupling proof before parallel work, completing the full parent spot-check field list, following `skill://start-build/reference/parent-owned-gate.md` when parent-owned Gate Receipt mode is active, honoring the minimal child/reviewer/revision launch prompts, driving the decision loop, and finishing only behind the SHA/CI/authority guards; the three-round limit defers to `skill://start-build/reference/standalone-gate.md`.
-- Delegate implementation to child `mr-builder` sessions via the exact routed builder agent from [Model-tier routing](#model-tier-routing), with `skill://start-build/reference/child-builder.md` as the child-mode procedure source (stable router: `skill://start-build/BUILD-FLOW.md`).
-- Delegate independent review to fresh final-reviewer sessions via `skill://start-review/REVIEW-FLOW.md`: `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP.
+- Delegate implementation to child `mr-builder` sessions via exact routed builder agent from [Tier routing](#tier-routing), with `skill://start-build/reference/child-builder.md` as the child-mode procedure source (stable router: `skill://start-build/BUILD-FLOW.md`).
+- Delegate independent review fresh final-reviewer sessions via `skill://start-review/REVIEW-FLOW.md`: route `mr-reviewer-final`, resolved from the current dialect directory.
 - Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies.
 - Child/reviewer prompts pass one target issue/MR, exact role/mode, stop condition, expected handoff schema, forbidden actions, and minimum evidence pointers only. Do not restate broad parent reasoning unless a specific risk requires narrow extra context.
 - Select gate ownership per batch and pass it explicitly in each child-builder prompt's `Gate owner` field (`builder` = builder-owned, `parent` = parent-owned), per the [minimal child-builder launch prompt](skill://start-build/reference/parent-orchestrator.md). Setting it once keeps identically-shaped issues on one gate mode instead of each child inferring the mode from finish-authority prose; when omitted, the documented default is builder-owned (`builder`). Per-mode semantics stay owned by `skill://start-build/reference/parent-owned-gate.md`.
