@@ -99,9 +99,9 @@ Agent: mr-reviewer-final (resolve basename in current dialect directory: agents/
 Route-resolved-at-launch: <confirmed via subagent({ action: "list" }) from current runtime inventory, or manual direct selection>
 Mode: mr-reviewer
 Stop condition: post one Review Report and return the final handoff after any authorized action attempt.
-Expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
+expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
 Forbidden actions: do not treat parent/builder reasoning as evidence; do not approve when approval authority is restricted or unverified; do not merge, queue auto-merge, or close without separate verified merge authority/source plus fresh SHA/CI guards.
-Evidence pointers: Reviewer Lift block in the MR description, Gate Receipt comment when present, and project rulebook path.
+minimum evidence pointers: Reviewer Lift block in MR description, Gate Receipt comment present, project rulebook path.
 Merge authority grant (only when granted): <orchestrator/parent merge-authority grant relayed for this MR — the granted value plus its source provenance (the human/parent instruction that granted it). An accepted parent task prompt (parent-explicit) source the reviewer verifies through gitlab/reference/authority-verification.md before finishing. Omit this line when no merge authority was granted.>
 ```
 
@@ -122,9 +122,9 @@ Target branch: <default branch>
 Mode: child mr-builder
 Gate owner (gate-ownership selection): <builder | parent>   # builder = builder-owned gate; parent = parent-owned gate; default when this line is omitted is builder (builder-owned)
 Stop condition: return the final handoff after updating the Draft/ready MR for this issue.
-Expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
+expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
 Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail; when Gate owner is parent: do not mark the MR ready or perform any draft→ready transition — leave it Draft for the parent's Gate Receipt and ready transition; when Gate owner is builder: run the gate and mark ready per standard flow.
-Evidence pointers: project rulebook path, repo Check Gate path, MR URL if it already exists, and any narrowly relevant issue-linked docs/tests.
+minimum evidence pointers: project rulebook path, repo Check Gate path, MR URL if already exists, any narrowly relevant issue-linked docs/tests.
 ```
 
 The `Gate owner` line is the explicit gate-ownership selection. Set it once per
