@@ -10,11 +10,12 @@ runtime's frontmatter schema.
 - `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
-- Runtime-only exception: an agent whose pinned model exists in just one runtime
-  may be single-dialect. The GPT-routed reviewer/scout
-  (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) are OMP-only because
-  Claude Code has no `openai-codex/*` route; `agents/check.sh` records this
-  allowlist. Claude-only agents still require an OMP counterpart.
+- Runtime-only exception: MR builder/reviewer routes are runtime-specific because
+  each pins a model that exists in only one runtime. OMP routes pin
+  `openai-codex/*` (GPT) and Claude Code routes pin `anthropic/*` (Opus/Sonnet),
+  so no MR route has a counterpart in the other dialect; `agents/check.sh`
+  records both the OMP-only and Claude-only allowlists. Any other agent still
+  requires a counterpart in both dialects.
 
 ## Claude Code variant
 
@@ -45,11 +46,12 @@ runtime's native dialect.
   for the approved servers: `mcp__gitlab-mcp__*` and
   `mcp__wowtools__*`. Do not replace these allowlists with inherited broad
   tools or `disallowedTools`.
-- OMP variants keep explicit lowercase builtin tool lists plus exact runtime-real
-  MCP tool names rooted at the configured `gitlab-mcp` and `wowtools` server
-  names, for example `mcp__gitlab_mcp_get_merge_request` and
-  `mcp__wowtools_get_active_build`. Do not add bare `mcp`, `mcp:*`, or wildcard
-  `mcp__*` selectors.
+- OMP variants keep explicit lowercase builtin tool lists plus the two
+  server-scoped MCP wildcard selectors for the approved servers:
+  `mcp__gitlab_mcp_*` and `mcp__wowtools_*`. Do not add bare `mcp`, `mcp:*`,
+  broad `mcp__*`, Claude-style hyphenated selectors such as `mcp__gitlab-mcp__*`,
+  or exact per-tool OMP MCP enumerations such as
+  `mcp__gitlab_mcp_get_merge_request`.
 - GitLab authority stays in `gitlab`: it remains canonical for GitLab
   transport, MCP-first snippet contracts, the Mutation Guard, SHA/CI guards,
   approval, merge, ready-transition, label, and finish evidence.

@@ -50,8 +50,10 @@ prepare_installed_agents() {
     "$home_dir/.omp/agent/agents" \
     "$home_dir/.omp/agent/skills"
 
-  for agent in mr-builder mr-reviewer; do
+  for agent in mr-builder-sonnet-low mr-builder-opus48 mr-builder-opus48-high mr-reviewer-opus48-xhigh; do
     ln -s "$repo/agents/claude/$agent.md" "$home_dir/.claude/agents/$agent.md"
+  done
+  for agent in mr-builder-gpt54-low mr-builder-gpt55 mr-builder-gpt55-high mr-reviewer-gpt55-xhigh; do
     ln -s "$repo/agents/omp/$agent.md" "$home_dir/.omp/agent/agents/$agent.md"
   done
 
@@ -90,10 +92,15 @@ copy_repo "$clean_repo"
 prepare_installed_agents "$clean_repo" "$clean_home" yes
 run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
-# The OMP-only GPT routes have no Claude counterpart by design; the documented
-# allowlist in agents/check.sh must exempt them from the parity error.
+# The runtime-specific routed inventory has no cross-dialect counterparts by
+# design; the documented OMP-only and Claude-only allowlists in agents/check.sh
+# must exempt them from the parity error.
+assert_not_contains "$clean_output" "agents/omp/mr-builder-gpt54-low.md has no agents/claude/mr-builder-gpt54-low.md"
+assert_not_contains "$clean_output" "agents/omp/mr-builder-gpt55.md has no agents/claude/mr-builder-gpt55.md"
+assert_not_contains "$clean_output" "agents/omp/mr-builder-gpt55-high.md has no agents/claude/mr-builder-gpt55-high.md"
 assert_not_contains "$clean_output" "agents/omp/mr-reviewer-gpt55-xhigh.md has no agents/claude/mr-reviewer-gpt55-xhigh.md"
-assert_not_contains "$clean_output" "agents/omp/mr-review-scout-gpt54-low.md has no agents/claude/mr-review-scout-gpt54-low.md"
+assert_not_contains "$clean_output" "agents/claude/mr-builder-opus48.md has no agents/omp/mr-builder-opus48.md"
+assert_not_contains "$clean_output" "agents/claude/mr-reviewer-opus48-xhigh.md has no agents/omp/mr-reviewer-opus48-xhigh.md"
 
 git_noise_repo="$TMP_ROOT/git-noise-repo"
 git_noise_home="$TMP_ROOT/git-noise-home"
@@ -314,23 +321,29 @@ prepare_installed_agents "$omp_only_repo" "$omp_only_home" yes
 run_check_fail "$omp_only_repo" "$omp_only_home" "$omp_only_output"
 assert_contains "$omp_only_output" "agents/omp/omp-only.md has no agents/claude/omp-only.md"
 
-missing_omp_repo="$TMP_ROOT/missing-omp-repo"
-missing_omp_home="$TMP_ROOT/missing-omp-home"
-missing_omp_output="$TMP_ROOT/missing-omp.out"
-copy_repo "$missing_omp_repo"
-rm "$missing_omp_repo/agents/omp/mr-reviewer.md"
-prepare_installed_agents "$missing_omp_repo" "$missing_omp_home" yes
-run_check_fail "$missing_omp_repo" "$missing_omp_home" "$missing_omp_output"
-assert_contains "$missing_omp_output" "agents/claude/mr-reviewer.md has no agents/omp/mr-reviewer.md"
+claude_only_repo="$TMP_ROOT/claude-only-repo"
+claude_only_home="$TMP_ROOT/claude-only-home"
+claude_only_output="$TMP_ROOT/claude-only.out"
+copy_repo "$claude_only_repo"
+cat > "$claude_only_repo/agents/claude/claude-only.md" <<'AGENT'
+---
+name: claude-only
+description: should be paired with an OMP variant
+tools: Read
+---
+AGENT
+prepare_installed_agents "$claude_only_repo" "$claude_only_home" yes
+run_check_fail "$claude_only_repo" "$claude_only_home" "$claude_only_output"
+assert_contains "$claude_only_output" "agents/claude/claude-only.md has no agents/omp/claude-only.md"
 
 prompt_strategy_repo="$TMP_ROOT/prompt-strategy-repo"
 prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
 prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
 copy_repo "$prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder.md"
+perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder-gpt55.md"
 prepare_installed_agents "$prompt_strategy_repo" "$prompt_strategy_home" yes
 run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
-assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder.md must point to canonical workflow skill start-build"
+assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder-gpt55.md must point to canonical workflow skill start-build"
 
 
 routed_prompt_strategy_repo="$TMP_ROOT/routed-prompt-strategy-repo"
@@ -346,7 +359,7 @@ lift_drift_repo="$TMP_ROOT/lift-drift-repo"
 lift_drift_home="$TMP_ROOT/lift-drift-home"
 lift_drift_output="$TMP_ROOT/lift-drift.out"
 copy_repo "$lift_drift_repo"
-cat >> "$lift_drift_repo/agents/omp/mr-builder.md" <<'DRIFT'
+cat >> "$lift_drift_repo/agents/omp/mr-builder-gpt55.md" <<'DRIFT'
 
 | Field | Value |
 |---|---|
@@ -363,7 +376,7 @@ report_drift_repo="$TMP_ROOT/report-drift-repo"
 report_drift_home="$TMP_ROOT/report-drift-home"
 report_drift_output="$TMP_ROOT/report-drift.out"
 copy_repo "$report_drift_repo"
-cat >> "$report_drift_repo/agents/claude/mr-reviewer.md" <<'DRIFT'
+cat >> "$report_drift_repo/agents/claude/mr-reviewer-opus48-xhigh.md" <<'DRIFT'
 
 ## Decision Summary
 
@@ -436,7 +449,7 @@ tracked_violation_repo="$TMP_ROOT/tracked-violation-repo"
 tracked_violation_home="$TMP_ROOT/tracked-violation-home"
 tracked_violation_output="$TMP_ROOT/tracked-violation.out"
 copy_repo "$tracked_violation_repo"
-cat >> "$tracked_violation_repo/agents/omp/mr-builder.md" <<'DRIFT'
+cat >> "$tracked_violation_repo/agents/omp/mr-builder-gpt55.md" <<'DRIFT'
 
 | Field | Value |
 |---|---|
@@ -452,6 +465,6 @@ git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=ch
 prepare_installed_agents "$tracked_violation_repo" "$tracked_violation_home" yes
 run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
 assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
-assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"
+assert_contains "$tracked_violation_output" "agents/omp/mr-builder-gpt55.md"
 
 echo "agent-check: PASS"

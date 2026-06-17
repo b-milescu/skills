@@ -26,7 +26,7 @@ Model-tier routing is enforced only for flows launched through `/issue-delivery-
 
 Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk` (tier criteria live in `skill://issue-delivery-loop/SKILL.md`). The single canonical tier→builder route table is owned by `skill://start-build/reference/parent-orchestrator.md`, which consumes that tier at the child/reviewer launch seam; this seed does not restate the per-tier builder route rows.
 
-Independent-review floors hold for every tier: the mandatory final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT reviewer/scout routes (`mr-reviewer-gpt55-xhigh`, `mr-review-scout-gpt54-low`) pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier with no optional scout, while the OMP optional `mr-review-scout-gpt54-low` cannot satisfy independent review. On OMP, provider-failure fallback to the Opus xhigh reviewer requires an explicit parent/operator decision token after `mr-reviewer-gpt55-xhigh` is unavailable, and is never a cost downgrade.
+Independent-review floors hold for every tier: the mandatory final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT builder/reviewer routes pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier; there is no review scout and no generic fallback reviewer.
 
 ## Project-profile hooks
 

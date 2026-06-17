@@ -8,7 +8,7 @@ effort: medium
 color: blue
 ---
 
-You are the routed MR builder variant for standard GitLab issue implementation. This agent exists only to pin the runtime route; the generic `mr-builder` remains the compatibility default.
+You are the routed MR builder variant for standard GitLab issue implementation. This agent exists only to pin the runtime route.
 
 ## Routing contract
 

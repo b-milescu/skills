@@ -55,44 +55,13 @@ const RETIRED_PI_FIELDS = new Set([
 const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools__*']);
 const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
 
-const OMP_MCP_TOOLS = new Set([
-  'mcp__gitlab_mcp_get_project',
-  'mcp__gitlab_mcp_get_current_user',
-  'mcp__gitlab_mcp_list_issues',
-  'mcp__gitlab_mcp_get_issue',
-  'mcp__gitlab_mcp_get_issue_discussions',
-  'mcp__gitlab_mcp_create_issue_note',
-  'mcp__gitlab_mcp_update_issue',
-  'mcp__gitlab_mcp_list_merge_requests',
-  'mcp__gitlab_mcp_get_merge_request',
-  'mcp__gitlab_mcp_get_merge_request_discussions',
-  'mcp__gitlab_mcp_get_merge_request_changes',
-  'mcp__gitlab_mcp_get_merge_request_approvals',
-  'mcp__gitlab_mcp_create_merge_request',
-  'mcp__gitlab_mcp_update_merge_request',
-  'mcp__gitlab_mcp_create_merge_request_note',
-  'mcp__gitlab_mcp_approve_merge_request',
-  'mcp__gitlab_mcp_merge_merge_request',
-  'mcp__gitlab_mcp_list_pipelines',
-  'mcp__gitlab_mcp_get_pipeline_jobs',
-  'mcp__gitlab_mcp_list_branches',
-  'mcp__gitlab_mcp_delete_branch',
-  'mcp__gitlab_mcp_trigger_pipeline',
-  'mcp__gitlab_mcp_search_repositories',
-  'mcp__gitlab_mcp_create_issue',
-  'mcp__gitlab_mcp_create_repository',
-  'mcp__gitlab_mcp_push_files',
-  'mcp__gitlab_mcp_create_or_update_file',
-  'mcp__gitlab_mcp_create_branch',
-  'mcp__gitlab_mcp_get_file_contents',
-  'mcp__gitlab_mcp_fork_repository',
-  'mcp__wowtools_get_active_build',
-  'mcp__wowtools_list_tables',
-  'mcp__wowtools_query_table',
-  'mcp__wowtools_get_rows',
-  'mcp__wowtools_get_table_schema',
-]);
-const ALLOWED_OMP_MCP_TOOLS = [...OMP_MCP_TOOLS].join(', ');
+// OMP MR agents access MCP servers through two server-scoped wildcard selectors
+// only. Bare `mcp`, `mcp:*`, broad `mcp__*`, Claude-style hyphenated selectors
+// like `mcp__gitlab-mcp__*`, and the old exact OMP tool enumerations
+// (`mcp__gitlab_mcp_get_project`, ...) are all rejected; the wildcards keep the
+// access server-scoped without enumerating every tool.
+const OMP_MCP_SELECTORS = new Set(['mcp__gitlab_mcp_*', 'mcp__wowtools_*']);
+const ALLOWED_OMP_MCP_SELECTORS = [...OMP_MCP_SELECTORS].join(', ');
 
 const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);
 const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/'];
@@ -546,7 +515,7 @@ function validateClaudeTool(file, fieldLines, tool) {
 }
 
 function validateOmpTool(file, fieldLines, tool) {
-  if (OMP_TOOLS.has(tool) || OMP_MCP_TOOLS.has(tool)) {
+  if (OMP_TOOLS.has(tool) || OMP_MCP_SELECTORS.has(tool)) {
     return;
   }
 
@@ -562,17 +531,12 @@ function validateOmpTool(file, fieldLines, tool) {
     return;
   }
 
-  if (isOmpMcpTool(tool)) {
+  if (isOmpMcpSelector(tool)) {
     addDiagnostic(
       file,
       lineFor(fieldLines, 'tools'),
-      `OMP MCP tool "${tool}" is not approved; allowed tools: ${ALLOWED_OMP_MCP_TOOLS}`,
+      `OMP MCP selector "${tool}" is not approved; allowed selectors: ${ALLOWED_OMP_MCP_SELECTORS}`,
     );
-    return;
-  }
-
-  if (tool === 'mcp' || tool.startsWith('mcp:')) {
-    addDiagnostic(file, lineFor(fieldLines, 'tools'), `OMP MCP tool "${tool}" must use runtime-real mcp__ server tool names`);
     return;
   }
 
@@ -583,8 +547,8 @@ function isClaudeMcpSelector(tool) {
   return tool === 'mcp' || tool.startsWith('mcp__');
 }
 
-function isOmpMcpTool(tool) {
-  return tool === 'mcp' || tool.startsWith('mcp__');
+function isOmpMcpSelector(tool) {
+  return tool === 'mcp' || tool.startsWith('mcp:') || tool.startsWith('mcp__');
 }
 
 function validateBody(file, lines, frontmatterEndLine) {

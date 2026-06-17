@@ -231,7 +231,6 @@ require_text() {
 reviewer_final_guidance=(
   "$REPO_ROOT/start-review/REVIEW-FLOW.md"
   "$REPO_ROOT/start-review/SKILL.md"
-  $(agent_prompt_paths_under "$REPO_ROOT" mr-reviewer)
 )
 routed_reviewer_final_guidance=( $(agent_prompt_paths_under "$REPO_ROOT" "${routed_final_reviewer_prompt_names[@]}") )
 
