@@ -89,9 +89,9 @@ touch \
   "$external_dir/omp-custom-agent.md"
 
 ln -s "$external_dir/custom-skill" "$home_dir/.claude/skills/start-build"
-ln -s "$external_dir/custom-agent.md" "$home_dir/.claude/agents/mr-builder.md"
+ln -s "$external_dir/custom-agent.md" "$home_dir/.claude/agents/mr-builder-opus48-high.md"
 ln -s "$external_dir/omp-custom-skill" "$home_dir/.omp/agent/skills/start-build"
-ln -s "$external_dir/omp-custom-agent.md" "$home_dir/.omp/agent/agents/mr-builder.md"
+ln -s "$external_dir/omp-custom-agent.md" "$home_dir/.omp/agent/agents/mr-builder-gpt55-high.md"
 
 custom_skill_abs="$("$REALPATH" -m "$external_dir/custom-skill")"
 custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
@@ -116,17 +116,17 @@ ln -s "$REPO_ROOT/templates" "$home_dir/.omp/agent/skills/templates"
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
 assert_symlink_target "$home_dir/.claude/skills/start-build" "$external_dir/custom-skill"
-assert_symlink_target "$home_dir/.claude/agents/mr-builder.md" "$external_dir/custom-agent.md"
+assert_symlink_target "$home_dir/.claude/agents/mr-builder-opus48-high.md" "$external_dir/custom-agent.md"
 assert_symlink_target "$home_dir/.omp/agent/skills/start-build" "$external_dir/omp-custom-skill"
-assert_symlink_target "$home_dir/.omp/agent/agents/mr-builder.md" "$external_dir/omp-custom-agent.md"
+assert_symlink_target "$home_dir/.omp/agent/agents/mr-builder-gpt55-high.md" "$external_dir/omp-custom-agent.md"
 
 assert_contains "$output_file" "skip:    $home_dir/.claude/skills/start-build (existing symlink points outside repo: $custom_skill_abs)"
-assert_contains "$output_file" "skip:    $home_dir/.claude/agents/mr-builder.md (existing symlink points outside repo: $custom_agent_abs)"
+assert_contains "$output_file" "skip:    $home_dir/.claude/agents/mr-builder-opus48-high.md (existing symlink points outside repo: $custom_agent_abs)"
 assert_contains "$output_file" "skip:    $home_dir/.omp/agent/skills/start-build (existing symlink points outside repo: $omp_custom_skill_abs)"
-assert_contains "$output_file" "skip:    $home_dir/.omp/agent/agents/mr-builder.md (existing symlink points outside repo: $omp_custom_agent_abs)"
+assert_contains "$output_file" "skip:    $home_dir/.omp/agent/agents/mr-builder-gpt55-high.md (existing symlink points outside repo: $omp_custom_agent_abs)"
 
 assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
-assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-builder-opus48.md"
+assert_not_exists "$home_dir/.claude/agents/mr-reviewer.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-reviewer-gpt55-xhigh.md" "$REPO_ROOT/agents/omp/mr-reviewer-gpt55-xhigh.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-builder-gpt55.md" "$REPO_ROOT/agents/omp/mr-builder-gpt55.md"
 assert_not_exists "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
