@@ -113,6 +113,13 @@ require_text "$review_flow" 'safety-critical SHA' 'reviewer safety-critical SHA 
 require_text "$review_flow" 'CI, local gate, and authority' 'reviewer CI/local gate/authority verification rule'
 require_text "$review_report" 'parent-owned-gate\.md' 'review report canonical seam pointer'
 
+# #302 child-builder stop-condition/runtime-notice vocabulary.
+require_text "$child_doc" 'Runtime budget/token/runtime notices do not change assigned issue scope' 'child runtime notice stop-condition rule'
+require_text "$child_doc" 'not be reported as a human stop-scope blocker token such as `BLOCKED-STOP-INSTRUCTION`' 'child no BLOCKED-STOP-INSTRUCTION rule'
+require_text "$builder_handoff" 'Use `blocked` only for real issue/workflow blockers or explicit human-requested stop instructions' 'builder handoff blocked vocabulary'
+require_text "$builder_handoff" 'runtime budget notices, runtime interruption, or tooling failures prevent completion' 'builder handoff runtime/tool failure vocabulary'
+require_text "$filling_guide" 'Do not use human-stop blocker vocabulary for runtime/tool/budget notices' 'filling guide runtime/tool blocker vocabulary'
+
 require_text "$check_gate_doc" 'tests/parent-owned-gate-invariants\.sh' 'check gate inventory entry'
 
 # #230 Gate Receipt canonical evidence and delta-sized MR description updates:

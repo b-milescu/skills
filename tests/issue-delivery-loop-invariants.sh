@@ -178,6 +178,14 @@ require_contains 'Model pins live in frontmatter; provider effort pins live too'
 require_parent_contains 'mandatory independent final reviewer tier `mr-reviewer-final`'
 require_parent_contains 'Model pins live in frontmatter; provider effort pins live too, never in route name'
 
+# #302 runtime budget notices are runtime-state interruptions, not scope blockers.
+require_contains 'runtime budget/token/runtime notices are runtime state rather than task-scope changes'
+require_contains 'resume the same child/worktree when runtime recovered'
+require_contains 'without recasting the issue as product/workflow-scope blocked'
+require_parent_contains 'Runtime budget/token/runtime notices are not scope changes'
+require_parent_contains 'resume same child/worktree when runtime recovered'
+require_parent_contains 'runtime/tool blocker'
+
 # #230 reviewer route resolution: parent records route resolution from current
 # runtime inventory in the minimal reviewer launch prompt.
 require_parent_contains 'When the parent starts a fresh reviewer'
