@@ -3,7 +3,7 @@
 #
 # Proves a clean temp-HOME install surfaces every OMP agent to user-scope
 # discovery, and that loaded runtime metadata matches the repo-owned OMP routing
-# contract: lowercase OMP builtin tools, exact mcp__ server tool names,
+# contract: lowercase OMP builtin tools, server-scoped mcp__ wildcard selectors,
 # autoload-skills, and per-agent model/thinking pins.
 
 set -euo pipefail
@@ -97,22 +97,16 @@ function assert(condition, message) {
 
 assert(loaded.size === expectedNames.length, `loaded ${loaded.size} expected OMP agents, wanted ${expectedNames.length}`);
 const requiredTools = ["read", "search", "find", "bash", "edit", "write", "todo", "irc", "yield"];
-const forbiddenTools = ["grep", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools"];
+const forbiddenTools = ["grep", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools", "mcp", "mcp__*", "mcp__gitlab-mcp__*", "mcp__gitlab_mcp_get_issue"];
 const requiredMcp = [
-  "mcp__gitlab_mcp_get_issue",
-  "mcp__gitlab_mcp_get_merge_request",
-  "mcp__gitlab_mcp_create_merge_request_note",
-  "mcp__gitlab_mcp_approve_merge_request",
-  "mcp__gitlab_mcp_merge_merge_request",
-  "mcp__wowtools_get_active_build",
+  "mcp__gitlab_mcp_*",
+  "mcp__wowtools_*",
 ];
 const expectedPins = {
-  "mr-builder-opus48-high": { model: "anthropic/claude-opus-4-8", thinking: "high" },
-  "mr-builder-opus48": { model: "anthropic/claude-opus-4-8", thinking: "medium" },
-  "mr-builder-sonnet-low": { model: "anthropic/claude-sonnet-4-6", thinking: "low" },
+  "mr-builder-gpt54-low": { model: "openai-codex/gpt-5.4", thinking: "low" },
+  "mr-builder-gpt55": { model: "openai-codex/gpt-5.5", thinking: "medium" },
+  "mr-builder-gpt55-high": { model: "openai-codex/gpt-5.5", thinking: "high" },
   "mr-reviewer-gpt55-xhigh": { model: "openai-codex/gpt-5.5", thinking: "xhigh" },
-  "mr-review-scout-gpt54-low": { model: "openai-codex/gpt-5.4", thinking: "low" },
-  "mr-reviewer-opus48-xhigh": { model: "anthropic/claude-opus-4-8", thinking: "xhigh" },
 };
 
 for (const name of expectedNames) {
@@ -130,12 +124,9 @@ for (const name of expectedNames) {
     assert(agent.autoloadSkills.includes("start-review"), `${name} missing start-review autoload`);
   }
   const pin = expectedPins[name];
-  if (pin) {
-    assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
-    assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
-  } else if (name === "mr-builder" || name === "mr-reviewer") {
-    assert(agent.model === undefined || agent.model.length === 0, `${name} must inherit the session model, got ${agent.model}`);
-  }
+  assert(pin, `${name} has no expected model/thinking pin in the routed-only inventory`);
+  assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
+  assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
 }
 BUN
 HOME="$TMP_HOME" \

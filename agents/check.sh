@@ -69,15 +69,23 @@ check_agent_variant_parity() {
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
   local name file rel declared claude_declared omp_declared allowed allowed_name
 
-  # OMP may carry routed agents whose pinned model only exists in the OMP runtime.
-  # The GPT reviewer/scout routes pin openai-codex/* models that Claude Code
-  # cannot select, so they are intentionally OMP-only and exempt from the
-  # "missing Claude counterpart" parity error. This allowlist is the deliberate,
-  # documented exception: every other OMP agent still requires a Claude
-  # counterpart, and Claude-only agents always require an OMP counterpart.
+  # Routed-only inventory (#300): MR builder/reviewer routes are runtime-specific.
+  # OMP routes pin openai-codex/* (GPT) models and Claude Code routes pin
+  # anthropic/* (Opus/Sonnet) models, so no MR route has a counterpart in the
+  # other dialect. These two allowlists are the deliberate, documented exceptions:
+  # any OMP/Claude agent NOT listed here still requires a counterpart in the other
+  # dialect. No generic fallback builder/reviewer and no review scout remain.
   local omp_only_allowed=(
+    mr-builder-gpt54-low
+    mr-builder-gpt55
+    mr-builder-gpt55-high
     mr-reviewer-gpt55-xhigh
-    mr-review-scout-gpt54-low
+  )
+  local claude_only_allowed=(
+    mr-builder-sonnet-low
+    mr-builder-opus48
+    mr-builder-opus48-high
+    mr-reviewer-opus48-xhigh
   )
 
   list_agent_names "$claude_dir" > "$claude_names"
@@ -89,6 +97,14 @@ check_agent_variant_parity() {
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
+    allowed=0
+    for allowed_name in "${claude_only_allowed[@]}"; do
+      [[ "$allowed_name" == "$name" ]] && { allowed=1; break; }
+    done
+    if (( allowed )); then
+      info "agent dialect parity: agents/claude/$name.md is an allowed Claude-only route; no OMP counterpart required"
+      continue
+    fi
     error "agent dialect parity: agents/claude/$name.md has no agents/omp/$name.md"
   done < "$missing_omp"
 
@@ -129,10 +145,10 @@ check_agent_variant_parity() {
 
 workflow_skill_for_agent() {
   case "$1" in
-    mr-builder|mr-builder-*)
+    mr-builder-*)
       printf '%s' "start-build"
       ;;
-    mr-reviewer|mr-reviewer-*|mr-review-scout-*)
+    mr-reviewer-*)
       printf '%s' "start-review"
       ;;
     *)

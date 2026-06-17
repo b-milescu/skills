@@ -15,10 +15,6 @@ require_text() {
 }
 
 safety="start-build/SAFETY.md"
-builder_prompts=(
-  "agents/claude/mr-builder.md"
-  "agents/omp/mr-builder.md"
-)
 
 # SAFETY.md owns the operational credential detail: never read/print/edit/commit
 # /summarize secret stores, and never paste secrets into MR/CI surfaces.
@@ -27,13 +23,5 @@ require_text "$safety" "don't read, print, edit, commit|don't log api keys" 'cre
 
 # SAFETY.md owns the strip-secrets-from-logs token (anchor: strip-logs -> SAFETY.md).
 require_text "$safety" 'strip secrets first|redact tokens, headers, env values' 'strip-secrets-from-logs token'
-
-# Both builder prompts carry the never-touch/print/paste credential token.
-for file in "${builder_prompts[@]}"; do
-  require_text \
-    "$file" \
-    'never .*(touch|print|summarize|commit|paste).*(credential|sensitive payload)' \
-    "$file never-paste credential token"
-done
 
 printf 'start-build-secret-invariant: PASS\n'

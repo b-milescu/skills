@@ -68,7 +68,6 @@ reviewer_guidance=(
   start-review/REVIEW-FLOW.md
   start-review/SKILL.md
   start-review/templates/filling-guide.md
-  $(agent_prompt_paths mr-reviewer)
 )
 routed_final_reviewer_guidance=( $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}") )
 
@@ -97,7 +96,6 @@ builder_guidance=(
   start-build/BUILD-FLOW.md
   start-build/SKILL.md
   start-build/templates/filling-guide.md
-  $(agent_prompt_paths mr-builder)
 )
 routed_builder_guidance=( $(agent_prompt_paths "${routed_builder_prompt_names[@]}") )
 

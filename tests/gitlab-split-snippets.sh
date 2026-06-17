@@ -286,8 +286,7 @@ for file in \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
   start-review/templates/review-report.md \
-  start-review/templates/unblock-response.md \
-  $(agent_prompt_paths mr-reviewer); do
+  start-review/templates/unblock-response.md; do
   require_text "$file" 'Snippet: mr-note-create' 'MR-note snippet reference'
   if grep -Fq 'Snippet: issue-note-create' "$file"; then
     fail "$file references issue-note-create in MR review posting guidance"

@@ -99,11 +99,11 @@ omp_custom_skill_abs="$("$REALPATH" -m "$external_dir/omp-custom-skill")"
 omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
 
 ln -s "$REPO_ROOT/gitlab" "$home_dir/.claude/skills/start-review"
-ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-reviewer.md"
+ln -s "$REPO_ROOT/agents/claude/mr-builder-opus48.md" "$home_dir/.claude/agents/mr-reviewer.md"
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
-ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"
+ln -s "$REPO_ROOT/agents/claude/mr-builder-opus48.md" "$home_dir/.claude/agents/old-repo-agent.md"
 ln -s "$REPO_ROOT/agents/omp/mr-reviewer-gpt55-xhigh.md" "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
-ln -s "$REPO_ROOT/agents/omp/mr-review-scout-gpt54-low.md" "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
+ln -s "$REPO_ROOT/agents/omp/mr-builder-gpt55.md" "$home_dir/.claude/agents/mr-builder-gpt55.md"
 
 # Older installers linked shared resource dirs into runtime skill roots. They are
 # repo-owned but not skills, so a rerun must prune them instead of preserving the
@@ -126,11 +126,11 @@ assert_contains "$output_file" "skip:    $home_dir/.omp/agent/skills/start-build
 assert_contains "$output_file" "skip:    $home_dir/.omp/agent/agents/mr-builder.md (existing symlink points outside repo: $omp_custom_agent_abs)"
 
 assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
-assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-reviewer.md"
+assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer.md" "$REPO_ROOT/agents/claude/mr-builder-opus48.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-reviewer-gpt55-xhigh.md" "$REPO_ROOT/agents/omp/mr-reviewer-gpt55-xhigh.md"
-assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-review-scout-gpt54-low.md" "$REPO_ROOT/agents/omp/mr-review-scout-gpt54-low.md"
+assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-builder-gpt55.md" "$REPO_ROOT/agents/omp/mr-builder-gpt55.md"
 assert_not_exists "$home_dir/.claude/agents/mr-reviewer-gpt55-xhigh.md"
-assert_not_exists "$home_dir/.claude/agents/mr-review-scout-gpt54-low.md"
+assert_not_exists "$home_dir/.claude/agents/mr-builder-gpt55.md"
 for runtime in \
   "$home_dir/.claude/skills" \
   "$home_dir/.omp/agent/skills"; do

@@ -46,11 +46,9 @@ core_step_count() {
 }
 
 final_reviewer_prompts=( $(agent_prompt_paths "${final_reviewer_prompt_names[@]}") )
-generic_reviewer_prompts=( $(agent_prompt_paths mr-reviewer) )
-scout_prompts=( $(agent_prompt_paths "${scout_prompt_names[@]}") )
-# OMP keeps the Opus xhigh route as provider-failure fallback only; Claude Code
-# promotes the same route to its primary final-review route.
-omp_fallback_reviewer_prompt='agents/omp/mr-reviewer-opus48-xhigh.md'
+# The Claude Opus xhigh route is the primary Claude Code final-review route; it
+# carries no provider-failure fallback wording, and there is no generic reviewer
+# or review scout to check.
 claude_final_reviewer_prompt='agents/claude/mr-reviewer-opus48-xhigh.md'
 
 # Final reviewer prompts carry runtime/tool rules and critical fail-closed
@@ -88,39 +86,8 @@ for prompt in "${final_reviewer_prompts[@]}"; do
   reject_text "$prompt" 'Full command ownership still lives|Reviewers load the small `gitlab` review cards before the full command reference' 'copied gitlab tooling prose from start-review'
 done
 
-for prompt in "${generic_reviewer_prompts[@]}"; do
-  require_text "$prompt" 'tdd' 'tdd pointer'
-  require_text "$prompt" 'runtime/tool boundaries|runtime-specific tool rules|tool-boundary' 'runtime/tool boundary purpose'
-  require_text "$prompt" 'Context Firewall' 'Context Firewall invariant'
-  require_text "$prompt" 'Merge authority source' 'authority-source invariant'
-  require_text "$prompt" 'Approval authority|approval authority' 'approval-authority invariant'
-  require_text "$prompt" 'partial-review' 'partial-review fail-closed token'
-  require_text "$prompt" 'secret-exposure-suspected' 'secret-exposure fail-closed token'
-  require_text "$prompt" 'Snippet: mr-note-create' 'MR note snippet pointer'
-done
-
-for prompt in "${scout_prompts[@]}"; do
-  require_text "$prompt" 'Canonical development pattern source: `start-review`' 'scout start-review pointer'
-  require_text "$prompt" 'gitlab' 'scout gitlab pointer'
-  require_text "$prompt" 'anti-fabrication' 'scout anti-fabrication evidence'
-  require_text "$prompt" 'non-gate' 'scout non-gate boundary'
-  require_text "$prompt" 'non-authoritative' 'scout non-authoritative boundary'
-  require_text "$prompt" 'cannot satisfy the mandatory review gate' 'scout cannot satisfy mandatory gate'
-  require_text "$prompt" 'must not approve' 'scout cannot approve'
-  require_text "$prompt" 'approve[^.]*pass[^.]*fail|pass[^.]*fail' 'scout cannot pass/fail'
-  require_text "$prompt" 'post a Review Report as the mandatory review' 'scout cannot post authoritative Review Report'
-  require_text "$prompt" 'only produce scout observations' 'scout output is advisory only'
-  reject_text "$prompt" 'default-after-pass|approval is allowed by default|reviewer may merge' 'authoritative reviewer approval/merge wording'
-done
-
-require_text "$omp_fallback_reviewer_prompt" 'Provider-failure fallback only' 'OMP fallback provider-failure-only routing'
-require_text "$omp_fallback_reviewer_prompt" 'Never select it as a cost downgrade' 'OMP fallback never cost downgrade'
-
 require_text "$claude_final_reviewer_prompt" 'Claude Code final-review route' 'Claude final-review primary routing'
 reject_text "$claude_final_reviewer_prompt" 'Provider-failure fallback only' 'Claude final reviewer labeled provider-failure fallback only'
-
-require_text 'agents/claude/mr-reviewer.md' 'Invoke it via the `Skill` tool' 'Claude-specific Skill invocation wording'
-require_text 'agents/claude/mr-reviewer.md' 'Invoke the `start-review` skill via the `Skill` tool' 'Claude core procedure Skill invocation'
 
 # #230 reviewer launch prompt must have route-resolution evidence field, and
 # orchestrator docs must not present GPT routes as Claude Code reviewer targets.

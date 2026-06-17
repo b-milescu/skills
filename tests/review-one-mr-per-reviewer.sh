@@ -23,8 +23,6 @@ reject_text() {
 
 flow="start-review/REVIEW-FLOW.md"
 skill="start-review/SKILL.md"
-claude_prompt="agents/claude/mr-reviewer.md"
-pi_prompt="agents/omp/mr-reviewer.md"
 
 for file in "$skill" "$flow"; do
   require_text "$file" 'single-MR[^.]*default[^.]*preferred|default[^.]*preferred[^.]*single-MR|one MR per fresh reviewer session[^.]*default[^.]*preferred' 'single-MR default/preferred policy'
@@ -38,13 +36,7 @@ require_text "$flow" 'Decoupling Contract' 'Decoupling Contract retained'
 require_text "$flow" 'one Review Report[^.]*one `Review verdict`[^.]*one reviewed SHA per MR|one Review Report[^.]*one reviewed SHA per MR' 'separate report/verdict/SHA per MR'
 require_text "$flow" 'approval[^.]*merge[^.]*sequence per MR|per MR[^.]*approval[^.]*merge' 'per-MR action result path'
 
-for file in "$claude_prompt" "$pi_prompt"; do
-  require_text "$file" 'review only[^.]*assigned MR[^.]*worktree|assigned MR[^.]*worktree[^.]*review only' 'child reviewer assigned MR/worktree boundary'
-  require_text "$file" 'never launch sibling reviewers|do not launch sibling reviewers' 'child reviewer no sibling launch rule'
-  require_text "$file" 'single-MR[^.]*default[^.]*preferred|one MR per fresh reviewer session[^.]*default[^.]*preferred' 'prompt single-MR default/preferred policy'
-done
-
-for file in "$skill" "$flow" "$claude_prompt" "$pi_prompt"; do
+for file in "$skill" "$flow"; do
   reject_text "$file" 'batch-approve|batch approve|batch-approval|batch approval' 'batch approval wording'
   reject_text "$file" 'approve[^.]*multiple MRs|multiple MRs[^.]*approve' 'multi-MR approval wording without per-MR guard'
 done

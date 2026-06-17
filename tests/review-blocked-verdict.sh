@@ -109,8 +109,6 @@ review_docs=(
   "start-review/templates/review-report.md"
   "start-review/templates/reviewer-final-handoff.md"
   "start-review/templates/filling-guide.md"
-  "agents/claude/mr-reviewer.md"
-  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${review_docs[@]}"; do
@@ -123,8 +121,6 @@ revision_ready_docs=(
   "start-review/REVIEW-FLOW.md"
   "start-review/templates/review-report.md"
   "start-review/templates/filling-guide.md"
-  "agents/claude/mr-reviewer.md"
-  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${revision_ready_docs[@]}"; do
@@ -155,8 +151,6 @@ routing_docs=(
   "start-review/SKILL.md"
   "start-review/REVIEW-FLOW.md"
   "start-review/templates/filling-guide.md"
-  "agents/claude/mr-reviewer.md"
-  "agents/omp/mr-reviewer.md"
 )
 
 for file in "${routing_docs[@]}"; do
@@ -178,13 +172,11 @@ for file in "${routing_docs[@]}"; do
   require_text "$file" 'Action blocker' 'action blocker routing'
 done
 
-# The four sibling Action-blocker vocabularies must carry `merge-conflict`
+# The sibling Action-blocker vocabularies must carry `merge-conflict`
 # immediately after `changed-head-sha`, matching the canonical enum order in
 # start-build/templates/gitlab-delivery-schema.md. Guards future token additions
 # from silently skipping these sites again (issue #255).
 sibling_vocab_docs=(
-  "agents/claude/mr-reviewer.md"
-  "agents/omp/mr-reviewer.md"
   "start-review/reference/blocked-review-routing-card.md"
   "start-review/templates/filling-guide.md"
 )

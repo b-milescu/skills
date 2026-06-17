@@ -23,7 +23,7 @@ cat > "$TMPDIR/good/agents/omp/mr-worker.md" <<'MD'
 ---
 name: mr-worker
 description: OMP worker fixture
-tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_get_issue, mcp__gitlab_mcp_get_merge_request, mcp__wowtools_get_active_build"
+tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
 model: anthropic/claude-opus-4-8
 thinking-level: high
 autoload-skills: start-build, tdd, gitlab
@@ -68,14 +68,14 @@ systemPromptMode: replace
 OMP bad fixture.
 MD
 
-cat > "$TMPDIR/bad/agents/omp/mr-builder.md" <<'MD'
+cat > "$TMPDIR/bad/agents/omp/bad-mcp-selectors.md" <<'MD'
 ---
-name: mr-builder
+name: bad-mcp-selectors
 description: OMP MCP bad fixture
-tools: "read, mcp, mcp__gitlab_mcp_missing_tool, mcp__wowtools_missing_tool"
+tools: "read, mcp, mcp__*, mcp__gitlab-mcp__*, mcp__gitlab_mcp_get_project"
 ---
 
-OMP MR agents must use exact approved MCP tool names.
+OMP MR agents may only use the server-scoped mcp__ wildcard selectors.
 MD
 
 cat > "$TMPDIR/bad/agents/omp/bad-yaml.md" <<'MD'
@@ -151,10 +151,11 @@ for expected in \
   "OMP tool \"grep\" must use OMP-native tool \"search\"" \
   "OMP tool \"ls\" must use OMP-native tool \"directory reads via read\"" \
   "OMP tool \"intercom\" must use OMP-native tool \"irc\"" \
-  "OMP MCP tool \"mcp:gitlab-mcp\" must use runtime-real mcp__ server tool names" \
-  "OMP MCP tool \"mcp\" is not approved" \
-  "OMP MCP tool \"mcp__gitlab_mcp_missing_tool\" is not approved" \
-  "OMP MCP tool \"mcp__wowtools_missing_tool\" is not approved" \
+  "OMP MCP selector \"mcp:gitlab-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
+  "OMP MCP selector \"mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
+  "OMP MCP selector \"mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
+  "OMP MCP selector \"mcp__gitlab-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
+  "OMP MCP selector \"mcp__gitlab_mcp_get_project\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*" \
   "frontmatter YAML does not parse" \
   "OMP model \"claude-opus-4-8\" is not an approved route; allowed provider prefixes: anthropic/, openai-codex/, pi/" \
   "OMP thinking-level \"med\" is not a valid value; allowed: inherit, off, minimal, low, medium, high, xhigh" \

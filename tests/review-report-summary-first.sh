@@ -148,7 +148,6 @@ require_prompt_text() {
 prompt_files=(
   "$REPO_ROOT/start-review/templates/filling-guide.md"
   "$REPO_ROOT/start-review/SKILL.md"
-  $(agent_prompt_paths_under "$REPO_ROOT" mr-reviewer)
 )
 routed_final_reviewer_prompts=( $(agent_prompt_paths_under "$REPO_ROOT" "${routed_final_reviewer_prompt_names[@]}") )
 

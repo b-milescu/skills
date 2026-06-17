@@ -19,10 +19,6 @@ review_skill="start-review/SKILL.md"
 report_template="start-review/templates/review-report.md"
 final_handoff="start-review/templates/reviewer-final-handoff.md"
 filling_guide="start-review/templates/filling-guide.md"
-prompt_docs=(
-  "agents/claude/mr-reviewer.md"
-  "agents/omp/mr-reviewer.md"
-)
 
 require_text "$review_flow" 'partial-review' 'partial-review blocker token'
 require_text "$review_flow" 'cannot inspect all behavior-affecting changed surfaces' 'fail-closed partial review rule'
@@ -46,12 +42,12 @@ require_text "$review_flow" 'remov.*rotat.*purg|rotat.*remov.*purg' 'remove/rota
 require_text "$review_flow" 'human security escalation|security escalation' 'human security escalation guidance'
 require_text "$review_flow" 'per project policy' 'project-policy-scoped secret guidance'
 
-for file in "$report_template" "$final_handoff" "$review_skill" "${prompt_docs[@]}"; do
+for file in "$report_template" "$final_handoff" "$review_skill"; do
   require_text "$file" 'partial-review' "$file partial-review blocker token"
   require_text "$file" 'secret-exposure-suspected' "$file secret-exposure-suspected blocker token"
 done
 
-for file in "$filling_guide" "${prompt_docs[@]}"; do
+for file in "$filling_guide"; do
   require_text "$file" 'do not quote.*(secret|credential)|never quote.*(secret|credential)' "$file safe no-quote wording"
   require_text "$file" '\[REDACTED\]|redacted' "$file redacted placeholder guidance"
   require_text "$file" 'without (copying|including) (the )?(sensitive )?(payload|secret|credential)|do not copy.*(secret|credential|payload)' "$file no sensitive payload copying"

@@ -75,7 +75,7 @@ done
 require_text "$parent_flow" 'not[^.]*treat[^.]*parent[^.]*builder[^.]*reasoning[^.]*evidence|parent[^.]*builder[^.]*reasoning[^.]*not[^.]*evidence' 'parent launch prompt evidence-firewall instruction'
 
 # Reviewer-facing prompts must surface the policy without inlining command bodies.
-for file in start-review/SKILL.md agents/claude/mr-reviewer.md agents/omp/mr-reviewer.md; do
+for file in start-review/SKILL.md; do
   require_text "$file" 'Context Firewall' "$file Context Firewall pointer"
   require_text "$file" 'Review Context Capsule' "$file Review Context Capsule pointer"
   require_text "$file" 'Tier 0[^\n]*Tier 1[^\n]*Tier 2[^\n]*Tier 3|Tier 0' "$file context-tier pointer"

@@ -22,7 +22,6 @@ review_authority_docs=(
   "start-review/SKILL.md"
   "start-review/templates/review-report.md"
   "start-review/templates/filling-guide.md"
-  $(agent_prompt_paths mr-reviewer)
 )
 routed_final_reviewer_prompts=( $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}") )
 
@@ -69,17 +68,6 @@ require_text \
   "start-review/templates/filling-guide.md" \
   'Missing Merge authority[^.]*blocks finish actions[^.]*not default approval|missing merge authority[^.]*blocks finish[^.]*not default approval' \
   'filling-guide missing merge authority finish-only blocker'
-
-for file in $(agent_prompt_paths mr-reviewer); do
-  require_text \
-    "$file" \
-    'approval is allowed by default after a passing review' \
-    'agent prompt default approval-after-pass policy'
-  require_text \
-    "$file" \
-    'If merge authority is missing[^.]*do not merge[^.]*not as a reason to withhold default approval' \
-    'agent prompt missing merge authority finish-only blocker'
-done
 
 for file in "${routed_final_reviewer_prompts[@]}"; do
   require_text "$file" 'Canonical development pattern source: `start-review`' 'routed reviewer start-review authority source'

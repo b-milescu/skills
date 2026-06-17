@@ -2,61 +2,63 @@
 # Shared agent prompt role map for regression tests. Keep routed variants in one
 # place so prompt-drift, authority, handoff, and transport checks cover the same
 # files without duplicating path inventories across scripts.
+#
+# Routed-only inventory (#300): MR builder/reviewer routes are runtime-specific.
+# OMP routes pin openai-codex/* (GPT) models; Claude Code routes pin anthropic/*
+# (Opus/Sonnet) models. No route name is shared across dialects, and no generic
+# fallback builder/reviewer or review scout remains.
 
 agent_prompt_dialects=(claude omp)
 
-routed_builder_prompt_names=(
+claude_builder_prompt_names=(
   mr-builder-sonnet-low
   mr-builder-opus48
   mr-builder-opus48-high
 )
 
-builder_prompt_names=(
-  mr-builder
-  "${routed_builder_prompt_names[@]}"
+omp_builder_prompt_names=(
+  mr-builder-gpt54-low
+  mr-builder-gpt55
+  mr-builder-gpt55-high
 )
 
-routed_final_reviewer_prompt_names=(
-  mr-reviewer-gpt55-xhigh
+# Every builder route is a routed pin now; the routed list equals the full list.
+builder_prompt_names=(
+  "${claude_builder_prompt_names[@]}"
+  "${omp_builder_prompt_names[@]}"
+)
+routed_builder_prompt_names=( "${builder_prompt_names[@]}" )
+
+claude_final_reviewer_prompt_names=(
   mr-reviewer-opus48-xhigh
 )
 
-final_reviewer_prompt_names=(
-  mr-reviewer
-  "${routed_final_reviewer_prompt_names[@]}"
-)
-
-scout_prompt_names=(
-  mr-review-scout-gpt54-low
-)
-
-reviewer_prompt_names=(
-  "${final_reviewer_prompt_names[@]}"
-  "${scout_prompt_names[@]}"
-)
-
-# GPT-routed reviewer/scout agents exist only in the OMP dialect: Claude Code has
-# no openai-codex/* route, so these names must not generate agents/claude paths.
-omp_only_prompt_names=(
+omp_final_reviewer_prompt_names=(
   mr-reviewer-gpt55-xhigh
-  mr-review-scout-gpt54-low
 )
 
-agent_prompt_is_omp_only() {
-  local candidate="$1" name
-  for name in "${omp_only_prompt_names[@]}"; do
-    [[ "$name" == "$candidate" ]] && return 0
-  done
-  return 1
-}
+# Every final reviewer route is a routed pin now; there is no generic reviewer
+# and no review scout.
+final_reviewer_prompt_names=(
+  "${claude_final_reviewer_prompt_names[@]}"
+  "${omp_final_reviewer_prompt_names[@]}"
+)
+routed_final_reviewer_prompt_names=( "${final_reviewer_prompt_names[@]}" )
+reviewer_prompt_names=( "${final_reviewer_prompt_names[@]}" )
 
+# Each routed name lives in exactly one dialect: OMP routes pin openai-codex/*
+# and Claude routes pin anthropic/*, so no name resolves to both dialects.
 agent_prompt_dialects_for() {
-  local name="$1"
-  if agent_prompt_is_omp_only "$name"; then
-    printf 'omp\n'
-  else
-    printf '%s\n' "${agent_prompt_dialects[@]}"
-  fi
+  local name="$1" candidate
+  for candidate in "${omp_builder_prompt_names[@]}" "${omp_final_reviewer_prompt_names[@]}"; do
+    [[ "$candidate" == "$name" ]] && { printf 'omp\n'; return 0; }
+  done
+  for candidate in "${claude_builder_prompt_names[@]}" "${claude_final_reviewer_prompt_names[@]}"; do
+    [[ "$candidate" == "$name" ]] && { printf 'claude\n'; return 0; }
+  done
+  # Unknown names (non-routed callers) fall back to both dialects so the path
+  # helpers stay total.
+  printf '%s\n' "${agent_prompt_dialects[@]}"
 }
 
 agent_prompt_paths() {

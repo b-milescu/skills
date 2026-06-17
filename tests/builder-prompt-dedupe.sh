@@ -36,15 +36,13 @@ body_line_count() {
 }
 
 builder_prompts=( $(agent_prompt_paths "${builder_prompt_names[@]}") )
-generic_builder_prompts=( $(agent_prompt_paths mr-builder) )
 
 # Builder prompts carry runtime/tool rules plus critical anti-fabrication and
 # child-mode authority invariants. Canonical implementation policy lives in
 # /start-build; routed builder variants must preserve the same workflow pointer,
 # GitLab transport, authority, parent-owned gate, and handoff/report guardrails.
-# The generic compatibility prompts also keep Issue-pickup / Decoupling /
-# Multiple-issue-worktree procedures as pointers, not inlined copies that drift
-# silently.
+# Routed builder pins point Issue-pickup / Decoupling / Multiple-issue-worktree
+# procedures back to start-build instead of inlining copies that drift silently.
 # This cap sits above the current pointer-first builder bodies and below legacy
 # inlined copies, so it ratchets future drift without pinning the test to exact
 # historical body counts. It is intentionally larger
@@ -81,27 +79,6 @@ for prompt in "${builder_prompts[@]}"; do
   # The worktree creation command is canonical to start-build; a copied
   # `git worktree add` invocation is the tell-tale inlined procedure body.
   reject_text "$prompt" 'git worktree add' 'copied git worktree add command from start-build'
-done
-
-for prompt in "${generic_builder_prompts[@]}"; do
-  require_text "$prompt" 'Child mode authority boundary' 'child-mode authority boundary invariant'
-  require_text "$prompt" 'Merge authority source' 'authority-source invariant'
-  require_text "$prompt" 'Approval authority' 'approval-authority invariant'
-  require_text "$prompt" 'start-build/templates/reviewer-lift-schema\.md' 'canonical Reviewer Lift schema ownership pointer'
-  require_text "$prompt" 'Do not inline a Reviewer Lift field table in this prompt' 'Reviewer Lift anti-inline guard'
-
-  require_text "$prompt" 'start-build/reference/stuck-protocol\.md' 'canonical Stuck protocol pointer'
-  require_text "$prompt" 'Every child-builder final response MUST start' 'unconditional builder-final handoff schema requirement'
-  require_text "$prompt" 'Parent-owned gate is one status/mode inside that schema, not the trigger for using it' 'parent-owned gate is a mode, not schema trigger'
-
-  # The Issue-pickup / Decoupling / Multiple-issue-worktree procedures are owned
-  # by start-build. The builder prompts keep only a pointer block to them.
-  # The section-reference glyph differs by dialect (Claude inserts a
-  # non-breaking space after `§`, pi does not), so match the quoted canonical
-  # section name rather than the exact `§"` punctuation.
-  require_text "$prompt" 'owned by the `start-build` skill' 'start-build ownership pointer for Issue-pickup/Decoupling/Multi-issue procedures'
-  require_text "$prompt" 'start-build`.*"Issue pickup"' 'Issue pickup pointer'
-  require_text "$prompt" 'start-build`.*"Multiple issue worktree mode"' 'Multiple issue worktree mode pointer'
 done
 
 printf 'builder-prompt-dedupe: PASS\n'
