@@ -215,11 +215,9 @@ agent_handoff:
 - The YAML block above is a concrete synthetic example, not a schema literal:
   replace every value with verified values for the current MR before sending a
   final handoff. Do not leave placeholder alternatives in copied output.
-- `status` is one of `ready-for-review`, `candidate-for-parent-gate`,
-  `blocked`, or `failed`. Use `candidate-for-parent-gate` when parent-owned gate
-  mode leaves the MR Draft for the parent Gate Receipt / ready transition. If
-  usage limits or tooling failures prevent completion, return `status: "failed"`
-  and list the blocker(s) instead of inventing missing GitLab state.
+- `status` is one of `ready-for-review`, `candidate-for-parent-gate`, `blocked`, or `failed`. Use `candidate-for-parent-gate` when parent-owned gate mode leaves MR Draft for parent Gate Receipt / ready transition.
+- Use `blocked` only for real issue/workflow blockers or explicit human-requested stop instructions that need parent/human action.
+- If runtime budget notices, runtime interruption, or tooling failures prevent completion, return `status: "failed"` and list blocker(s) instead of inventing a scope blocker or emitting a human-stop token such as `BLOCKED-STOP-INSTRUCTION`.
 - `head_sha` is the pushed MR head SHA when this handoff is emitted.
 - `reviewed_sha` is the same commit as `head_sha` for `ready-for-review` and
   `candidate-for-parent-gate` handoffs; in parent-owned gate mode it is the
