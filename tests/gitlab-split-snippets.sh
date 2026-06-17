@@ -234,6 +234,7 @@ assert_contains "$mr_note_body" 'scripts/gitlab-wrappers.sh' 'MR note wrapper sc
 assert_contains "$mr_note_body" 'mr_note_create' 'MR note wrapper command'
 assert_contains "$mr_note_body" '--mr-iid "$mr_iid"' 'explicit MR target'
 assert_contains "$mr_note_body" '--message-file "$report_file"' 'file-backed MR message'
+assert_contains "$mr_note_body" 'non-resolvable' 'MR note non-resolvable helper behavior'
 assert_not_performs "$mr_note_body" "$VERB_ISSUE_NOTE" 'an issue-note action in the MR-note snippet'
 
 # --- Issue note: posts an issue note via helper, file-backed, not an MR note ---

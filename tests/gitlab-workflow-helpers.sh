@@ -552,7 +552,7 @@ test_wrappers_create_issue_and_mr_notes_without_body_leak() {
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "MR_NOTE_CREATE result=created"
   [[ "$CAPTURE_OUTPUT" != *"$secret"* ]] || fail "MR note output leaked message body"
-  assert_log_contains "$dir/glab.log" "glab mr note create 59 -R git@gitlab.example.com:agents/skills.git --message <message-redacted>"
+  assert_log_contains "$dir/glab.log" "glab mr note create 59 -R git@gitlab.example.com:agents/skills.git --message <message-redacted> --resolvable=false"
   assert_log_not_contains "$dir/glab.log" "$secret"
   assert_log_not_contains "$dir/glab.log" "issue note"
 }

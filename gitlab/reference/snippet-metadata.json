@@ -367,17 +367,18 @@
       "output_category": "mr-note",
       "allowed_mutations": ["merge_request_note_create"],
       "required_guards": [
-        "body must pass content-byte guard",
-        "never post Review Reports to issue notes",
-        "project binding must be explicit"
+      "body must pass content-byte guard",
+      "Review Report/status-comment MR notes must be non-resolvable",
+      "never post Review Reports issue notes",
+      "project binding must explicit"
       ],
       "fallback_conditions": [
         "mr_note_create helper when MCP note creation is unavailable",
         "mr_note_create helper when file-backed validation is needed"
       ],
       "post_mutation_reread": {
-        "mode": "required",
-        "expectation": "Required: re-read MR notes/discussions and verify a note exists without printing the body."
+      "mode": "required",
+      "expectation": "Required: re-read MR notes/discussions verify note exists and, for Review Reports, body matches source before approval/finish, without printing body."
       },
       "via_evidence": {
         "required": true,
@@ -385,12 +386,12 @@
         "requirement": "Record via=mcp or via=glab-fallback for the MR note mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "MR note/comment creation tool (`create_note` scoped to merge request), then MR notes/discussions read.",
+      "mcp_primary_tools": "MR note/comment creation tool (`create_note` scoped merge request), then MR notes/discussions read.",
         "inputs": "Bound MR IID, project path, validated report body.",
-        "outputs": "One MR note on the bound MR.",
-        "required_guards": "Body passes content-byte guard; never post Review Reports to issue notes; project binding must be explicit.",
-        "fallback_conditions": "`mr_note_create` helper when MCP note creation is unavailable or file-backed validation is needed.",
-        "post_mutation_reread": "Required: re-read MR notes/discussions and verify a note exists without printing the body."
+      "outputs": "One non-resolvable MR note on bound MR.",
+      "required_guards": "Body passes content-byte guard; Review Report/status-comment MR notes must be non-resolvable; never post Review Reports issue notes; project binding must be explicit.",
+      "fallback_conditions": "`mr_note_create` helper when MCP note creation is unavailable or file-backed non-resolvable validation is needed.",
+      "post_mutation_reread": "Required: re-read MR notes/discussions verify note exists and, for Review Reports, body matches source before approval/finish without printing body."
       }
     },
     {
