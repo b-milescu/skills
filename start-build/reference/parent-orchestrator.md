@@ -89,6 +89,8 @@ Step 5 starts the final reviewer in parallel with CI as soon as the build handof
 
 In every tier the reviewer's bounded CI wait and CI-pending review policy are unchanged: if the reviewer reaches a SHA whose CI is not yet pass-eligible, it applies its own `start-review` CI-pending/fail-closed policy. Parallel launch here only changes the parent's launch timing, not any reviewer guard.
 
+- Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; Do not start second reviewer while first run still active. no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
+
 ## Minimal reviewer launch prompt
 
 When the parent starts a fresh reviewer, pass only the review target and bounded
