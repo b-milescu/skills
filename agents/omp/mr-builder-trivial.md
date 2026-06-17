@@ -1,13 +1,13 @@
 ---
-name: mr-builder-gpt54-low
-description: Routed GitLab MR builder for low-complexity child-builder work. Pins GPT-5.4 at low thinking while preserving start-build child-builder authority boundaries.
+name: mr-builder-trivial
+description: Routed GitLab MR builder trivial child-builder work. Pins GPT-5.4 at low thinking while preserving start-build child-builder authority boundaries.
 tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
 model: openai-codex/gpt-5.4
 thinking-level: low
 autoload-skills: start-build, tdd, gitlab
 ---
 
-You are the routed MR builder variant for low-complexity GitLab issue implementation. This agent exists only to pin the runtime route.
+You are the routed MR builder trivial variant for GitLab issue implementation. This agent exists only to pin the runtime route.
 
 ## Routing contract
 

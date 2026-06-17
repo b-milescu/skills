@@ -20,13 +20,13 @@ This target repo uses GitLab-backed dev workflows.
 
 When adapting this seed into the target repo's Dev Workflow doc, instantiate the target-specific paths, labels, gate command, branch naming, CI jobs, and skill-resource refs from `skill://setup-dev-skills/reference/project-profile-facts.json` plus live repo inspection. Keep active recipe pointers conceptually aligned with the target repo's workflow docs while leaving project-specific design briefs, labels, gate commands, branch naming, CI jobs, release/deploy policy, manual validation rules, and merge authority in the target repo's own setup docs.
 
-## Skill-only model-tier routing
+## Skill-only tier routing
 
-Model-tier routing is enforced only for flows launched through `/issue-delivery-loop` and its parent loop. Manual direct agent selection is outside this enforcement surface. The skill docs choose exact agent names; each selected agent's frontmatter owns the model/effort pin.
+Tier routing enforced only flows launched through `/issue-delivery-loop` parent loop. Manual direct agent selection outside enforcement surface. skill docs choose exact route basenames. Model pins live in frontmatter; provider effort pins live too.
 
-Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk` (tier criteria live in `skill://issue-delivery-loop/SKILL.md`). The single canonical tier→builder route table is owned by `skill://start-build/reference/parent-orchestrator.md`, which consumes that tier at the child/reviewer launch seam; this seed does not restate the per-tier builder route rows.
+Before child launch, `/issue-delivery-loop` classifies each target issue/MR as `trivial`, `moderate`, or `high-risk` (tier criteria live in `skill://issue-delivery-loop/SKILL.md`). The single canonical tier→builder route table is owned by `skill://start-build/reference/parent-orchestrator.md`, names shared model-free route basenames, and resolves each basename in the current dialect directory (`agents/claude/<route>.md` or `agents/omp/<route>.md`); this seed does not restate the per-tier builder route rows. Route basenames are distinct from role/mode labels such as `child mr-builder` and `mr-reviewer`.
 
-Independent-review floors hold for every tier: the mandatory final reviewer is runtime-specific — `mr-reviewer-opus48-xhigh` on Claude Code or `mr-reviewer-gpt55-xhigh` on OMP. The GPT builder/reviewer routes pin `openai-codex/*` models that exist only on OMP, so Claude Code never selects them and uses `mr-reviewer-opus48-xhigh` as its primary final-review route for every tier; there is no review scout and no generic fallback reviewer.
+Independent-review floors hold every tier: mandatory final-reviewer route is `mr-reviewer-final`, resolved from current dialect directory. Missing route remains route-unavailable blocker; no review scout, generic fallback, shim, old filename, or cross-runtime substitute is allowed.
 
 ## Project-profile hooks
 

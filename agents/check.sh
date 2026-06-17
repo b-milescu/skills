@@ -59,6 +59,18 @@ frontmatter_name() {
   ' "$file"
 }
 
+FORBIDDEN_ROUTE_NAME_TOKEN_RE='(^|[-_.])(claude|anthropic|openai|codex|gpt([-_.]?[0-9]+)*|opus([-_.]?[0-9]+)*|sonnet([-_.]?[0-9]+)*)([-_.]|$)'
+
+forbidden_route_name_token() {
+  local value="$1"
+  if [[ "$value" =~ $FORBIDDEN_ROUTE_NAME_TOKEN_RE ]]; then
+    printf '%s' "${BASH_REMATCH[2]}"
+    return 0
+  fi
+  return 1
+}
+
+
 check_agent_variant_parity() {
   local claude_dir="$REPO_ROOT/agents/claude"
   local omp_dir="$REPO_ROOT/agents/omp"
@@ -67,26 +79,12 @@ check_agent_variant_parity() {
   local missing_omp="$TMPDIR_CHECK/missing-omp"
   local missing_claude="$TMPDIR_CHECK/missing-claude"
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
-  local name file rel declared claude_declared omp_declared allowed allowed_name
+  local name file rel declared claude_declared omp_declared token
 
-  # Routed-only inventory (#300): MR builder/reviewer routes are runtime-specific.
-  # OMP routes pin openai-codex/* (GPT) models and Claude Code routes pin
-  # anthropic/* (Opus/Sonnet) models, so no MR route has a counterpart in the
-  # other dialect. These two allowlists are the deliberate, documented exceptions:
-  # any OMP/Claude agent NOT listed here still requires a counterpart in the other
-  # dialect. No generic fallback builder/reviewer and no review scout remain.
-  local omp_only_allowed=(
-    mr-builder-gpt54-low
-    mr-builder-gpt55
-    mr-builder-gpt55-high
-    mr-reviewer-gpt55-xhigh
-  )
-  local claude_only_allowed=(
-    mr-builder-sonnet-low
-    mr-builder-opus48
-    mr-builder-opus48-high
-    mr-reviewer-opus48-xhigh
-  )
+  # MR builder/reviewer routes share model-free basenames across Claude and
+  # OMP dialects. Model/provider pins stay in frontmatter/body prose, so any
+  # missing counterpart is a hard parity error rather than an allowed
+  # runtime-specific exception.
 
   list_agent_names "$claude_dir" > "$claude_names"
   list_agent_names "$omp_dir" > "$omp_names"
@@ -97,27 +95,11 @@ check_agent_variant_parity() {
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
-    allowed=0
-    for allowed_name in "${claude_only_allowed[@]}"; do
-      [[ "$allowed_name" == "$name" ]] && { allowed=1; break; }
-    done
-    if (( allowed )); then
-      info "agent dialect parity: agents/claude/$name.md is an allowed Claude-only route; no OMP counterpart required"
-      continue
-    fi
     error "agent dialect parity: agents/claude/$name.md has no agents/omp/$name.md"
   done < "$missing_omp"
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
-    allowed=0
-    for allowed_name in "${omp_only_allowed[@]}"; do
-      [[ "$allowed_name" == "$name" ]] && { allowed=1; break; }
-    done
-    if (( allowed )); then
-      info "agent dialect parity: agents/omp/$name.md is an allowed OMP-only route; no Claude counterpart required"
-      continue
-    fi
     error "agent dialect parity: agents/omp/$name.md has no agents/claude/$name.md"
   done < "$missing_claude"
 
@@ -126,10 +108,16 @@ check_agent_variant_parity() {
     name="$(basename "$file" .md)"
     rel="$(relpath "$file")"
     declared="$(frontmatter_name "$file" || true)"
+    if token="$(forbidden_route_name_token "$name")"; then
+      error "agent route naming: $rel file name '$name' must not include provider/model token '$token'"
+    fi
     if [[ -z "$declared" ]]; then
       error "agent dialect parity: $rel has no frontmatter name"
     elif [[ "$declared" != "$name" ]]; then
       error "agent dialect parity: $rel frontmatter name '$declared' does not match file name '$name'"
+    fi
+    if [[ -n "$declared" ]] && token="$(forbidden_route_name_token "$declared")"; then
+      error "agent route naming: $rel frontmatter name '$declared' must not include provider/model token '$token'"
     fi
   done
 

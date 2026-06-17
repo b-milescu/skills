@@ -83,6 +83,7 @@ expected_names_nl="$(printf '%s\n' "${expected_names[@]}")"
 assertions_js="$TMP_ROOT/omp-loader-assertions.mjs"
 cat > "$assertions_js" <<'BUN'
 import { pathToFileURL } from "node:url";
+import fs from "node:fs";
 import path from "node:path";
 
 const pkgDir = process.env.OMP_PACKAGE_DIR;
@@ -102,12 +103,13 @@ const requiredMcp = [
   "mcp__gitlab_mcp_*",
   "mcp__wowtools_*",
 ];
-const expectedPins = {
-  "mr-builder-gpt54-low": { model: "openai-codex/gpt-5.4", thinking: "low" },
-  "mr-builder-gpt55": { model: "openai-codex/gpt-5.5", thinking: "medium" },
-  "mr-builder-gpt55-high": { model: "openai-codex/gpt-5.5", thinking: "high" },
-  "mr-reviewer-gpt55-xhigh": { model: "openai-codex/gpt-5.5", thinking: "xhigh" },
-};
+function expectedPinFor(agent) {
+  const content = fs.readFileSync(agent.filePath, "utf8");
+  return {
+    model: content.match(/^model:\s*(.+)$/m)?.[1]?.trim(),
+    thinking: content.match(/^thinking-level:\s*(.+)$/m)?.[1]?.trim(),
+  };
+}
 
 for (const name of expectedNames) {
   const agent = loaded.get(name);
@@ -123,8 +125,9 @@ for (const name of expectedNames) {
   } else {
     assert(agent.autoloadSkills.includes("start-review"), `${name} missing start-review autoload`);
   }
-  const pin = expectedPins[name];
-  assert(pin, `${name} has no expected model/thinking pin in the routed-only inventory`);
+  const pin = expectedPinFor(agent);
+  assert(pin.model, `${name} frontmatter missing model pin`);
+  assert(pin.thinking, `${name} frontmatter missing thinking-level pin`);
   assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
   assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
 }
