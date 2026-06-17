@@ -65,6 +65,33 @@ assert_not_performs() {
   fi
 }
 
+require_text_flat() {
+  local file="$1" pattern="$2" label="$3" content
+  content="$(LC_ALL=C tr '\n' ' ' <"$file")"
+  grep -Eiq -- "$pattern" <<<"$content" || fail "$file missing $label"
+}
+
+require_review_report_posting_contract() {
+  local file="$1" label="${2:-Review Report posting contract}"
+
+  require_text "$file" 'Snippet: mr-note-create' "$label canonical mr-note-create pointer"
+  require_text_flat "$file" 'top-level.{0,120}(MR )?note|(MR )?note.{0,120}top-level' "$label top-level MR note"
+  require_text_flat "$file" 'plain.{0,120}(MR )?note|(MR )?note.{0,120}plain' "$label plain MR note"
+  require_text_flat "$file" 'non-resolvable' "$label non-resolvable note"
+  require_text_flat "$file" 'file-backed' "$label file-backed posting"
+  require_text_flat "$file" 'mr_note_create.{0,200}--message-file|--message-file.{0,200}mr_note_create' "$label mr_note_create --message-file"
+  require_text_flat "$file" 'create_merge_request_note.{0,200}(inline|strings?)|inline.{0,200}create_merge_request_note' "$label inline MCP create_merge_request_note warning"
+  require_text_flat "$file" '(^|[^[:alpha:]])(MUST NOT|never|do not|not)[^[:alpha:]].{0,200}(inline|create_merge_request_note)' "$label inline posting prohibition"
+  require_text_flat "$file" 'read[- ]back|read back|read( the)? created note' "$label read-back verification"
+  require_text_flat "$file" '(created )?note.{0,120}(body|content)|(body|content).{0,120}(created )?note' "$label created note body check"
+  require_text_flat "$file" '(match|matches|same|equal).{0,160}(source|report file|report content|source report)|(source|report file|report content|source report).{0,160}(match|matches|same|equal)' "$label source report body match"
+  require_text_flat "$file" 'fail[- ]closed|fails closed|fail closed' "$label fail-closed mismatch handling"
+  require_text_flat "$file" 'placeholder.{0,160}(note|body|Review Report)|(note|body|Review Report).{0,160}placeholder' "$label placeholder note failure"
+  require_text_flat "$file" 'partial.{0,160}(note|body|Review Report)|(note|body|Review Report).{0,160}partial' "$label partial note failure"
+  require_text_flat "$file" 'literal[- ]expansion|literal expansion' "$label literal-expansion note failure"
+  require_text_flat "$file" 'body[- ]mismatch|body mismatch' "$label body-mismatch note failure"
+}
+
 # SHA-pin invariant (transport-independent): the action line that performs the
 # mutating verb must bind reviewed_sha ON THE SAME LINE, so the action is pinned
 # to the reviewed head and cannot drift. This matches guarded `glab ... --sha
@@ -291,6 +318,19 @@ for file in \
   if grep -Fq 'Snippet: issue-note-create' "$file"; then
     fail "$file references issue-note-create in MR review posting guidance"
   fi
+done
+
+# --- Review Report posting contract: file-backed, read-back-verified --------
+for file in \
+  start-review/REVIEW-FLOW.md \
+  start-review/SKILL.md \
+  start-review/templates/filling-guide.md \
+  start-review/templates/review-report.md \
+  start-review/reference/blocked-review-routing-card.md \
+  start-review/reference/single-mr-review-card.md \
+  start-review/reference/finish-action-card.md \
+  start-review/reference/request-changes-rerun-card.md; do
+  require_review_report_posting_contract "$file" "$file Review Report posting contract"
 done
 
 require_text "$SKILL" 'Snippet: issue-note-create' 'issue-note snippet reference'
