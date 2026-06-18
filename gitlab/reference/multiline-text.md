@@ -16,9 +16,7 @@ The MCP validator `validate_gitlab_text` validates MCP bodies before GitLab
 mutation; `safe_update_merge_request_description`,
 `safe_create_merge_request_note`, and `safe_create_issue_note` embed the same
 byte rule. NUL, non-whitespace C0 controls, and DEL are rejected;
-tab/newline/carriage return remain valid Markdown. Diagnostics do not print
-secrets or malformed packet bodies; they name the failing role and byte
-offset.
+tab/newline/carriage return remain valid Markdown. Diagnostics do not print secrets or the malformed packet body; they name failing role and byte offset.
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
