@@ -1,10 +1,10 @@
 ---
 name: start-review
 description: >-
-  Review GitLab MRs against project rules, safety invariants, CI, and TDD test
-  evidence. Post Review Reports with pass/request-changes/reject/blocked review
-  verdicts, then take only authorized approval/finish actions. Trigger: start a review, pick up/review MR(s), review this
-  branch, evaluate Review Packets.
+  Reviews GitLab MRs project rules, safety invariants, CI, TDD test evidence,
+  posts Review Reports takes only authorized approval/finish actions. Use when
+  asked start review, pick up or review MR(s), review branch, evaluate Review
+  Packets.
 ---
 
 # Start Review
