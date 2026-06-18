@@ -13,12 +13,12 @@ set -euo pipefail
 #   fallback/helper contracts, NOT unconditional primary `glab` command strings.
 #   Per-snippet MCP primary tool/input/output/fail-closed/fallback details live
 #   in gitlab/reference/snippet-transports.md; inline SKILL shell blocks
-#   are accepted fallback/helper examples.
+#   are accepted MCP/fallback examples.
 #     - the 20 snippet NAMES are stable (transport-independent API),
 #     - one action per snippet (no snippet mixes two mutating verbs),
 #     - no combined approve+merge in any generic snippet (only the
 #       finish-mr-authority-aware facade may carry conditional approve+merge),
-#     - helper-script path contracts survive (skill:// URIs + scripts/README.md),
+#     - MCP-native helper tool contracts survive,
 #     - file-backed / explicit-target inputs survive for note + description flows,
 #     - retired combined snippets (approve-merge-sha-bound, note-comment-creation,
 #       draft-mr-create-update) stay gone.
@@ -111,7 +111,7 @@ assert_action_sha_pinned() {
 # merge_merge_request / get_merge_request / list_pipelines / create_note).
 VERB_MR_CREATE='glab mr create|create_merge_request'
 VERB_MR_UPDATE='glab mr update|update_merge_request'
-VERB_MARK_READY='glab mr update[^|]*--ready|update_merge_request[^|]*ready|--ready|ready ?[:=] ?true'
+VERB_MARK_READY='glab mr update[^|]*--ready|update_merge_request\(draft=false|draft=false|--ready|ready ?[:=] ?true'
 VERB_DESCRIPTION='--description|description'
 VERB_APPROVE='glab mr approve|approve_merge_request'
 VERB_MERGE='glab mr merge|merge_merge_request'
@@ -169,19 +169,19 @@ for name in \
 done
 # --- Draft MR create: creates an MR, file-backed description, no ready/update --
 # One action: it CREATES, it does not update an existing MR and does not mark ready.
-assert_contains "$draft_create_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'Draft MR create wrapper path'
-assert_contains "$draft_create_body" 'draft_mr_create' 'Draft MR create wrapper command'
-assert_contains "$draft_create_body" '--source-branch "$source_branch"' 'Draft MR source branch input'
-assert_contains "$draft_create_body" '--description-file "$description_file"' 'Draft MR file-backed description'
+assert_contains "$draft_create_body" 'validate_gitlab_text' 'Draft MR create validates text'
+assert_contains "$draft_create_body" 'create_merge_request' 'Draft MR create MCP command'
+assert_contains "$draft_create_body" 'source_branch' 'Draft MR source branch input'
+assert_contains "$draft_create_body" 'description=review_packet' 'Draft MR description body'
 assert_performs "$draft_create_body" "$VERB_MR_CREATE" 'an MR-create action'
 assert_not_performs "$draft_create_body" "$VERB_MR_UPDATE" 'an MR-update action in the create snippet'
 assert_not_performs "$draft_create_body" "$VERB_MARK_READY" 'a mark-ready action in the create snippet'
 
 # --- MR description update: updates description, explicit target, no create/ready
-assert_contains "$mr_description_update_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'MR description update wrapper path'
-assert_contains "$mr_description_update_body" 'mr_description_update' 'MR description update wrapper command'
-assert_contains "$mr_description_update_body" '--mr-iid "$mr_iid"' 'MR description explicit target'
-assert_contains "$mr_description_update_body" '--description-file "$description_file"' 'MR description file-backed input'
+assert_contains "$mr_description_update_body" 'safe_update_merge_request_description' 'MR description safe MCP update'
+assert_contains "$mr_description_update_body" 'get_merge_request' 'MR description post-update re-read'
+assert_contains "$mr_description_update_body" 'mr_iid' 'MR description explicit target'
+assert_contains "$mr_description_update_body" 'description=review_packet' 'MR description body input'
 assert_performs "$mr_description_update_body" "$VERB_DESCRIPTION" 'a description action'
 assert_not_performs "$mr_description_update_body" "$VERB_MR_CREATE" 'an MR-create action in the description-update snippet'
 assert_not_performs "$mr_description_update_body" "$VERB_MARK_READY" 'a mark-ready action in the description-update snippet'
@@ -216,47 +216,46 @@ assert_performs "$confirmation_body" "$VERB_APPROVALS_ENDPOINT" 'an approvals-re
 assert_not_performs "$confirmation_body" "$VERB_APPROVE" 'an approve action in the confirmation snippet'
 assert_not_performs "$confirmation_body" "$VERB_MERGE" 'a merge action in the confirmation snippet'
 
-# --- CI watch + finish: keep helper-script path contracts + card link ---------
+# --- CI watch + finish: keep MCP-native tool contracts + card link ---------
 # The bodies must point at the in-skill helper script + docs (path contracts that
 # survive transport changes), and must not re-inline the long relocated bodies.
-assert_contains "$ci_watch_body" 'scripts/gitlab-ci-watch.sh' 'CI watcher helper script pointer'
-assert_contains "$ci_watch_body" 'gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"' 'CI watcher full skill URI helper path'
-assert_contains "$ci_watch_body" 'scripts/README.md' 'CI watcher helper docs pointer'
-assert_contains "$finish_body" 'scripts/gitlab-finish-mr.sh' 'finish helper script pointer'
-assert_contains "$finish_body" 'gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"' 'finish full skill URI helper path'
-assert_contains "$finish_body" 'scripts/README.md' 'finish helper docs pointer'
+assert_contains "$ci_watch_body" 'get_merge_request_workflow_snapshot' 'CI watcher MCP snapshot tool'
+assert_not_contains "$ci_watch_body" 'skill://gitlab/scripts' 'CI watcher active helper URI removed'
+assert_contains "$ci_watch_body" 'list_pipelines' 'CI watcher exact-SHA pipeline tool'
+assert_contains "$finish_body" 'finish_merge_request' 'finish MCP tool'
+assert_not_contains "$finish_body" 'skill://gitlab/scripts' 'finish active helper URI removed'
+assert_contains "$finish_body" 'finish_result' 'finish result contract'
 assert_not_contains "$ci_watch_body" 'while [ "$SECONDS" -le "$deadline" ]; do' 'long CI watcher shell body'
 assert_not_contains "$finish_body" 'case "$caller_role:$merge_authority" in' 'long authority switch shell body'
 assert_not_contains "$finish_body" 'git worktree remove "$worktree_path"' 'inline worktree cleanup body'
 
 # --- MR note: posts an MR note via helper, file-backed, not an issue note ------
-assert_contains "$mr_note_body" 'scripts/gitlab-wrappers.sh' 'MR note wrapper script pointer'
-assert_contains "$mr_note_body" 'mr_note_create' 'MR note wrapper command'
-assert_contains "$mr_note_body" '--mr-iid "$mr_iid"' 'explicit MR target'
-assert_contains "$mr_note_body" '--message-file "$report_file"' 'file-backed MR message'
+assert_contains "$mr_note_body" 'safe_create_merge_request_note' 'MR note safe MCP tool'
+assert_contains "$mr_note_body" 'non-resolvable' 'MR note non-resolvable MCP behavior'
+assert_contains "$mr_note_body" 'mr_iid' 'explicit MR target'
+assert_contains "$mr_note_body" 'body=report_body' 'MR note body input'
 assert_contains "$mr_note_body" 'non-resolvable' 'MR note non-resolvable helper behavior'
 assert_not_performs "$mr_note_body" "$VERB_ISSUE_NOTE" 'an issue-note action in the MR-note snippet'
 
 # --- Issue note: posts an issue note via helper, file-backed, not an MR note ---
-assert_contains "$issue_note_body" 'scripts/gitlab-wrappers.sh' 'issue note wrapper script pointer'
-assert_contains "$issue_note_body" 'issue_note_create' 'issue note wrapper command'
-assert_contains "$issue_note_body" '--issue-iid "$issue_iid"' 'explicit issue target'
-assert_contains "$issue_note_body" '--message-file "$comment_file"' 'file-backed issue message'
+assert_contains "$issue_note_body" 'safe_create_issue_note' 'issue note safe MCP tool'
+assert_contains "$issue_note_body" 'issue_notes' 'issue note post-read'
+assert_contains "$issue_note_body" 'issue_iid' 'explicit issue target'
+assert_contains "$issue_note_body" 'body=comment_body' 'issue note body input'
 assert_not_performs "$issue_note_body" "$VERB_MR_NOTE" 'an MR-note action in the issue-note snippet'
 
 # --- Label reconcile / safe MR JSON / auto-merge fallback: wrapper contracts ---
-assert_contains "$label_reconcile_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'label reconcile self-contained wrapper script path'
-assert_contains "$label_reconcile_body" 'label_reconcile' 'label reconcile wrapper command'
-assert_contains "$label_reconcile_body" '--add-labels "$add_labels"' 'label reconcile add input'
-assert_contains "$label_reconcile_body" '--remove-labels "$remove_labels"' 'label reconcile remove input'
+assert_contains "$label_reconcile_body" 'update_issue' 'label reconcile MCP update tool'
+assert_contains "$label_reconcile_body" 'add_labels' 'label reconcile add labels input'
+assert_contains "$label_reconcile_body" 'remove_labels' 'label reconcile remove labels input'
 assert_contains "$label_reconcile_body" 'state/category label conflicts' 'label conflict fail-closed docs'
-assert_contains "$safe_mr_json_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'safe MR JSON self-contained wrapper script path'
-assert_contains "$safe_mr_json_body" 'safe_mr_json' 'safe MR JSON wrapper command'
+assert_contains "$safe_mr_json_body" 'get_merge_request_workflow_snapshot' 'safe MR JSON MCP snapshot tool'
+assert_contains "$safe_mr_json_body" 'get_project' 'safe MR JSON project binding read'
 assert_contains "$safe_mr_json_body" 'project binding, SHA, pipeline' 'safe MR JSON fail-closed docs'
-assert_contains "$auto_merge_api_body" 'gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"' 'auto-merge fallback self-contained wrapper script path'
-assert_contains "$auto_merge_api_body" 'auto_merge_api_fallback' 'auto-merge fallback wrapper command'
-assert_contains "$auto_merge_api_body" '--authority-verified true' 'verified authority source input'
-require_text "gitlab/scripts/README.md" 'gitlab-wrappers\.sh.*draft-mr-create.*mr-description-update' 'wrappers README description contract reference'
+assert_contains "$auto_merge_api_body" 'finish_merge_request' 'auto-merge fallback MCP finish tool'
+assert_contains "$auto_merge_api_body" 'queue-auto-merge' 'auto-merge queue action'
+assert_contains "$auto_merge_api_body" 'authority_source' 'verified authority source input'
+require_text "gitlab/reference/snippet-transports.md" 'safe_update_merge_request_description' 'MR description MCP transport contract reference'
 
 # --- File-backed multiline + help-first guidance survive ----------------------
 require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
@@ -264,9 +263,9 @@ require_text "$SKILL" 'validate text files for NUL/control-character corruption'
 require_text "gitlab/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
 require_text "$SKILL" 'Before any flagged fallback `glab` command, run exact command help' 'fallback help-first rule'
 
-require_text "gitlab/scripts/README.md" 'gitlab-ci-watch\.sh.*ci-watch-sha-pinned' 'CI watcher README contract reference'
-require_text "gitlab/scripts/README.md" 'gitlab-finish-mr\.sh.*finish-mr-authority-aware' 'finish README contract reference'
-require_text "gitlab/scripts/README.md" 'gitlab-wrappers\.sh.*auto-merge-api-fallback' 'wrappers README contract reference'
+require_text "gitlab/reference/snippet-transports.md" 'get_merge_request_workflow_snapshot' 'CI watcher MCP contract reference'
+require_text "gitlab/reference/snippet-transports.md" 'finish_merge_request' 'finish MCP contract reference'
+require_text "gitlab/reference/snippet-transports.md" 'auto-merge-api-fallback' 'auto-merge fallback contract reference'
 require_text "gitlab/scripts/README.md" 'no live GitLab mutation' 'fake-helper-test safety note'
 
 # --- Retired combined snippets stay gone (transport-independent names) ---------

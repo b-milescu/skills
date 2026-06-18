@@ -94,7 +94,7 @@ require_text gitlab/reference/finish-result-schema.json '"transport"' 'finish_re
 require_text gitlab/reference/finish-result-schema.json 'glab-fallback' 'finish_result fallback transport enum'
 
 require_text gitlab/reference/safe-text.md 'MCP callers that pass a `body` or' 'MCP body content-byte guard'
-require_text gitlab/reference/safe-text.md 'must run `gitlab-content-guard\.sh`' 'MCP body guard command'
+require_text gitlab/reference/safe-text.md 'validate_gitlab_text' 'MCP body validator command'
 require_text gitlab/reference/safe-text.md 'Diagnostics never print the body' 'body redaction invariant'
 require_text tests/gitlab-content-guard.sh 'LEAK_MARKER_SECRET' 'sensitive-body regression fixture'
 require_text tests/gitlab-content-guard.sh 'assert_not_contains "LEAK_MARKER_SECRET"' 'diagnostics do not print sensitive body'

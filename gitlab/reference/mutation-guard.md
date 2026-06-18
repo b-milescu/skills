@@ -12,9 +12,9 @@ When a skill runs from a target repository, reference guard resources with `skil
 - `skill://gitlab/reference/mutation-guard.schema.json`
 - `skill://gitlab/reference/authority-verification.md`
 - `skill://gitlab/reference/authority-verification.schema.json`
-- `skill://gitlab/scripts/gitlab-content-guard.sh`
-- `skill://gitlab/scripts/gitlab-finish-mr.sh`
-- `skill://gitlab/scripts/gitlab-wrappers.sh`
+- `skill://gitlab/reference/safe-text.md`
+- `skill://gitlab/reference/authority-verification.md`
+- `skill://gitlab/reference/snippet-transports.md`
 
 Target-repo policy remains repo-relative. Use `docs/agents/check-gate.md`, `docs/agents/dev-workflows.md`, `docs/agents/triage-labels.md`, and similar paths for the repository being changed; do not rewrite those target policy refs as gitlab skill resources.
 

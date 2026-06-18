@@ -11,7 +11,7 @@
     "guard_schema": "skill://gitlab/reference/mutation-guard.schema.json",
     "authority_verification_docs": "skill://gitlab/reference/authority-verification.md",
     "authority_verification_schema": "skill://gitlab/reference/authority-verification.schema.json",
-    "guard_scripts": "skill://gitlab/scripts/",
+    "mcp_helper_tools": ["validate_gitlab_text", "safe_update_merge_request_description", "safe_create_merge_request_note", "safe_create_issue_note", "get_merge_request_workflow_snapshot", "finish_merge_request", "get_post_merge_snapshot"],
     "target_repo_docs": "Use repo-relative docs/agents/... paths for the target repository's policy docs, not skill://gitlab/docs/agents/... aliases."
   },
   "ordered_steps": [

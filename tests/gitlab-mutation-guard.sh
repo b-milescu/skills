@@ -48,7 +48,10 @@ assert(schema.$id === guardSchemaResource, 'schema $id must be skill:// resource
 assert(schema.human_resource === guardDocResource, 'schema human_resource must use skill:// guard doc URI');
 assert(schema.cross_project_guidance.guard_docs === guardDocResource, 'cross-project guard doc resource drifted');
 assert(schema.cross_project_guidance.guard_schema === guardSchemaResource, 'cross-project guard schema resource drifted');
-assert(schema.cross_project_guidance.guard_scripts.startsWith('skill://gitlab/scripts/'), 'cross-project guard scripts must use skill://gitlab/scripts/');
+assert(Array.isArray(schema.cross_project_guidance.mcp_helper_tools), 'cross-project MCP helper tool inventory must be present');
+for (const tool of ['validate_gitlab_text', 'safe_update_merge_request_description', 'safe_create_merge_request_note', 'safe_create_issue_note', 'get_merge_request_workflow_snapshot', 'finish_merge_request', 'get_post_merge_snapshot']) {
+  assert(schema.cross_project_guidance.mcp_helper_tools.includes(tool), `cross-project MCP helper tool missing ${tool}`);
+}
 assert(schema.cross_project_guidance.target_repo_docs.includes('docs/agents/'), 'target repo docs guidance must stay repo-relative');
 assert(!doc.includes('skill://gitlab/docs/agents/'), 'guard doc must not convert target docs/agents refs to gitlab skill docs');
 

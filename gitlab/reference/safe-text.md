@@ -19,26 +19,20 @@ non-whitespace C0 control character, and no DEL (`0x7f`). Tab (`0x09`), newline
 (`0x0a`), and carriage return (`0x0d`) stay valid because Markdown bodies use
 them. Reject the body before any GitLab write when it violates this rule.
 
-The adapter `gitlab/scripts/gitlab-content-guard.sh` owns exactly this
-rule for both MCP-body-style strings and file-backed fallback bodies. It reads a
-body from `--file <path>` or stdin, exits 0 when the body is safe, and exits
-non-zero when it finds a NUL byte, a non-whitespace C0 control, or DEL.
-Diagnostics name the failing role and the offending byte offset and **never
-print the body**, so a malformed or secret-bearing payload is not echoed back.
-The guard makes no network call.
+The MCP validator `validate_gitlab_text` owns the active workflow contract for this rule. Body-bearing MCP mutation helpers (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`) apply the same rule before sending text to GitLab. Historical local guards may exist for fallback/regression fixtures, but active workflow docs must name the MCP validator/tool contract.
 
-```bash
-# stdin
-printf '%s' "$body" | gitlab/scripts/gitlab-content-guard.sh --role description
+`validate_gitlab_text` accepts a body plus body role, returns success when body is safe, and fails closed on NUL, non-whitespace C0 controls, or DEL. Diagnostics name the role and offending byte offset and **never print body**, so malformed secret-bearing payload is not echoed back.
 
-# file-backed
-gitlab/scripts/gitlab-content-guard.sh --file "$description_file" --role description
+```text
+validate_gitlab_text(role="merge request description", body=body)
+# PASS: no NUL, non-whitespace C0 controls, or DEL
+# FAIL: role + byte offset only; body is not printed
 ```
 
-`gitlab/scripts/gitlab-wrappers.sh` delegates file-backed fallback
-validation to `gitlab-content-guard.sh` before `glab mr create`, `glab mr
+`MCP safe GitLab text tools` delegates file-backed fallback
+validation to `validate_gitlab_text` before `glab mr create`, `glab mr
 update`, and note submission. MCP callers that pass a `body` or `description`
-string must run `gitlab-content-guard.sh` (or the exact same byte rule in
+string must run `validate_gitlab_text` (or the exact same byte rule in
 process) before the MCP mutation, so every GitLab text mutation shares the same
 role/offset-only diagnostic contract.
 

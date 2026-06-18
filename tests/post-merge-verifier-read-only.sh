@@ -41,7 +41,7 @@ require_text "$verifier_recipe" 'specific/actionable|specific actionable' 'recip
 require_text "$verifier_recipe" 'Canonical read-only post-merge verification recipe|canonical .*verifier recipe' 'recipe canonical-owner token'
 require_text "$verifier_recipe" 'top-level skill discovery should not expose a separate verifier entry point' 'recipe demoted-skill-surface token'
 require_text "$verifier_recipe" 'read-only confirmation|read-only GitLab/git' 'recipe read-only invariant token'
-require_text "$verifier_recipe" 'gitlab-post-merge-snapshot\.sh' 'recipe snapshot helper pointer'
+require_text "$verifier_recipe" 'get_post_merge_snapshot' 'recipe MCP snapshot tool pointer'
 require_text "$verifier_recipe" 'post_merge_snapshot\.kind=post-merge-snapshot' 'recipe snapshot schema anchor'
 require_text "$snapshot_helper" 'post-merge-snapshot' 'snapshot helper emits schema kind'
 require_text "$snapshot_helper" 'read-only' 'snapshot helper read-only invariant token'

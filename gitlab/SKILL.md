@@ -24,10 +24,10 @@ The GitLab Mutation Guard re-reads the target MR before every mutation, and `sha
 
 - **First read per MR stays full.** The first `get_merge_request` for an MR — the one a parent/reviewer genuinely needs for Review Packet / Reviewer Lift spot-checks — is unchanged. Read the whole response.
 - **Repeated guard re-reads are slim.** For every *subsequent* SHA/state guard on the same MR (the Mutation Guard current-target re-read and each repeated `sha-guard`), call MCP `get_merge_request` and consume **only** the small top-level fields (`sha` / `draft` / `state` / `detailedMergeStatus`); ignore the `description` body. This is a read-discipline rule, not a transport change: it never substitutes for the decision-grade full read where spot-check fields are required.
-- **Bounded fallback.** When the repeated guard re-read returns the full body and that body is itself the context-pressure problem — the documented gap "repeated SHA/state guard re-reads where the MCP read returns full bodies" — the `safe-mr-json` snippet (wrapper `safe_mr_json`) is the bounded fallback that projects exactly the decision-grade fields. As always, fallback is second to MCP and re-checks SHA/CI/authority/identity/project binding per the transport order above; it never weakens any guard.
+- **Bounded fallback.** When repeated guard re-read returns a full body and the body itself is the context-pressure problem — documented gap "repeated SHA/state guard re-reads where the MCP read returns full bodies" — use the `safe-mr-json` snippet backed by `get_merge_request_workflow_snapshot` to project exactly decision-grade fields. As always, fallback stays second to MCP and re-checks SHA/CI/authority/identity/project binding per transport order above; never weaken any guard.
 - **Elided-body fallback for first full reads — bounded MCP re-read first.** When the first `get_merge_request` read returns an elided description body — a compressed or placeholder token such as `<<ccr:...>>` instead of the full text — the "first read stays full" rule is not satisfied; the description was not actually received. Elision is context-pressure-driven (the same full read can come back un-elided early in a session and elided deep in a parallel batch), so reach first for a **bounded MCP re-read** of only the slice you need before any `glab` detour, using the server-side bounded params shipped in [`agents/gitlab-mcp#89`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/89):
-  - When only the `Closes #N` auto-close trailer is needed, re-read with `get_merge_request` `description_grep:"Closes"`; the filtered slice is tiny and typically does not elide. When the Reviewer Lift rows are needed, re-read with `description_grep` on the Reviewer-Lift section markers (for example `description_grep:"REVIEWER-LIFT-SCHEMA"`) or cap the body with `description_max_bytes` (a `descriptionTruncated:true` flag signals the slice was bounded).
-  - Only if a bounded MCP re-read *still* elides or fails — or the whole un-bounded body is genuinely required and still elides — fall back, **last-resort**, to the `safe-mr-json` bounded fallback (wrapper `safe_mr_json`) to retrieve the actual description content. This is the documented gap "elided MCP body on first full description read". The fallback re-checks project binding and SHA per the transport order; it does not alter transport order, slim guard-read semantics, or the safety-floor litany. The bounded MCP re-read is subject to the same guard re-checks; `glab` stays a guarded fallback, just demoted behind the bounded MCP re-read. A dedicated description-read tool is the optional follow-up tracked in [`agents/gitlab-mcp#92`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/92).
+ - When only `Closes #N` auto-close trailer needed, re-read `get_merge_request` `description_grep:"Closes"`; filtered slice tiny typically not elide. When Reviewer Lift rows needed, re-read `description_grep` on Reviewer-Lift section markers (for example `description_grep:"REVIEWER-LIFT-SCHEMA"`) cap body `description_max_bytes` (a `descriptionTruncated:true` flag signals slice bounded).
+ - Only if bounded MCP re-read *still* elides or fails — or the whole un-bounded body is genuinely required and still elides — use the `safe-mr-json` bounded contract backed by `get_merge_request_workflow_snapshot` / guarded projection to retrieve actual description content. The documented gap is "elided MCP body on first full description read". Fallback re-checks project binding and SHA per transport order; it does not alter transport order, slim guard-read semantics, or safety-floor litany. The bounded MCP re-read is subject to the same guard re-checks; `glab` stays a guarded fallback, demoted behind bounded MCP re-read. A dedicated description-read tool is optional follow-up tracked in [`agents/gitlab-mcp#92`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/92).
 
 ## Elided-body fallback for issue notes and issue descriptions
 
@@ -84,11 +84,13 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 - `glab ci status --mr` is unreliable; prefer MCP `get_merge_request`/`list_pipelines` exact-SHA reads, or fallback branch CI / MR `.pipeline` only as contract allows.
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
-- Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `gitlab-content-guard.sh` before `glab`, never print bodies, and never receive secrets.
+- Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `validate_gitlab_text` before `glab`, never print bodies, and never receive secrets.
 
 ## Safe multiline GitLab text
 
-Validate every MR/issue body before mutation, whether it will be sent as an MCP `body`/`description` string or through a fallback file-backed wrapper. Use temp/run-dir files plus quoted heredocs for MR/issue notes and MR descriptions when building text in shell. `skill://gitlab/scripts/gitlab-content-guard.sh` is the shared adapter for both MCP-body-style and file-backed fallback validation; `skill://gitlab/scripts/gitlab-wrappers.sh` delegates to it before `glab`. Diagnostics name the file/body role and offending offset without printing the packet body. Detailed patterns: [`skill://gitlab/reference/safe-text.md`](skill://gitlab/reference/safe-text.md) and [`skill://gitlab/reference/multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
+Validate every MR/issue body before mutation. MCP-native flows use `validate_gitlab_text` directly or a safe mutation tool that embeds it (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`). The byte rule is invariant: reject NUL, non-whitespace C0 controls, and DEL; allow tab, newline, and carriage return; diagnostics name the body role and offending byte offset only, never the body or secrets.
+
+Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or Review Reports locally; then pass the resulting string/body to the MCP safe tool. File-backed `glab` fallback is allowed only under snippet fallback conditions and must enforce the same byte rule before submission. Detailed patterns: [`skill://gitlab/reference/safe-text.md`](skill://gitlab/reference/safe-text.md) and [`skill://gitlab/reference/multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
 
 ## GitLab Mutation Guard
 
@@ -133,29 +135,21 @@ glab issue update <id> --label foo,bar --unlabel baz
 
 ### Snippet: draft-mr-create
 
-Open the early Draft MR only after the source branch exists remotely. This snippet neither updates an existing MR nor marks ready; wrapper `draft_mr_create` validates the file-backed Review Packet before fallback `glab mr create`.
+Open the early Draft MR only after the source branch exists remotely. MCP primary: validate the Review Packet with `validate_gitlab_text`, then call `create_merge_request(draft=true, source_branch, target_branch, title, description)` and re-read with `get_merge_request`. The description must include plain `Closes #<iid>`.
 
-```bash
-description_file="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-create.XXXXXX")/review-packet.md"
-# Write or fill "$description_file" before creating the MR.
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" draft_mr_create --repo "$repo_url" \
-  --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description-file "$description_file"
+```text
+validate_gitlab_text(role="merge request description", body=review_packet)
+create_merge_request(project_path, source_branch, target_branch, title, description=review_packet, draft=true)
+get_merge_request(project_path, mr_iid) -> verify draft=true, source/target/head/description
 ```
-
 ### Snippet: mr-description-update
 
-Refresh the MR description / Reviewer Lift without changing draft/ready state; wrapper `mr_description_update` validates the file-backed Review Packet before fallback `glab mr update`.
+Refresh the MR description / Reviewer Lift without changing draft/ready state. MCP primary: `safe_update_merge_request_description` validates content bytes, updates the bound MR description, and requires a post-update `get_merge_request` read. Do not combine with ready-marking.
 
-```bash
-description_file="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-mr-description.XXXXXX")/review-packet.md"
-# Write or fill "$description_file" before updating the MR description.
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" mr_description_update --repo "$repo_url" --mr-iid "$mr_iid" \
-  --description-file "$description_file"
+```text
+safe_update_merge_request_description(project_path, mr_iid, description=review_packet)
+get_merge_request(project_path, mr_iid) -> verify description, draft state unchanged, head SHA still expected/reviewed SHA when one is in force
 ```
-
 ### Snippet: draft-mr-mark-ready
 
 Use only after the local gate has passed (or N/A is documented), the MR description and Reviewer Lift name the current head SHA, and the workflow is ready for review. Do not paste this with Draft MR creation or description update commands as one executable sequence.
@@ -198,86 +192,60 @@ Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-gu
 Inputs:
 
 - `mr_iid`: merge request IID.
-- `source_branch`: MR source branch, used only as a fallback/progress view.
+- `source_branch`: MR source branch, used only for fallback/progress context.
 - `reviewed_sha`: SHA from the review report or Reviewer Lift.
 - `timeout_seconds` and `poll_seconds`: caller-selected wait budget.
 - Optional output mode: human summary or machine-readable YAML.
 
-Polling/SHA mechanics feed the GitLab Mutation Guard exact-SHA CI phase; CI/finish-specific output shape and the pointer to the canonical CI verdict classification live in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
+MCP primary: poll `get_merge_request_workflow_snapshot` and exact-SHA `list_pipelines(sha=reviewed_sha)` / `get_pipeline`. Every poll fails closed if MR head differs from `reviewed_sha`, if pipeline SHA is stale, or if reviewed-SHA pipeline is failed/canceled/skipped/missing past timeout. Record `via=mcp`; guarded `glab` fallback is only for unavailable MCP snapshot/pipeline reads and must preserve the same exact-SHA rules.
 
-Implementation body lives inside this skill:
-
-- Source: [`skill://gitlab/scripts/gitlab-ci-watch.sh`](skill://gitlab/scripts/gitlab-ci-watch.sh)
-- Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
-- Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
-
-Use the helper when the accepted fallback/helper behavior fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section. For merge-completion watching — polling a bound MR to a terminal merge state (`merged` / reviewed-SHA pipeline `failed`/`canceled` / head drift / timeout) over the control-char-safe `safe_mr_json` read instead of a raw `glab … -F json | jq` of the full MR body — use the sibling helper [`skill://gitlab/scripts/gitlab-merge-watch.sh`](skill://gitlab/scripts/gitlab-merge-watch.sh), which is background-safe via absolute-path invocation and references, rather than duplicates, the slim guard-read / `safe_mr_json` guidance.
-
-```bash
-gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
-"$gitlab_ci_watch_script" \
-  --mr-iid "$mr_iid" \
-  --source-branch "$source_branch" \
-  --reviewed-sha "$reviewed_sha" \
-  --timeout-seconds "${timeout_seconds:-900}" \
-  --poll-seconds "${poll_seconds:-15}" \
-  --format human
+```text
+get_merge_request_workflow_snapshot(project_path, mr_iid)
+list_pipelines(project_path, sha=reviewed_sha) or get_pipeline(project_path, pipeline_id)
+verdict -> success / pending / failed / canceled / stale-head / stale-ci / timeout
 ```
 
-For raw-command adaptation (keeping the per-poll SHA rules as read-only evidence for the Mutation Guard), see [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned) and [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
-
-Wrapper bodies for the next five snippets also live in [`skill://gitlab/scripts/gitlab-wrappers.sh`](skill://gitlab/scripts/gitlab-wrappers.sh); helper docs/tests: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers) / [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh).
-
+For raw-command fallback adaptation (keeping per-poll SHA rules as read-only evidence for the Mutation Guard), see [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned) and [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
 ### Snippet: mr-note-create
 
-Use wrapper `mr_note_create` MR comments only. explicit `--repo` `--mr-iid`; message file-backed wrapper output not print it; helper posts non-resolvable MR notes for durable Review Reports/status comments.
+Post MR comments only. MCP primary: `safe_create_merge_request_note` validates body bytes, posts one top-level plain non-resolvable MR note on the bound MR, then MR notes/discussions are re-read. Use this for Review Reports and status comments; never use issue-note tools for Review Reports.
 
-```bash
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" mr_note_create --repo "$repo_url" --mr-iid "$mr_iid" --message-file "$report_file"
+```text
+safe_create_merge_request_note(project_path, mr_iid, body=report_body, resolvable=false)
+merge_request_notes_or_discussions(project_path, mr_iid) -> verify created note exists; for Review Reports, body matches source without printing body
 ```
-
 ### Snippet: issue-note-create
 
-Use wrapper `issue_note_create` for issue comments only. Do not pair this with an MR-note command or use it for Review Reports.
+Post issue comments only. MCP primary: `safe_create_issue_note` validates body bytes, posts one issue note on the bound issue, then issue notes are re-read. Do not use this for Review Reports or MR action reports.
 
-```bash
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" issue_note_create --repo "$repo_url" --issue-iid "$issue_iid" --message-file "$comment_file"
+```text
+safe_create_issue_note(project_path, issue_iid, body=comment_body)
+issue_notes(project_path, issue_iid) -> verify created note exists without printing body
 ```
-
 ### Snippet: label-reconcile
 
-Use wrapper `label_reconcile`; it computes add/remove sets and rejects add/remove overlap plus final state/category label conflicts before fallback `glab issue update`.
+Use MCP `update_issue` label add/remove semantics, then `get_issue`. Compute add/remove sets first; reject add/remove overlap and final state/category label conflicts before mutation.
 
-```bash
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" label_reconcile --repo "$repo_url" --issue-iid "$issue_iid" \
-  --add-labels "$add_labels" --remove-labels "$remove_labels" \
-  --state-labels "$state_labels" --category-labels "$category_labels"
+```text
+update_issue(project_path, issue_iid, add_labels, remove_labels)
+get_issue(project_path, issue_iid) -> verify final labels match requested reconcile result
 ```
-
 ### Snippet: safe-mr-json
 
-Use wrapper `safe_mr_json` for decision-grade MR metadata; it fails closed on project binding, SHA, pipeline, merge-status, branch, JSON, or control-char drift.
+Stable snippet name for guard-grade MR workflow metadata. MCP primary is `get_merge_request_workflow_snapshot` plus project binding; consume only decision-grade fields needed for SHA/state/CI/merge guards, with no list-only data. Fail closed on project binding, SHA, pipeline, merge-status, branch, JSON/control-character drift. Guarded `glab mr view` projection fallback is only for MCP snapshot unavailability or bounded repeated SHA/state guard reads where MCP returns full bodies.
 
-```bash
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" safe_mr_json --repo "$repo_url" --mr-iid "$mr_iid" --project-path "$project_path"
+```text
+get_merge_request_workflow_snapshot(project_path, mr_iid)
+get_project(project_path) -> verify binding
 ```
-
 ### Snippet: auto-merge-api-fallback
 
-Authorized non-builders may use wrapper `auto_merge_api_fallback` only for `queue auto-merge`; it preserves SHA/CI guards and falls back to the GitLab API only for the known `glab mr merge --auto-merge` 405 path. It requests source-branch removal on merge (`--remove-source-branch` on the `glab` path, `should_remove_source_branch=true` on the API path), matching the primary finish path so the remote source branch is gone once the queued merge completes.
+Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer `finish_merge_request(action="queue-auto-merge", sha=reviewed_sha)` or MCP `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after all SHA/CI/authority/caller/context guards pass.
 
-```bash
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" auto_merge_api_fallback --repo "$repo_url" --project-path "$project_path" \
-  --mr-iid "$mr_iid" --reviewed-sha "$reviewed_sha" --source-branch "$source_branch" \
-  --target-branch "$target_branch" --merge-authority "queue auto-merge" \
-  --authority-source "$merge_authority_source" --authority-verified true --caller-role "$caller_role"
+```text
+finish_merge_request(project_path, mr_iid, reviewed_sha, action="queue-auto-merge", source_branch, target_branch, authority_source, caller_role)
+get_merge_request(project_path, mr_iid) -> verify queue state and record via=mcp or via=glab-fallback
 ```
-
 ### Snippet: sha-guard
 
 MCP primary is `get_merge_request`; read only its top-level `sha`. The fallback below is shown for the MCP-unavailable case. For *repeated* SHA/state guards on the same MR, follow the [slim guard-read path](#slim-guard-read-for-repeated-shastate-guards): keep the first per-MR read full, then consume only `sha` / `draft` / `state` / `detailedMergeStatus` on each subsequent re-read instead of re-fetching the full description.
@@ -337,71 +305,21 @@ Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-gu
 Inputs:
 
 - `mr_iid`: merge request IID.
-- `reviewed_sha`: SHA approved by the reviewer and guarded with `--sha`.
-- `merge_authority`: `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`. Resolve project-default policy text to one of those accepted helper authorities before invoking the helper.
+- `reviewed_sha`: SHA approved by the reviewer and guarded with exact-SHA reads.
+- `merge_authority`: `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`.
 - `caller_role`: `builder`, `reviewer`, `authorized-parent`, or `human`.
 - `source_branch`, `default_branch`, and optional `worktree_path`.
-- Optional `issue_iid` when it is not obvious from `Closes #...`.
+- Optional `issue_iid` when not obvious from `Closes #...`.
 
-Finish is a SHA-bound Mutation Guard specialization: the guard order lives in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md), authority claim/source precedence and no-self routing live in [`skill://gitlab/reference/authority-verification.md`](skill://gitlab/reference/authority-verification.md), while finish-specific field mapping, exact-SHA CI handling, `via=mcp` / `via=glab-fallback` result evidence, post-action fetch/cleanup sequencing, `closure_pending` issue reporting, and the canonical merge/authority matrix pointer live in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
+MCP primary: `finish_merge_request` performs the authority-aware finish contract after fresh `get_merge_request`, exact-SHA pipeline read, caller identity, and authority validation. It returns a `finish_result` / handoff with action, blocker, SHA, CI, issue, cleanup, identity, and `via`. Builder role always stops at handoff. Stop on stale head, stale/red/missing CI, missing authority/source, identity drift, same-session review/finish, unsupported action, or dirty worktree cleanup. Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps after MCP re-read and all guards pass.
 
-Implementation body lives inside this skill:
-
-- Source: [`skill://gitlab/scripts/gitlab-finish-mr.sh`](skill://gitlab/scripts/gitlab-finish-mr.sh)
-- Helper docs: [`skill://gitlab/scripts/README.md`](skill://gitlab/scripts/README.md#gitlab-workflow-helpers)
-- Regression tests: [`tests/gitlab-workflow-helpers.sh`](../tests/gitlab-workflow-helpers.sh)
-
-Use the helper only when the exact accepted fallback/helper authority model fits. For how to invoke helper scripts using `skill://` URIs — including the non-OMP / Claude Code absolute-path rule — see the [skill:// URI invocation matrix](#skill-uri-invocation-matrix) section.
-
-```bash
-gitlab_finish_mr_script="skill://gitlab/scripts/gitlab-finish-mr.sh"
-"$gitlab_finish_mr_script" \
-  --mr-iid "$mr_iid" \
-  --reviewed-sha "$reviewed_sha" \
-  --merge-authority "$merge_authority" \
-  --caller-role "$caller_role" \
-  --source-branch "$source_branch" \
-  --default-branch "$default_branch" \
-  --format human
+```text
+finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?)
+get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issue/branch cleanup and record via
 ```
-
-Add `--issue-iid`, `--worktree-path`, `--approve-as-reviewer`, or source-branch cleanup flags only when the workflow and authority explicitly allow them.
-
-For raw-command adaptation, keep the Mutation Guard order from [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) plus the finish field mapping in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware).
-
 ## Optional helper scripts
 
-This skill also ships optional fallback/helper wrappers in `scripts/` for accepted helper behaviors. Use them when the exact behavior fits and repeatable guardrails help; prefer MCP primary tools for normal GitLab API actions, and use raw fallback snippets only for documented gaps, project-specific policy or human waiver, step-by-step troubleshooting, or changes to accepted workflow behavior.
-
-## skill:// URI invocation matrix
-
-**Applies to: OMP harness only.** The table below is verified for the OMP (claude.ai / api.anthropic.com) harness; see the non-OMP rule at the end of this section for Claude Code and other runtimes.
-
-The OMP harness pre-processes `skill://` URIs in Bash command text **before** the shell receives it, but only in **foreground** Bash tool calls. Verified foreground behavior on OMP/darwin (2026-06-12, using real full script URIs):
-
-| Form | Example | Foreground result | Notes |
-|---|---|---|---|
-| Bare first-word | `skill://gitlab/scripts/gitlab-wrappers.sh cmd` | **Works** — URI resolved to absolute path | Full script URI must be used; a bare skill root (`skill://gitlab`) or placeholder resolves differently |
-| Quoted direct | `"skill://gitlab/scripts/gitlab-wrappers.sh" cmd` | **Works** — URI resolved to absolute path | Equivalent to bare first-word; quotes have no effect on harness expansion |
-| Variable-assigned | `s="skill://gitlab/scripts/gitlab-wrappers.sh"; "$s" cmd` | **Works** — URI resolved to absolute path at assignment | Variable holds the expanded absolute path; **recommended** for multi-line invocations and background-safe handoff |
-| In `run_in_background` | any form | **Not resolved** — harness URI pre-processor is not active | Resolve to absolute path in foreground first (variable-assigned form), then pass the variable |
-
-**Recommended practice (OMP):**
-- Use the **variable-assigned** form for multi-line helper invocations: the variable holds the resolved absolute path and is safe to pass to background launchers without re-resolution.
-- All three foreground forms are equivalent for single-line calls; variable-assigned is preferred for clarity and background safety.
-- **Never** assign `skill://gitlab` (the bare skill root without a file path) to a variable — it resolves to `SKILL.md`, not the `scripts/` directory.
-- To launch a helper in the background: resolve first in foreground (variable-assigned form), then pass the variable.
-
-**Non-OMP runtimes (Claude Code and others):** `skill://` URIs are not resolved in Bash — foreground or background — in Claude Code or any runtime outside the OMP harness. Resolve helper scripts via the installed-skill absolute path instead (e.g. the absolute path where your skill manager installed the skill's `scripts/` directory). The variable-assigned form is still recommended: assign the absolute path to a variable and pass that variable to background launchers.
-
-Example — resolve then background:
-
-```bash
-# Resolve in foreground (harness expands the URI at assignment)
-gitlab_ci_watch_script="skill://gitlab/scripts/gitlab-ci-watch.sh"
-# $gitlab_ci_watch_script is now an absolute path; safe to pass to a background launcher
-run_in_background "$gitlab_ci_watch_script" --mr-iid "$mr_iid" ...
-```
+The `gitlab/scripts/` files remain as historical/optional fallback artifacts and regression fixtures. Active workflow snippets above do not instruct agents to invoke script URIs; use MCP-native tools first and guarded help-first `glab` fallback only where the snippet transport contract allows it.
 
 ## Troubleshooting
 

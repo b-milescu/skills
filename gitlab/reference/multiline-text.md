@@ -4,18 +4,21 @@ This reference owns the detailed file-backed text patterns for `/gitlab`. The ma
 
 ## Safe multiline GitLab text
 
-Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue notes,
-and MR descriptions. For fallback/helper paths, submit those files through
-`gitlab/scripts/gitlab-wrappers.sh`; for MCP paths, read the same file into
-the MCP `body`/`description` only after the content-byte guard passes. Quoted
-heredocs (`<<'EOF'`) keep Markdown backticks, `$VARS`, and command substitutions
-literal while writing the local file.
+Use temp/run-dir files plus quoted heredocs for multiline MR notes, issue
+notes, and MR descriptions. For MCP paths, read the drafted file into the
+MCP `body`/`description` only after `validate_gitlab_text` passes; safe
+mutation tools embed that validation. Guarded `glab` fallback may still use
+the same local file under snippet fallback conditions. Quoted heredocs
+(`<<'EOF'`) keep Markdown backticks, `$VARS`, command substitutions literal
+while writing local file.
 
-The shared adapter `gitlab/scripts/gitlab-content-guard.sh` validates
-stdin MCP bodies and file-backed fallback bodies before a GitLab mutation.
-`gitlab/scripts/gitlab-wrappers.sh` delegates file-backed validation to
-that adapter: NUL, non-whitespace C0 controls, and DEL are rejected locally,
-while tab/newline/carriage return remain valid for Markdown. Diagnostics do not print secrets or the malformed packet body; they name the failing role and byte offset.
+The MCP validator `validate_gitlab_text` validates MCP bodies before GitLab
+mutation; `safe_update_merge_request_description`,
+`safe_create_merge_request_note`, and `safe_create_issue_note` embed the same
+byte rule. NUL, non-whitespace C0 controls, and DEL are rejected;
+tab/newline/carriage return remain valid Markdown. Diagnostics do not print
+secrets or malformed packet bodies; they name the failing role and byte
+offset.
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
@@ -29,15 +32,15 @@ cat > "$message_file" <<'EOF'
 ## Revision Packet
 
 - Reviewed SHA: `abc123`
-- Literal example: `echo "$EXAMPLE_VAR"` is not executed.
+- Literal example: `echo "$EXAMPLE_VAR"` not executed.
 EOF
 
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" mr_note_create --repo "$repo_url" --mr-iid "$mr_iid" \
-  --message-file "$message_file"
+report_body="$(<"$message_file")"
+validate_gitlab_text(role="merge request note", body="$report_body")
+safe_create_merge_request_note(project_path, mr_iid, body=report_body, resolvable=false)
 ```
 
-`mr_note_create` posts non-resolvable MR notes for durable Review Reports/status comments; re-read the created note before using it as Review Report evidence.
+`safe_create_merge_request_note` posts one top-level non-resolvable MR note for durable Review Reports/status comments; re-read the created note before using it as Review Report evidence.
 
 ## Issue note pattern
 
@@ -48,12 +51,12 @@ cat > "$message_file" <<'EOF'
 ## Build Handoff
 
 - MR: !123
-- Status: ready for review
+- Status: ready
 EOF
 
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" issue_note_create --repo "$repo_url" --issue-iid "$issue_iid" \
-  --message-file "$message_file"
+comment_body="$(<"$message_file")"
+validate_gitlab_text(role="issue note", body="$comment_body")
+safe_create_issue_note(project_path, issue_iid, body=comment_body)
 ```
 
 ## MR description pattern
@@ -64,15 +67,13 @@ description_file="$run_dir/review-packet.md"
 cat > "$description_file" <<'EOF'
 # Review Packet
 
-Generated from a local file so Markdown is not interpreted by the shell.
+Generated local file Markdown not interpreted by shell.
 EOF
 
-gitlab_wrappers_script="skill://gitlab/scripts/gitlab-wrappers.sh"
-"$gitlab_wrappers_script" draft_mr_create --repo "$repo_url" \
-  --target-branch "$default_branch" --source-branch "$source_branch" \
-  --title "$title" --description-file "$description_file"
-"$gitlab_wrappers_script" mr_description_update --repo "$repo_url" --mr-iid "$mr_iid" \
-  --description-file "$description_file"
+description_body="$(<"$description_file")"
+validate_gitlab_text(role="merge request description", body="$description_body")
+create_merge_request(project_path, source_branch, default_branch, title, description=description_body, draft=true)
+safe_update_merge_request_description(project_path, mr_iid, description=description_body)
 ```
 
 ## Inline heredoc command-substitution hazard
