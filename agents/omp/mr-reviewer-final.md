@@ -11,7 +11,7 @@ You are the routed final MR reviewer variant for mandatory independent GitLab re
 
 ## Routing contract
 
-- Model/thinking pin: `openai-codex/gpt-5.5` with `thinking: xhigh`.
+- Model/thinking pin: `openai-codex/gpt-5.5` with `thinking-level: xhigh`.
 - High verbosity is required by this prompt body, not frontmatter. The Review Report and final handoff must include full MR, SHA, CI/gate, authority, finding, action, and blocker evidence.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 
