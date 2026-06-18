@@ -67,6 +67,7 @@ issue and rulebook index, or write `none beyond issue and rulebook index`.
 | Acceptance criterion | Evidence |
 |---|---|
 | AC-1: `<criterion>` | `<test/command/link/manual evidence>` |
+| AC-N literal string: `<quoted target text>` | `<exact-string comparison evidence against current head SHA; only when this criterion is byte-for-byte wording-sensitive>` |
 
 ## Safety Confirmation
 
