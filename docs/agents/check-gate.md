@@ -49,11 +49,11 @@ ready/review handoff.
 
 ## Executable-bit policy
 
-Only directly invoked entrypoints keep executable bits: `install.sh`,
-`scripts/check.sh` (via `npm run check`), and `gitlab/scripts/*.sh`
-helper entrypoints documented for direct use. Shell or Node helpers and
-regression scripts documented with `bash ...` or `node ...` stay non-executable
-(`100644`).
+Only these tracked entrypoints keep executable bits: `install.sh`;
+`scripts/check.sh` (via `npm run check`). Legacy `gitlab/scripts/*.sh`
+helpers stay non-executable compatibility artifacts; invoke them with
+`bash ...` only when a documented fallback explicitly still needs one.
+Shell, Node, and regression helpers stay non-executable (`100644`).
 
 ## Targeted checks
 
@@ -89,7 +89,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/builder-prompt-dedupe.sh` | Claude/OMP builder prompts keep the canonical `start-build` pointer block, reject re-inlined Issue-pickup / Decoupling / Multiple-issue-worktree procedures, stay below the builder-sized body cap, and preserve anti-fabrication and child-mode authority invariants. |
 | `tests/check-gate-inventory.sh` | Check Gate shipped shell regression inventory stays synchronized with tracked `tests/*.sh` files. |
 | `tests/closes-keyword-lint.sh` | Pure-local `validate_closes_keyword` GitLab auto-close keyword shape linter (issue #295): reads an MR description (file/stdin) plus a target issue iid and exits 0 only when a plain `<closing-keyword> #<iid>` (the default `default_issue_closing_pattern` keyword set, case-insensitive) is present outside inline code spans and fenced code blocks and not only in a bolded/wrapped form; proves plain `Closes #N` passes (stdin + file), `**Closes:** #N`-only and `` `Closes #N` ``-only and missing cases fail closed, a plain reference co-existing with unrelated prose/fenced backticks passes, wrong-iid (incl. `#2950` for `#295`) and non-closing keywords do not match, usage/argument errors fail closed, and the helper makes no network call. |
-| `tests/executable-bit-policy.sh` | Executable-bit policy enforcement: reads `git ls-files -s` index modes (not filesystem perms) and fails closed when any tracked `100755` file falls outside the documented allowlist (`install.sh`, `scripts/check.sh`, `gitlab/scripts/*.sh`); fixture self-tests prove a stray executable test, a non-allowlisted top-level script, and a nested `gitlab/scripts/*/` helper all FAIL while the three documented patterns plus a new `gitlab/scripts` helper PASS. |
+| `tests/executable-bit-policy.sh` | Executable-bit policy enforcement: reads `git ls-files -s` index modes (not filesystem perms) and fails closed when any tracked `100755` file falls outside the documented allowlist (`install.sh`, `scripts/check.sh`); fixture self-tests prove a stray executable test, a non-allowlisted top-level script, and an executable `gitlab/scripts/*.sh` helper all FAIL while the two documented entrypoints PASS. |
 | `tests/cleanup-codebase-invariants.sh` | `cleanup-codebase/SKILL.md` post-#149 identity: planning-only default, deslop + destale scopes, CLOSED allowed-transform list, five-gate deslop firewall, broad-sweep-by-default subagent fan-out (narrow on explicit request), and OUT-of-scope handoffs with fallbacks. |
 | `tests/finish-result-schema.sh` | `gitlab/reference/finish-result-schema.json` carries every `finish_result` field/enum from #195 plus #210 transport evidence (`transport=mcp/glab-fallback/n/a`, reported as `via=mcp` / `via=glab-fallback`): result/action/sha/blocker incl. `identity_*`/`description_lost`/`cleanup_failed`, ci_guard, issue_state, worktree/branch cleanup, authority + caller-id verification sources, cleanup_verified/cleanup_failure_reason, override_recorded, conflict_type, retry_count; `gitlab/scripts/validate-finish-result.sh` (pure-local, no network) validates the success/handoff/each-blocker examples and the file/stdin valid object, and fails closed on malformed JSON, bad enum on every enumerated field, missing required field, unknown extra field, wrong type, negative retry_count, and bad sha pattern. |
 | `tests/gitlab-content-guard.sh` | Shared `validate_gitlab_text` content-byte adapter: rejects crafted NUL body (plus non-whitespace C0 control and DEL) non-zero exit role + byte-offset diagnostic never leaks body, accepts clean Markdown body (backticks, `$vars`, tab, newline, CR) over both MCP-body-style stdin `--file`, asserts guard makes no network call. |

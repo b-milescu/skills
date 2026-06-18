@@ -2,7 +2,7 @@
 
 Stable `/gitlab` snippet names are workflow API. This file is the human-readable transport contract for each snippet: MCP primary tool(s), required inputs, outputs, fail-closed checks, guarded `glab` fallback conditions, and post-mutation MCP re-read requirements. Active workflow snippets name MCP-native tools/contracts; shell helper scripts, when still present in `gitlab/scripts/`, are historical/optional artifacts and are not the primary transport.
 
-Machine-actionable source of truth: `skill://gitlab/reference/snippet-metadata.json`. Markdown table is checked against metadata by `tests/gitlab-snippet-metadata.sh`.
+Machine-actionable source truth: `skill://gitlab/reference/snippet-metadata.json`. Markdown table is checked against this metadata by `tests/gitlab-snippet-metadata.sh`.
 
 ## Global rules
 
@@ -11,7 +11,7 @@ Machine-actionable source of truth: `skill://gitlab/reference/snippet-metadata.j
 - **Decision-grade reads:** Prefer single-record MCP reads (`get_project`, `get_issue`, `get_merge_request`, `get_merge_request_workflow_snapshot`, `get_pipeline`) over list data. `list_*` results are candidate data unless narrowly scoped and complete enough for the decision.
 - **Post-mutation re-read:** After MCP or fallback mutation, re-read through MCP to check project, target IID, head SHA when applicable, and intended state before reporting success.
 - **Fallback evidence:** When fallback is used, record transport evidence `via=glab-fallback`; MCP primary actions record `via=mcp`. Fallback never bypasses SHA, CI, authority, caller identity/token-stability, context-firewall eligibility, content-byte guards, or the Mutation Guard order.
-- **GitLab Mutation Guard:** Every snippet with non-empty `allowed_mutations` in metadata follows project binding, target re-read, reviewed SHA, exact-SHA CI, authority verification, caller identity/context, safe text, fallback eligibility, exactly one mutation, post-mutation MCP re-read.
+- **GitLab Mutation Guard:** Every snippet non-empty `allowed_mutations` in metadata follows project binding, target re-read, reviewed SHA, exact-SHA CI, authority verification, caller identity/context, safe text, fallback eligibility, exactly one mutation, post-mutation MCP re-read; machine schema: `skill://gitlab/reference/mutation-guard.schema.json`.
 
 ## Snippet table
 

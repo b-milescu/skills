@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Enforces the executable-bit policy documented in docs/agents/check-gate.md
-# §Executable-bit policy: a tracked file may carry mode 100755 only when it is a
-# directly invoked entrypoint — `install.sh`, `scripts/check.sh`, or a
-# `gitlab/scripts/*.sh` helper. Everything else (all tests/*.sh, this guard
-# included, and any other tracked file) must be 100644.
+# Enforces executable-bit policy documented in docs/agents/check-gate.md
+# §Executable-bit policy: tracked file mode 100755 is allowed only for
+# directly invoked entrypoints `install.sh` and `scripts/check.sh`.
+# Legacy `gitlab/scripts/*.sh` helpers and every other tracked
+# shell/helper file must stay 100644.
 #
 # The guard reads `git ls-files -s` (the git index mode), not filesystem
 # permissions, so a CI checkout that drops or adds execute bits on disk cannot
@@ -15,22 +15,15 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
-# is_allowed_executable PATH -> exit 0 when the path may be 100755.
-# Allowlist is the three documented policy patterns, not a hardcoded file list:
-# the two named single files plus any *.sh directly under gitlab/scripts/. New
-# gitlab/scripts/*.sh helper entrypoints stay allowed without editing the guard.
+# is_allowed_executable PATH -> exit 0 path may be 100755.
+# Allowlist the two documented direct entrypoints only.
 is_allowed_executable() {
-  local path="$1"
-  case "$path" in
-    install.sh) return 0 ;;
-    scripts/check.sh) return 0 ;;
-    gitlab/scripts/*.sh)
-      # Only direct children of gitlab/scripts/, no nested subdirectories.
-      [[ "$path" != gitlab/scripts/*/*.sh ]] && return 0
-      return 1
-      ;;
-    *) return 1 ;;
-  esac
+ local path="$1"
+ case "$path" in
+ install.sh) return 0 ;;
+ scripts/check.sh) return 0 ;;
+ *) return 1 ;;
+ esac
 }
 
 # check_repo REPO -> prints violators (mode + path) and returns non-zero when any
@@ -54,7 +47,7 @@ check_repo() {
 
   if [[ -s "$violations_file" ]]; then
     echo "Executable-bit policy violation: tracked files with mode 100755 outside the allowlist" >&2
-    echo "(allowed: install.sh, scripts/check.sh, gitlab/scripts/*.sh; everything else must be 100644):" >&2
+ echo "(allowed: install.sh, scripts/check.sh; everything else must be 100644):" >&2
     cat "$violations_file" >&2
     return 1
   fi
@@ -121,26 +114,26 @@ make_fixture_repo "$stray_test_repo" \
   100644:install.sh 100755:tests/regression.sh
 assert_repo_fails "$stray_test_repo" "tests/regression.sh" "executable tests/*.sh"
 
-# An executable outside the gitlab/scripts/ pattern (e.g. a new top-level script)
-# must fail — the allowlist may not fail open for arbitrary new executables.
+# executable legacy gitlab/scripts helper must fail; helpers are no longer
+# direct active entrypoints.
+legacy_helper_repo="$TMPDIR/legacy-helper"
+make_fixture_repo "$legacy_helper_repo" 100755:gitlab/scripts/gitlab-wrappers.sh
+assert_repo_fails "$legacy_helper_repo" "gitlab/scripts/gitlab-wrappers.sh" "executable legacy gitlab/scripts helper"
+
+# executable outside allowlist (e.g. new top-level script) must fail —
+# allowlist may not open new executables.
 stray_root_repo="$TMPDIR/stray-root"
 make_fixture_repo "$stray_root_repo" 100755:scripts/extra.sh
 assert_repo_fails "$stray_root_repo" "scripts/extra.sh" "executable outside allowlist"
 
-# A nested gitlab/scripts subdirectory must NOT be treated as an allowed entrypoint.
-nested_repo="$TMPDIR/nested"
-make_fixture_repo "$nested_repo" 100755:gitlab/scripts/lib/helper.sh
-assert_repo_fails "$nested_repo" "gitlab/scripts/lib/helper.sh" "nested gitlab/scripts helper"
-
-# The three documented patterns must pass, including a brand-new gitlab/scripts helper.
+# only the two documented entrypoints pass.
 allowed_repo="$TMPDIR/allowed"
 make_fixture_repo "$allowed_repo" \
-  100755:install.sh \
-  100755:scripts/check.sh \
-  100755:gitlab/scripts/gitlab-wrappers.sh \
-  100755:gitlab/scripts/gitlab-brand-new-helper.sh \
-  100644:tests/regression.sh
-assert_repo_passes "$allowed_repo" "documented entrypoints + new gitlab/scripts helper"
+ 100755:install.sh \
+ 100755:scripts/check.sh \
+ 100644:gitlab/scripts/gitlab-wrappers.sh \
+ 100644:tests/regression.sh
+assert_repo_passes "$allowed_repo" "documented entrypoints"
 
 # --- Real repository check ------------------------------------------------------
 check_repo "$REPO_ROOT"
