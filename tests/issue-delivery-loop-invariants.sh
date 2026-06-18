@@ -175,7 +175,7 @@ require_parent_contains 'Manual direct agent selection outside enforcement surfa
 # model/provider pins live in selected agent frontmatter/body prose.
 require_contains 'mandatory independent final-reviewer route `mr-reviewer-final`'
 require_contains 'Model pins live in frontmatter; provider effort pins live too'
-require_parent_contains 'mandatory independent final reviewer tier `mr-reviewer-final`'
+require_parent_contains 'mandatory independent final reviewer route is `mr-reviewer-final`'
 require_parent_contains 'Model pins live in frontmatter; provider effort pins live too, never in route name'
 
 # #302 runtime budget notices are runtime-state interruptions, not scope blockers.

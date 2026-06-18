@@ -41,7 +41,7 @@ Route exact shared model-free route basenames by tier. The basename resolves ins
 | `moderate` | `mr-builder-moderate` | `mr-reviewer-final` |
 | `high-risk` | `mr-builder-high-risk` | `mr-reviewer-final` |
 
-The mandatory independent final reviewer tier is `mr-reviewer-final`; mandatory independent final reviewer tier `mr-reviewer-final` remains the route label every tier uses. There is no review scout and no generic fallback builder/reviewer: when the exact routed agent file is unavailable in the current dialect directory, stop with a route-unavailable blocker for explicit parent/operator decision rather than selecting a substitute route; never select a shim, old filename, cross-runtime route, lower-effort substitute, or cost downgrade.
+The mandatory independent final reviewer route is `mr-reviewer-final` for every tier. There is no review scout or generic fallback builder/reviewer: when exact routed agent file unavailable in current dialect directory, stop with a route-unavailable blocker and explicit parent/operator decision rather than selecting a substitute route; never select a shim, old filename, cross-runtime route, lower-effort substitute, or cost downgrade.
 
 ## Fresh default and cleanup order
 
