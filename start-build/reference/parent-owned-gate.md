@@ -121,14 +121,21 @@ A single parent ready-transition check is enough when every item below is true:
 changed during preflight gate, block ready/merge unless the changes are
 committed to MR head and gate reruns on the new SHA, or an explicit
 parent/human waiver is recorded in Gate Receipt MR discussion.
-8. The Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
-   every required field above, including `result: "PASS"` and `checkout_sha` for
-   the exact candidate SHA.
-9. Immediately before marking ready, the MR head still equals the receipt
-   `checkout_sha`; if it changed, block and rerun the checklist on the new SHA.
-10. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
-   confirms the expected MR state.
-11. Each acceptance surface declared in the builder's Reviewer Lift `Acceptance surfaces` row is drawn from the project's `project_profile.acceptance_surfaces_ref` vocabulary and has `test`, `smoke`, `docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier 1/Tier 2 sources before the ready transition. When the project declares no `acceptance_surfaces_ref`, this row is fail-closed to `[]`/`none`; any non-empty surface value or an unresolvable surface ref blocks the ready transition as a schema defect. Use the taxonomy in `start-build/templates/gitlab-delivery-schema.md#acceptance-surfaces-taxonomy`.
+9. Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
+every required field above, including `result: "PASS"` and `checkout_sha`
+equal to the exact candidate SHA.
+10. Immediately before marking ready, MR head still equals receipt
+`checkout_sha`; if changed, block and rerun checklist on the new SHA.
+11. Ready mutation follows GitLab Mutation Guard post-mutation re-read and
+confirms the expected MR state.
+12. Each acceptance surface declared in builder's Reviewer Lift
+`Acceptance surfaces` row drawn from the project's
+`project_profile.acceptance_surfaces_ref` vocabulary has `test`, `smoke`,
+`docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier
+1 / Tier 2 sources before ready transition. When project declares no
+`acceptance_surfaces_ref`, row fail-closed to `[]` / `none`; any non-empty
+surface value or unresolvable surface ref blocks ready transition as a schema
+defect.
 
 ## Evidence-ready handoff tokens
 
