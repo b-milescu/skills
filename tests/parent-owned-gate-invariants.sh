@@ -53,6 +53,8 @@ require_text "$gate_doc" 'must not claim local gate `PASS`/`FAIL`' 'child must n
 require_text "$child_doc" 'parent-owned-gate\.md#ownership-contract' 'child points at canonical ownership contract'
 require_text "$child_doc" 'do not claim gate pass/fail' 'child pass/fail claim prohibition'
 require_text "$child_doc" 'must not mark ready' 'child ready-marking prohibition'
+require_text "$child_doc" 'literal target string' 'child literal target string exact-evidence rule'
+require_text "$child_doc" 'exact-string comparison evidence' 'child exact-string evidence wording'
 reject_text "$child_doc" 'builder_gate_status\.status:[[:space:]]*not-run' 'duplicated dotted parent-owned gate value definition'
 
 require_text "$parent_doc" 'parent-owned-gate\.md' 'parent points at canonical Gate Receipt seam'
@@ -61,8 +63,11 @@ require_text "$gate_doc" 'exact candidate SHA' 'exact-SHA gate binding'
 require_text "$gate_doc" 'tracked files changed' 'tracked-file mutation blocker'
 require_text "$gate_doc" 'waiver' 'tracked-file waiver escape hatch'
 require_text "$gate_doc" 'A single parent ready-transition check is enough' 'single ready-transition check condition'
-require_text "$gate_doc" 'Gate coverage is classified as `full-local`, `hybrid`, or `ci-only`' 'parent Gate coverage enum'
-require_text "$gate_doc" 'never[[:space:]]+`parent-owned`' 'parent-owned excluded from Gate coverage enum'
+require_text "$gate_doc" 'Gate coverage( is)? classified `full-local`, `hybrid`, or `ci-only`' 'parent Gate coverage enum'
+require_text "$gate_doc" 'Gate coverage( is)? classified `full-local`, `hybrid`, or `ci-only`.*`parent-owned`|`parent-owned`.*Gate coverage( is)? classified `full-local`, `hybrid`, or `ci-only`' 'parent-owned excluded Gate coverage enum'
+require_text "$gate_doc" 'parent spot-checks( that)? evidence before ready-marking( or)? launching re-review' 'parent exact-string evidence spot-check rule'
+require_text "$gate_doc" 'do not expand( it)? into broad ceremony' 'parent exact-string scope guard'
+require_text "$gate_doc" 'does not substitute for independent reviewer verification' 'reviewer independence preserved against exact-string evidence'
 require_text "$gate_doc" 'uncovered required CI job' 'parent uncovered CI-only rule'
 require_text "$gate_doc" 'wrong-SHA required CI blocks' 'parent wrong-SHA CI blocker'
 require_text "$gate_doc" 'result: "PASS"' 'Gate Receipt PASS result binding'
@@ -156,5 +161,8 @@ require_text "$child_doc" 'Gate Receipt pointer' 'child-builder post-ready Gate 
 # The Reviewer Lift schema freshness semantics must name the Gate Receipt pointer
 # as one of the exact-SHA fields that goes stale on a push.
 require_text "$reviewer_lift" 'Gate Receipt pointer' 'reviewer-lift schema Gate Receipt pointer freshness'
+require_text "$review_packet" 'AC-N literal string' 'full review packet literal-string evidence row'
+require_text "$compact_packet" 'AC-N literal string' 'compact review packet literal-string evidence row'
+require_text "$filling_guide" 'byte-for-byte' 'filling guide byte-for-byte exact-string guidance'
 
 printf 'parent-owned-gate-invariants: PASS\n'

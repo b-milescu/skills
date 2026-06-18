@@ -52,10 +52,11 @@ Semantics:
   handoff from missing evidence.
 - `ready_transition_owner: "parent"` means the child must leave the MR Draft; the
   parent posts the Gate Receipt and marks ready after the receipt passes.
-- The child handoff's gate evidence is limited to `local_gate_owner: "parent"`,
-  `builder_gate_status.status: "not-run"`, `not_run_reason: "parent-owned"`,
-  `ready_transition_owner: "parent"`, and the exact candidate SHA. Any Gate
-  coverage row remains a policy/routing claim until the parent verifies it.
+- Child handoff gate evidence is limited to `local_gate_owner: "parent"`,
+- `builder_gate_status.status: "not-run"`, `not_run_reason: "parent-owned"`,
+- `ready_transition_owner: "parent"`, and the exact candidate SHA. Any Gate
+- coverage row remains a policy/routing claim until the parent verifies it.
+- If issue acceptance criteria include literal target strings with byte-for-byte wording requirements, the child must also hand off targeted exact-string comparison evidence bound to the candidate SHA. Keep this requirement scoped to literal-string acceptance criteria; do not expand it into broad ceremony for ordinary prose/docs edits.
 
 This contract must appear in the Reviewer Lift / MR description and in the child
 builder final handoff when a compact `delivery.kind=gitlab-delivery` block is
@@ -112,26 +113,29 @@ A single parent ready-transition check is enough when every item below is true:
    expected default branch.
 3. The child handoff, Reviewer Lift `Reviewed SHA`, MR head SHA, and remote source
    branch all name the same candidate SHA.
-4. The candidate checkout is clean before the gate and `checkout_sha` equals the
-   candidate SHA.
-5. The command from target `docs/agents/check-gate.md` runs on that exact checkout
-   SHA and returns `PASS`.
-6. Gate coverage is classified as `full-local`, `hybrid`, or `ci-only` (never `parent-owned`). For `hybrid`/`ci-only`, every uncovered required CI job has
-   exact-SHA success for `checkout_sha`, or an authorized CI waiver is recorded;
-   failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks the
-   ready transition.
-7. A post-gate status check shows tracked files unchanged. If tracked files
-   changed during preflight or the gate, block ready/merge unless those changes
-   are committed to the MR head and the gate reruns on the new SHA, or an
-   explicit parent/human waiver is recorded in the Gate Receipt and MR discussion.
-8. The Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
-   every required field above, including `result: "PASS"` and `checkout_sha` for
-   the exact candidate SHA.
-9. Immediately before marking ready, the MR head still equals the receipt
-   `checkout_sha`; if it changed, block and rerun the checklist on the new SHA.
-10. The ready mutation follows the GitLab Mutation Guard and post-mutation re-read
-   confirms the expected MR state.
-11. Each acceptance surface declared in the builder's Reviewer Lift `Acceptance surfaces` row is drawn from the project's `project_profile.acceptance_surfaces_ref` vocabulary and has `test`, `smoke`, `docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier 1/Tier 2 sources before the ready transition. When the project declares no `acceptance_surfaces_ref`, this row is fail-closed to `[]`/`none`; any non-empty surface value or an unresolvable surface ref blocks the ready transition as a schema defect. Use the taxonomy in `start-build/templates/gitlab-delivery-schema.md#acceptance-surfaces-taxonomy`.
+4. If issue acceptance criteria name literal target strings with byte-for-byte wording requirements, the Reviewer Lift / `Acceptance Criteria Evidence` section includes targeted exact-string comparison evidence bound to the same candidate SHA, and the parent spot-checks that evidence before ready-marking or launching re-review in parent-owned gate mode.
+5. Candidate checkout is clean before gate and `checkout_sha` equals the candidate SHA.
+6. The command from target `docs/agents/check-gate.md` runs on the exact checkout SHA and returns `PASS`.
+7. Gate coverage is classified `full-local`, `hybrid`, or `ci-only` (never `parent-owned`). For `hybrid`/`ci-only`, every uncovered required CI job has exact-SHA success for `checkout_sha`, or an authorized CI waiver is recorded; failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks ready transition.
+8. Post-gate status check shows tracked files unchanged. If tracked files
+changed during preflight gate, block ready/merge unless the changes are
+committed to MR head and gate reruns on the new SHA, or an explicit
+parent/human waiver is recorded in Gate Receipt MR discussion.
+9. Gate Receipt MR comment uses `gate_receipt.kind=gate-receipt` and includes
+every required field above, including `result: "PASS"` and `checkout_sha`
+equal to the exact candidate SHA.
+10. Immediately before marking ready, MR head still equals receipt
+`checkout_sha`; if changed, block and rerun checklist on the new SHA.
+11. Ready mutation follows GitLab Mutation Guard post-mutation re-read and
+confirms the expected MR state.
+12. Each acceptance surface declared in builder's Reviewer Lift
+`Acceptance surfaces` row drawn from the project's
+`project_profile.acceptance_surfaces_ref` vocabulary has `test`, `smoke`,
+`docs-read`, `ci`, or documented `N/A — <reason>` evidence verified from Tier
+1 / Tier 2 sources before ready transition. When project declares no
+`acceptance_surfaces_ref`, row fail-closed to `[]` / `none`; any non-empty
+surface value or unresolvable surface ref blocks ready transition as a schema
+defect.
 
 ## Evidence-ready handoff tokens
 
@@ -153,10 +157,7 @@ Before the Gate Receipt exists, a child builder handoff should route to
 `required_parent_decision: "none"`, and evidence pointers such as
 `mr-description-reviewer-lift-current` and `candidate-sha-pushed`.
 
-After the Gate Receipt and ready transition, the parent can route review with the
-Gate Receipt comment as a Tier 1/Tier 2 source pointer. Reviewers still treat the
-receipt as a claim/source pointer and independently verify SHA, CI/local-gate,
-authority, scope, and diff evidence before approval or finish actions.
+After the Gate Receipt and ready transition, the parent can route review with the Gate Receipt comment as a Tier 1/Tier 2 source pointer. Reviewers still treat the receipt as a claim/source pointer and independently verify SHA, CI/local-gate, authority, scope, diff evidence, and any builder/parent exact-string comparison claims before approval or finish actions. Builder/parent exact-string evidence does not substitute for independent reviewer verification.
 
 ## Gate Receipt as canonical gate evidence; delta-sized MR description updates
 
