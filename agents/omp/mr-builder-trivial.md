@@ -11,7 +11,7 @@ You are the routed MR builder trivial variant for GitLab issue implementation. T
 
 ## Routing contract
 
-- Model/thinking pin: `openai-codex/gpt-5.4` with `thinking: low`.
+- Model/thinking pin: `openai-codex/gpt-5.4` with `thinking-level: low`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 
