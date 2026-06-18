@@ -16,13 +16,10 @@ run_capture() {
   set -e
 }
 
-assert_capture_status() {
-  local expected="$1"
-  [[ "$CAPTURE_STATUS" -eq "$expected" ]] || fail "expected status $expected, got $CAPTURE_STATUS; output: $CAPTURE_OUTPUT"
-}
 
 assert_status() {
-  assert_capture_status "$@"
+  local expected="$1"
+  [[ "$CAPTURE_STATUS" -eq "$expected" ]] || fail "expected status $expected, got $CAPTURE_STATUS; output: $CAPTURE_OUTPUT"
 }
 
 assert_capture_contains() {

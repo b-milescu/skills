@@ -8,11 +8,6 @@ fail() {
   exit 1
 }
 
-assert_equals() {
-  local expected="$1" actual="$2" label="${3:-value}"
-  [[ "$actual" == "$expected" ]] || fail "expected $label '$expected', got '$actual'"
-}
-
 assert_path_readable() {
   local path="$1" label="${2:-readable path}"
   [[ -r "$path" ]] || fail "expected $label: $path"
@@ -21,11 +16,6 @@ assert_path_readable() {
 assert_path_absent() {
   local path="$1" label="${2:-absent path}"
   [[ ! -e "$path" && ! -L "$path" ]] || fail "unexpected $label: $path"
-}
-
-assert_not_empty_file() {
-  local file="$1" label="${2:-file}"
-  [[ -s "$file" ]] || fail "$label is empty: $file"
 }
 
 assert_text_contains() {
