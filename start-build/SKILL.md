@@ -4,7 +4,7 @@ description: >-
   Implements GitLab issues through scoped issue pickup, TDD red-green-refactor
   slices, early Draft MRs Review Packets, review revisions. Use when asked start
   build, pick up or implement GitLab issue(s), fix bugs, add features, open MRs,
-  handle review feedback.
+  or handle review feedback.
 ---
 
 # Start Build

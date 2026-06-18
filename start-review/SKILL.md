@@ -3,7 +3,7 @@ name: start-review
 description: >-
   Reviews GitLab MRs project rules, safety invariants, CI, TDD test evidence,
   posts Review Reports takes only authorized approval/finish actions. Use when
-  asked start review, pick up or review MR(s), review branch, evaluate Review
+  asked start review, pick up or review MR(s), review branch, or evaluate Review
   Packets.
 ---
 
