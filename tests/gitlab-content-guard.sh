@@ -19,7 +19,7 @@ fail() {
 run_guard_stdin() {
   local body="$1"; shift
   set +e
-  CAPTURE_OUTPUT="$("$GUARD" "$@" < "$body" 2>&1)"
+  CAPTURE_OUTPUT="$(bash "$GUARD" "$@" < "$body" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }
@@ -28,7 +28,7 @@ run_guard_stdin() {
 run_guard_file() {
   local body="$1"; shift
   set +e
-  CAPTURE_OUTPUT="$("$GUARD" --file "$body" "$@" 2>&1)"
+  CAPTURE_OUTPUT="$(bash "$GUARD" --file "$body" "$@" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }

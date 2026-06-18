@@ -128,7 +128,7 @@ run_ci_watch_fixture() {
     FAKE_BRANCH_JSON_FILE="$dir/branch.json" \
     FAKE_GLAB_LOG="$dir/glab.log" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/gitlab/scripts/gitlab-ci-watch.sh" \
+    bash "$REPO_ROOT/gitlab/scripts/gitlab-ci-watch.sh" \
       --mr-iid 59 \
       --source-branch build/61 \
       --reviewed-sha "$expected_sha" \
@@ -151,7 +151,7 @@ run_finish_fixture() {
     FAKE_MERGE_BASE_STATUS="${FAKE_MERGE_BASE_STATUS:-0}" \
     FAKE_MERGE_BASE_ACCEPTS="${FAKE_MERGE_BASE_ACCEPTS:-}" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/gitlab/scripts/gitlab-finish-mr.sh" "$@"
+    bash "$REPO_ROOT/gitlab/scripts/gitlab-finish-mr.sh" "$@"
 }
 
 make_wrapper_fake_glab() {
@@ -351,7 +351,7 @@ run_wrapper_fixture() {
     GITLAB_CONTENT_GUARD="${GITLAB_CONTENT_GUARD:-}" \
     FAKE_CONTENT_GUARD_LOG="${FAKE_CONTENT_GUARD_LOG:-}" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/gitlab/scripts/gitlab-wrappers.sh" "$@"
+    bash "$REPO_ROOT/gitlab/scripts/gitlab-wrappers.sh" "$@"
 }
 
 assert_validation_failure_without_glab_call() {
@@ -397,7 +397,7 @@ run_merge_watch_fixture() {
     FAKE_MR_JSON_FILE="$dir/mr.json" \
     FAKE_GLAB_LOG="$dir/glab.log" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/gitlab/scripts/gitlab-merge-watch.sh" \
+    bash "$REPO_ROOT/gitlab/scripts/gitlab-merge-watch.sh" \
       --mr-iid 59 \
       --repo git@gitlab.example.com:agents/skills.git \
       --project-path agents/skills \
@@ -582,7 +582,7 @@ run_snapshot_fixture() {
     FAKE_FETCH_FAIL="${FAKE_FETCH_FAIL:-false}" \
     FAKE_REPO_FETCHABLE="${FAKE_REPO_FETCHABLE:-true}" \
     PATH="$dir/bin:$PATH" \
-    "$REPO_ROOT/gitlab/scripts/gitlab-post-merge-snapshot.sh" \
+    bash "$REPO_ROOT/gitlab/scripts/gitlab-post-merge-snapshot.sh" \
       --repo "${SNAPSHOT_REPO:-git@gitlab.example.com:agents/skills.git}" \
       --mr-iid 59 \
       --reviewed-sha "$reviewed_sha" \
