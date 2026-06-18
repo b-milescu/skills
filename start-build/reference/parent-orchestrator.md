@@ -58,13 +58,9 @@ per-branch invariant, not a one-time batch preflight:
 - For multi-issue work, repeat fetch plus default-branch SHA verification before
   every child worktree. Do not reuse an earlier fetch or cached default SHA
   across children.
-- After a merge, local cleanup is ordered after default safety: fetch origin,
-  fast-forward the local default in a clean checkout, then remove local
-  worktrees or delete local source branches. When a squash/merge commit means
-  the reviewed SHA is not the commit on default, an equivalent safety check is
-  acceptable only when the MR's `merge_commit_sha` or `squash_commit_sha` is
-  verified as an ancestor of the fast-forwarded local default. If neither check
-  passes, retain the local worktree/branch and report cleanup pending.
+ - After merge, local cleanup stays ordered around default-branch safety: fetch origin, fast-forward local default in a clean checkout, then remove clean local worktrees and delete local source branches.
+ - Remote source-branch cleanup remains guarded. First confirm the real remote source branch is already gone (`git ls-remote origin <source_branch>` returns nothing) or delete it only after the merged reviewed SHA is contained by the fast-forwarded default branch. When squash/merge commit means the reviewed SHA is not itself on default, the equivalent safety check is that the MR's `merge_commit_sha` or `squash_commit_sha` is a verified ancestor of the fast-forwarded local default. If neither check passes, retain the local worktree/branch and report `cleanup_pending`.
+ - After the real remote branch deletion/absence checks pass, run the `git remote prune --dry-run origin` equivalent stale-ref check. Cleanup is complete only when that stale-ref result is empty. If stale local remote-tracking refs remain, report `cleanup_pending` with the stale refs listed instead of claiming branch cleanup complete.
 
 ## Parent loop
 
