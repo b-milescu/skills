@@ -79,7 +79,7 @@ See [skill://start-build/SAFETY.md](skill://start-build/SAFETY.md) for non-negot
 - `skill://start-build/templates/revision-packet.md` — comment for responding to review.
 - `skill://start-build/templates/stuck-packet.md` — comment when blocked >2h.
 - `skill://start-build/templates/filling-guide.md` — section-by-section filling instructions for builder templates.
-- `skill://start-build/templates/adr.md` — committed under `docs/adr/NNN-kebab-title.md` via its own MR; see shared `skill://start-build/shared-templates/filling-guide.md`.
+- `skill://start-build/shared-templates/adr.md` — committed under `docs/adr/NNN-kebab-title.md` via its own MR; see shared `skill://start-build/shared-templates/filling-guide.md`.
 
 ## Done
 
