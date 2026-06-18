@@ -15,7 +15,7 @@ fail() {
 
 run_gate() {
   set +e
-  CAPTURE_OUTPUT="$("$GATE" "$@" 2>&1)"
+  CAPTURE_OUTPUT="$(bash "$GATE" "$@" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }

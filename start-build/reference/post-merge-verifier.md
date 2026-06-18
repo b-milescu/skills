@@ -21,7 +21,7 @@ auxiliary index artifacts unless a different authorized workflow explicitly
 switches roles.
 
 Use `/gitlab` MCP-first transport for read-only MR, issue, branch, and file
-checks. Prefer `gitlab/scripts/gitlab-post-merge-snapshot.sh` only when the
+checks. Prefer `get_post_merge_snapshot` only when the
 verifier needs the documented guarded helper/fallback behavior and has MR IID,
 reviewed SHA, repo, and optional issue IID/validation inputs. The helper emits
 `post_merge_snapshot.kind=post-merge-snapshot` using read-only GitLab/git checks,

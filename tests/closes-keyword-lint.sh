@@ -43,7 +43,7 @@ fail() {
 # feeding the description on stdin.
 run_validator() {
   set +e
-  CAPTURE_OUTPUT="$(printf '%s' "$2" | "$VALIDATOR" --issue-iid "$1" 2>&1)"
+ CAPTURE_OUTPUT="$(printf '%s' "$2" | bash "$VALIDATOR" --issue-iid "$1" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }
@@ -73,7 +73,7 @@ tmp_input="$(mktemp)"
 trap 'rm -f "$tmp_input"' EXIT
 printf '%s' $'Some prose.\n\nCloses #295\n' > "$tmp_input"
 set +e
-file_output="$("$VALIDATOR" --issue-iid 295 "$tmp_input" 2>&1)"
+file_output="$(bash "$VALIDATOR" --issue-iid 295 "$tmp_input" 2>&1)"
 file_status=$?
 set -e
 [[ "$file_status" -eq 0 ]] || fail "file-input validation should pass; status=$file_status output=$file_output"
@@ -156,11 +156,11 @@ assert_fail
 
 # === Usage / argument errors fail closed (not a silent pass). ===
 set +e
-"$VALIDATOR" </dev/null >/dev/null 2>&1   # no --issue-iid
+bash "$VALIDATOR" </dev/null >/dev/null 2>&1   # no --issue-iid
 [[ $? -ne 0 ]] || fail "missing --issue-iid should fail closed"
-"$VALIDATOR" --issue-iid notanumber </dev/null >/dev/null 2>&1
+bash "$VALIDATOR" --issue-iid notanumber </dev/null >/dev/null 2>&1
 [[ $? -ne 0 ]] || fail "non-numeric --issue-iid should fail closed"
-"$VALIDATOR" --issue-iid 295 /no/such/file >/dev/null 2>&1
+bash "$VALIDATOR" --issue-iid 295 /no/such/file >/dev/null 2>&1
 [[ $? -ne 0 ]] || fail "unreadable input file should fail closed"
 set -e
 

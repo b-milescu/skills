@@ -34,7 +34,7 @@ fail() {
 # run_validator <block-text> -> sets CAPTURE_STATUS / CAPTURE_OUTPUT via stdin.
 run_validator() {
   set +e
-  CAPTURE_OUTPUT="$(printf '%s' "$1" | "$VALIDATOR" 2>&1)"
+  CAPTURE_OUTPUT="$(printf '%s' "$1" | bash "$VALIDATOR" 2>&1)"
   CAPTURE_STATUS=$?
   set -e
 }
@@ -135,7 +135,7 @@ tmp_input="$(mktemp)"
 trap 'rm -f "$tmp_input"' EXIT
 printf '%s' "$FULL_BLOCK" > "$tmp_input"
 set +e
-file_output="$("$VALIDATOR" "$tmp_input" 2>&1)"
+file_output="$(bash "$VALIDATOR" "$tmp_input" 2>&1)"
 file_status=$?
 set -e
 [[ "$file_status" -eq 0 ]] || fail "file-input validation should pass; status=$file_status output=$file_output"

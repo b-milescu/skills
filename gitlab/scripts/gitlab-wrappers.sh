@@ -38,7 +38,7 @@ require_node() {
 
 content_guard_path() {
   local prefix="$1" guard="${GITLAB_CONTENT_GUARD:-$SCRIPT_DIR/gitlab-content-guard.sh}"
-  [[ -n "$guard" && -x "$guard" ]] || fail "$prefix" 127 dependency_missing_content_guard
+  [[ -n "$guard" && -f "$guard" && -r "$guard" ]] || fail "$prefix" 127 dependency_missing_content_guard
   printf '%s' "$guard"
 }
 
@@ -53,7 +53,7 @@ validate_text_file() {
   local prefix="$1" file="$2" label="$3" guard result status reason
   guard="$(content_guard_path "$prefix")"
   set +e
-  result="$("$guard" --file "$file" --role "$label" 2>&1)"
+  result="$(bash "$guard" --file "$file" --role "$label" 2>&1)"
   status=$?
   set -e
   [[ "$status" -eq 0 ]] && return 0

@@ -195,7 +195,7 @@ emit_result() {
   exit "$code"
 }
 
-safe_cmd=("$WRAPPERS" safe_mr_json --repo "$repo" --mr-iid "$mr_iid" --project-path "$project_path")
+safe_cmd=(bash "$WRAPPERS" safe_mr_json --repo "$repo" --mr-iid "$mr_iid" --project-path "$project_path")
 [[ -z "$source_branch" ]] || safe_cmd+=(--expected-source-branch "$source_branch")
 [[ -z "$target_branch" ]] || safe_cmd+=(--expected-target-branch "$target_branch")
 

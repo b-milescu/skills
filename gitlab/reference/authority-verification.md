@@ -12,7 +12,7 @@ When a skill runs from a target repository, reference authority resources with `
 - `skill://gitlab/reference/authority-verification.schema.json`
 - `skill://gitlab/reference/authority-matrix.md`
 - `skill://gitlab/reference/identity-and-authentication.md`
-- `skill://gitlab/scripts/gitlab-finish-authority.sh`
+- `skill://gitlab/reference/authority-matrix.md`
 
 Target-repo policy remains repo-relative. Use `docs/agents/dev-workflows.md`, `docs/agents/check-gate.md`, and project rulebook paths for the repository being changed; do not rewrite those target policy refs as gitlab skill resources.
 
