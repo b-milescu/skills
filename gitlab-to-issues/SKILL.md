@@ -9,7 +9,7 @@ Turn an approved plan into GitLab issues for the current target GitLab repositor
 
 ## Quick start
 
-1. Load `/gitlab` and run **Snippet: local-repo-preflight** from the intended target repository before any publishing work.
+1. Invoke `/gitlab` and run **Snippet: local-repo-preflight** from the intended target repository before any publishing work.
 2. Resolve the target repo root with `git rev-parse --show-toplevel`; treat that path as `<repo-root>` for all repo-local docs.
 3. Read target docs from `<repo-root>/docs/agents/issue-tracker.md` and `<repo-root>/docs/agents/triage-labels.md`. Do not read these docs from the skill installation directory.
 4. If either target tracker doc is missing, or if `<repo-root>/docs/agents/issue-tracker.md` does not say the tracker is GitLab, stop and ask the user to set up or choose the correct workflow.

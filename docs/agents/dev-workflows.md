@@ -11,6 +11,17 @@ This repo uses GitLab-backed dev workflows.
 - **`/issue-delivery-loop`** — coordinate bounded ready-issue batches and issue-to-MR loops; keep Decoupling Contract proof, parent spot-checks, revision routing, delivery metrics, and post-merge verifier recipe handoff in one place. See `skill://issue-delivery-loop/SKILL.md`.
 - **`/retro`** — delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. See `skill://retro/SKILL.md`.
 
+## Skill activation mechanism
+
+**Skill invocation** (defined in [`CONTEXT.md`](../../CONTEXT.md) glossary) means running a skill's `SKILL.md` entry procedure through the runtime skill mechanism. It is distinct from a **reference read** — reading one of a skill's reference/template files for detail after the skill is active. This section is the canonical location for the per-dialect activation mechanism mapping.
+
+| Dialect | Declared on the agent by | Activated at runtime by | Activation verb in agent bodies/prompts |
+| --- | --- | --- | --- |
+| Claude (`agents/claude/*.md`) | `skills:` frontmatter field listing the skills the agent may enter. | The agent calling the `Skill` tool with the skill name. | "Invoke it via the `Skill` tool" / "invoke `<skill>` via the Skill tool". |
+| OMP (`agents/omp/*.md`) | `autoload-skills:` frontmatter field. | The OMP harness auto-injecting the listed skills at session start. | "Invoke it through the OMP skill-load mechanism (its `autoload-skills` frontmatter)". |
+
+Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch prompt (or agent body) names the skill and instructs invocation; per the [#320 minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Reserve the word "load" for reference reads and other file/context loads, never for skill activation.
+
 ## Active recipes
 
 - `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab`.
@@ -120,9 +131,9 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Before any GitLab API action, load `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- Before any GitLab API action, invoke `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
 - For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab/reference/mutation-guard.md`; keep this repo's `docs/agents/...` policy references repo-relative when working from another project.
-- Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
-- Before implementation from GitLab issues, load `/start-build`.
-- Before MR review, load `/start-review`.
+- Before converting an approved plan into GitLab issues, invoke `/gitlab-to-issues`.
+- Before implementation from GitLab issues, invoke `/start-build`.
+- Before MR review, invoke `/start-review`.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

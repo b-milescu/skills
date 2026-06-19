@@ -91,10 +91,10 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Before any GitLab API action, load `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
+- Before any GitLab API action, invoke `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
 - Use `skill://setup-dev-skills/reference/project-profile-facts.json` as the generation/verification source for target-specific docs, label vocabulary, Check Gate refs, Dev Workflow refs, and skill-resource addressing.
-- Before converting an approved plan into GitLab issues, load `/gitlab-to-issues`.
-- Before implementation from GitLab issues, load `/start-build`.
-- Before MR review, load `/start-review`.
+- Before converting an approved plan into GitLab issues, invoke `/gitlab-to-issues`.
+- Before implementation from GitLab issues, invoke `/start-build`.
+- Before MR review, invoke `/start-review`.
 - Project docs in `CLAUDE.md` / `AGENTS.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.
 - Issue readiness criteria are owned by `skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md` and the target repo's triage-labels doc; setup must keep the skill-owned scorecard portable and target repo label policy repo-relative.
