@@ -1,6 +1,6 @@
 # Child `mr-builder` mode
 
-Small, self-contained path for child builders delegated by a parent orchestrator. The stable compatibility anchor remains [BUILD-FLOW.md §Child `mr-builder` mode](../BUILD-FLOW.md#child-mr-builder-mode); this file owns the child flow and intentionally excludes parent-only runtime-specific reviewer discovery details.
+Small, self-contained path for child builders delegated by a parent orchestrator. This file is the canonical owner of the child `mr-builder` flow and intentionally excludes parent-only runtime-specific reviewer discovery details.
 
 ## Authority boundary
 

@@ -4,12 +4,16 @@ set -euo pipefail
 # Safety-floor token coverage (issue #254).
 #
 # The "must not weaken" safety-floor litany, plus variant floor inventories,
-# appears across 16 sites. This test pins EXACTLY the floor tokens present at
+# appears across 15 sites. This test pins EXACTLY the floor tokens present at
 # HEAD per site so that dropping or weakening a floor sentence anywhere fails
 # `npm run check`. Token spread is uneven by design: a uniform token loop is
 # wrong (e.g. parent-orchestrator.md lacks `reviewed-SHA binding` and
 # `verifier read-only`; issue-delivery-loop/SKILL.md carries a subset). The
 # per-site matrix below was generated from HEAD; it is the deliverable.
+#
+# Issue #316 retired start-build/BUILD-FLOW.md as a floor site (the redirect
+# layer was deleted and its anchors repointed to canonical reference owners),
+# dropping the full-litany site count from 14 to 13 and the total from 16 to 15.
 #
 # Zero doc wording changes accompany this test. If a future MR legitimately
 # changes floor wording at a site, regenerate the matrix from the new HEAD in
@@ -52,7 +56,7 @@ LITANY_VERIFIER_RO="verifier read-only"
 LITANY_MCP_FIRST="MCP-first transport correctness"
 LITANY_HELP_FIRST="help-first \`glab\` fallback correctness"
 
-# The full litany, shared by 14 of the 16 sites at HEAD.
+# The full litany, shared by 13 of the 15 sites at HEAD.
 FULL_LITANY=(
   "$LITANY_REVIEWED_SHA"
   "$LITANY_EXACT_SHA_CI"
@@ -64,14 +68,13 @@ FULL_LITANY=(
   "$LITANY_HELP_FIRST"
 )
 
-# Sites carrying the full litany at HEAD (14 of 16).
+# Sites carrying the full litany at HEAD (13 of 15).
 FULL_LITANY_SITES=(
   "gitlab/SKILL.md"
   "setup-dev-skills/check-gate.md"
   "start-review/SKILL.md"
   "docs/agents/check-gate.md"
   "start-build/SKILL.md"
-  "start-build/BUILD-FLOW.md"
   "start-build/templates/gitlab-delivery-schema.md"
   "start-build/reference/child-builder.md"
   "start-build/reference/context-and-planning.md"

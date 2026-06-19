@@ -1,6 +1,6 @@
 # Implementation flow
 
-Detailed common implementation sequence for `start-build` builders. Stable compatibility anchors remain [BUILD-FLOW.md §Implementation flow](../BUILD-FLOW.md#implementation-flow), [§Check gate discovery](../BUILD-FLOW.md#check-gate-discovery), and [§Stuck protocol](../BUILD-FLOW.md#stuck-protocol). Child builders may use the smaller [child-builder path](child-builder.md) unless this full flow is needed.
+Detailed common implementation sequence for `start-build` builders. This file is the canonical owner of the implementation flow; [check gate discovery](context-and-planning.md#check-gate-discovery) and the [stuck protocol](stuck-protocol.md) own their own sections. Child builders may use the smaller [child-builder path](child-builder.md) unless this full flow is needed.
 
 ## Procedure
 

@@ -42,13 +42,17 @@ do
 done
 
 child_row="$(printf '%s\n' "$matrix_block" | grep -F '| Child `mr-builder` |')"
+# Issue #316 deleted start-build/BUILD-FLOW.md and repointed the child row's
+# compatibility anchors to their canonical reference owners: the child-mode
+# anchor is now reference/child-builder.md, and the post-merge-verifier anchor
+# is now reference/post-merge-verifier.md.
 for required_anchor in \
   'reference/child-builder.md' \
-  'BUILD-FLOW.md#child-mr-builder-mode' \
+  'templates/reviewer-lift-schema.md' \
   'templates/builder-final-handoff.md' \
-  'reference/parent-orchestrator.md' \
+  'reference/parent-orchestrator.md#parent-loop' \
   'reference/standalone-gate.md#reviewer-launch-protocol' \
-  'BUILD-FLOW.md#post-merge-verifier-recipe'
+  'reference/post-merge-verifier.md'
 do
   printf '%s' "$child_row" | grep -qF "$required_anchor" || fail "child row missing anchor: $required_anchor"
 done

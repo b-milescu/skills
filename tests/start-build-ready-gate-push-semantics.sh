@@ -10,7 +10,6 @@ fail() {
 }
 
 safety="start-build/SAFETY.md"
-router="start-build/BUILD-FLOW.md"
 flow="start-build/reference/implementation-flow.md"
 schema="start-build/templates/reviewer-lift-schema.md"
 
@@ -21,9 +20,8 @@ fi
 grep -qF "Project's full check gate green before marking ready/requesting review, with exact-SHA Gate coverage classified" "$safety" || \
   fail "$safety missing ready/request-review exact-SHA Gate coverage boundary"
 
-grep -qF 'reference/implementation-flow.md' "$router" || \
-  fail "$router missing implementation-flow canonical link"
-
+# Issue #316 deleted the start-build/BUILD-FLOW.md redirect layer; the
+# implementation-flow content is validated only at its canonical owner ($flow).
 for phrase in \
   "**Early Draft MR push.**" \
   "**Implementation pushes before ready.**" \

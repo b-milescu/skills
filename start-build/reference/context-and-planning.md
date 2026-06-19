@@ -1,6 +1,6 @@
 # Context and planning flow
 
-Detailed discovery, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance for `start-build`. Stable compatibility anchors remain in [BUILD-FLOW.md](../BUILD-FLOW.md).
+Detailed discovery, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance for `start-build`. This file is the canonical owner of these sections; [SKILL.md](../SKILL.md) routes to them from the mode matrix.
 
 ## Discovery Budget
 
@@ -12,7 +12,7 @@ If any required fact is still missing after that budget, stop, write the exact u
 
 Before the first edit, write a concise Build Plan Packet from the discovery result. Capture the issue, intended behavior, affected surfaces, test plan, risk, and non-goals. Also record loaded context sources with one-line reasons for why each source was relevant; omit boilerplate for sources that were not loaded. Keep it short enough that reviewers can compare it against the issue and diff without reading a long workflow body. Use [`../templates/build-plan-packet.md`](../templates/build-plan-packet.md) as the shape.
 
-This packet is pre-edit planning only; builder and reviewer authority boundaries stay in [BUILD-FLOW.md §Builder invocation modes](../BUILD-FLOW.md#builder-invocation-modes) and the active mode-specific flow.
+This packet is pre-edit planning only; builder and reviewer authority boundaries stay in [SKILL.md §Invocation modes](../SKILL.md#invocation-modes) and the active mode-specific flow ([child-builder.md](child-builder.md), [standalone-gate.md](standalone-gate.md), [parent-orchestrator.md](parent-orchestrator.md)).
 
 ## Check gate discovery
 

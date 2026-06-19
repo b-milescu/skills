@@ -1,6 +1,6 @@
 # Stuck protocol
 
-Detailed stuck-handling reference for `start-build`. The stable entrypoint and compatibility anchor remain in [BUILD-FLOW.md](../BUILD-FLOW.md#stuck-protocol).
+Detailed stuck-handling reference for `start-build`. This file is the canonical owner; [implementation-flow.md](implementation-flow.md) routes here.
 
 If blocked for more than 2 hours:
 

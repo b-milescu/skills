@@ -9,20 +9,17 @@ fail() {
   exit 1
 }
 
-router="start-build/BUILD-FLOW.md"
+# Issue #316 deleted the start-build/BUILD-FLOW.md redirect layer. The Discovery
+# Budget / Build Plan Packet sections are now validated only at their canonical
+# owner (reference/context-and-planning.md); the retired router-stub checks are
+# gone.
 context="start-build/reference/context-and-planning.md"
 skill="start-build/SKILL.md"
 template="start-build/templates/build-plan-packet.md"
 
 for section in 'Discovery Budget' 'Build Plan Packet'; do
-  grep -qE "^## ${section}$" "$router" || fail "$router missing $section compatibility section"
   grep -qE "^## ${section}$" "$context" || fail "$context missing canonical $section section"
 done
-
-grep -qF 'reference/context-and-planning.md#discovery-budget' "$router" || \
-  fail "$router Discovery Budget stub missing canonical context link"
-grep -qF 'reference/context-and-planning.md#build-plan-packet' "$router" || \
-  fail "$router Build Plan Packet stub missing canonical context link"
 
 discovery_start="$(grep -n '^## Discovery Budget$' "$context" | cut -d: -f1)"
 packet_start="$(grep -n '^## Build Plan Packet$' "$context" | cut -d: -f1)"
@@ -68,7 +65,7 @@ if grep -qE 'Load the host project.?s rulebook first.*architecture docs, ADRs' "
 fi
 
 for pattern in 'Standalone `/start-build` mode' 'Child `mr-builder` mode'; do
-  grep -qF "$pattern" "$router" || fail "$router missing authority boundary text: $pattern"
+  grep -qF "$pattern" "$skill" || fail "$skill missing authority boundary text: $pattern"
 done
 
 grep -qF 'templates/build-plan-packet.md' "$skill" || fail "$skill missing build plan packet template pointer"

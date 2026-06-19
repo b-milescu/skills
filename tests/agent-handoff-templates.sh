@@ -253,16 +253,19 @@ require_text \
   "$REPO_ROOT/start-review/REVIEW-FLOW.md" \
   'after[^.]*Review Report[^.]*authorized[^.]*action|after[^.]*authorized[^.]*action[^.]*Review Report' \
   'procedure ordering after Review Report and authorized action attempt'
+# Issue #316 deleted start-build/BUILD-FLOW.md; the parent-orchestrator recipe's
+# canonical owner is reference/parent-orchestrator.md, which now carries the
+# reviewer final-handoff / parseable-parsing-aid / durable-Review-Report guidance.
 require_text \
-  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  "$REPO_ROOT/start-build/reference/parent-orchestrator.md" \
   'reviewer final handoff|reviewer-final-handoff\.md' \
   'parent-orchestrator reviewer final handoff mention'
 require_text \
-  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  "$REPO_ROOT/start-build/reference/parent-orchestrator.md" \
   'parseable|parent[^.]*parsing' \
   'parent-orchestrator parseable handoff guidance'
 require_text \
-  "$REPO_ROOT/start-build/BUILD-FLOW.md" \
+  "$REPO_ROOT/start-build/reference/parent-orchestrator.md" \
   'GitLab Review Report[^.]*durable|durable[^.]*GitLab Review Report' \
   'GitLab Review Report remains durable record guidance'
 
