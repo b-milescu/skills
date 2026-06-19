@@ -76,6 +76,44 @@ for label in 'MR URL' 'Reviewer Lift pointer' 'Project rulebook path'; do
 done
 require_text "$parent_flow" 'not[^.]*treat[^.]*parent[^.]*builder[^.]*reasoning[^.]*evidence|parent[^.]*builder[^.]*reasoning[^.]*not[^.]*evidence' 'parent launch prompt evidence-firewall instruction'
 
+# Launch-prompt skill-load invariant (#320, guarded by #322): each
+# parent-orchestrator launch-prompt fenced block must carry a Skill-tool-invocation
+# `Skills:` line so the spawned subagent enters through the SKILL.md entry
+# procedure rather than raw-Reading a mid-policy reference file. The reviewer block
+# follows its `Mode: mr-reviewer` line; the child-builder block follows
+# `Mode: child mr-builder`. Pin to the stable `Skills:` + `via the Skill tool`
+# tokens, not the surrounding prose, so ordinary edits do not trip the guard.
+launch_prompt_skill_line() {
+  # Print the `Skills:` line that immediately follows the given `Mode:` marker
+  # line inside the launch-prompt fenced blocks of parent_flow.
+  local mode_marker="$1"
+  awk -v marker="$mode_marker" '
+    $0 == marker { want=1; next }
+    want && /^Skills:/ { print; want=0 }
+    want && /^```/ { want=0 }
+  ' "$parent_flow"
+}
+
+reviewer_skills_line="$(launch_prompt_skill_line 'Mode: mr-reviewer')"
+child_skills_line="$(launch_prompt_skill_line 'Mode: child mr-builder')"
+for pair in "reviewer:${reviewer_skills_line}" "child-builder:${child_skills_line}"; do
+  which_block="${pair%%:*}"
+  skills_line="${pair#*:}"
+  [ -n "$skills_line" ] || fail "$parent_flow ${which_block} launch-prompt block missing a Skills: line after its Mode: marker"
+  printf '%s\n' "$skills_line" | grep -Eiq -- 'via the Skill tool' \
+    || fail "$parent_flow ${which_block} launch-prompt Skills: line lacks the 'via the Skill tool' Skill-invocation token"
+done
+
+# reject_text scoped to the launch-prompt templates only: forbid the
+# `Load <skill> (<file>.md)` parenthetical raw-Read-biasing form. Scoping to the
+# launch-prompt host files keeps legitimate `Load`-a-file phrasing elsewhere
+# (e.g. start-build/SKILL.md "Load host project's rulebook index") unaffected.
+for launch_file in "$parent_flow" 'start-build/reference/standalone-gate.md'; do
+  if grep -Ein -- 'Load [^()]*\([^)]*\.md\)' "$launch_file"; then
+    fail "$launch_file reintroduces the 'Load <skill> (<file>.md)' raw-Read-biasing launch-prompt form"
+  fi
+done
+
 # Reviewer-facing prompts must surface the policy without inlining command bodies.
 for file in start-review/SKILL.md; do
   require_text "$file" 'Context Firewall' "$file Context Firewall pointer"

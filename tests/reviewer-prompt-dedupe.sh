@@ -72,6 +72,22 @@ for prompt in "${final_reviewer_prompts[@]}"; do
   fi
 
   require_text "$prompt" 'Canonical development pattern source: `start-review`' 'canonical start-review pointer'
+
+  # Cross-dialect verb parity (#321, guarded by #322): the
+  # canonical-development-pattern-source line must use the dialect-approved
+  # activation verb, and never the bare `Load it` form, so one dialect cannot be
+  # fixed while the other drifts back to raw-Read-biasing wording. Pin to the
+  # stable activation tokens per dialect, not the surrounding prose.
+  case "$prompt" in
+    agents/claude/*)
+      require_text "$prompt" 'Canonical development pattern source: `start-review`\. Invoke it via' 'Claude reviewer Skill-tool activation verb'
+      ;;
+    agents/omp/*)
+      require_text "$prompt" 'Canonical development pattern source: `start-review`\. Invoke it through the OMP skill-load mechanism' 'OMP reviewer autoload-skills activation verb'
+      require_text "$prompt" 'autoload-skills' 'OMP reviewer autoload-skills frontmatter'
+      ;;
+  esac
+  reject_text "$prompt" 'Canonical development pattern source: `start-review`\. Load it' 'bare "Load it" activation verb on the canonical-pattern-source line'
   require_text "$prompt" 'gitlab' 'gitlab pointer'
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Review Report' 'Review Report handoff invariant'

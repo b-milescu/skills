@@ -41,4 +41,26 @@ for builder_prompt in agents/claude/mr-builder-*.md agents/omp/mr-builder-*.md "
   fi
 done
 
+# Launch-prompt skill-load invariant (#320, guarded by #322), builder analogue:
+# the parent's minimal child-builder launch prompt must carry a
+# Skill-tool-invocation `Skills:` line so the spawned child enters through the
+# SKILL.md entry procedure rather than raw-Reading a mid-policy reference file.
+# Pin to the stable `Skills:` + `via the Skill tool` tokens on the line that
+# follows the child-builder `Mode: child mr-builder` marker.
+child_builder_skills_line="$(
+  awk '
+    $0 == "Mode: child mr-builder" { want=1; next }
+    want && /^Skills:/ { print; want=0 }
+    want && /^```/ { want=0 }
+  ' "$parent_file"
+)"
+if [ -z "$child_builder_skills_line" ]; then
+  echo "parent-subagent-placement: child-builder launch-prompt block missing a Skills: line after its Mode: marker" >&2
+  exit 1
+fi
+if ! printf '%s\n' "$child_builder_skills_line" | grep -qiF 'via the Skill tool'; then
+  echo "parent-subagent-placement: child-builder launch-prompt Skills: line lacks the 'via the Skill tool' Skill-invocation token" >&2
+  exit 1
+fi
+
 printf 'parent-subagent-placement: PASS\n'
