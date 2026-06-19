@@ -195,7 +195,15 @@ for ready-marking unless the MR records a specific, reviewed exception.
 
 ## Installer smoke requirement
 
-When a change touches files in `agents/`, `install.sh`, or runtime agent routing, declare `install_surface` in `Acceptance surfaces` and include installer smoke evidence. This requirement cannot be satisfied by `npm run check:agents-schema` or `./install.sh --check` alone; an actual `./install.sh` run in a temp HOME confirms installer output behavior.
+When a change alters the **install surface** — the topology the installer actually materializes — declare `install_surface` in `Acceptance surfaces` and include installer smoke evidence. The install surface is the set of inputs that change what `./install.sh` links or exposes, not every file under `agents/`. A change is on the install surface when it touches any of:
+
+- agent **frontmatter** that the installer or runtime routing reads: an agent's `name`, its routing identity (route filename / basename), or its `skills:` / `autoload-skills:` lists;
+- `install.sh` itself, or the runtime agent routing / symlink topology it produces (which agent and skill symlinks exist, and where they point);
+- adding, removing, renaming, or moving a tracked file under `agents/` (a new agent dialect file, a deleted route, a renamed skill), since that changes which symlinks the installer creates.
+
+A change is **not** on the install surface — and does not by itself require installer smoke — when it edits only an agent file's prose **body** while leaving that file's frontmatter (`name`/routing/`skills:`/`autoload-skills:`), filename, and symlink topology byte-identical. A body-prose-only edit under `agents/` therefore does not trigger this requirement on its own.
+
+This requirement cannot be satisfied by `npm run check:agents-schema` or `./install.sh --check` alone; an actual `./install.sh` run in a temp HOME confirms installer output behavior.
 
 Required evidence: run `HOME=<tmpdir> ./install.sh` and verify that expected agent and skill symlinks exist and no unintended additions or removals occurred. Use a safe temp HOME to avoid mutating the live `$HOME`.
 
