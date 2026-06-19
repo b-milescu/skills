@@ -25,7 +25,7 @@ Read current repo state; don't assume:
 - `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, and `src/*/docs/adr/`
 - `docs/agents/`, especially prior setup output and `docs/agents/check-gate.md`
 - Existing coding guidance in root rulebooks, `CONTRIBUTING.md`, or `docs/agents/coding-guardrails.md`; pasted generic behavioral-guidance blocks
-- Existing project-profile declarations: gate policy, label vocabulary, branch naming, CI job requirements, domain/ADR locations, release/deploy policy, manual validation rules, and auxiliary index tooling such as `graphify-out/`
+- Existing project-profile declarations: gate policy, label vocabulary, branch naming, CI job requirements, domain/ADR locations, release/deploy policy, manual validation rules, and auxiliary index tooling such as a code-graph or search-index directory
 - Canonical project-profile facts in `skill://setup-dev-skills/reference/project-profile-facts.json`; compare existing docs against the fact source before copying defaults such as `docs/agents/...` or any label string
 - Older setup markers: `/setup-matt-pocock-skills`, `Label in mattpocock/skills`, canonical-five label tables, lazy-label-creation prose, stale skill names
 - `.scratch/` — local markdown issue tracker convention?
