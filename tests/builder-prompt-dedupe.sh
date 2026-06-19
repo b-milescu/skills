@@ -57,6 +57,22 @@ for prompt in "${builder_prompts[@]}"; do
   fi
 
   require_text "$prompt" 'Canonical development pattern source: `start-build`' 'canonical start-build pointer'
+
+  # Cross-dialect verb parity (#321, guarded by #322): the
+  # canonical-development-pattern-source line must use the dialect-approved
+  # activation verb, and never the bare `Load it` form, so one dialect cannot be
+  # fixed while the other drifts back to raw-Read-biasing wording. Pin to the
+  # stable activation tokens per dialect, not the surrounding prose.
+  case "$prompt" in
+    agents/claude/*)
+      require_text "$prompt" 'Canonical development pattern source: `start-build`\. Invoke it via' 'Claude builder Skill-tool activation verb'
+      ;;
+    agents/omp/*)
+      require_text "$prompt" 'Canonical development pattern source: `start-build`\. Invoke it through the OMP skill-load mechanism' 'OMP builder autoload-skills activation verb'
+      require_text "$prompt" 'autoload-skills' 'OMP builder autoload-skills frontmatter'
+      ;;
+  esac
+  reject_text "$prompt" 'Canonical development pattern source: `start-build`\. Load it' 'bare "Load it" activation verb on the canonical-pattern-source line'
   require_text "$prompt" 'gitlab' 'gitlab pointer'
   require_text "$prompt" 'tdd' 'tdd pointer'
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
