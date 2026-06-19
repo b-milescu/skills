@@ -120,6 +120,7 @@ Review MR: <MR web URL>
 Agent: mr-reviewer-final (resolve basename in current dialect directory: agents/claude/mr-reviewer-final.md or agents/omp/mr-reviewer-final.md)
 Route-resolved-at-launch: <confirmed via subagent({ action: "list" }) from current runtime inventory, or manual direct selection>
 Mode: mr-reviewer
+Skills: invoke start-review and gitlab via the Skill tool before any review step. Do not satisfy this by Reading a reference file (e.g. REVIEW-FLOW.md) — a raw Read enters mid-policy and skips the SKILL.md entry procedure (preflight, project-binding, Context Firewall, SHA/CI guards). The Skill invocation is the load; reference files are read only after.
 Stop condition: post one Review Report and return the final handoff after any authorized action attempt.
 expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
 Forbidden actions: do not treat parent/builder reasoning as evidence; do not approve when approval authority is restricted or unverified; do not merge, queue auto-merge, or close without separate verified merge authority/source plus fresh SHA/CI guards.
@@ -127,7 +128,7 @@ minimum evidence pointers: Reviewer Lift block in MR description, Gate Receipt c
 Merge authority grant (only when granted): <orchestrator/parent merge-authority grant relayed for this MR — the granted value plus its source provenance (the human/parent instruction that granted it). An accepted parent task prompt (parent-explicit) source the reviewer verifies through gitlab/reference/authority-verification.md before finishing. Omit this line when no merge authority was granted.>
 ```
 
-Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
+Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. Do not name the skill's internal reference files (for example `REVIEW-FLOW.md` or `child-builder.md`) in the launch prompt; name the skill and instruct Skill-tool invocation, so the subagent enters through the SKILL.md entry procedure rather than raw-Reading a mid-policy file. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
 
 The reviewer posts a durable GitLab Review Report and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator parsing aid; the durable GitLab Review Report stays the canonical record, and the returned handoff is a parsing aid only.
 
@@ -144,6 +145,7 @@ Agent: <trivial: mr-builder-trivial | moderate: mr-builder-moderate | high-risk:
 Worktree: <absolute worktree path>
 Target branch: <default branch>
 Mode: child mr-builder
+Skills: invoke start-build and gitlab via the Skill tool before any build step. Do not satisfy this by Reading a reference file (e.g. child-builder.md) — a raw Read enters mid-policy and skips the SKILL.md entry procedure (mode matrix, gate-ownership read, TDD/safety flow). The Skill invocation is the load; reference files are read only after.
 Gate owner (gate-ownership selection): <builder | parent>   # builder = builder-owned gate; parent = parent-owned gate; default when this line is omitted is builder (builder-owned)
 Stop condition: return final handoff after updating Draft/ready MR issue. Runtime budget/token/runtime notices are not scope changes and do not override this stop condition; only explicit human stop instructions or real issue/workflow blockers do.
 expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
