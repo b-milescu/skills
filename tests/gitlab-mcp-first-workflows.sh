@@ -16,7 +16,6 @@ workflow_docs=(
   gitlab/SKILL.md
   gitlab-to-issues/SKILL.md
   start-build/SKILL.md
-  start-build/BUILD-FLOW.md
   start-review/SKILL.md
   start-review/REVIEW-FLOW.md
   issue-delivery-loop/SKILL.md

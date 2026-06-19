@@ -279,17 +279,20 @@ if grep -Fq 'Snippet: draft-mr-create-update' "$SKILL"; then
   fail 'retired combined draft-mr-create-update snippet still present'
 fi
 
+# Issue #316 deleted start-build/BUILD-FLOW.md; the split-snippet references it
+# carried now assert against reference/implementation-flow.md, the canonical
+# owner of the implementation flow's Draft-MR snippet guidance.
 for file in \
   gitlab/SKILL.md \
   start-build/SKILL.md \
-  start-build/BUILD-FLOW.md \
+  start-build/reference/implementation-flow.md \
   $(agent_prompt_paths "${builder_prompt_names[@]}"); do
   if grep -Fq 'draft-mr-create-update' "$file"; then
     fail "$file still references retired combined draft-mr-create-update snippet"
   fi
 done
 
-for file in start-build/SKILL.md start-build/BUILD-FLOW.md; do
+for file in start-build/SKILL.md start-build/reference/implementation-flow.md; do
   require_text "$file" 'Snippet: draft-mr-create' 'Draft MR create snippet reference'
   require_text "$file" 'Snippet: mr-description-update' 'MR description update snippet reference'
   require_text "$file" 'Snippet: draft-mr-mark-ready' 'Draft MR mark-ready snippet reference'
@@ -301,7 +304,6 @@ for file in \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
   $(agent_prompt_paths "${reviewer_prompt_names[@]}") \
-  start-build/BUILD-FLOW.md \
   start-build/reference/stuck-protocol.md; do
   if grep -Fq 'note-comment-creation' "$file"; then
     fail "$file still references retired combined note-comment-creation snippet"

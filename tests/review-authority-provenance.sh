@@ -92,8 +92,10 @@ for file in "${routed_final_reviewer_guidance[@]}"; do
 done
 
 # Builders must record provenance, not mint authority.
+# Issue #316 deleted start-build/BUILD-FLOW.md; the builder authority-provenance
+# guidance it summarized is owned canonically by reference/child-builder.md.
 builder_guidance=(
-  start-build/BUILD-FLOW.md
+  start-build/reference/child-builder.md
   start-build/SKILL.md
   start-build/templates/filling-guide.md
 )

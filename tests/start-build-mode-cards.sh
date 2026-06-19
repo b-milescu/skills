@@ -67,8 +67,8 @@ for card in "$child_card" "$parent_gate_card" "$revision_card" "$parent_card"; d
   require_card_contract "$card"
 done
 
-# Accepted compact card names stay discoverable from the primary start-build entry points.
-for owner in start-build/SKILL.md start-build/BUILD-FLOW.md; do
+# Accepted compact card names stay discoverable from the primary start-build entry point.
+for owner in start-build/SKILL.md; do
   for card_name in \
     'child-builder-card\.md' \
     'parent-owned-gate-card\.md' \

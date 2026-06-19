@@ -25,8 +25,10 @@ reject_text() {
   fi
 }
 
+# Issue #316 deleted start-build/BUILD-FLOW.md; the canonical behavior-touching
+# TDD trigger sentence is validated at SKILL.md, child-builder.md, and
+# implementation-flow.md (its canonical owners).
 skill="start-build/SKILL.md"
-router="start-build/BUILD-FLOW.md"
 child="start-build/reference/child-builder.md"
 flow="start-build/reference/implementation-flow.md"
 schema="start-build/templates/reviewer-lift-schema.md"
@@ -40,7 +42,7 @@ missing_scope='Missing or ambiguous behavior scope still routes back to triage w
 runtime_examples='Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger.'
 exception_fake_tests='Exception categories require MR rationale and must not allow fake tests or meaningless checks.'
 
-for file in "$skill" "$router" "$child" "$flow"; do
+for file in "$skill" "$child" "$flow"; do
   require_text "$file" "$canonical" "$file missing canonical behavior-touching TDD trigger"
 done
 

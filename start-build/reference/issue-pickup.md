@@ -1,6 +1,6 @@
 # Issue pickup flow
 
-Detailed issue-resolution procedure for `start-build`. The stable compatibility anchor remains [BUILD-FLOW.md §Issue pickup](../BUILD-FLOW.md#issue-pickup); this file owns the full selection and suitability checklist.
+Detailed issue-resolution procedure for `start-build`. This file is the canonical owner of the full selection and suitability checklist.
 
 ## Procedure
 

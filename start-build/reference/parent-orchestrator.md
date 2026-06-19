@@ -1,6 +1,6 @@
 # Parent-orchestrator recipe
 
-Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. The stable compatibility anchor remains [BUILD-FLOW.md §Parent-orchestrator recipe](../BUILD-FLOW.md#parent-orchestrator-recipe). Project rulebooks and `project_profile` hooks may specialize labels, local gates, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, auxiliary indexes, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
+Detailed parent/coordinator flow for child `mr-builder` and `mr-reviewer` GitLab issue-to-MR loops. This file is the canonical owner of the parent-orchestrator recipe; [SKILL.md](../SKILL.md) routes here from the mode matrix. Project rulebooks and `project_profile` hooks may specialize labels, local gates, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, auxiliary indexes, merge authority defaults, merge authority source requirements, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
 
 Safety invariants: child builders do not spawn reviewers, approve, merge, queue auto-merge, or clean up parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; reviewed SHAs and exact-SHA CI results stay bound to the MR head before approval or merge; explicit authority source stays required; MCP-first transport correctness plus help-first `glab` fallback correctness is preserved; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
@@ -108,6 +108,10 @@ In every tier the reviewer's bounded CI wait and CI-pending review policy are un
 
 ## Minimal reviewer launch prompt
 
+The minimal reviewer launch prompt keeps only the MR URL, Reviewer Lift pointer,
+Project rulebook path, and a do-not-treat parent/builder reasoning as evidence
+instruction.
+
 When the parent starts a fresh reviewer, pass only the review target and bounded
 routing/evidence instructions:
 
@@ -124,6 +128,8 @@ Merge authority grant (only when granted): <orchestrator/parent merge-authority 
 ```
 
 Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
+
+The reviewer posts a durable GitLab Review Report and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator parsing aid; the durable GitLab Review Report stays the canonical record, and the returned handoff is a parsing aid only.
 
 A merge-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent merge-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [authority-verification.md](../../gitlab/reference/authority-verification.md) — so the reviewer has a verifiable merge-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 

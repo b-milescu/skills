@@ -1,6 +1,6 @@
 # Timeout handling
 
-Detailed stale-run control reference for `start-build`. The stable entrypoint and compatibility anchor remain in [BUILD-FLOW.md](../BUILD-FLOW.md#timeout-handling).
+Detailed stale-run control reference for `start-build`. This file is the canonical owner; [standalone-gate.md §Timeout handling](standalone-gate.md#timeout-handling) routes here.
 
 A missing Review Report after the caller's review wait budget is only a stale-run signal. It does not by itself authorize a replacement reviewer.
 

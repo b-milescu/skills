@@ -1,6 +1,6 @@
 # Standalone review gate
 
-Detailed mandatory review gate for standalone `/start-build` sessions. Stable compatibility anchors remain [BUILD-FLOW.md §Mandatory review gate](../BUILD-FLOW.md#mandatory-review-gate), [§Reviewer launch protocol](../BUILD-FLOW.md#reviewer-launch-protocol), [§Timeout handling](../BUILD-FLOW.md#timeout-handling), [§Review Gate Summary](../BUILD-FLOW.md#review-gate-summary), and [§Human bypass protocol](../BUILD-FLOW.md#human-bypass-protocol). Child `mr-builder` sessions do not own this gate; their small path is [child-builder.md](child-builder.md).
+Detailed mandatory review gate for standalone `/start-build` sessions. This file is the canonical owner of the mandatory review gate, reviewer launch protocol, timeout handling, Review Gate Summary, and human bypass protocol. Child `mr-builder` sessions do not own this gate; their small path is [child-builder.md](child-builder.md).
 
 ## Mandatory review gate
 

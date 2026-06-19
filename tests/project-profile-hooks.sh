@@ -51,7 +51,6 @@ if grep -Eq '\b(pull_request|pull_request_url|pr_url|change_request|source_ref|t
 fi
 
 invariant_docs=(
-  "start-build/BUILD-FLOW.md"
   "start-build/reference/child-builder.md"
   "start-build/reference/context-and-planning.md"
   "start-review/REVIEW-FLOW.md"

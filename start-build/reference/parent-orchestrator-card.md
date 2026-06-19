@@ -1,6 +1,6 @@
 # Parent orchestrator mode card
 
-Compact pointer map for parent/coordinator issue-to-MR loops. This card is a checklist, not an alternate policy source; canonical rules stay in [`parent-orchestrator.md`](parent-orchestrator.md), [`multiple-worktrees.md`](multiple-worktrees.md), [`../SAFETY.md`](../SAFETY.md), and [`../BUILD-FLOW.md`](../BUILD-FLOW.md).
+Compact pointer map for parent/coordinator issue-to-MR loops. This card is a checklist, not an alternate policy source; canonical rules stay in [`parent-orchestrator.md`](parent-orchestrator.md), [`multiple-worktrees.md`](multiple-worktrees.md), [`../SAFETY.md`](../SAFETY.md), and [`../SKILL.md`](../SKILL.md).
 
 ## Use this card when
 

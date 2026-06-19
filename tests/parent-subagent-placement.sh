@@ -6,7 +6,6 @@ cd "$repo_root"
 
 needle='subagent({ action: "list" })'
 parent_file="start-build/reference/parent-orchestrator.md"
-router_file="start-build/BUILD-FLOW.md"
 child_doc="start-build/reference/child-builder.md"
 
 mapfile -t matches < <(
@@ -34,11 +33,6 @@ for phrase in 'issue-implementation specialization' 'MR / code-review specializa
     exit 1
   fi
 done
-
-if grep -qF "$needle" "$router_file"; then
-  echo "parent-subagent-placement: BUILD-FLOW router should point to parent reference without runtime-specific subagent call" >&2
-  exit 1
-fi
 
 for builder_prompt in agents/claude/mr-builder-*.md agents/omp/mr-builder-*.md "$child_doc"; do
   if grep -qF "$needle" "$builder_prompt"; then

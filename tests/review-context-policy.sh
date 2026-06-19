@@ -22,7 +22,9 @@ require_row() {
 flow="start-review/REVIEW-FLOW.md"
 report="start-review/templates/review-report.md"
 filling="start-review/templates/filling-guide.md"
-parent_flow="start-build/BUILD-FLOW.md"
+# Issue #316 deleted start-build/BUILD-FLOW.md; the parent reviewer-launch
+# minimal-prompt invariants are owned canonically by reference/parent-orchestrator.md.
+parent_flow="start-build/reference/parent-orchestrator.md"
 delivery_schema="start-build/templates/gitlab-delivery-schema.md"
 
 # Canonical term: `routing index` names unverified handoff data, defined in the

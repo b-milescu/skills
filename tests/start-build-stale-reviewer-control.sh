@@ -25,19 +25,16 @@ reject_text() {
   fi
 }
 
-router="start-build/BUILD-FLOW.md"
+# Issue #316 deleted start-build/BUILD-FLOW.md; its timeout compatibility stub is
+# gone. The stale-reviewer-control invariants are validated only at their
+# canonical owners (timeout-handling.md, standalone-gate.md, parent-orchestrator.md).
 standalone="start-build/reference/standalone-gate.md"
 timeout="start-build/reference/timeout-handling.md"
 parent="start-build/reference/parent-orchestrator.md"
 
-for file in "$router" "$standalone" "$timeout" "$parent"; do
+for file in "$standalone" "$timeout" "$parent"; do
   [ -f "$file" ] || fail "missing expected workflow doc: $file"
 done
-
-require_text "$router" 'observed reviewer status/activity' \
-  "$router timeout compatibility stub must require observed reviewer status/activity checks"
-require_text "$router" 'second reviewer attempt only after the first attempt is failed, stale, interrupted, or unreachable' \
-  "$router timeout compatibility stub must fail closed before replacement"
 
 require_text "$timeout" "runtime's status/control/interruption mechanism" \
   "$timeout must route through runtime status/control/interruption when available"
@@ -66,7 +63,7 @@ require_text "$parent" 'Do not start a second reviewer while the first run is st
 require_text "$parent" 'escalate instead of launching a duplicate reviewer' \
   "$parent must fail closed when runtime control is unavailable"
 
-for file in "$router" "$standalone" "$timeout" "$parent"; do
+for file in "$standalone" "$timeout" "$parent"; do
   reject_text "$file" 'within 10 minutes' \
     "$file still contains exact-10-minute blind retry wording"
   reject_text "$file" 'Timeout: 10 minutes per round' \
