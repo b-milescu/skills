@@ -2,7 +2,7 @@
 
 Issues, PRDs, and merge requests for the target repo live in GitLab. Use `/gitlab` from inside the target repository clone so GitLab API actions follow MCP-first transport order; guarded `glab` fallback is second and only for documented fallback/helper/troubleshooting conditions.
 
-Before fallback issue, MR, CI, note, approval, or merge commands, load `/gitlab` and follow its help-first flag checks, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate transport snippets in this guide. Use `setup-dev-skills/reference/project-profile-facts.json` to instantiate the target repo's tracker doc path, label vocabulary ref, branch naming ref, and runtime `skill://` resource refs.
+Before fallback issue, MR, CI, note, approval, or merge commands, invoke `/gitlab` and follow its help-first flag checks, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate transport snippets in this guide. Use `setup-dev-skills/reference/project-profile-facts.json` to instantiate the target repo's tracker doc path, label vocabulary ref, branch naming ref, and runtime `skill://` resource refs.
 
 ## Repo conventions
 

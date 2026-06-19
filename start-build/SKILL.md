@@ -47,7 +47,7 @@ Use the compact cards as pointer-map checklists only after the active mode is kn
 
 ## Quick start
 
-1. Load `gitlab` and run **Snippet: local-repo-preflight** to verify MCP project binding plus guarded fallback `glab`/`jq` availability, authentication, and the cwd is the intended GitLab repo.
+1. Invoke `gitlab` and run **Snippet: local-repo-preflight** to verify MCP project binding plus guarded fallback `glab`/`jq` availability, authentication, and the cwd is the intended GitLab repo.
 2. Read [skill://start-build/SAFETY.md](skill://start-build/SAFETY.md) before changing files.
 3. Use the [Mode routing context read matrix](#mode-routing-context-read-matrix) above as the router and read the active mode-specific reference doc it names before selecting issue(s), creating/updating MR(s), commenting, or marking ready. Child builders use [skill://start-build/reference/child-builder.md](skill://start-build/reference/child-builder.md) instead of parent/standalone gate detail.
 4. Resolve the issue(s): supplied IDs/URLs, or pick one (or a decoupled set) from the current project.

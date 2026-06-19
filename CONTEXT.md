@@ -32,6 +32,14 @@ _Avoid_: fallback checklist, merge guard
 An issue state that may be mapped to the target tracker's actual label string when that live label exists.
 _Avoid_: label, status
 
+**Skill Invocation**:
+Running a skill's `SKILL.md` entry procedure through the runtime skill mechanism, so the agent enters the skill at its documented start (mode matrix, preflight, gate-ownership read, safety flow) rather than mid-policy. The per-dialect mechanism is documented in [`docs/agents/dev-workflows.md`](docs/agents/dev-workflows.md#skill-activation-mechanism): Claude uses the `skills:` agent-frontmatter field plus the Skill tool; OMP uses the `autoload-skills` frontmatter field plus harness auto-injection. A launch prompt names the skill and instructs invocation; it must not name the skill's internal reference files (the [#320 minimal-prompt exclusion rule](start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt)), because a subagent could then satisfy the prompt with a **Reference Read** that skips the entry procedure.
+_Avoid_: load (a skill), skill-enter directive
+
+**Reference Read**:
+Reading one of a skill's reference, template, or doc files (for example `start-build/reference/child-builder.md`) for detail after the skill is already active. A **Reference Read** is legitimate context loading, but it is not a substitute for **Skill Invocation**: entering through a reference file alone skips the `SKILL.md` entry procedure. Reserve the word "load" for this kind of file/context read, never for skill activation.
+_Avoid_: invoking a skill, loading a skill
+
 ## Relationships
 
 - A **Setup Skill** creates **Agent Setup Docs** for a target repo.
