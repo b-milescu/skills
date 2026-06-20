@@ -53,16 +53,16 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 - **When NOT to use this skill:** if you already have a pending change/diff and just want it tidied → `/simplify` (or `/code-review`). Cleanup is for discovering debt across *committed* code with no active change.
 - **Implementation route:** planning-only. Approved slices → the build workflow (`/start-build`), which produces the diff; `/simplify` + `/code-review` run *downstream* on that diff; the start-review structural maintainability sweep gates the same smells at MR time. **No direct cleanup→simplify edge** (a plan cannot be consumed by a diff-level applier).
 - **vs the start-review structural sweep:** same smell taxonomy, different altitude — cleanup finds them repo-wide as plan candidates; the sweep gates them inside one MR diff. Do not merge.
-- **Subagent fan-out:** the default posture for discovery — fan out read-only subagents to sweep the repo broadly when scope is unspecified; narrow to a single pass whenever the user explicitly scopes narrower than repo-wide (path-limited, docs-only, config-only, dependency hygiene, or a specific concern). If fan-out is partial, failed, or skipped within the declared scope, report partial coverage under known gaps before findings and do not claim repo-wide coverage.
+- **Subagent fan-out:** the default posture for discovery — fan out read-only subagents to sweep the repo broadly when scope is unspecified; narrow to a single pass whenever the user explicitly scopes narrower than repo-wide (the narrower scopes defined in Quick start step 1). If fan-out is partial, failed, or skipped within the declared scope, report partial coverage under known gaps before findings and do not claim repo-wide coverage.
 
 ## Quick start
 
-1. Default to a repo-wide sweep when scope is unspecified; honor any explicit narrower user scope (path-limited, docs-only, config-only, dependency hygiene, or a specific concern) and keep findings inside that declared scope.
+1. Default to a repo-wide sweep when scope is unspecified; honor any explicit narrower user scope — **narrower scope** here means path-limited, docs-only, config-only, dependency hygiene, or a specific concern — and keep findings inside that declared scope.
 2. Resolve repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); a dirty worktree means call out possible noise. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*`, check-gate docs, `CONTEXT.md`, and ADRs.
-3. For repo-wide scope, fan out read-only discovery subagents for broad coverage (see Boundaries). For explicit narrower scope, use enough read-only passes to cover that scope. If coverage is incomplete, label the run partial, list uninspected surfaces under known gaps before findings, and do not present absence-of-debt claims.
+3. For repo-wide scope, fan out read-only discovery subagents for broad coverage (see Boundaries). For an explicit narrower scope (step 1), use enough read-only passes to cover that scope. If coverage is incomplete, label the run partial, list uninspected surfaces under known gaps before findings, and do not present absence-of-debt claims.
 4. Discover ecosystems from manifests/config/CI, then build the candidate list (deslop and destale), applying the deslop gate sequence and the destale source-of-truth gate with recorded proof and negative checks.
 5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
-6. After approval, route to `/gitlab-to-issues` (or the tracker-specific workflow for non-GitLab repos) for issue creation; route implementation to the build workflow, not this skill.
+6. After approval, route to `/gitlab-to-issues` (or the tracker-specific workflow for non-GitLab repos) for issue creation; implementation goes to the build workflow (see Operating stance).
 
 ## Graphify-assisted discovery (optional lead-gen)
 
