@@ -1,9 +1,10 @@
 ---
 name: start-review
 description: >-
-  Reviews GitLab MRs against project rules, safety invariants, CI, and TDD test evidence, then posts
-  Review Reports and takes only authorized approval/finish actions. Use when asked to start a review,
-  pick up or review MR(s), review a branch, or evaluate Review Packets.
+  Reviews GitLab MRs against project rules, safety invariants, CI, and TDD test
+  evidence; posts Review Reports and takes only authorized approval/finish
+  actions. Use when asked to start a review, pick up or review MR(s), review a
+  branch, or evaluate Review Packets.
 ---
 
 # Start Review

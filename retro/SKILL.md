@@ -1,11 +1,9 @@
 ---
 name: retro
 description: >-
-  Delivery retrospective for GitLab build/review workflows: mine the
-  just-finished session or batch (conversation, batch metrics, MRs, Review
-  Reports, blocker tokens, local state) for friction evidence, then propose
-  bounded improvements to flow, process, context, and taxonomy as routed
-  follow-up issues. Use after a /start-build, /start-review, or
+  Delivery retrospective for GitLab build/review workflows: mine a just-finished
+  session or batch for friction evidence, then propose bounded improvements as
+  routed follow-up issues. Use after a /start-build, /start-review, or
   /issue-delivery-loop run, when asked for a retro / retrospective / lessons
   learned on agent delivery work, or to turn per-batch delivery metrics into
   improvement issues.

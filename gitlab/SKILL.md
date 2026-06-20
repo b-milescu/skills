@@ -1,9 +1,10 @@
 ---
 name: gitlab
 description: >-
-  Provides MCP-first GitLab transport reference for local/self-hosted GitLab: gitlab-mcp first, guarded help-first glab fallback for
-  documented gaps. Use when GitLab-backed workflows need issue/MR/CI reads, issue/MR mutations, Mutation Guard rules, safe multiline text
-  handling, or documented glab fallback syntax.
+  MCP-first GitLab transport reference for local/self-hosted GitLab: gitlab-mcp
+  first, guarded help-first glab fallback. Use when GitLab-backed workflows need
+  issue/MR/CI reads, issue/MR mutations, Mutation Guard rules, safe multiline
+  text handling, or glab fallback syntax.
 ---
 
 # GitLab transport reference
