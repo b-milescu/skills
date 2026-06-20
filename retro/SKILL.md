@@ -17,10 +17,7 @@ This skill is project-agnostic and runs from any target repo. Project-specific f
 
 ## Use when
 
-- a `/issue-delivery-loop` batch or a `/start-build` + `/start-review` session just finished
-- the user asks for a retro, retrospective, post-batch review, or lessons learned on agent delivery work
-- per-batch metrics from the `issue-delivery-loop` operating contract exist and nothing has consumed them
-- the user asks what friction recurred across the last week/month of delivery work (the `lookback` scope)
+The trigger conditions live in the skill description (just-finished build/review/delivery runs, an explicit retro/retrospective/lessons-learned request, or unconsumed per-batch metrics); the `lookback` scope additionally covers "what friction recurred across the last week/month of delivery work". Below are only the exclusions:
 
 Not this skill: raw memory analytics or aggregate query mechanics (claude-mem's own reporting skills, e.g. `/mem-search`), repo cleanup discovery (`/cleanup-codebase`), or reviewing a diff (`/start-review`).
 
@@ -47,7 +44,7 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 ## Flow
 
 1. **Bound the retro.** Name the batch/session, the issue/MR IIDs in scope, and the time range. Ask only when scope is genuinely ambiguous.
-2. **Collect evidence (read-only).** Batch metrics; per-MR review rounds and verdicts; `Action blocker` / `blocker_token` values; Gate Receipts and gate outcomes; timeout/stale/interrupted rounds; transport fallbacks and repeated workarounds; local state (`git worktree list`, `git for-each-ref refs/tmp`, `git status --porcelain`, gate result on the fresh default branch); ceremony-vs-tier fit per [Effort Scaling](skill://retro/docs/effort-scaling.md).
+2. **Collect evidence (read-only).** Batch metrics; per-MR review rounds and verdicts; `Action blocker` / `blocker_token` values; Gate Receipts and gate outcomes; timeout/stale/interrupted rounds; transport fallbacks and repeated workarounds; local state (`git worktree list`, `git for-each-ref refs/tmp`, `git status --porcelain`, gate result on the fresh default branch); ceremony-vs-tier fit per [Effort Scaling](skill://retro/docs/effort-scaling.md). Done when every source above is inspected or explicitly marked `N/A — <why>`.
 3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence. The catalogue is a checklist, not a cap — record any evidence-backed friction even when no row matches.
 4. **Classify findings.** One `RF-N` per finding using the taxonomy below. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
 5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.

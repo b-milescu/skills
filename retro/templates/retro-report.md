@@ -43,10 +43,10 @@ Scope: <issues / MRs / session>. Date: <YYYY-MM-DD>.
 
 ## Safety floor check
 
-<Confirm no proposal weakens: mandatory independent review gate, TDD for
-behavior-touching work, SHA/CI/authority guards, Context Firewall,
-child-builder/verifier boundaries, MCP-first transport correctness. List any
-finding reclassified to human-decision by this check, or state "none touched".>
+<Confirm no proposal weakens any hard floor in
+[Effort Scaling](skill://retro/docs/effort-scaling.md) (the canonical floor
+list). List any finding reclassified to human-decision by this check, or state
+"none touched".>
 
 ## Routing plan
 
