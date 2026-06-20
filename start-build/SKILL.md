@@ -69,7 +69,7 @@ When the user supplies issue IDs/URLs, use them if suitable. Otherwise pick from
 - Don't weaken safety gates, locks, sequencing, immutable baselines, schemas, migrations, or deploy topology casually.
 - Use project adapters for external APIs; new raw HTTP/SDK/CLI calls require ADR-level justification.
 - Every behavior change needs meaningful tests and regression evidence.
-- Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR; do not fake tests.
+- Follow the TDD policy in [Invocation modes](#invocation-modes); do not fake tests or write meaningless checks.
 - Keep scope tight; file follow-up GitLab issues instead of drive-by refactors.
 
 See [skill://start-build/SAFETY.md](skill://start-build/SAFETY.md) for non-negotiables, refactor rules, quality rules, escalation, and done criteria.
