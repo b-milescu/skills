@@ -305,7 +305,7 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 
 ```
 
-Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the GitLab Mutation Guard in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md): fresh target re-read, reviewed SHA, exact-SHA CI when relevant, canonical Authority Verification from [`skill://gitlab/reference/authority-verification.md`](skill://gitlab/reference/authority-verification.md), caller identity/token stability, context-firewall eligibility, Safe GitLab Text when relevant, fallback eligibility, one mutation, then post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` evidence. Stop on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, same-session/self-finish risk, or fallback-ineligible states.
+Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the [GitLab Mutation Guard](#gitlab-mutation-guard) above (canonical owner: [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md)); it stops on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, same-session/self-finish risk, or fallback-ineligible states.
 
 ### Snippet: sha-bound-approval
 
