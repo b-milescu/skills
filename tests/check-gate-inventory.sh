@@ -40,9 +40,21 @@ extract_inventory_scripts() {
   ' "$doc" | sort
 }
 
-list_tracked_test_scripts() {
+list_executed_test_scripts() {
+  # Discover the same surface scripts/check.sh:38 actually executes: the
+  # top-level tests/*.sh disk glob. Keying on disk presence (not git ls-files)
+  # catches a new test that is present but unregistered before it is committed,
+  # so the local gate fails identically to CI (issue #326). tests/lib/** helper
+  # modules stay excluded because the glob is non-recursive and top-level only.
   local repo="$1"
-  git -C "$repo" ls-files 'tests/*.sh' | awk '/^tests\/[^\/]+\.sh$/ { print }' | sort
+  (
+    cd "$repo" || exit 1
+    shopt -s nullglob
+    local path
+    for path in tests/*.sh; do
+      printf '%s\n' "$path"
+    done
+  ) | awk '/^tests\/[^\/]+\.sh$/ { print }' | sort
 }
 
 check_inventory() {
@@ -52,20 +64,20 @@ check_inventory() {
   local missing_file="$TMPDIR/missing.$(basename "$repo").txt"
   local extra_file="$TMPDIR/extra.$(basename "$repo").txt"
 
-  list_tracked_test_scripts "$repo" > "$actual_file"
+  list_executed_test_scripts "$repo" > "$actual_file"
   extract_inventory_scripts "$repo" > "$inventory_file"
 
   comm -23 "$actual_file" "$inventory_file" > "$missing_file"
   comm -13 "$actual_file" "$inventory_file" > "$extra_file"
 
   if [[ -s "$missing_file" || -s "$extra_file" ]]; then
-    echo "Check Gate shipped shell regression inventory is out of sync with top-level tracked tests/*.sh files." >&2
+    echo "Check Gate shipped shell regression inventory is out of sync with top-level tests/*.sh files present on disk." >&2
     if [[ -s "$missing_file" ]]; then
       echo "Missing from docs/agents/check-gate.md inventory:" >&2
       sed 's/^/  - /' "$missing_file" >&2
     fi
     if [[ -s "$extra_file" ]]; then
-      echo "Inventory entries with no tracked tests/*.sh file:" >&2
+      echo "Inventory entries with no tests/*.sh file present on disk:" >&2
       sed 's/^/  - /' "$extra_file" >&2
     fi
     exit 1
@@ -119,6 +131,25 @@ if [[ $extra_status -eq 0 || "$extra_output" != *"tests/not-tracked.sh"* ]]; the
   echo "non-existent inventory entry fixture did not fail with expected diagnostic" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$extra_output" >&2
+  exit 1
+fi
+
+untracked_repo="$TMPDIR/untracked-present-entry"
+mkdir -p "$untracked_repo"
+make_fixture_repo "$untracked_repo" tests/actual.sh
+write_check_gate_doc "$untracked_repo" tests/actual.sh
+# A new top-level test present on disk but neither tracked nor listed in the
+# inventory: this is exactly what scripts/check.sh:38 would execute, so the
+# inventory check must flag it before commit (it is the bug under issue #326).
+printf '#!/usr/bin/env bash\n' > "$untracked_repo/tests/untracked-present.sh"
+set +e
+untracked_output="$(check_inventory "$untracked_repo" 2>&1)"
+untracked_status=$?
+set -e
+if [[ $untracked_status -eq 0 || "$untracked_output" != *"tests/untracked-present.sh"* ]]; then
+  echo "untracked-present script fixture did not fail with expected diagnostic" >&2
+  echo "--- output ---" >&2
+  printf '%s\n' "$untracked_output" >&2
   exit 1
 fi
 
