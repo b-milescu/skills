@@ -1,9 +1,9 @@
 ---
 name: start-build
 description: >-
-  Implements GitLab issues through scoped issue pickup, TDD red-green-refactor slices, early Draft MRs
-  with Review Packets, and review revisions. Use when asked to start a build, pick up or implement
-  GitLab issue(s), fix bugs, add features, open MRs, or handle review feedback.
+  Implements GitLab issues test-first (TDD) with early Draft MRs and review
+  revisions. Use when asked to start a build, pick up or implement GitLab
+  issue(s), fix bugs, add features, open MRs, or handle review feedback.
 ---
 
 # Start Build

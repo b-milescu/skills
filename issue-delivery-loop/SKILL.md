@@ -1,11 +1,10 @@
 ---
 name: issue-delivery-loop
 description: >-
-  Parent coordinator skill for batch GitLab issue delivery. Use when asked to
-  process ready issues, run an issue-to-MR loop, or manage a bounded delivery
-  batch. Triggers: batch delivery, ready-issue processing, and issue-to-MR
-  coordination. Requires Decoupling Contract before parallel builder/reviewer
-  fan-out and delegates implementation/review to start-build/start-review.
+  Parent coordinator for batch GitLab issue delivery. Use when asked to process
+  ready issues, run an issue-to-MR loop, or manage a bounded delivery batch.
+  Requires Decoupling Contract before parallel builder/reviewer fan-out;
+  delegates implementation/review to start-build/start-review.
 ---
 
 # Issue Delivery Loop

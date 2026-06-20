@@ -1,6 +1,6 @@
 ---
 name: cleanup-codebase
-description: Discover and plan repo-maintenance cleanup as subtractive work — deslop (behavior- and boundary-preserving simplification of needlessly complex local structures) and destale (remove or correct stale/inaccurate code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (use `improve-codebase-architecture`), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (use `triage`). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
+description: Discover and plan subtractive repo-maintenance cleanup — deslop (simplify needlessly complex local structures, preserving behavior and boundaries) and destale (remove/correct stale code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (use `improve-codebase-architecture`), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (use `triage`). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
 ---
 
 # Cleanup Codebase

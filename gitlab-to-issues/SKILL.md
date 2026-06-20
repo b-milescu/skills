@@ -1,6 +1,6 @@
 ---
 name: gitlab-to-issues
-description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues for the current target GitLab repo using vertical slices and target-repo triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents; keep generic /to-issues (if installed) separate.
+description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues as vertical slices with target-repo triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents.
 ---
 
 # GitLab To Issues
