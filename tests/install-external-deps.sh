@@ -42,7 +42,6 @@ for runtime in \
   "$missing_home/.omp/agent/skills"; do
   assert_contains "$missing_output" "warn: missing required external skill tdd in $runtime"
   assert_contains "$missing_output" "warn: missing optional external skill grill-with-docs in $runtime"
-  assert_contains "$missing_output" "warn: missing optional external skill to-issues in $runtime"
   assert_contains "$missing_output" "warn: missing optional external skill improve-codebase-architecture in $runtime"
   assert_contains "$missing_output" "warn: missing optional external skill triage in $runtime"
 done
@@ -51,7 +50,7 @@ present_home="$TMP_ROOT/present"
 for runtime in \
   "$present_home/.claude/skills" \
   "$present_home/.omp/agent/skills"; do
-  for skill in tdd grill-with-docs to-issues improve-codebase-architecture triage; do
+  for skill in tdd grill-with-docs improve-codebase-architecture triage; do
     mkdir -p "$runtime/$skill"
     printf '# %s\n' "$skill" >"$runtime/$skill/SKILL.md"
   done

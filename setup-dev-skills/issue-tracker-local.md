@@ -12,7 +12,7 @@ Issues and PRDs for this repo live as markdown files in `.scratch/`.
 
 ## GitLab-only workflow note
 
-`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this local tracker unless the user explicitly switches to GitLab. For issue breakdowns, use `/to-issues` if installed; otherwise follow this repo's local-markdown workflow manually.
+`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this local tracker unless the user explicitly switches to GitLab. For issue breakdowns, follow this repo's local-markdown workflow manually.
 
 ## When a skill says "publish to the issue tracker"
 

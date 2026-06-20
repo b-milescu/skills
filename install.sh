@@ -61,7 +61,6 @@ REQUIRED_EXTERNAL_SKILLS=(
 )
 OPTIONAL_EXTERNAL_SKILLS=(
   grill-with-docs
-  to-issues
   improve-codebase-architecture
   triage
 )
@@ -120,9 +119,6 @@ external_skill_note() {
       ;;
     grill-with-docs)
       printf 'domain-doc guidance can use it if installed; otherwise edit CONTEXT.md/docs/adr manually'
-      ;;
-    to-issues)
-      printf 'generic non-GitLab issue breakdowns can use it if installed; otherwise follow tracker docs manually'
       ;;
     improve-codebase-architecture)
       printf 'boundary-moving cleanup handoffs can use it if installed; otherwise file follow-up issues manually'
