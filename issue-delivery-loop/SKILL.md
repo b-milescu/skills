@@ -13,10 +13,10 @@ Coordinate ready-issue batches without duplicating canonical build/review proced
 
 ## Start here
 
-Act immediately — this skill drives the batch, it is not passive reference. Follow the Operating contract below; this ramp just orders the first actions:
+Follow the Operating contract below; this ramp just orders the first actions:
 
 1. Preflight (`skill://gitlab/SKILL.md`) and read the ready queue.
-2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work (decoupling proof before parallel work). Serial WIP-1 batches skip this step.
+2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work. Serial WIP-1 batches skip this step.
 3. Classify target issue/MR `trivial`, `moderate`, or `high-risk` using [Tier routing](#tier-routing).
 4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md). Launch review as soon as the build handoff lands, in parallel with CI, for every tier — do not block-watch the pipeline to green before launching the reviewer (the merge floor is enforced by the queued auto-merge finish, not by a foreground CI watch); see [`parent-orchestrator.md` Reviewer launch timing](skill://start-build/reference/parent-orchestrator.md).
 5. On `pass` (with recorded approval action), finish by authority. The default finish is approve SHA-bound then **queue auto-merge** (merge-when-pipeline-succeeds), so GitLab completes the merge the instant the reviewed-SHA pipeline passes; the exact-SHA CI floor and fail-closed guard (a `failed`/`canceled` reviewed-SHA pipeline blocks, never queues) stay intact per the canonical flows.
@@ -24,11 +24,11 @@ Act immediately — this skill drives the batch, it is not passive reference. Fo
 7. Report the per-batch metrics listed in the Operating contract.
 8. (Optional) Hand the per-batch metrics to `/retro` to turn friction evidence into routed follow-up issues.
 
+The batch is not done until every [Batch teardown](#batch-teardown) box is checked or reported as a blocker.
+
 ## Use when
 
 - process a queue carrying the target repo's AFK-ready Triage Role label
-- batch delivery
-- issue-to-MR loop
 
 ## Tier routing
 
