@@ -82,8 +82,7 @@ assigned and must not copy index artifacts between worktrees.
 Then explain generated docs should tell future agents which workflow skill to
 load. If tracker is GitLab, reference `/gitlab`, `/gitlab-to-issues`,
 `/start-build`, and `/start-review`. Otherwise list them as GitLab-only and
-direct agents to `/to-issues` if installed, or to the tracker-specific workflow
-manually.
+direct agents to the tracker-specific workflow manually.
 
 ## 3. Confirm draft
 

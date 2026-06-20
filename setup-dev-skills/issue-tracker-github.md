@@ -15,7 +15,7 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## GitLab-only workflow note
 
-`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this GitHub tracker unless the repo also has a GitLab mirror and the user explicitly chooses that workflow. For issue breakdowns, use `/to-issues` if installed; otherwise follow this repo's GitHub-specific workflow manually.
+`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this GitHub tracker unless the repo also has a GitLab mirror and the user explicitly chooses that workflow. For issue breakdowns, follow this repo's GitHub-specific workflow manually.
 
 ## When a skill says "publish to the issue tracker"
 

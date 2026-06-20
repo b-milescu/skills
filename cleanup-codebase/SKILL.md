@@ -62,7 +62,7 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 3. For repo-wide scope, fan out read-only discovery subagents for broad coverage (see Boundaries). For explicit narrower scope, use enough read-only passes to cover that scope. If coverage is incomplete, label the run partial, list uninspected surfaces under known gaps before findings, and do not present absence-of-debt claims.
 4. Discover ecosystems from manifests/config/CI, then build the candidate list (deslop and destale), applying the deslop gate sequence and the destale source-of-truth gate with recorded proof and negative checks.
 5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
-6. After approval, route to `/to-issues` or `/gitlab-to-issues` for issue creation; route implementation to the build workflow, not this skill.
+6. After approval, route to `/gitlab-to-issues` (or the tracker-specific workflow for non-GitLab repos) for issue creation; route implementation to the build workflow, not this skill.
 
 ## Graphify-assisted discovery (optional lead-gen)
 

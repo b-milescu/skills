@@ -5,7 +5,7 @@ description: Break an approved plan, spec, PRD, or conversation into independent
 
 # GitLab To Issues
 
-Turn an approved plan into GitLab issues for the current target GitLab repository using that repo's Agent Setup Docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name so it does not shadow a generic `/to-issues` skill if installed.
+Turn an approved plan into GitLab issues for the current target GitLab repository using that repo's Agent Setup Docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name.
 
 ## Quick start
 

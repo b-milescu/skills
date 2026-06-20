@@ -13,6 +13,6 @@ Do not use those GitLab-specific skills for this repo's configured issue tracker
 
 ## Alternatives
 
-- For issue breakdowns, use `/to-issues` if installed; otherwise follow this repo's tracker-specific workflow manually.
+- For issue breakdowns, follow this repo's tracker-specific workflow manually.
 - For implementation and review, follow this repo's `CLAUDE.md` / `AGENTS.md`, issue tracker docs, and project-specific commands.
 - Project docs in `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.
