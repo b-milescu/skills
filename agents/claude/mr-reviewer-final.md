@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer-final
 description: Routed final GitLab MR reviewer. Pins Opus 4.8 xhigh effort mandatory independent single-MR review.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__wowtools__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
 skills: start-review, tdd, gitlab
 model: claude-opus-4-8
 effort: xhigh

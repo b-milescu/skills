@@ -46,21 +46,26 @@ canonical kebab-case forms such as `thinking-level`, `autoload-skills`, and
 MR builder and reviewer variants use least-privilege MCP selections in the
 runtime's native dialect.
 
-- Claude Code variants keep explicit `tools:` allowlists with PascalCase builtin
-  tool names (`Bash`, `Read`, `Edit`, `Write`, and peers) plus scoped selectors
-  for the approved servers: `mcp__gitlab-mcp__*` and
-  `mcp__wowtools__*`. Do not replace these allowlists with inherited broad
+- Claude Code variants keep explicit `tools:` allowlists PascalCase builtin
+  tool names (`Bash`, `Read`, `Edit`, `Write`, peers) plus scoped selectors
+  for three approved servers: GitLab (`mcp__gitlab-mcp__*`),
+  `wowtools` (`mcp__wowtools__*`), and Codebase Memory
+  (`mcp__codebase-memory-mcp__*`). Do not replace allowlists inherited broad
   tools or `disallowedTools`.
-- OMP variants keep explicit lowercase builtin tool lists plus the two
-  server-scoped MCP wildcard selectors for the approved servers:
-  `mcp__gitlab_mcp_*` and `mcp__wowtools_*`. Do not add bare `mcp`, `mcp:*`,
-  broad `mcp__*`, Claude-style hyphenated selectors such as `mcp__gitlab-mcp__*`,
-  or exact per-tool OMP MCP enumerations such as
+- OMP variants keep explicit lowercase builtin tool lists plus three
+  server-scoped MCP wildcard selectors for approved servers: GitLab
+  (`mcp__gitlab_mcp_*`), `wowtools` (`mcp__wowtools_*`), and Codebase Memory
+  (`mcp__codebase_memory_mcp_*`). Do not add bare `mcp`, `mcp:*`,
+  broad `mcp__*`, Claude-style hyphenated selectors `mcp__gitlab-mcp__*`,
+  exact per-tool OMP MCP enumerations
   `mcp__gitlab_mcp_get_merge_request`.
 - GitLab authority stays in `gitlab`: it remains canonical for GitLab
   transport, MCP-first snippet contracts, the Mutation Guard, SHA/CI guards,
   approval, merge, ready-transition, label, and finish evidence.
 - `wowtools` is read/query/domain-data lookup only. It is never GitLab
+  authority, CI, gate, approval, merge, ready-transition, label, or finish
+  evidence.
+- Codebase Memory is structural codebase lookup only. It is never GitLab
   authority, CI, gate, approval, merge, ready-transition, label, or finish
   evidence.
 

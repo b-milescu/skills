@@ -1,7 +1,7 @@
 ---
 name: mr-builder-high-risk
 description: Routed GitLab MR builder high-risk child-builder work. Pins GPT-5.5 at high thinking while preserving start-build child-builder authority boundaries.
-tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*"
+tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: openai-codex/gpt-5.5
 thinking-level: high
 autoload-skills: start-build, tdd, gitlab
