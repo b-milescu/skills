@@ -8,7 +8,6 @@ Mutating helpers are fallback implementations under the [GitLab Mutation Guard](
 
 | Helper | Source contract | Guard summary | Regression coverage |
 | --- | --- | --- | --- |
-| `gitlab-ci-watch.sh` | [`gitlab` Snippet: ci-watch-sha-pinned](../SKILL.md#snippet-ci-watch-sha-pinned) | Re-reads MR metadata, requires the MR head to match the reviewed SHA, and only passes green CI when the pipeline SHA matches that reviewed SHA. When the bound MR transitions to `merged` mid-watch and its observed head still equals the reviewed SHA, it emits the terminal `result=merged` (with the merge-commit SHA when readable, falling back to the squash-commit SHA) and exits 0; a merged MR whose head differs from the reviewed SHA fails closed as `head_changed` (exit 2) like every other head-mismatch poll. `unknown_mr_state` (exit 5) stays for genuinely unclassifiable non-merged states only. | `../../tests/gitlab-workflow-helpers.sh` |
 | `gitlab-content-guard.sh` | [`gitlab` safe-text content-byte rule](../reference/safe-text.md) | Pure-local, no-network content-byte guard for a GitLab text body before MCP or fallback mutation. Reads from `--file <path>` or stdin, exits 0 when safe, and rejects NUL, non-whitespace C0 controls, and DEL with role + byte-offset diagnostics that never echo the body; tab, newline, and carriage return stay valid for Markdown. Makes no network call. | `../../tests/gitlab-content-guard.sh` |
 | `gitlab-finish-authority.sh` | [`gitlab` Finish authority matrix](../reference/authority-matrix.md) inside canonical [Authority Verification](../reference/authority-verification.md) | Pure-local, no-network role × merge-authority × action gate. Exits 0 when the matrix permits the action and caller/author ids are present for audit/token-stability; otherwise fails closed with `reason=` in `invalid_user_id`, `authority_source_mismatch`, or `authority`. Builder callers only ever get `handoff`; same GitLab identity is not a finish blocker for a fresh gate-eligible reviewer. | `../../tests/gitlab-finish-authority.sh` |
 | `gitlab-finish-mr.sh` | [`gitlab` Snippet: finish-mr-authority-aware](../SKILL.md#snippet-finish-mr-authority-aware) plus the [GitLab Mutation Guard](../reference/mutation-guard.md) / [Authority Verification](../reference/authority-verification.md) seams | Fallback/helper flow for the guard's SHA-bound finish profile: blocks stale heads, stale/red/missing CI, unknown MR state, missing or unknown merge authority, dirty worktree cleanup, and post-merge local cleanup before local default is fast-forwarded or an equivalent merged SHA is verified. Builder callers always get a handoff; they cannot approve, merge, or queue auto-merge. Human output records `via=glab-fallback`; YAML output records `transport: glab-fallback`. | `../../tests/gitlab-workflow-helpers.sh` |
@@ -54,7 +53,7 @@ directory name (e.g. `gitlab-local` vs `gitlab` during a rename window).
 # Step 3: Reference any script relative to that root.
 #         GITLAB_WRAPPERS="${SKILL_ROOT}/scripts/gitlab-wrappers.sh"
 #         source "${GITLAB_WRAPPERS}"
-#         # or: bash "${SKILL_ROOT}/scripts/gitlab-ci-watch.sh" --mr-iid ...
+# or: bash "${SKILL_ROOT}/scripts/gitlab-merge-watch.sh" --mr-iid ...
 ```
 
 **Concrete example** — the `source .../gitlab-wrappers.sh` case that failed:
@@ -93,7 +92,7 @@ This pattern works on any runtime because:
   directory name.
 
 For helper script URIs that appear in workflow skill docs (e.g.,
-`skill://gitlab/scripts/gitlab-ci-watch.sh`), apply the same recipe: resolve the
+`skill://gitlab/scripts/gitlab-wrappers.sh`), apply the same recipe: resolve the
 skill root once, then substitute the path component from the URI.
 
 ## When to prefer MCP primary snippets

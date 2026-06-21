@@ -9,100 +9,6 @@ trap 'rm -rf "$TEST_TMPDIR"' EXIT
 # shellcheck source=tests/lib/gitlab-fixtures.sh
 source "$REPO_ROOT/tests/lib/gitlab-fixtures.sh"
 
-test_ci_watch_passes_for_matching_green_pipeline() {
-  local dir
-  dir="$(make_fixture_dir ci-success)"
-  write_mr_json "$dir/mr.json" opened abc123 success abc123
-  write_branch_json "$dir/branch.json" success abc123
-
-  run_ci_watch_fixture "$dir" abc123
-
-  assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=pass"
-  assert_contains "$CAPTURE_OUTPUT" "sha=abc123"
-}
-
-test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state() {
-  local dir
-
-  dir="$(make_fixture_dir ci-head-change)"
-  write_mr_json "$dir/mr.json" opened def456 success def456
-  write_branch_json "$dir/branch.json" success def456
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 2
-  assert_contains "$CAPTURE_OUTPUT" "result=head_changed"
-
-  dir="$(make_fixture_dir ci-red)"
-  write_mr_json "$dir/mr.json" opened abc123 failed abc123
-  write_branch_json "$dir/branch.json" failed abc123 '[{"name":"check","status":"failed","allow_failure":false}]'
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 1
-  assert_contains "$CAPTURE_OUTPUT" "result=fail"
-
-  dir="$(make_fixture_dir ci-stale)"
-  write_mr_json "$dir/mr.json" opened abc123 success old999
-  write_branch_json "$dir/branch.json" success old999
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 3
-  assert_contains "$CAPTURE_OUTPUT" "result=stale_ci"
-
-  dir="$(make_fixture_dir ci-unknown-state)"
-  write_mr_json "$dir/mr.json" closed abc123 success abc123
-  write_branch_json "$dir/branch.json" success abc123
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 5
-  assert_contains "$CAPTURE_OUTPUT" "reason=unknown_mr_state"
-}
-
-test_ci_watch_reports_merged_terminal_state() {
-  local dir
-
-  # Human format: merge-commit SHA readable -> result=merged + exit 0.
-  dir="$(make_fixture_dir ci-merged-human)"
-  write_mr_json "$dir/mr.json" merged abc123 success abc123 mergec0mmit789
-  write_branch_json "$dir/branch.json" success abc123
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
-  assert_contains "$CAPTURE_OUTPUT" "merge_commit=mergec0mmit789"
-
-  # YAML format: merged result and merge-commit SHA both surface.
-  dir="$(make_fixture_dir ci-merged-yaml)"
-  write_mr_json "$dir/mr.json" merged abc123 success abc123 mergec0mmit789
-  write_branch_json "$dir/branch.json" success abc123
-  run_ci_watch_fixture "$dir" abc123 0 yaml
-  assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "result: merged"
-  assert_contains "$CAPTURE_OUTPUT" "merge_commit: \"mergec0mmit789\""
-
-  # Squash merge: merge_commit_sha absent, squash_commit_sha used as the SHA.
-  dir="$(make_fixture_dir ci-merged-squash)"
-  write_mr_json "$dir/mr.json" merged abc123 success abc123 "" squashc0mmit456
-  write_branch_json "$dir/branch.json" success abc123
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
-  assert_contains "$CAPTURE_OUTPUT" "merge_commit=squashc0mmit456"
-
-  # Merged with no readable merge/squash SHA still terminal pass, exit 0.
-  dir="$(make_fixture_dir ci-merged-no-sha)"
-  write_mr_json "$dir/mr.json" merged abc123 success abc123
-  write_branch_json "$dir/branch.json" success abc123
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "CI_WATCH result=merged"
-
-  # MF-1: merged but observed head != reviewed SHA must fail closed as
-  # head_changed (exit 2), never terminal success, so an unreviewed commit
-  # cannot be reported as a clean merge.
-  dir="$(make_fixture_dir ci-merged-stale-head)"
-  write_mr_json "$dir/mr.json" merged changedsha success changedsha mergec0mmit789
-  write_branch_json "$dir/branch.json" success changedsha
-  run_ci_watch_fixture "$dir" abc123
-  assert_status 2
-  assert_contains "$CAPTURE_OUTPUT" "result=head_changed"
-  assert_not_contains "$CAPTURE_OUTPUT" "result=merged"
-}
 
 test_merge_watch_reports_merge_completion_terminals() {
   local dir good_sha old_sha merge_sha squash_sha
@@ -1254,9 +1160,6 @@ test_post_merge_snapshot_scrape_requires_separator_before_issue_ref() {
   assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
 }
 
-test_ci_watch_passes_for_matching_green_pipeline
-test_ci_watch_fails_closed_for_head_change_red_stale_and_unknown_state
-test_ci_watch_reports_merged_terminal_state
 test_merge_watch_reports_merge_completion_terminals
 test_merge_watch_fails_closed_on_control_char_body
 test_merge_watch_reads_via_safe_mr_json_not_jq
