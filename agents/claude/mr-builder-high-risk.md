@@ -1,7 +1,7 @@
 ---
 name: mr-builder-high-risk
 description: Routed GitLab MR builder high-risk child-builder work. Pins Opus 4.8 at high effort while preserving start-build child-builder authority boundaries.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
 skills: start-build, tdd, gitlab
 model: claude-opus-4-8
 effort: high

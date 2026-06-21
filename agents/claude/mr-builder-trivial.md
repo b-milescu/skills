@@ -1,7 +1,7 @@
 ---
 name: mr-builder-trivial
 description: Routed GitLab MR builder trivial child-builder work. Pins Sonnet 4.6 at low effort while preserving start-build child-builder authority boundaries.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*"
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
 skills: start-build, tdd, gitlab
 model: claude-sonnet-4-6
 effort: low
