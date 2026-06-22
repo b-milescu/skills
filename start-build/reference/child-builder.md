@@ -25,6 +25,8 @@ Avoid parent-orchestrator and standalone-gate detail while building: do not load
 
 ## Child checklist
 
+Credential handling discipline applies before every local shell or GitLab step: never `cat`, `echo`, or otherwise print token-bearing config such as `.env`, `glab` config files, PAT stores, token env vars, or any value that may contain a secret. If an explicitly approved command must consume a credential, read it into a shell variable inside that command without printing it, pass it directly to the consuming tool, and redact diagnostics as `[REDACTED]`.
+
 1. Run `gitlab` **Snippet: local-repo-preflight** and verify MCP project binding, guarded fallback `glab`/`jq` availability, cwd, repo URL, and default branch.
 2. Resolve the supplied issue, or use the issue-pickup flow when no issue was supplied. Read issue description, comments, labels, linked MRs, dependency notes, and merge-authority instructions.
 3. Start from a clean checkout on the latest default branch: empty `git status --porcelain`, `git fetch origin`, fast-forward default branch, and branch from `origin/<default>` using an issue-referencing name.
