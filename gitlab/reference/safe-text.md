@@ -23,6 +23,23 @@ The MCP validator `validate_gitlab_text` owns the active workflow contract for t
 
 `validate_gitlab_text` accepts a body plus body role, returns success when body is safe, and fails closed on NUL, non-whitespace C0 controls, or DEL. Diagnostics name the role and offending byte offset and **never print body**, so malformed secret-bearing payload is not echoed back.
 
+## MR body issue-reference intent
+
+GitLab's MR auto-close parser does **not** understand negation. A sentence like
+`does not close #410` still leaves closing language adjacent to a bare `#410`,
+so merge may auto-close issue `#410` anyway.
+
+When an MR or issue body mentions an issue it must **not** close, avoid bare
+`#N` in non-closing prose. Prefer one of these safe forms instead:
+
+- `issue 410`
+- `group/project#410`
+- `` `#410` ``
+
+Keep the real auto-close trailer deliberate and unique: use a plain standalone
+`Closes #<target>` line only for the issue the MR should close.
+
+
 ```text
 validate_gitlab_text(role="merge request description", body=body)
 # PASS: no NUL, non-whitespace C0 controls, or DEL

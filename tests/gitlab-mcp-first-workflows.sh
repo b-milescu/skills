@@ -95,6 +95,10 @@ require_text gitlab/reference/finish-result-schema.json 'glab-fallback' 'finish_
 require_text gitlab/reference/safe-text.md 'MCP callers that pass a `body` or' 'MCP body content-byte guard'
 require_text gitlab/reference/safe-text.md 'validate_gitlab_text' 'MCP body validator command'
 require_text gitlab/reference/safe-text.md 'Diagnostics never print the body' 'body redaction invariant'
+require_text gitlab/reference/safe-text.md 'does not close #410' 'negated close example documented'
+require_text gitlab/reference/safe-text.md 'group/project#410' 'safe non-closing full-path issue reference documented'
+require_text gitlab/reference/safe-text.md 'Keep the real auto-close trailer deliberate and unique' 'single intended auto-close trailer guidance'
+require_text gitlab/reference/multiline-text.md 'must \*\*not\*\* close' 'MR description non-closing issue guidance'
 require_text tests/gitlab-content-guard.sh 'LEAK_MARKER_SECRET' 'sensitive-body regression fixture'
 require_text tests/gitlab-content-guard.sh 'assert_not_contains "LEAK_MARKER_SECRET"' 'diagnostics do not print sensitive body'
 

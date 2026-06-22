@@ -20,6 +20,11 @@ tab/newline/carriage return remain valid Markdown. Diagnostics do not print secr
 
 Keep generated text files under temp/run directories, never commit review
 artifacts, and redact secrets before writing text that may be pasted to GitLab.
+When drafting MR descriptions, keep only the intended auto-close trailer in
+plain closing-keyword form (for example `Closes #341`). For any issue the MR
+must **not** close, write `issue 410`, `group/project#410`, or `` `#410` ``
+instead of a bare `#410` inside non-closing prose such as `does not close`.
+
 
 ## MR note pattern
 
