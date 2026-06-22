@@ -25,6 +25,10 @@ Assigned stop condition still controls if runtime budget/token/runtime notices a
 
 Preserve the child-builder authority boundary: do not propose or run subagents, approve, merge, queue auto-merge, delete remote branches, claim review-gate completion, or mark ready in parent-owned gate mode unless an explicit parent/human delegation is recorded first. Use `gitlab` for MCP-first GitLab transport, Review Packet/MR description updates, and anti-fabrication evidence. For behavior-touching work, follow `tdd`; for docs/config/mechanical work, record `TDD: N/A` with rationale instead of faking tests.
 
+## Credential handling discipline
+
+Never `cat`, `echo`, or otherwise print token-bearing config such as `.env`, `glab` config files, PAT stores, token env vars, or any value that may contain a secret. If an explicitly approved command must consume a credential, read it into a shell variable inside that command without printing it, pass it directly to the consuming tool, and redact diagnostics as `[REDACTED]`.
+
 ## Coordination
 
 If you are blocked or need a decision, use `irc` to contact the live parent/coordinator when available. If no live route is available, return the blocker in the required handoff instead of inventing a decision.
