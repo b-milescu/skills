@@ -20,11 +20,13 @@ Target-repo policy remains repo-relative. Use `docs/agents/dev-workflows.md`, `d
 
 This seam owns authority facts only:
 
+- finish-owner routing (`Finish owner: parent`) distinct from merge authority;
 - approval and merge authority claim shape;
 - accepted source types and source precedence;
 - missing, restricted, and conflicting source results;
 - verified authority output and action routing;
 - no-self-approval / no-self-merge relationship to caller identity and review context.
+In `Finish owner: parent` mode, the parent owns approval, merge, and auto-merge queue actions; reviewers hand off finish actions even when merge authority is otherwise verified.
 
 It does **not** replace project binding, MR head SHA checks, exact-SHA CI, local gate / Gate Receipt checks, safe-text validation, fallback eligibility, or post-mutation re-read. Those stay in the [GitLab Mutation Guard](mutation-guard.md). Authority Verification is the guard's authority phase.
 
@@ -35,6 +37,7 @@ Authority claims are maps, not grants. Builders may quote claims and sources in 
 ```yaml
 authority_verification_input:
   requested_action: "approve | merge | queue-auto-merge | handoff"
+  finish_owner: "parent | caller"
   caller:
     role: "builder | reviewer | authorized-parent | human"
     caller_user_id: "<GitLab user id from get_current_user()>"
@@ -119,7 +122,7 @@ authority_verification:
 The no-self rule is unconditional and context-based:
 
 - `builder` role always produces `decision: must-handoff` for handoff and `blocker: self_merge_risk` for any requested approval, merge, or queue action.
-- A same-session builder, parent, planner, or reviser context cannot provide gate-eligible approval or finish for its own MR, even with a different GitLab token.
+- A same-session builder, planner, or reviser context cannot provide gate-eligible approval or finish for its own MR, even with a different GitLab token. A parent coordinator may finish only after an independent final-reviewer pass plus durable Review Report, fresh MR SHA/CI/authority/identity guards, and `Finish owner: parent` / explicit authority source routing.
 - GitLab account equality (`caller_user_id == mr_author_id`) is **not** a blocker by itself for a fresh, gate-eligible reviewer. Identity is audit/token-stability evidence; review independence is the session/context boundary.
 - Missing or changed caller identity maps to `identity_unavailable` or `identity_changed` before the role × authority decision runs.
 

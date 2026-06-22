@@ -18,7 +18,7 @@ head-binding, **not** role authority. The matrix-match regression test in
 [`tests/gitlab-finish-authority.sh`](../../tests/gitlab-finish-authority.sh)
 parses this table and asserts the gate agrees with it cell-for-cell.
 
-This matrix feeds the canonical [Authority Verification](authority-verification.md) phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own approval authority defaults, source precedence, project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering.
+This matrix feeds the canonical [Authority Verification](authority-verification.md) phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own approval authority defaults, source precedence, project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering. `Finish owner: parent` is an additional routing constraint layered before this table: reviewer callers must handoff instead of approve, merge, or queue auto-merge, while `authorized-parent`/`human` finish paths still require the same verified merge authority source and fresh guards.
 
 ## Actions
 
@@ -57,6 +57,7 @@ Notes:
   itself grant a direct `merge`.
 - `handoff` is always allowed for any role × authority pair: stopping is never
   blocked by authority.
+- `Finish owner: parent` overrides reviewer mutation cells to `handoff` while preserving parent/authorized-parent/human cells subject to the same authority source, independent-review, SHA, CI, and Mutation Guard checks.
 
 ## Identity and context guard
 

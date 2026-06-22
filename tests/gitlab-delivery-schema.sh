@@ -96,6 +96,10 @@ require_text "$schema" '`issue-metadata`' 'evidence kind enum'
 require_text "$schema" '`gate-receipt`' 'evidence kind enum'
 require_text "$schema" '`mr-metadata`' 'evidence kind enum'
 require_text "$schema" '`default-after-pass`' 'approval authority enum'
+require_text "$schema" 'finish_owner' 'finish owner action field in delivery schema'
+for copy in "${copies[@]}"; do
+  require_text "$copy" 'finish_owner:' 'delivery copy finish_owner token'
+done
 require_text "$schema" '`approval-only`' 'authority enum'
 require_text "$schema" '`queue auto-merge`' 'authority enum'
 require_text "$schema" '`auto-merge queued`' 'finish action enum'

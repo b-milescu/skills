@@ -78,4 +78,16 @@ for file in "${routed_final_reviewer_prompts[@]}"; do
   require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer treats handoff authority as claim'
 done
 
+for file in $(agent_prompt_paths "${routed_builder_prompt_names[@]}"); do
+  require_text "$file" 'Finish owner: parent' 'routed builder prompt finish owner mention'
+  require_text "$file" 'never changes Gate owner|not.*Gate owner' 'routed builder finish owner not gate owner'
+done
+for file in "${routed_final_reviewer_prompts[@]}"; do
+  require_text "$file" 'Finish owner: parent' 'routed reviewer finish-owner parent contract'
+done
+for file in start-review/REVIEW-FLOW.md start-build/reference/parent-orchestrator.md issue-delivery-loop/SKILL.md gitlab/reference/authority-verification.md; do
+  require_text "$file" 'Finish owner: parent' 'parent-managed finish owner literal'
+  require_text "$file" 'parent[^.]*approval[^.]*merge[^.]*auto-merge|approval[^.]*merge[^.]*auto-merge[^.]*parent' 'parent owns finish actions'
+done
+
 printf 'review-authority-explicit: PASS\n'

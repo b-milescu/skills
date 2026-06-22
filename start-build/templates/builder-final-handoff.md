@@ -98,6 +98,7 @@ agent_handoff:
         verified: false
         conflicts: []
     actions:
+      finish_owner: "N/A"
       approval: "N/A"
       finish: "none"
       next: "parent-run-gate"

@@ -124,6 +124,10 @@ require_text "$EFFORT" 'parallel with CI for every tier' \
 refute_text "$EFFORT" 'the `trivial` tier waits for exact-SHA terminal-green CI before launch' \
   'retired effort-scaling trivial-tier wait instruction'
 
+require_text "$REVIEW_FLOW" 'Finish owner: parent'   'parent-managed finish owner exception documented'
+require_text "$PARENT" 'Finish owner: parent'   'parent orchestrator finish owner literal'
+require_text "$DELIVERY" 'Finish owner: parent'   'delivery loop passes parent finish owner'
+
 if [[ "$failures" -ne 0 ]]; then
   echo "queued-auto-merge-default-finish: FAIL: $failures violation(s)" >&2
   exit 1

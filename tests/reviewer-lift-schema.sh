@@ -87,4 +87,6 @@ require_text_case_sensitive "$schema" 'Acceptance surfaces' 'acceptance_surfaces
 require_text_case_sensitive "$schema" 'acceptance_surfaces_ref' 'reviewer-lift acceptance_surfaces_ref reference'
 require_text_case_sensitive "$schema" 'fail-closed' 'reviewer-lift acceptance_surfaces fail-closed no-ref default'
 
+require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'
+require_text_case_sensitive "start-review/templates/reviewer-final-handoff.md" 'Finish owner: parent' 'reviewer final handoff Finish owner guidance'
 echo "Reviewer Lift schema check passed: ${#copies[@]} generated copies match $schema and no stale duplicate field-list tables found."
