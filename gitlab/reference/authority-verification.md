@@ -26,6 +26,7 @@ This seam owns authority facts only:
 - missing, restricted, and conflicting source results;
 - verified authority output and action routing;
 - no-self-approval / no-self-merge relationship to caller identity and review context.
+In `Finish owner: parent` mode, the parent owns approval, merge, and auto-merge queue actions; reviewers hand off finish actions even when merge authority is otherwise verified.
 
 It does **not** replace project binding, MR head SHA checks, exact-SHA CI, local gate / Gate Receipt checks, safe-text validation, fallback eligibility, or post-mutation re-read. Those stay in the [GitLab Mutation Guard](mutation-guard.md). Authority Verification is the guard's authority phase.
 
