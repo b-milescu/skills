@@ -114,6 +114,8 @@ remain separate. They require an explicit `Merge authority` value and
 verifiable `Merge authority source`; approval never implies those finish
 actions.
 
+Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In `/issue-delivery-loop` / parent-orchestrated child-builder plus final-reviewer mode, the parent owns approval, direct merge, and auto-merge queue actions after a fresh guarded pass review; the reviewer owns only the Review Report verdict and evidence, then routes `Next action: finish-by-authorized-actor` back to the parent/authorized finisher.
+
 ### Release/deploy policy
 
 This skills repo has no product deploy path. Release actions for skill packages

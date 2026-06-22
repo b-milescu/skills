@@ -91,4 +91,7 @@ require_text \
   'action failure[^.]*pass verdict|pass verdict[^.]*action failure' \
   'action failure after pass verdict guidance'
 
+require_text   start-review/REVIEW-FLOW.md   'Finish owner: parent[^.]*not approve|do not approve[^.]*Finish owner: parent'   'parent-managed reviewer does not approve'
+require_text   start-review/REVIEW-FLOW.md   'approval_action: "not-approved"[^.]*finish_action: "none"|finish_action: "none"[^.]*approval_action: "not-approved"'   'parent-managed enum-safe pass action values'
+
 printf 'review-action-order: PASS\n'

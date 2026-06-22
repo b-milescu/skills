@@ -87,6 +87,7 @@ agent_handoff:
       summary: "accepted builder gate evidence"
     acceptance_surfaces: []
     authority:
+      finish_owner: "parent"
       approval:
         value: "default-after-pass"
         source: "start-review/REVIEW-FLOW.md#approval-authority-policy"
@@ -98,8 +99,9 @@ agent_handoff:
         verified: true
         conflicts: []
     actions:
-      approval: "approved"
-      finish: "approval-only stop"
+      finish_owner: "parent"
+      approval: "not-approved"
+      finish: "none"
       next: "finish-by-authorized-actor"
       blockers: []
     handoff_contract:
@@ -113,7 +115,7 @@ agent_handoff:
       changed_since_last_handoff: false
       evidence_ready_for_next_actor:
         - "review-report-posted"
-        - "approval-side-effect-recorded"
+        - "parent-finish-owner-recorded"
     evidence:
       - tier: "tier-1"
         kind: "review-report"
@@ -156,6 +158,7 @@ agent_handoff:
   approval_authority_source: "stable repo policy ref | parent task prompt | human/MR comment URL | rulebook path+section"
   merge_authority: "approval-only | reviewer may merge | queue auto-merge | human release | project default: ..."
   merge_authority_source: "parent task prompt | human MR comment URL | rulebook path+section | project default source"
+  finish_owner: "parent | reviewer | authorized-parent | human | N/A"
   approval_action: "approved | not-approved | blocked | N/A"
   finish_action: "merged | auto-merge queued | approval-only stop | human-release stop | none | blocked | N/A"
   action_blocker: "none | missing-authority | stale-or-missing-ci | changed-head-sha | merge-conflict | sha-bound-action-unsupported | preflight-failure | permission-failure | human-decision-needed | partial-review | secret-exposure-suspected | other"

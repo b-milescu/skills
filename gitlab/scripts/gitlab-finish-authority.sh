@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 # Deterministic, pure-local finish authority gate.
 #
-# Decides role authority for a finish action: extracts the role × merge-authority
-# × action case logic from gitlab/scripts/gitlab-finish-mr.sh (the inline
-# finish authority switch) so authority is enforced deterministically rather than
-# in prose. Makes NO network call: it only validates ids and compares the strings
-# it is handed. Transport-layer confirm/sha guards enforce intent and
-# head-binding; the context firewall enforces review independence.
+# Decides role authority finish action: extracts role × merge-authority
+# × action case logic gitlab/scripts/gitlab-finish-mr.sh (the inline
+# finish authority switch) so authority enforced deterministically
+# in prose. Makes NO network call: only validates ids compares strings
+# handed. Transport-layer confirm/sha guards enforce intent
+# head-binding; context firewall enforces review independence.
 #
 # Canonical authority seam: gitlab/reference/authority-verification.md
-# Finish decision table:     gitlab/reference/authority-matrix.md
-# Identity lifecycle:        gitlab/reference/identity-and-authentication.md
+# Finish decision table: gitlab/reference/authority-matrix.md
+# Identity lifecycle: gitlab/reference/identity-and-authentication.md
 #
 # Exit 0 only if:
-#   (a) the role × merge-authority × action combo is allowed by the matrix, AND
-#   (b) caller_user_id / mr_author_id are present for audit and token-stability checks.
-# Otherwise non-zero with reason= in:
-#   invalid_user_id          (empty/missing caller or author id)
-#   authority_source_mismatch (declared authority source != expected, when checked)
-#   authority                (role × authority does not permit the action)
+# (a) role × merge-authority × action combo is allowed by matrix, AND
+# (b) caller_user_id / mr_author_id present audit token-stability checks.
+# Otherwise non-zero reason= in:
+# invalid_user_id (empty/missing caller or author id)
+# authority_source_mismatch (declared authority source != expected, checked)
+# authority (role × authority or finish-owner routing does not permit action)
 
 set -euo pipefail
 
@@ -26,18 +26,20 @@ usage() {
   cat <<'USAGE'
 Usage: gitlab-finish-authority.sh --caller-role <role> --caller-user-id <id> \
   --mr-author-id <id> --merge-authority <authority> --action <action> \
-  [--authority-source <s>] [--expected-authority-source <s>]
+  [--finish-owner <caller|parent>] [--authority-source <s>] \
+  [--expected-authority-source <s>]
 
-Caller roles:  builder | reviewer | authorized-parent | human
+Caller roles: builder | reviewer | authorized-parent | human
 Merge authorities: approval-only | reviewer may merge | queue auto-merge | human release
-Actions:       handoff | approve | merge | queue-auto-merge
+Actions: handoff | approve | merge | queue-auto-merge
+Finish owners: caller (default) | parent
 
 Exit codes:
-  0   action permitted
-  4   reason=authority                role x authority does not permit the action
-  7   reason=invalid_user_id          empty/missing caller or author id
-  8   reason=authority_source_mismatch declared source != expected source
-  64  usage / argument error
+  0  action permitted
+  4  reason=authority role x authority does not permit action
+  7  reason=invalid_user_id empty/missing caller or author id
+  8  reason=authority_source_mismatch declared source != expected source
+  64 usage / argument error
 USAGE
 }
 
@@ -48,7 +50,7 @@ merge_authority=""
 action=""
 authority_source=""
 expected_authority_source=""
-# Sentinels distinguish "flag omitted" from "flag passed empty" for the id flags.
+finish_owner="caller"
 caller_user_id_set=false
 mr_author_id_set=false
 
@@ -59,23 +61,23 @@ while [[ $# -gt 0 ]]; do
     --mr-author-id) mr_author_id="${2:-}"; mr_author_id_set=true; shift 2 ;;
     --merge-authority) merge_authority="${2:-}"; shift 2 ;;
     --action) action="${2:-}"; shift 2 ;;
+    --finish-owner) finish_owner="${2:-}"; shift 2 ;;
     --authority-source) authority_source="${2:-}"; shift 2 ;;
     --expected-authority-source) expected_authority_source="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "AUTHORITY_GATE result=blocked reason=unknown_arg arg=$1" >&2
       usage >&2
-      exit 64 ;;
+      exit 64
+      ;;
   esac
 done
 
 block() {
-  # block <exit_code> <reason>
-  echo "AUTHORITY_GATE result=blocked reason=$2 caller_role=$caller_role merge_authority=$merge_authority action=$action" >&2
+  echo "AUTHORITY_GATE result=blocked reason=$2 caller_role=$caller_role merge_authority=$merge_authority action=$action finish_owner=$finish_owner" >&2
   exit "$1"
 }
 
-# --- argument validation (usage errors, distinct from authority decisions) ---
 [[ -n "$caller_role" ]] || { echo "AUTHORITY_GATE result=blocked reason=missing_caller_role" >&2; exit 64; }
 [[ -n "$merge_authority" ]] || { echo "AUTHORITY_GATE result=blocked reason=missing_merge_authority" >&2; exit 64; }
 [[ -n "$action" ]] || { echo "AUTHORITY_GATE result=blocked reason=missing_action" >&2; exit 64; }
@@ -94,26 +96,28 @@ case "$action" in
   handoff|approve|merge|queue-auto-merge) ;;
   *) echo "AUTHORITY_GATE result=blocked reason=unknown_action action=$action" >&2; exit 64 ;;
 esac
+case "$finish_owner" in
+  caller|parent) ;;
+  *) echo "AUTHORITY_GATE result=blocked reason=unknown_finish_owner finish_owner=$finish_owner" >&2; exit 64 ;;
+esac
 
-# --- decision order (fail-closed) ---
-# 1. invalid_user_id: ids are required and must be non-empty for every decision.
 [[ -n "$caller_user_id" && -n "$mr_author_id" ]] || block 7 invalid_user_id
 
-# 2. authority_source_mismatch: when an expected source is declared, the caller's
-#    declared source must match it. Only checked when both are provided.
 if [[ -n "$expected_authority_source" && "$authority_source" != "$expected_authority_source" ]]; then
   block 8 authority_source_mismatch
 fi
 
-# 3. authority: role x merge-authority x action matrix. Mirrors the inline switch
-#    in gitlab-finish-mr.sh and gitlab/reference/authority-matrix.md.
-#    handoff is always allowed (stopping is never blocked by authority).
 if [[ "$action" == "handoff" ]]; then
   exit 0
 fi
 
-# builder never approves/merges/queues, regardless of merge authority.
 if [[ "$caller_role" == "builder" ]]; then
+  block 4 authority
+fi
+
+# Parent-managed dev-flow: reviewer reports verdict/evidence and hands off;
+# parent/authorized-parent/human finish paths still use the normal matrix.
+if [[ "$finish_owner" == "parent" && "$caller_role" == "reviewer" ]]; then
   block 4 authority
 fi
 

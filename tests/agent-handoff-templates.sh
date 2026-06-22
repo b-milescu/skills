@@ -57,6 +57,7 @@ reviewer_expected=(
   approval_authority_source
   merge_authority
   merge_authority_source
+  finish_owner
   approval_action
   finish_action
   action_blocker
@@ -211,7 +212,14 @@ for (const file of process.argv.slice(2)) {
     if (actualFinishAction !== expectedFinishAction) {
       throw new Error(`${file}: reviewer finish_action enum drift: ${actualFinishAction}`);
     }
-    for (const token of ['`auto-merge queued`', '`approval-only stop`', '`human-release stop`']) {
+        const actions = parsed.agent_handoff.delivery?.actions || {};
+      if (actions.finish_owner !== 'parent' || actions.approval !== 'not-approved' || actions.finish !== 'none' || actions.next !== 'finish-by-authorized-actor') {
+        throw new Error(`${file}: parent-managed pass action values drift`);
+      }
+      if (parsed.agent_handoff.delivery?.handoff_contract?.expected_next_actor !== 'parent') {
+        throw new Error(`${file}: parent-managed pass expected_next_actor drift`);
+      }
+  for (const token of ['`auto-merge queued`', '`approval-only stop`', '`human-release stop`', '`Finish owner: parent`']) {
       if (!content.includes(token)) {
         throw new Error(`${file}: reviewer finish_action guidance missing ${token}`);
       }

@@ -42,6 +42,7 @@ delete_local_source_branch=false
 delete_remote_source_branch=false
 output_format="human"
 transport="glab-fallback"
+finish_owner="caller"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -53,6 +54,8 @@ while [[ $# -gt 0 ]]; do
       merge_authority="${2:-}"; shift 2 ;;
     --caller-role)
       caller_role="${2:-}"; shift 2 ;;
+    --finish-owner)
+      finish_owner="${2:-}"; shift 2 ;;
     --source-branch)
       source_branch="${2:-}"; shift 2 ;;
     --default-branch)
@@ -91,6 +94,10 @@ esac
 case "$caller_role" in
   builder|reviewer|authorized-parent|human) ;;
   *) echo "FINISH_MR result=blocked reason=unknown_caller_role caller=$caller_role" >&2; exit 4 ;;
+esac
+case "$finish_owner" in
+  caller|parent) ;;
+  *) echo "FINISH_MR result=blocked reason=unknown_finish_owner finish_owner=$finish_owner" >&2; exit 4 ;;
 esac
 case "$output_format" in human|yaml) ;; *) echo "FINISH_MR result=blocked reason=bad_format" >&2; exit 64 ;; esac
 
@@ -269,6 +276,11 @@ if [[ -n "$worktree_path" ]]; then
     worktree_cleanup="blocked_dirty_worktree"
     finish_exit 5 blocked "FINISH_MR result=blocked reason=dirty_worktree_cleanup worktree=$worktree_path" "dirty_worktree_cleanup"
   fi
+fi
+
+if [[ "$finish_owner" == "parent" && "$caller_role" == "reviewer" ]]; then
+  check_issue_state_if_requested
+  finish_exit 0 handoff "FINISH_MR result=handoff reason=finish_owner_parent sha=$reviewed_sha ci=$ci_guard issue_state=$issue_state worktree=$worktree_cleanup branch=$branch_cleanup" "" handoff
 fi
 
 case "$caller_role:$merge_authority" in

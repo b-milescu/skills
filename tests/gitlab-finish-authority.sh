@@ -107,6 +107,14 @@ run_gate --caller-role reviewer --caller-user-id 7 --mr-author-id 9 \
 assert_status 4
 assert_contains "reason=authority"
 
+# --- finish owner parent makes reviewer hand off but allows parent finish ---
+run_gate --caller-role reviewer --caller-user-id 7 --mr-author-id 9   --merge-authority "queue auto-merge" --finish-owner parent --action queue-auto-merge
+assert_status 4
+assert_contains "reason=authority"
+
+run_gate --caller-role authorized-parent --caller-user-id 7 --mr-author-id 9   --merge-authority "queue auto-merge" --finish-owner parent --action queue-auto-merge
+assert_status 0
+
 # --- no network call: the script must not reference glab/curl/wget/git remote ---
 if grep -Eq '(^|[^a-zA-Z_])(glab|curl|wget)([^a-zA-Z_]|$)' "$GATE"; then
   fail "gate script must make no network call (found glab/curl/wget reference)"

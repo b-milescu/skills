@@ -28,7 +28,7 @@ report post-merge success from compact `delivery` values alone.
 | local_gate | Local gate command/status plus `not_run_reason` when not run; parent-owned mode records `status: not-run` with `not_run_reason: parent-owned`. |
 | acceptance_surfaces | Declared acceptance surfaces and per-surface evidence status. Each entry names one taxonomy surface and its evidence (`test`, `smoke`, `docs-read`, `ci`, or `N/A — <reason>`). Use empty list when no named surface is touched. |
 | authority | Quoted approval and merge/finish authority claims, sources, Authority Verification status, and conflicts/restrictions. |
-| actions | Approval action, finish action, next-action token, and action blockers. |
+| actions | Finish owner, approval action, finish action, next-action token, and action blockers. |
 | handoff_contract | Shared routing block naming phase, next actor/action, blocker state, parent-decision need, change flag, and evidence-ready pointers. |
 | evidence | Evidence tier/kind/source indexes that point to durable proof. |
 | blockers | Blocking tokens and concise safe descriptions. |
@@ -120,6 +120,7 @@ delivery:
       verified: false
       conflicts: []
   actions:
+    finish_owner: "N/A"
     approval: "N/A"
     finish: "none"
     next: "spawn-reviewer"

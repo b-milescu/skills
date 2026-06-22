@@ -23,6 +23,7 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 | Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
 | Merge authority | `<verified finish authority value or blocked: missing-authority>` |
 | Merge authority source | `<verified finish authority source or blocked: missing-authority>` |
+| Finish owner | `<parent for parent-managed dev-flow; otherwise reviewer / authorized actor / N/A>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
 | Report link | `<this comment; final handoff contains URL when available>` |
 
@@ -40,7 +41,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 | Reviewed SHA | `<same SHA used for diff, local checks, CI classification, and action guards>` |
 | CI snapshot | `<pipeline URL/ID/status/SHA or N/A with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
-| Authority snapshot | `<Approval authority + source verification; Merge authority + source verification>` |
+| Authority snapshot | `<Approval authority + source verification; Merge authority + source verification; Finish owner verification>` |
 | Decoupling verification | `<N/A / accepted as-stated / re-checked: result>` |
 | Time spent | `<duration>` |
 | Ran code? | `<no / yes: commands>` |
@@ -144,7 +145,7 @@ Record checkout path and checkout SHA used for local checks before listing comma
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound MR URL/project, verified Approval authority / Approval authority source, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Verify authority through `../../gitlab/reference/authority-verification.md`: use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing merge authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
+Required. State the `Review verdict`, bound MR URL/project, verified Approval authority / Approval authority source, verified Merge authority / Merge authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Verify authority through `../../gitlab/reference/authority-verification.md`: use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing merge authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. Parent-managed pass with `Finish owner: parent` is non-mutating for the reviewer and records `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, `Next action: finish-by-authorized-actor`. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
 
 Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
 
@@ -153,6 +154,7 @@ Record the chosen value for each field; the full enums are defined once in the [
 | Review verdict | `<chosen value>` |
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
 | Authority result | `<approval policy/source + merge authority/source summary>` |
+| Finish owner | `<chosen value; parent-managed pass uses Finish owner: parent>` |
 | Approval action | `<chosen value>` |
 | Finish action | `<chosen value>` |
 | Action blocker | `<chosen value>` |
