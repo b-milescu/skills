@@ -219,6 +219,7 @@ agent_handoff:
   finish result unless a parent/human resolves them. Authority Verification owns
   this conflict/restriction/missing-source classification and the no-self
   approval/merge context check.
+- `finish_owner` records launch-supplied finish owner. Parent-managed pass uses literal `Finish owner: parent`; reviewer records verdict/evidence only and leaves approval, direct merge, and auto-merge queue actions to the parent or authorized finisher.
 - `approval_action` records only the GitLab approval side effect: `approved`,
   `not-approved`, `blocked`, or `N/A`. It must be `blocked` when review cannot
   safely take approval due to restricted/missing approval authority, SHA/CI/tool/preflight/permission
