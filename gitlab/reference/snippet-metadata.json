@@ -613,7 +613,8 @@
       ],
       "fallback_conditions": [
         "known glab mr merge --auto-merge 405 path only after finish_merge_request or merge_merge_request is unavailable/blocked by documented MCP gap and all guards pass",
-        "preserve SHA/CI/authority guards"
+        "preserve SHA/CI/authority guards",
+        "documented no-CI project (gate policy ref declares no CI and project_profile.ci_jobs.required empty): absent reviewed-SHA pipeline is expected, queue via SHA-bound merge_merge_request(auto_merge=true) or the no_ci_expected tool input per ci-finish-guards.md; any project with pipeline history stays fail-closed on exact-SHA CI"
       ],
       "post_mutation_reread": {
         "mode": "required",
@@ -632,7 +633,7 @@
         "inputs": "Bound MR, reviewed SHA, source/target branches, queue authority/source, caller role/identity.",
         "outputs": "Auto-merge queued or blocked handoff.",
         "required_guards": "Fresh MCP re-read of SHA, exact-SHA CI/protected policy, authority/source, caller identity/token-stability, and context-firewall eligibility before action.",
-        "fallback_conditions": "Known `glab mr merge --auto-merge` 405 path only after `finish_merge_request` / `merge_merge_request` is unavailable or blocked by documented MCP gap and all guards pass; preserve SHA/CI/authority guards.",
+        "fallback_conditions": "Known `glab mr merge --auto-merge` 405 path only after `finish_merge_request` / `merge_merge_request` is unavailable or blocked by documented MCP gap and all guards pass; preserve SHA/CI/authority guards. On a documented no-CI project (gate policy ref declares no CI and `project_profile.ci_jobs.required` empty) the absent reviewed-SHA pipeline is expected: queue via SHA-bound `merge_merge_request(auto_merge=true)` or the `no_ci_expected` tool input per [`ci-finish-guards.md`](ci-finish-guards.md); any project with pipeline history stays fail-closed on exact-SHA CI.",
         "post_mutation_reread": "Required: re-read MR and record `via=mcp` or `via=glab-fallback`."
       }
     },
@@ -872,7 +873,8 @@
         "stop on dirty worktree cleanup"
       ],
       "fallback_conditions": [
-        "raw glab fallback only under snippet-specific documented MCP gaps after MCP re-read and all guards pass"
+        "raw glab fallback only under snippet-specific documented MCP gaps after MCP re-read and all guards pass",
+        "documented no-CI project (gate policy ref declares no CI and project_profile.ci_jobs.required empty): absent reviewed-SHA pipeline is expected, finish via SHA-bound merge_merge_request or the no_ci_expected tool input per ci-finish-guards.md; any project with pipeline history stays fail-closed on exact-SHA CI"
       ],
       "post_mutation_reread": {
         "mode": "required",
@@ -892,7 +894,7 @@
         "inputs": "MR IID, reviewed SHA, merge authority/source, caller role/id, source/target branch, default branch, optional issue/worktree.",
         "outputs": "`finish_result`/handoff with action, blocker, sha, CI, issue, cleanup, identity, and `via`.",
         "required_guards": "Builder always stops at handoff; stop on stale head, stale/red/missing CI, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup.",
-        "fallback_conditions": "Raw `glab` fallback only under snippet-specific documented MCP gaps after MCP re-read and all guards pass; no helper-script finish path is active workflow.",
+        "fallback_conditions": "Raw `glab` fallback only under snippet-specific documented MCP gaps after MCP re-read and all guards pass; no helper-script finish path is active workflow. On a documented no-CI project (gate policy ref declares no CI and `project_profile.ci_jobs.required` empty) the absent reviewed-SHA pipeline is expected, not a `missing_ci` blocker: finish via SHA-bound `merge_merge_request` or the `no_ci_expected` tool input per [`ci-finish-guards.md`](ci-finish-guards.md); any project with pipeline history stays fail-closed on exact-SHA CI.",
         "post_mutation_reread": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
       }
     }
