@@ -23,7 +23,7 @@ Match the ceremony of a change to its **risk × blast radius**. Spend tokens, ag
 ## Token economy
 
 - Wait on completion events; do not poll or re-read child agents mid-run (see `../start-build/reference/timeout-handling.md`).
-- When merge authority is granted up front, the approving reviewer finishes in-session — no separate finisher agent for a single merge command.
+- When merge authority is granted up front, the approving reviewer finishes in-session — no separate finisher agent for a single merge command. This in-session finish applies to standalone `/start-review` runs where no parent coordinator exists; parent-orchestrated batches always keep `Finish owner: parent` regardless of when merge authority was granted.
 - Do not fan out multiple analysis or verification agents for a change a single pass covers; reserve fan-out for wide solution spaces and high-risk verification (see the design-phase note above).
 - Recon shared facts once, then reuse. When several builder-side subagents need the same inputs (invariant tests, rulebook tokens, file shapes), gather them once in the coordinating context and pass the digest into each prompt rather than letting every agent re-read the same files. This does **not** apply to the mandatory review gate: independent reviewers re-derive evidence by design and must not be handed builder-gathered conclusions as fact.
 - Verify mutations from their own authoritative read-back, not from a prior step's reported success; treat unconfirmed success as not-done.
