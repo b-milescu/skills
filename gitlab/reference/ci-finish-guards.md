@@ -41,3 +41,16 @@ Map finish inputs to Mutation Guard fields as follows:
 Fallback remains blocked on the Mutation Guard blockers: changed/stale head, stale/red/missing CI, missing authority/source, permission uncertainty, identity drift, same-session/self-finish risk, content-byte failure when text is involved, or unavailable post-mutation re-read. A guarded fallback result records `via=glab-fallback`; MCP primary records `via=mcp`; no-action handoff records `via=n/a`.
 
 Local default-branch fetch/fast-forward and source/worktree cleanup happen only after the finish action is complete or reported as no-action. Worktree removal still requires a clean `status --porcelain` / safety-check precondition. Issue closure checks report `closure_pending` instead of force-closing.
+
+## Documented no-CI project (finish fallback condition)
+
+The finish/CI guards above treat an absent exact-SHA pipeline as a fail-closed blocker: `finish_merge_request` refuses when no pipeline exists for `reviewed_sha`, which is correct for any project that runs CI. The **documented no-CI project** condition is the single sanctioned exception, so a coordinator/finisher on such a repo has a named guarded path instead of improvising a raw `merge_merge_request`.
+
+A target repo qualifies only when **both** parts of this conjunctive test hold — either part alone never qualifies:
+
+1. The repo's gate policy ref (`project_profile.gate_policy_ref`) explicitly declares that no CI is configured and green CI is not an available evidence type; **and**
+2. `project_profile.ci_jobs.required` is empty (`[]`).
+
+When and only when both are true, the absent reviewed-SHA pipeline is the expected state for this repo class, not a `missing_ci` blocker, and the sanctioned finish path is a SHA-bound MCP `merge_merge_request` (`sha == reviewed_sha`) — or the tool-side `no_ci_expected` input once [`agents/gitlab-mcp#116`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/116) ships as the eventual primary-tool path. Every other guard is unchanged: reviewed-SHA binding, authority value/source, caller identity/token-stability, and the full [GitLab Mutation Guard](mutation-guard.md) order all still apply, and a builder caller still stops at handoff.
+
+This condition does **not** weaken exact-SHA CI for any project that has CI. A project with **any** pipeline history — even a single prior pipeline on any ref — stays on the existing fail-closed exact-SHA rules: missing, red, stale, canceled, or skipped reviewed-SHA CI never passes, and the no-CI exception must not be claimed for it. The eventual `no_ci_expected` tool path enforces the same boundary server-side by refusing (and naming the offending pipeline) if any pipeline exists. If it is unclear whether a repo qualifies, treat it as CI-bearing and fail closed.
