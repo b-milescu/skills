@@ -156,6 +156,7 @@ Stop condition: return final handoff after updating Draft/ready MR issue. Runtim
 expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
 Forbidden actions: do not spawn reviewers; do not approve, merge, queue auto-merge, or claim parent-owned gate pass/fail; when Gate owner is parent: do not mark the MR ready or perform any draft→ready transition — leave it Draft for the parent's Gate Receipt and ready transition; when Gate owner is builder: run the gate and mark ready per standard flow.
 minimum evidence pointers: project rulebook path, repo Check Gate path, MR URL if already exists, any narrowly relevant issue-linked docs/tests.
+Reference staleness: issue line numbers/counts are measured at the brief's baseline commit and may be stale after intervening merges — re-locate every referenced block by content (function/heading name), not line number, and note any reconciliations in the MR description.
 ```
 
 The `Gate owner` line is the explicit gate-ownership selection. Set it once per
