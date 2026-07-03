@@ -1,7 +1,7 @@
 ---
 name: mr-builder-moderate
 description: Routed GitLab MR builder moderate child-builder work. Pins GPT-5.5 at medium thinking while preserving start-build child-builder authority boundaries.
-tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
+tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: openai-codex/gpt-5.5
 thinking-level: medium
 autoload-skills: start-build, tdd, gitlab

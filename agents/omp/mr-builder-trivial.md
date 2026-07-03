@@ -1,7 +1,7 @@
 ---
 name: mr-builder-trivial
 description: Routed GitLab MR builder trivial child-builder work. Pins GPT-5.4 at low thinking while preserving start-build child-builder authority boundaries.
-tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
+tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: openai-codex/gpt-5.4
 thinking-level: low
 autoload-skills: start-build, tdd, gitlab

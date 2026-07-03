@@ -97,8 +97,8 @@ function assert(condition, message) {
 }
 
 assert(loaded.size === expectedNames.length, `loaded ${loaded.size} expected OMP agents, wanted ${expectedNames.length}`);
-const requiredTools = ["read", "search", "find", "bash", "edit", "write", "todo", "irc", "yield"];
-const forbiddenTools = ["grep", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools", "mcp:codebase-memory-mcp", "mcp", "mcp:*", "mcp__*", "mcp__gitlab-mcp__*", "mcp__codebase-memory-mcp__*", "mcp__gitlab_mcp_get_issue", "mcp__codebase_memory_mcp_search_graph"];
+const requiredTools = ["read", "grep", "glob", "bash", "edit", "write", "todo", "irc", "yield"];
+const forbiddenTools = ["search", "find", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools", "mcp:codebase-memory-mcp", "mcp", "mcp:*", "mcp__*", "mcp__gitlab-mcp__*", "mcp__codebase-memory-mcp__*", "mcp__gitlab_mcp_get_issue", "mcp__codebase_memory_mcp_search_graph"];
 const requiredMcp = [
   "mcp__gitlab_mcp_*",
   "mcp__wowtools_*",

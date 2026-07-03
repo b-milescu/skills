@@ -36,8 +36,8 @@ remote state.
 ## OMP variant
 
 Use OMP's task-agent frontmatter dialect. Use lowercase builtin tool names such
-as `read`, `search`, `find`, `bash`, `edit`, `write`, `todo`, and `irc`; do not
-use retired bridge tools such as `grep`, `ls`, or `intercom`. Multiword keys use
+as `read`, `grep`, `glob`, `bash`, `edit`, `write`, `todo`, and `irc`; do not
+use retired bridge tools such as `search`, `find`, `ls`, or `intercom`. Multiword keys use
 canonical kebab-case forms such as `thinking-level`, `autoload-skills`, and
 `read-summarize`.
 
