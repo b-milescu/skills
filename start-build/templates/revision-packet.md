@@ -14,7 +14,6 @@
 | Delta since previous reviewed SHA | `<old SHA -> new SHA; reason; changed files; substantive? yes/no>` |
 | Gate rerun | `<command + result, or N/A — why>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available>` |
-| Status | `ready-for-review` |
 
 ## Summary
 

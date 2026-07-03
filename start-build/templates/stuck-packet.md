@@ -9,7 +9,6 @@
 | Title | |
 | Builder | `@builder — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Branch | |
-| Status | `stuck` |
 | Stuck duration | |
 | Severity | `<blocking / slowing / curiosity>` |
 | Safety surface | `<external-system / coordination / gates / state / migration / deploy / other>` |
