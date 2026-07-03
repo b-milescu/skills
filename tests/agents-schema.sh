@@ -23,7 +23,7 @@ cat > "$TMPDIR/good/agents/omp/neutral-worker.md" <<'MD'
 ---
 name: neutral-worker
 description: OMP worker fixture
-tools: "read, search, find, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
+tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: anthropic/claude-opus-4-8
 thinking-level: high
 autoload-skills: start-build, tdd, gitlab
@@ -57,7 +57,7 @@ cat > "$TMPDIR/bad/agents/omp/wrong-tools.md" <<'MD'
 ---
 name: wrong-tools
 description: OMP bad fixture
-tools: "Bash, Read, grep, ls, intercom, mcp:gitlab-mcp"
+tools: "Bash, Read, search, find, ls, intercom, mcp:gitlab-mcp"
 effort: high
 color: green
 skills: start-build
@@ -236,7 +236,8 @@ for expected in \
   "retired Pi frontmatter field \"systemPromptMode\" is not allowed in OMP agent" \
   "OMP tool \"Bash\" must use OMP tool name \"bash\"" \
   "OMP tool \"Read\" must use OMP tool name \"read\"" \
-  "OMP tool \"grep\" must use OMP-native tool \"search\"" \
+  "OMP tool \"search\" must use OMP-native tool \"grep\"" \
+  "OMP tool \"find\" must use OMP-native tool \"glob\"" \
   "OMP tool \"ls\" must use OMP-native tool \"directory reads via read\"" \
   "OMP tool \"intercom\" must use OMP-native tool \"irc\"" \
  "OMP MCP selector \"mcp:gitlab-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
