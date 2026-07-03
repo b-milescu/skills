@@ -14,7 +14,6 @@ dependency bump with no API/runtime impact. `filling-guide.md`
 | Branch | |
 | Base commit | |
 | Commit(s) under review | |
-| Status | `<draft / ready-for-review>` |
 
 The issue-closing reference must be a plain, unbolded `Closes #N` on its own line
 (e.g. `Closes #123`). Do not bold or wrap the keyword (`**Closes:** #N` and

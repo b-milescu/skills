@@ -14,7 +14,6 @@ section-by-section instructions and the conditional-section triggers.
 | Branch | |
 | Base commit | |
 | Commit(s) under review | |
-| Status | `<draft / ready-for-review / stuck>` |
 | ADR needed? | `<yes/no; planned ADR slug if yes>` |
 | Blocks | |
 | Blocked by | |
