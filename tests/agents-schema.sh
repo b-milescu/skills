@@ -250,7 +250,7 @@ for expected in \
  "OMP MCP selector \"mcp__gitlab_mcp_get_project\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
  "OMP MCP selector \"mcp__codebase_memory_mcp_search_graph\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
   "frontmatter YAML does not parse" \
-  "OMP model \"claude-opus-4-8\" not an approved model/provider; allowed provider prefixes: anthropic/, openai-codex/, pi/" \
+  "OMP model \"claude-opus-4-8\" not an approved model/provider; allowed provider prefixes: anthropic/, openai-codex/, pi/, zai/" \
   "OMP thinking-level \"med\" is not a valid value; allowed: inherit, off, minimal, low, medium, high, xhigh" \
   "OMP frontmatter field \"thinkingLevel\" must use canonical key \"thinking-level\"" \
   "OMP frontmatter field \"autoloadSkills\" must use canonical key \"autoload-skills\"" \
@@ -318,8 +318,19 @@ model: pi/slow
 Body.
 MD
 
+cat > "$TMPDIR/good-models/agents/omp/allowed-delta.md" <<'MD'
+---
+name: allowed-delta
+description: model fixture
+tools: read
+model: zai/glm-5.2
+---
+
+Body.
+MD
+
 models_output="$(node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$TMPDIR/good-models/agents")"
-if [[ "$models_output" != "agents-schema: checked 0 Claude agent(s), 3 OMP agent(s)" ]]; then
+if [[ "$models_output" != "agents-schema: checked 0 Claude agent(s), 4 OMP agent(s)" ]]; then
   echo "unexpected models output: $models_output" >&2
   exit 1
 fi

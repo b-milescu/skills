@@ -1,8 +1,8 @@
 ---
 name: mr-builder-trivial
-description: Routed GitLab MR builder trivial child-builder work. Pins GPT-5.4 at low thinking while preserving start-build child-builder authority boundaries.
+description: Routed GitLab MR builder trivial child-builder work. Pins GLM-5.2 at low thinking while preserving start-build child-builder authority boundaries.
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
-model: openai-codex/gpt-5.4
+model: zai/glm-5.2
 thinking-level: low
 autoload-skills: start-build, tdd, gitlab
 ---
@@ -11,7 +11,7 @@ You are the routed MR builder trivial variant for GitLab issue implementation. T
 
 ## Routing contract
 
-- Model/thinking pin: `openai-codex/gpt-5.4` with `thinking-level: low`.
+- Model/thinking pin: `zai/glm-5.2` with `thinking-level: low`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 
