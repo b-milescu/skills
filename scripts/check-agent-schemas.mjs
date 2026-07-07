@@ -65,7 +65,7 @@ const OMP_MCP_SELECTORS = new Set(['mcp__gitlab_mcp_*', 'mcp__wowtools_*', 'mcp_
 const ALLOWED_OMP_MCP_SELECTORS = [...OMP_MCP_SELECTORS].join(', ');
 
 const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);
-const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/'];
+const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/', 'zai/'];
 const ALLOWED_CLAUDE_MODELS = [...CLAUDE_MODELS].join(', ');
 const ALLOWED_OMP_MODEL_PREFIXES = OMP_MODEL_PROVIDER_PREFIXES.join(', ');
 const FORBIDDEN_ROUTE_NAME_TOKEN_RE = /(^|[-_.])(?<token>claude|anthropic|openai|codex|gpt(?:[-_.]?\d+)*|opus(?:[-_.]?\d+)*|sonnet(?:[-_.]?\d+)*)(?=$|[-_.])/iu;
