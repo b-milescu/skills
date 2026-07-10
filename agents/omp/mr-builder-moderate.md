@@ -1,8 +1,8 @@
 ---
 name: mr-builder-moderate
-description: Routed GitLab MR builder moderate child-builder work. Pins GLM-5.2 at medium thinking while preserving start-build child-builder authority boundaries.
+description: Routed GitLab MR builder moderate child-builder work. Pins pi/task at medium thinking while preserving start-build child-builder authority boundaries.
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
-model: zai/glm-5.2
+model: pi/task
 thinking-level: medium
 autoload-skills: start-build, tdd, gitlab
 ---
@@ -11,7 +11,7 @@ You are the routed MR builder moderate variant for GitLab issue implementation. 
 
 ## Routing contract
 
-- Model/thinking pin: `zai/glm-5.2` with `thinking-level: medium`.
+- Model/thinking pin: `pi/task` with `thinking-level: medium`.
 - High verbosity is required by this prompt body, not frontmatter. Include complete issue, MR, SHA, gate-ownership, authority, changed-path, and blocker evidence in the Review Packet and final handoff.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 

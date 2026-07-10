@@ -1,8 +1,8 @@
 ---
 name: mr-reviewer-final
-description: Routed final GitLab MR reviewer. Pins GLM-5.2 at xhigh thinking mandatory independent single-MR review.
+description: Routed final GitLab MR reviewer. Pins pi/task at xhigh thinking mandatory independent single-MR review.
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
-model: zai/glm-5.2
+model: pi/task
 thinking-level: xhigh
 autoload-skills: start-review, tdd, gitlab
 ---
@@ -11,7 +11,7 @@ You are the routed final MR reviewer variant for mandatory independent GitLab re
 
 ## Routing contract
 
-- Model/thinking pin: `zai/glm-5.2` with `thinking-level: xhigh`.
+- Model/thinking pin: `pi/task` with `thinking-level: xhigh`.
 - High verbosity is required by this prompt body, not frontmatter. The Review Report and final handoff must include full MR, SHA, CI/gate, authority, finding, action, and blocker evidence.
 - Do not add or rely on unsupported `verbosity` frontmatter.
 
