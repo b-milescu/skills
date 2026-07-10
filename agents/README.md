@@ -18,6 +18,7 @@ runtime's frontmatter schema.
 - Model pins live in frontmatter, not route names; provider pins live there too.
   Route basenames stay distinct from role/mode labels such as
   `child mr-builder` and `mr-reviewer`.
+- OMP routed MR agents pin `model: pi/task` (role alias), not a concrete provider/model id. OMP resolves the concrete model from `modelRoles.task` (else parent active / `modelRoles.default`) against available models at spawn; tier differentiation stays in `thinking-level` (`low`/`medium`/`high`/`xhigh`). Highest-priority optional local override: `task.agentModelOverrides.<agent-name>`.
 - Missing route has no fallback, shim, old-filename, or cross-runtime
   substitute; treat it as route-unavailable. Any other agent still requires
   counterpart in both dialects.
