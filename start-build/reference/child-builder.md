@@ -23,6 +23,12 @@ Load only the context needed for the issue: project rulebook index, `start-build
 
 Avoid parent-orchestrator and standalone-gate detail while building: do not load parent reviewer discovery, reviewer launch protocol, finish action guidance, or post-merge verifier instructions unless the parent explicitly changes your scope.
 
+## Absolute worktree paths for edits
+
+The harness `edit`/`write`/`read` tools resolve RELATIVE paths against the agent **session cwd** (the coordinator checkout), not a bash shell's `cd`. A `cd <worktree>` in `bash` does NOT relocate them: a child that `cd`s into its worktree and then edits with relative paths silently lands changes in the coordinator checkout, not its worktree.
+
+For every `edit`/`write`/`read` of a project file, use an ABSOLUTE path rooted in your worktree. Run git with `git -C <worktree>` rather than relying on shell cwd. After editing, confirm the edits landed in the worktree (`git -C <worktree> status`) and the coordinator checkout stayed clean (`git -C <coordinator> status --porcelain` empty). The parent creates the worktree and passes its absolute path; re-use that path verbatim.
+
 ## Child checklist
 
 Credential handling discipline applies before every local shell or GitLab step: never `cat`, `echo`, or otherwise print token-bearing config such as `.env`, `glab` config files, PAT stores, token env vars, or any value that may contain a secret. If an explicitly approved command must consume a credential, read it into a shell variable inside that command without printing it, pass it directly to the consuming tool, and redact diagnostics as `[REDACTED]`.
