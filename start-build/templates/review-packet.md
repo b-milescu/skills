@@ -29,6 +29,9 @@ Closes #N
 
 Field names, order, and required semantics are canonical in `reviewer-lift-schema.md`; parent-owned Gate Receipt / Check Gate ownership is canonical in `../reference/parent-owned-gate.md`.
 
+Before a parent-owned ready transition, validate the canonical receipt and this
+current Reviewer Lift with `skill://start-build/scripts/validate-gate-receipt.mjs`.
+
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|

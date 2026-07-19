@@ -25,6 +25,7 @@ with `skill://start-build/...`:
 - `skill://start-build/templates/reviewer-lift-schema.md`
 - `skill://start-build/templates/builder-final-handoff.md`
 - `skill://start-build/templates/review-packet.md`
+- `skill://start-build/scripts/validate-gate-receipt.mjs`
 
 Target-repo policy remains repo-relative. The full project Check Gate command and
 policy are read from `docs/agents/check-gate.md` in the target repo, not from a
@@ -102,6 +103,19 @@ gate_receipt:
 `observed_at` is optional. Every other field is required so the parent, reviewer,
 and finisher can bind the receipt to the exact MR, issue, checkout, SHA, command,
 status transition, preflight state, and evidence.
+
+## Pre-ready validation
+
+Before the GitLab Mutation Guard's ready mutation, run the cross-platform,
+pure-local validator against the canonical receipt and current Review Packet:
+
+```text
+node skill://start-build/scripts/validate-gate-receipt.mjs --receipt "<receipt.yml>" --review-packet "<review-packet.md>" --mr-iid "<MR IID>" --issue-iid "<issue IID>" --reviewed-sha "<current MR head SHA>" --gate-command "<project Check Gate command>" --gate-policy-ref "<project gate policy ref>"
+```
+
+Any nonzero result stops the ready transition before a GitLab mutation. The
+validator binds the receipt and Reviewer Lift to the supplied MR, issue, SHA,
+gate command, and policy; it does not replace the checklist below.
 
 ## Parent verification checklist
 
