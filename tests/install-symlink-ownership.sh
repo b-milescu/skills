@@ -72,6 +72,19 @@ assert_symlink_resolves_to() {
   fi
 }
 
+assert_skill_resolves_to_source() {
+  local link_path="$1" expected_abs="$2" actual_target actual_abs
+
+  if [[ ! -L "$link_path" ]]; then
+    echo "expected symlink: $link_path" >&2
+    exit 1
+  fi
+  actual_target="$(readlink "$link_path")"
+  actual_abs="$("$REALPATH" -m "$(dirname "$link_path")/$actual_target")"
+  [[ "$actual_abs" == "$expected_abs" ]] && return
+  assert_symlink_resolves_to "$actual_abs/.source" "$expected_abs"
+}
+
 home_dir="$TMP_ROOT/home"
 output_file="$TMP_ROOT/install.out"
 external_dir="$TMP_ROOT/external"
@@ -125,7 +138,7 @@ assert_contains "$output_file" "$home_dir/.claude/agents/mr-builder-high-risk.md
 assert_contains "$output_file" "$home_dir/.omp/agent/skills/start-build (existing symlink points outside repo: $omp_custom_skill_abs)"
 assert_contains "$output_file" "$home_dir/.omp/agent/agents/mr-builder-high-risk.md (existing symlink points outside repo: $omp_custom_agent_abs)"
 
-assert_symlink_resolves_to "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
+assert_skill_resolves_to_source "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
 assert_not_exists "$home_dir/.claude/agents/mr-reviewer.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-reviewer-final.md" "$REPO_ROOT/agents/omp/mr-reviewer-final.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-builder-moderate.md" "$REPO_ROOT/agents/omp/mr-builder-moderate.md"

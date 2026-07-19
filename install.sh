@@ -14,16 +14,21 @@
 # those by hand. Stale repo-owned symlinks are pruned so renames propagate
 # cleanly.
 #
-# Runtime skill roots must contain only actual skill directories. Shared repo
-# docs/templates stay reachable through skill-local resource symlinks such as
-# ~/.claude/skills/start-build/docs/... and
-# ~/.claude/skills/start-build/shared-templates/...; linking those resource dirs
-# as skill-root siblings makes some runtimes present them as bogus skills.
+# Runtime skill roots must contain only actual skill directories. On Windows,
+# Linux, and macOS, shared docs/templates stay reachable through skill-local
+# resource symlinks such as ~/.claude/skills/start-build/docs/... and
+# ~/.claude/skills/start-build/shared-templates/.... When Git materializes
+# tracked resource symlinks as regular relative-target files, the installer
+# builds an equivalent runtime view without copying the canonical resources.
+# Linking shared roots as skill-root siblings would expose bogus skills.
 
 set -euo pipefail
 shopt -s nullglob
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+
+INSTALLER_OWNED_ROOTS=("$REPO_ROOT")
+PREPARED_SKILL_SOURCE=
 
 usage() {
   cat <<'USAGE'
@@ -164,16 +169,16 @@ resolve_symlink_target() {
   fi
 }
 
-is_repo_owned_path() {
-  local path="$1"
-  case "$path" in
-    "$REPO_ROOT"|"$REPO_ROOT"/*)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
-  esac
+is_installer_owned_path() {
+  local path="$1" root
+  for root in "${INSTALLER_OWNED_ROOTS[@]}"; do
+    case "$path" in
+      "$root"|"$root"/*)
+        return 0
+        ;;
+    esac
+  done
+  return 1
 }
 
 link() {
@@ -185,7 +190,7 @@ link() {
       return
     }
     src_abs=$("$REALPATH" -m "$src")
-    if [[ "$existing_abs" != "$src_abs" ]] && ! is_repo_owned_path "$existing_abs"; then
+    if [[ "$existing_abs" != "$src_abs" ]] && ! is_installer_owned_path "$existing_abs"; then
       printf '  skip:    %s (existing symlink points outside repo: %s)\n' "$dest" "$existing_abs" >&2
       return
     fi
@@ -200,6 +205,74 @@ link() {
   printf '  linked:  %s -> %s\n' "$dest" "$rel"
 }
 
+skill_requires_runtime_view() {
+  local source="$1" resource
+  for resource in docs shared-templates; do
+    [[ -f "$source/$resource" && ! -L "$source/$resource" ]] && return 0
+  done
+  return 1
+}
+
+prepare_skill_source() {
+  local source="$1" view_root="$2" view entry name target expected marker_target
+
+  PREPARED_SKILL_SOURCE="$source"
+  skill_requires_runtime_view "$source" || return 0
+
+  view="$view_root/$(basename "$source")"
+  if [[ -e "$view" || -L "$view" ]]; then
+    if [[ ! -d "$view" || -L "$view" || ! -L "$view/.source" ]]; then
+      printf '  skip:    %s (existing runtime view is not installer-managed)\n' "$view" >&2
+      return 1
+    fi
+    marker_target=$(resolve_symlink_target "$view/.source") || return 1
+    if [[ "$marker_target" != "$source" ]]; then
+      printf '  skip:    %s (runtime view belongs to %s)\n' "$view" "$marker_target" >&2
+      return 1
+    fi
+    for entry in "$view"/* "$view"/.[!.]*; do
+      if [[ ! -L "$entry" ]]; then
+        printf '  skip:    %s (runtime view contains unmanaged entry %s)\n' "$view" "$entry" >&2
+        return 1
+      fi
+    done
+    for entry in "$view"/* "$view"/.[!.]*; do
+      rm "$entry"
+    done
+    rmdir "$view"
+  fi
+
+  mkdir -p "$view"
+  link "$source" "$view/.source"
+  for entry in "$source"/*; do
+    name=$(basename "$entry")
+    target="$entry"
+    if [[ -f "$entry" && ! -L "$entry" ]]; then
+      case "$name" in
+        docs)
+          expected="$REPO_ROOT/docs"
+          ;;
+        shared-templates)
+          expected="$REPO_ROOT/templates"
+          ;;
+        *)
+          expected=
+          ;;
+      esac
+      if [[ -n "$expected" ]]; then
+        target=$("$REALPATH" -m "$(dirname "$entry")/$(<"$entry")")
+        if [[ "$target" != "$expected" ]]; then
+          printf '  skip:    %s (materialized resource target is %s, expected %s)\n' "$entry" "$target" "$expected" >&2
+          return 1
+        fi
+      fi
+    fi
+    link "$target" "$view/$name"
+  done
+
+  PREPARED_SKILL_SOURCE="$view"
+}
+
 prune_stale_repo_links() {
   local dir="$1" validator="$2"
   local link_path name target_abs
@@ -212,12 +285,10 @@ prune_stale_repo_links() {
 
     target_abs=$(resolve_symlink_target "$link_path") || continue
 
-    case "$target_abs" in
-      "$REPO_ROOT"/*)
-        rm "$link_path"
-        printf '  removed: %s (stale repo-owned symlink)\n' "$link_path"
-        ;;
-    esac
+    if is_installer_owned_path "$target_abs"; then
+      rm "$link_path"
+      printf '  removed: %s (stale installer-owned symlink)\n' "$link_path"
+    fi
   done
 }
 
@@ -229,10 +300,14 @@ for skill_dir in "${SKILL_DESTS[@]}"; do
     continue
   fi
   mkdir -p "$skill_dir"
+  skill_view_root="$parent/.skill-resource-views"
+  mkdir -p "$skill_view_root"
+  INSTALLER_OWNED_ROOTS+=("$skill_view_root")
   echo "Skills → $skill_dir"
   prune_stale_repo_links "$skill_dir" is_skill_name
   for name in "${SKILL_NAMES[@]}"; do
-    link "$REPO_ROOT/$name" "$skill_dir/$name"
+    prepare_skill_source "$REPO_ROOT/$name" "$skill_view_root" || continue
+    link "$PREPARED_SKILL_SOURCE" "$skill_dir/$name"
   done
   warn_missing_external_skills "$skill_dir"
 done
