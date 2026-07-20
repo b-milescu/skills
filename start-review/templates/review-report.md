@@ -12,6 +12,7 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 |---|---|
 | Review verdict | `<pass / request-changes / reject / blocked>` |
 | Bound MR target | `<bound MR URL; bound MR project path; bound repo URL>` |
+| Report locator | `<stable report ID chosen before publication, e.g. review-report:<project>!<mr-iid>:<round>; never pending>` |
 | Reviewed SHA | `<sha reviewed; must equal MR head at decision time>` |
 | CI status / SHA | `<green / pending-auto-merge / waived / blocked-stale-or-red / blocked-missing; pipeline SHA or N/A>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
@@ -38,6 +39,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 | Issue | `<linked issue URL or N/A with reason>` |
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | `<round or report number>` |
+| Report locator | `<same stable report ID used by every finding tuple and reviewer final handoff>` |
 | Reviewed SHA | `<same SHA used for diff, local checks, CI classification, and action guards>` |
 | CI snapshot | `<pipeline URL/ID/status/SHA or N/A with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
@@ -45,6 +47,16 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 | Decoupling verification | `<N/A / accepted as-stated / re-checked: result>` |
 | Time spent | `<duration>` |
 | Ran code? | `<no / yes: commands>` |
+
+## Finding identities
+
+The tuple contract is canonical in `../reference/finding-identities.md`. Add one row for every real finding, using this report's single `Report locator` and exact `Reviewed SHA`; leave the table with no data rows when the report has no findings. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <this-report.md>`.
+
+<!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
+| Report locator | Reviewed SHA | Finding ID |
+|---|---|---|
+<!-- FILL REQUIRED: one row per MF-N/SF-N/C-N, or no data rows when there are no findings. -->
+<!-- FINDING-IDENTITY-SCHEMA:END -->
 
 ## Reviewer Lift (builder handoff)
 
@@ -54,6 +66,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Field | Builder value / reviewer check |
 |---|---|
 | Reviewed SHA | `<copy from Reviewer Lift; must equal MR head sha at approve-time>` |
+| Finding bindings | `<copy from Reviewer Lift; verify every report locator + originating reviewed SHA + short ID tuple against the originating report, or none>` |
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
 | Gate owner | `<copy from Reviewer Lift; verify builder vs parent ownership and parent-owned child boundary when applicable>` |
 | Gate coverage | `<copy from Reviewer Lift; verify full-local / hybrid / ci-only; parent-owned is invalid coverage>` |
@@ -96,7 +109,7 @@ the reviewer independently verifies its exact-SHA and exact-note inputs and evid
 
 ## Findings
 
-Required. Use stable IDs only for real findings. Each `MF-N` must be revision-ready: exact path + line/range locator, concrete problem, and bounded remedy direction. If a human/product/security decision is still required, do not disguise it as a Must Fix; use `Review verdict: blocked`, `Action blocker: human-decision-needed`, and a specific actionable blocker question instead. For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
+Required. Use stable short IDs only for real findings and bind every one in the `Finding identities` table above so its canonical identity is `(Report locator, Reviewed SHA, Finding ID)` per `../reference/finding-identities.md`. Each `MF-N` must be revision-ready: exact path + line/range locator, concrete problem, and bounded remedy direction. If a human/product/security decision is still required, do not disguise it as a Must Fix; use `Review verdict: blocked`, `Action blocker: human-decision-needed`, and a specific actionable blocker question instead. For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
 
 ### Must Fix
 

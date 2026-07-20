@@ -48,6 +48,7 @@ reviewer_expected=(
   delivery
   review_verdict
   mr
+  report_locator
   reviewed_sha
   pipeline
   local_checks
@@ -211,6 +212,17 @@ for (const file of process.argv.slice(2)) {
     const actualFinishAction = parsed.agent_handoff.finish_action;
     if (actualFinishAction !== expectedFinishAction) {
       throw new Error(`${file}: reviewer finish_action enum drift: ${actualFinishAction}`);
+    }
+    const handoff = parsed.agent_handoff;
+    if (!handoff.report_locator || !handoff.reviewed_sha) {
+      throw new Error(`${file}: reviewer handoff must expose report_locator and reviewed_sha`);
+    }
+    for (const findings of Object.values(handoff.findings || {})) {
+      for (const finding of findings) {
+        if (finding.report_locator !== handoff.report_locator || finding.reviewed_sha !== handoff.reviewed_sha || !finding.id) {
+          throw new Error(`${file}: reviewer finding lacks canonical report_locator/reviewed_sha/id tuple`);
+        }
+      }
     }
         const actions = parsed.agent_handoff.delivery?.actions || {};
       if (actions.finish_owner !== 'parent' || actions.approval !== 'not-approved' || actions.finish !== 'none' || actions.next !== 'finish-by-authorized-actor') {
