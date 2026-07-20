@@ -48,7 +48,7 @@ function receipt(overrides = {}) {
 
 function lift(overrides = {}, newline = "\n") {
   const rows = {
-    "Reviewed SHA": sha,
+    "Reviewed SHA": `\`${sha}\``,
     "Gate coverage rationale": `${expected.gatePolicy}; required CI jobs = check; locally covered jobs = check via ${expected.gateCommand}; unmapped CI-only jobs = none`,
     "CI pipeline": `N/A — pipeline unavailable for candidate ${sha}`,
     "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_77`,
@@ -127,7 +127,9 @@ try {
   fails({ liftBody: `${lift()}\u007fSECRET-FIXTURE-CONTENT`, name: "unsafe-lift" }, "unsafe Lift control byte");
 
   const liftCases = [
-    [{ "Reviewed SHA": staleSha }, "stale Reviewed SHA"],
+    [{ "Reviewed SHA": `\`${staleSha}\`` }, "stale Reviewed SHA"],
+    [{ "Reviewed SHA": sha }, "unwrapped Reviewed SHA"],
+    [{ "Reviewed SHA": `\`${sha}\` extra` }, "malformed Reviewed SHA"],
     [{ "Gate coverage rationale": `required CI jobs = check; ${expected.gateCommand}` }, "missing gate policy"],
     [{ "Gate coverage rationale": expected.gatePolicy }, "missing gate command in rationale"],
     [{ "CI pipeline": `https://gitlab.example/pipelines/7 success ${staleSha}` }, "stale CI SHA"],
