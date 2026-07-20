@@ -80,8 +80,9 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, not truth. Parent-owned Gate Receipt verification uses `../../start-build/reference/parent-owned-gate.md`. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
 
 For parent-owned gates, the parent must have run
-`skill://start-build/scripts/validate-gate-receipt.mjs` before ready-marking;
-the reviewer independently verifies its exact-SHA inputs and evidence.
+`skill://start-build/scripts/validate-gate-receipt.mjs` with
+`--gate-receipt-note-id "<current Gate Receipt note ID>"` before ready-marking;
+the reviewer independently verifies its exact-SHA and exact-note inputs and evidence.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|

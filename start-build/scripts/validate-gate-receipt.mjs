@@ -7,6 +7,7 @@ const requiredFlags = [
   "--mr-iid",
   "--issue-iid",
   "--reviewed-sha",
+  "--gate-receipt-note-id",
   "--gate-command",
   "--gate-policy-ref",
 ];
@@ -162,8 +163,8 @@ function validateLift(body, expected) {
   if (!containsSha(rows.get("CI pipeline"), expected.reviewedSha)) fail("Reviewer Lift CI pointer is stale");
 
   const localGate = rows.get("Local gate");
-  const mrPointer = new RegExp(`/merge_requests/${expected.mrIid}#note_\\d+(?:$|[^0-9])`);
-  if (!/\bPASS\b/.test(localGate) || /pending/i.test(localGate) || !localGate.includes(expected.gateCommand) || !/Gate Receipt/i.test(localGate) || !mrPointer.test(localGate)) {
+  const receiptPointer = new RegExp(`/merge_requests/${expected.mrIid}#note_${expected.receiptNoteId}(?=$|[\\s|)>,.;])`);
+  if (!/\bPASS\b/.test(localGate) || /pending/i.test(localGate) || !localGate.includes(expected.gateCommand) || !/Gate Receipt/i.test(localGate) || !receiptPointer.test(localGate)) {
     fail("Reviewer Lift local gate or Gate Receipt pointer is stale");
   }
 
@@ -178,10 +179,11 @@ const expected = {
   mrIid: args.get("--mr-iid"),
   issueIid: args.get("--issue-iid"),
   reviewedSha: args.get("--reviewed-sha").toLowerCase(),
+  receiptNoteId: args.get("--gate-receipt-note-id"),
   gateCommand: args.get("--gate-command"),
   gatePolicy: args.get("--gate-policy-ref"),
 };
-if (!/^\d+$/.test(expected.mrIid) || !/^\d+$/.test(expected.issueIid) || !/^[0-9a-f]{40}$/.test(expected.reviewedSha)) fail("invalid expected binding");
+if (!/^\d+$/.test(expected.mrIid) || !/^\d+$/.test(expected.issueIid) || !/^[0-9a-f]{40}$/.test(expected.reviewedSha) || !/^\d+$/.test(expected.receiptNoteId)) fail("invalid expected binding");
 for (const value of Object.values(expected)) if (unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
 
 validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);

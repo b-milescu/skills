@@ -107,15 +107,18 @@ status transition, preflight state, and evidence.
 ## Pre-ready validation
 
 Before the GitLab Mutation Guard's ready mutation, run the cross-platform,
-pure-local validator against the canonical receipt and current Review Packet:
+pure-local validator against the canonical receipt and current Review Packet.
+Pass the current Gate Receipt comment's numeric note ID so the Review Packet
+cannot point at an older receipt on the same MR:
 
 ```text
-node skill://start-build/scripts/validate-gate-receipt.mjs --receipt "<receipt.yml>" --review-packet "<review-packet.md>" --mr-iid "<MR IID>" --issue-iid "<issue IID>" --reviewed-sha "<current MR head SHA>" --gate-command "<project Check Gate command>" --gate-policy-ref "<project gate policy ref>"
+node skill://start-build/scripts/validate-gate-receipt.mjs --receipt "<receipt.yml>" --review-packet "<review-packet.md>" --mr-iid "<MR IID>" --issue-iid "<issue IID>" --reviewed-sha "<current MR head SHA>" --gate-receipt-note-id "<current Gate Receipt note ID>" --gate-command "<project Check Gate command>" --gate-policy-ref "<project gate policy ref>"
 ```
 
 Any nonzero result stops the ready transition before a GitLab mutation. The
 validator binds the receipt and Reviewer Lift to the supplied MR, issue, SHA,
-gate command, and policy; it does not replace the checklist below.
+current Gate Receipt note, gate command, and policy; it does not replace the
+checklist below.
 
 ## Parent verification checklist
 

@@ -11,12 +11,15 @@ const validator = join(root, "start-build", "scripts", "validate-gate-receipt.mj
 const work = mkdtempSync(join(tmpdir(), "gate-receipt-validator-"));
 const sha = "1111111111111111111111111111111111111111";
 const staleSha = "2222222222222222222222222222222222222222";
+const currentReceiptNoteId = "35400";
+const staleReceiptNoteId = "35395";
 const expected = {
   mrIid: "42",
   issueIid: "360",
   reviewedSha: sha,
   gateCommand: "npm run check",
   gatePolicy: "docs/agents/check-gate.md#gate-coverage-for-ready-handoff",
+  receiptNoteId: currentReceiptNoteId,
 };
 
 function receipt(overrides = {}) {
@@ -51,7 +54,7 @@ function lift(overrides = {}, newline = "\n") {
     "Reviewed SHA": `\`${sha}\``,
     "Gate coverage rationale": `${expected.gatePolicy}; required CI jobs = check; locally covered jobs = check via ${expected.gateCommand}; unmapped CI-only jobs = none`,
     "CI pipeline": `N/A — pipeline unavailable for candidate ${sha}`,
-    "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_77`,
+    "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}`,
     "Delta since last ready push": "N/A before ready",
     ...overrides,
   };
@@ -72,7 +75,7 @@ function run({ receiptBody = yaml.dump(receipt()), liftBody = lift(), args = {},
   const liftPath = join(work, `${name}-packet.md`);
   writeFileSync(receiptPath, receiptBody);
   writeFileSync(liftPath, liftBody);
-  return spawnSync(process.execPath, [
+  const command = [
     validator,
     "--receipt", receiptPath,
     "--review-packet", liftPath,
@@ -81,7 +84,9 @@ function run({ receiptBody = yaml.dump(receipt()), liftBody = lift(), args = {},
     "--reviewed-sha", args.reviewedSha ?? expected.reviewedSha,
     "--gate-command", args.gateCommand ?? expected.gateCommand,
     "--gate-policy-ref", args.gatePolicy ?? expected.gatePolicy,
-  ], { encoding: "utf8" });
+  ];
+  if (args.receiptNoteId !== null) command.push("--gate-receipt-note-id", args.receiptNoteId ?? expected.receiptNoteId);
+  return spawnSync(process.execPath, command, { encoding: "utf8" });
 }
 
 function passes(options, label) {
@@ -99,6 +104,8 @@ try {
   passes({}, "complete exact-SHA receipt");
   passes({ receiptBody: yaml.dump(receipt({ checkout_path: "C:\\worktrees\\skills-issue-360" })).replaceAll("\n", "\r\n"), liftBody: lift({}, "\r\n"), name: "windows-crlf" }, "Windows path and CRLF");
   passes({ receiptBody: yaml.dump(receipt({ checkout_path: "//server/share/skills-issue-360", observed_at: "2026-07-20T10:30:00Z" })), name: "unc-observed" }, "UNC path and observation time");
+  fails({ args: { receiptNoteId: null }, name: "missing-receipt-note-input" }, "missing expected Gate Receipt note input");
+  fails({ args: { receiptNoteId: "note_35400" }, name: "malformed-receipt-note-input" }, "malformed expected Gate Receipt note input");
 
   const required = ["kind", "version", "owner", "mr_iid", "issue_iid", "checkout_path", "checkout_sha", "status_before", "status_after", "command", "result", "summary", "preflight_checks", "evidence"];
   for (const field of required) {
@@ -135,8 +142,10 @@ try {
     [{ "CI pipeline": `https://gitlab.example/pipelines/7 success ${staleSha}` }, "stale CI SHA"],
     [{ "Local gate": `not-run — parent-owned — ${expected.gateCommand} — Gate Receipt pending` }, "pending receipt"],
     [{ "Local gate": `PASS — ${expected.gateCommand}` }, "missing receipt pointer"],
-    [{ "Local gate": `PASS — npm test — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_77` }, "wrong local command"],
-    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/99#note_77` }, "wrong receipt MR"],
+    [{ "Local gate": `PASS — npm test — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}` }, "wrong local command"],
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/99#note_${currentReceiptNoteId}` }, "wrong receipt MR"],
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${staleReceiptNoteId}` }, "stale same-MR Gate Receipt note 35395 instead of current note 35400"],
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}-extra` }, "malformed receipt pointer"],
     [{ "Delta since last ready push": `${staleSha} -> ${staleSha}; Gate Receipt pending` }, "stale delta"],
   ];
   for (const [overrides, label] of liftCases) fails({ liftBody: lift(overrides), name: label.replaceAll(" ", "-") }, label);
@@ -152,7 +161,9 @@ try {
     "start-review/templates/review-report.md",
   ];
   for (const relative of pointerFiles) {
-    assert.match(readFileSync(join(root, relative), "utf8"), /validate-gate-receipt\.mjs/, `${relative} must point to the canonical validator`);
+    const body = readFileSync(join(root, relative), "utf8");
+    assert.match(body, /validate-gate-receipt\.mjs/, `${relative} must point to the canonical validator`);
+    assert.match(body, /--gate-receipt-note-id/, `${relative} must supply the current Gate Receipt identity`);
   }
   const parentGate = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
   const validation = parentGate.indexOf("validate-gate-receipt.mjs");
