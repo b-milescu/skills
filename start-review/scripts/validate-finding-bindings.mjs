@@ -43,19 +43,29 @@ function table(body, file) {
   }
   const rows = body.slice(first + BEGIN.length, last).split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|")).map((line) => line.slice(1, -1).split("|").map(clean));
   if (rows.length < 2 || rows[0].join("|") !== "Report locator|Reviewed SHA|Finding ID") fail(`${file}: invalid finding identity table`);
-  return rows.slice(2).filter((row) => row.some(Boolean)).map(([report, sha, id]) => ({ report, sha, id }));
+  const data = rows.slice(2).filter((row) => row.some(Boolean));
+  if (data.some((row) => row.length !== 3)) fail(`${file}: identity table rows must have exactly three cells`);
+  return data.map(([report, sha, id]) => ({ report, sha, id }));
 }
 
-function field(body, name) {
-  for (const line of body.split("\n")) {
+function fields(body, name) {
+  return body.split("\n").flatMap((line) => {
     const cells = line.trim().startsWith("|") ? line.trim().slice(1, -1).split("|").map(clean) : [];
-    if (cells[0] === name) return cells[1] ?? "";
-  }
-  return "";
+    return cells.length === 2 && cells[0] === name ? [cells[1] ?? ""] : [];
+  });
 }
 
 function ids(body) {
   return new Set(body.match(ID) ?? []);
+}
+
+function rejectDuplicateBindings(bindings, file) {
+  const seen = new Set();
+  for (const binding of bindings) {
+    const key = `${binding.report}\u0000${binding.sha.toLowerCase()}\u0000${binding.id}`;
+    if (seen.has(key)) fail(`${file}: duplicate finding identity ${binding.id}`);
+    seen.add(key);
+  }
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -66,8 +76,12 @@ const shaLocators = new Map();
 
 for (const file of args.report) {
   const body = read(file);
-  const report = field(body, "Report locator");
-  const sha = field(body, "Reviewed SHA").toLowerCase();
+  const reportFields = fields(body, "Report locator");
+  const shaFields = fields(body, "Reviewed SHA");
+  if (reportFields.length !== 1) fail(`${file}: report must contain exactly one Report locator`);
+  if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed SHA`);
+  const report = reportFields[0];
+  const sha = shaFields[0].toLowerCase();
   if (!report || !LOCATOR.test(report)) fail(`${file}: missing or invalid stable Report locator`);
   if (!SHA.test(sha)) fail(`${file}: missing or invalid exact Reviewed SHA`);
   if (locatorShas.has(report) && locatorShas.get(report) !== sha) fail(`${file}: report locator has contradictory reviewed SHAs`);
@@ -87,8 +101,11 @@ for (const file of args.report) {
     byId.get(binding.id).push({ report, sha, id: binding.id });
   }
 
-  const findings = body.split(/^## Findings\s*$/m)[1]?.split(/^## /m)[0] ?? "";
-  for (const id of ids(findings)) {
+  const findingIds = ids(body.split(/^## Findings\s*$/m)[1]?.split(/^## /m)[0] ?? "");
+  for (const binding of bindings) {
+    if (!findingIds.has(binding.id)) fail(`${file}: registered identity ${binding.id} is not a report finding`);
+  }
+  for (const id of findingIds) {
     if (![...registry.values()].some((binding) => binding.report === report && binding.sha === sha && binding.id === id)) {
       fail(`${file}: finding ${id} lacks its canonical identity tuple`);
     }
@@ -122,6 +139,7 @@ for (const file of args.packet) {
     for (const id of referenced) classify({ report: "", sha: "", id }, file);
     fail(`${file}: missing finding identity table`);
   }
+  rejectDuplicateBindings(bindings, file);
   for (const binding of bindings) classify(binding, file);
   for (const id of referenced) {
     if (!bindings.some((binding) => binding.id === id)) classify({ report: "", sha: "", id }, file);
@@ -131,7 +149,9 @@ for (const file of args.packet) {
 for (const file of args.lift) {
   artifacts += 1;
   const body = read(file);
-  const value = field(body, "Finding bindings");
+  const values = fields(body, "Finding bindings");
+  if (values.length !== 1) fail(`${file}: expected exactly one Reviewer Lift Finding bindings row`);
+  const value = values[0];
   if (!value) fail(`${file}: missing Reviewer Lift Finding bindings row`);
   if (/^none$/i.test(value)) continue;
   const bindings = value.split(/<br\s*\/?\s*>/i).map((entry) => {
@@ -141,6 +161,7 @@ for (const file of args.lift) {
     if (id) return { report: "", sha: "", id };
     fail(`${file}: invalid Reviewer Lift Finding bindings value`);
   });
+  rejectDuplicateBindings(bindings, file);
   for (const binding of bindings) classify(binding, file);
 }
 
