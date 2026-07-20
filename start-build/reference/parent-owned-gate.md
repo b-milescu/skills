@@ -120,6 +120,8 @@ validator binds the receipt and Reviewer Lift to the supplied MR, issue, SHA,
 current Gate Receipt note, gate command, and policy; it does not replace the
 checklist below.
 
+This receipt check does not validate review-finding identity. When Reviewer Lift `Finding bindings` is non-`none`, separately run `node start-review/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --lift <review-packet.md>` per `../../start-review/reference/finding-identities.md`; any missing, stale, ambiguous, or contradictory tuple also stops the ready mutation. A `none` Lift can be checked without report inputs.
+
 ## Parent verification checklist
 
 A single parent ready-transition check is enough when every item below is true:
@@ -153,6 +155,7 @@ confirms the expected MR state.
 `acceptance_surfaces_ref`, row fail-closed to `[]` / `none`; any non-empty
 surface value or unresolvable surface ref blocks ready transition as a schema
 defect.
+13. Reviewer Lift `Finding bindings` is `none` or the pure-local finding-binding validator passed against every originating Review Report; parent ready-marking never relies on a bare reused short ID.
 
 ## Evidence-ready handoff tokens
 

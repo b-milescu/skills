@@ -93,8 +93,8 @@ mapfile -t REQUIRED_ROWS < <(SCHEMA="$SCHEMA" node -e '
   process.stdout.write(rows.join("\n"));
 ')
 
-[[ "${#REQUIRED_ROWS[@]}" -eq 20 ]] || \
-  fail "expected 20 required rows in schema, extracted ${#REQUIRED_ROWS[@]}: ${REQUIRED_ROWS[*]}"
+[[ "${#REQUIRED_ROWS[@]}" -eq 21 ]] || \
+  fail "expected 21 required rows in schema, extracted ${#REQUIRED_ROWS[@]}: ${REQUIRED_ROWS[*]}"
 
 # build_block prints a Lift table containing every required row except an
 # optionally named row to omit ($1; empty means omit nothing).

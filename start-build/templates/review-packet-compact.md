@@ -30,10 +30,13 @@ Before a parent-owned ready transition, validate the canonical receipt and this
 current Reviewer Lift with `skill://start-build/scripts/validate-gate-receipt.mjs`,
 supplying `--gate-receipt-note-id "<current Gate Receipt note ID>"`.
 
+Before publication or a ready transition, validate every non-`none` `Finding bindings` tuple against the originating Review Report files with `node start-review/scripts/validate-finding-bindings.mjs --report <report.md> ... --lift <this-review-packet.md>` per `../../start-review/reference/finding-identities.md`.
+
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
 | Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
+| Finding bindings | `<none, or report=<stable report locator>; sha=<originating reviewed SHA>; id=<MF-N/SF-N/C-N>; separate multiple tuples with <br>; validate against originating reports before publication/ready>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |

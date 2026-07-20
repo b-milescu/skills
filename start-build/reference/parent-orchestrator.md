@@ -183,9 +183,10 @@ review-bound revision facts:
 
 ```text
 Revise MR: <MR web URL>
-Reviewed SHA: <reviewed SHA from the Review Report>
-Review Report: <Review Report comment URL>
-Finding IDs: <MF-N / SF-N / C-N IDs to address>
+Reviewed SHA: <exact reviewed SHA from the Review Report>
+Review Report locator: <stable locator declared by the Review Report>
+Review Report URL: <posted Review Report comment URL>
+Finding identities: <one (Report locator, Reviewed SHA, MF-N / SF-N / C-N) tuple per finding to address>
 Required fix acceptance criteria: <one short bullet per finding>
 Gate owner: <builder or parent-owned gate mode>
 Expected handoff on return: <updated builder-final handoff / Reviewer Lift state expected next>

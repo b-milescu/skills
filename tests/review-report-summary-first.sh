@@ -36,6 +36,7 @@ require_summary_text() {
 
 require_summary_text 'Review verdict' 'review verdict field'
 require_summary_text 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum'
+require_summary_text 'Report locator' 'stable report locator field'
 require_summary_text 'Reviewed SHA' 'reviewed SHA field'
 require_summary_text 'CI status[[:space:]]*/[[:space:]]*SHA|CI .*status.*SHA' 'CI status/SHA field'
 require_summary_text 'Findings summary' 'findings summary field'
@@ -56,6 +57,7 @@ require_template_heading() {
 }
 
 require_template_heading 'Context / Snapshot' 'core context/snapshot section'
+require_template_heading 'Finding identities' 'canonical finding identity section'
 require_template_heading 'Findings' 'core findings section'
 require_template_heading 'Open Questions Addressed' 'core Open Questions section'
 require_template_heading 'Evidence' 'core evidence section'
@@ -156,6 +158,7 @@ for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Review verdict' 'review verdict summary field reference'
   require_prompt_text "$file" 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum reference'
   require_prompt_text "$file" 'reviewed SHA' 'reviewed SHA summary field reference'
+  require_prompt_text "$file" 'Report locator' 'stable report locator summary field reference'
   require_prompt_text "$file" 'CI[^\n]*(status[[:space:]]*/[[:space:]]*SHA|status[^\n]*SHA)' 'CI status/SHA summary field reference'
   require_prompt_text "$file" 'MF-N[^\n]*SF-N[^\n]*C-N|MF[^\n]*SF[^\n]*C' 'MF/SF/C summary field reference'
   require_prompt_text "$file" 'local checks' 'local checks summary field reference'
@@ -174,6 +177,7 @@ for file in "${routed_final_reviewer_prompts[@]}"; do
 done
 
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Context / Snapshot' 'Context / Snapshot filling guidance'
+require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Finding identities' 'finding identity filling guidance'
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Findings' 'Findings filling guidance'
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Open Questions Addressed' 'Open Questions filling guidance'
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Evidence' 'Evidence filling guidance'

@@ -135,6 +135,7 @@ agent_handoff:
     source_branch: "issue-123-example"
     target_branch: "main"
     current_sha: "2222222222222222222222222222222222222222"
+  report_locator: "review-report:group/project!123:1"
   reviewed_sha: "2222222222222222222222222222222222222222"
   pipeline:
     id: "456 | N/A"
@@ -147,6 +148,8 @@ agent_handoff:
   findings:
     must_fix:
       - id: "MF-1"
+        report_locator: "review-report:group/project!123:1"
+        reviewed_sha: "2222222222222222222222222222222222222222"
         path: "path/file.ext"
         line: "12"
         problem: "specific problem"
@@ -191,14 +194,19 @@ agent_handoff:
   project-bound MR target used for Review Report comments, approval, merge,
   auto-merge, or close-equivalent actions. The bound project must match the
   preflight repo unless the user explicitly chose a cross-repo review target.
+- `report_locator` is the stable identifier chosen in the Review Report before
+  publication. It remains the canonical locator even when `report_url` becomes
+  available after posting.
 - `reviewed_sha` is the exact MR head SHA the reviewer read. Never approve a SHA
   that was not reviewed.
 - `pipeline` records the decision-grade pipeline. Green CI counts only when its
   SHA matches `reviewed_sha`.
 - `local_checks` lists commands run by the reviewer, or `not-run` with rationale
   when local execution was unnecessary or impossible.
-- `findings` mirrors the Review Report's `MF-N`, `SF-N`, and `C-N` IDs so the
-  parent can route revisions.
+- Every `findings` item repeats the Review Report's `report_locator`,
+  `reviewed_sha`, and human-readable `MF-N`, `SF-N`, or `C-N` ID. That tuple,
+  defined in `../reference/finding-identities.md`, is the canonical identity the
+  parent uses to route revisions; a bare short ID is ambiguous across reports.
 - `open_questions_addressed` lists every `OQ-N` answered, escalated, or
   downgraded in the Review Report.
 - `approval_authority` records the approval policy result. `default-after-pass`

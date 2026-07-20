@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | MR | `<gitlab MR URL>` |
-| Responding to | `<link to Review Report MR comment, CI failure, or post-ready delta note>` |
+| Responding to | `<originating Review Report stable locator plus posted comment URL when available, CI failure, or post-ready delta note>` |
 | Revision # | |
 | Branch | |
 | Previous reviewed SHA | |
@@ -16,6 +16,16 @@
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available>` |
 
 ## Summary
+
+## Finding bindings
+
+Repeat the canonical tuple from each originating Review Report for every short ID addressed below. The contract and marker format are owned by `../../start-review/reference/finding-identities.md`. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --packet <this-revision-packet.md>`; missing, stale, ambiguous, or contradictory bindings fail closed.
+
+<!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
+| Report locator | Reviewed SHA | Finding ID |
+|---|---|---|
+| `<stable originating report locator>` | `<exact originating reviewed SHA>` | `<MF-N / SF-N / C-N>` |
+<!-- FINDING-IDENTITY-SCHEMA:END -->
 
 ## Response to Must Fix
 

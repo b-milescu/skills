@@ -67,7 +67,7 @@ Safety-critical filling rules remain in the active flow:
 - Treat CI evidence as valid only when the pipeline commit SHA, when GitLab exposes it, matches `Reviewed SHA`; failed, canceled, skipped, missing, red, stale, or wrong-SHA required CI blocks `hybrid`/`ci-only` ready handoff and reviewer approval/finish unless explicitly waived.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
 - Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.
-- Preserve review item IDs (`MF-N`, `SF-N`, `C-N`) in revision-packet responses and commit subjects where applicable so reviewer traces stay stable.
+- Preserve human-readable review item IDs (`MF-N`, `SF-N`, `C-N`) in revision-packet responses and commit subjects, but route them canonically with the originating stable Report locator and exact reviewed SHA per `../../start-review/reference/finding-identities.md`; a bare short ID is not a stable cross-round trace.
 
 ## Success metric
 
