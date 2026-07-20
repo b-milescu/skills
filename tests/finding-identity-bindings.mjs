@@ -28,6 +28,14 @@ function reject(label, args, expectedText) {
   assert.match(`${result.stdout}${result.stderr}`, expectedText);
 }
 
+function rejectWithoutEcho(label, args, protectedValue, expectedText) {
+  const result = spawnSync(process.execPath, [validator, ...args], { cwd: root, encoding: "utf8" });
+  assert.equal(result.status, 2, "validator must reject the malformed artifact");
+  const output = `${result.stdout}${result.stderr}`;
+  assert.match(output, expectedText);
+  if (output.includes(protectedValue)) acceptedInvalid.push(label);
+}
+
 const reportArgs = reports.flatMap((file) => ["--report", file]);
 run(reportArgs, 0, /reports=2 identities=2 artifacts=0/);
 
@@ -132,6 +140,35 @@ try {
     "four-cell Revision Packet identity",
     [...reportArgs, "--packet", malformedPacket],
     /identity table rows must have exactly three cells/,
+  );
+
+  const fourCellDelimiterReport = path.join(temp, "report-four-cell-delimiter.md");
+  writeFileSync(fourCellDelimiterReport, firstReport.replace("|---|---|---|", "|---|---|---|---|"));
+  reject(
+    "four-cell finding identity delimiter",
+    ["--report", fourCellDelimiterReport],
+    /identity table delimiter must have exactly three cells/,
+  );
+
+  const protectedValue = "PROTECTED-ARTIFACT-BODY-SENTINEL";
+  const protectedValueReport = path.join(temp, "report-protected-invalid-id.md");
+  writeFileSync(protectedValueReport, firstReport.replace("| `MF-5` |", `| \`${protectedValue}\` |`));
+  rejectWithoutEcho(
+    "invalid identity value echoed artifact body",
+    ["--report", protectedValueReport],
+    protectedValue,
+    /invalid finding ID/,
+  );
+
+  const missingCanonicalIdentityReport = path.join(temp, "report-missing-canonical-identity.md");
+  writeFileSync(
+    missingCanonicalIdentityReport,
+    firstReport.replace("The first report's finding.", "The first report's finding.\n\n#### SF-9: Unregistered report finding"),
+  );
+  reject(
+    "report finding without canonical identity",
+    ["--report", missingCanonicalIdentityReport],
+    /finding SF-9 lacks its canonical identity tuple/,
   );
 
   const phantomReport = path.join(temp, "report-phantom-identity.md");

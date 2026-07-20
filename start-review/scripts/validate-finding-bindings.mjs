@@ -42,7 +42,8 @@ function table(body, file) {
     return null;
   }
   const rows = body.slice(first + BEGIN.length, last).split("\n").map((line) => line.trim()).filter((line) => line.startsWith("|")).map((line) => line.slice(1, -1).split("|").map(clean));
-  if (rows.length < 2 || rows[0].join("|") !== "Report locator|Reviewed SHA|Finding ID") fail(`${file}: invalid finding identity table`);
+  if (rows.length < 2 || rows[0].length !== 3 || rows[0].join("|") !== "Report locator|Reviewed SHA|Finding ID") fail(`${file}: invalid finding identity table header`);
+  if (rows[1].length !== 3 || rows[1].join("|") !== "---|---|---") fail(`${file}: identity table delimiter must have exactly three cells`);
   const data = rows.slice(2).filter((row) => row.some(Boolean));
   if (data.some((row) => row.length !== 3)) fail(`${file}: identity table rows must have exactly three cells`);
   return data.map(([report, sha, id]) => ({ report, sha, id }));
@@ -94,7 +95,7 @@ for (const file of args.report) {
   if (!bindings) fail(`${file}: missing finding identity table`);
   for (const binding of bindings) {
     if (binding.report !== report || binding.sha.toLowerCase() !== sha) fail(`${file}: finding identity contradicts report locator or reviewed SHA`);
-    if (!/^(?:MF|SF|C)-\d+$/.test(binding.id)) fail(`${file}: invalid finding ID ${binding.id || "<missing>"}`);
+    if (!/^(?:MF|SF|C)-\d+$/.test(binding.id)) fail(`${file}: invalid finding ID`);
     const key = `${report}\u0000${sha}\u0000${binding.id}`;
     if (registry.has(key)) fail(`${file}: duplicate finding identity ${binding.id}`);
     registry.set(key, { report, sha, id: binding.id });
