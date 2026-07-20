@@ -76,8 +76,9 @@ const shaLocators = new Map();
 
 for (const file of args.report) {
   const body = read(file);
-  const reportFields = fields(body, "Report locator");
-  const shaFields = fields(body, "Reviewed SHA");
+  const snapshot = body.split(/^## Context \/ Snapshot\s*$/m)[1]?.split(/^## /m)[0] ?? body;
+  const reportFields = fields(snapshot, "Report locator");
+  const shaFields = fields(snapshot, "Reviewed SHA");
   if (reportFields.length !== 1) fail(`${file}: report must contain exactly one Report locator`);
   if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed SHA`);
   const report = reportFields[0];
