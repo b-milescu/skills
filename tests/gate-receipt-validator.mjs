@@ -11,8 +11,8 @@ const validator = join(root, "start-build", "scripts", "validate-gate-receipt.mj
 const work = mkdtempSync(join(tmpdir(), "gate-receipt-validator-"));
 const sha = "1111111111111111111111111111111111111111";
 const staleSha = "2222222222222222222222222222222222222222";
-const currentReceiptNoteId = "35400";
-const staleReceiptNoteId = "35395";
+const currentReceiptNoteId = "35410";
+const staleReceiptNoteIds = ["35395", "35400"];
 const expected = {
   mrIid: "42",
   issueIid: "360",
@@ -144,7 +144,14 @@ try {
     [{ "Local gate": `PASS — ${expected.gateCommand}` }, "missing receipt pointer"],
     [{ "Local gate": `PASS — npm test — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}` }, "wrong local command"],
     [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/99#note_${currentReceiptNoteId}` }, "wrong receipt MR"],
-    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${staleReceiptNoteId}` }, "stale same-MR Gate Receipt note 35395 instead of current note 35400"],
+    ...staleReceiptNoteIds.map((noteId) => [
+      { "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${noteId}` },
+      `stale same-MR Gate Receipt note ${noteId} instead of current note ${currentReceiptNoteId}`,
+    ]),
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId} — https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_35400 — SECRET-FIXTURE-CONTENT` }, "current Gate Receipt note plus stale same-MR note"],
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId} — https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}` }, "duplicate current Gate Receipt pointer"],
+    [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId} — https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_bad` }, "current Gate Receipt pointer plus malformed pointer"],
+    [{ "Local gate": `PASS FAIL — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}` }, "contradictory Gate Receipt result"],
     [{ "Local gate": `PASS — ${expected.gateCommand} — Gate Receipt: https://gitlab.example/agents/skills/-/merge_requests/${expected.mrIid}#note_${currentReceiptNoteId}-extra` }, "malformed receipt pointer"],
     [{ "Delta since last ready push": `${staleSha} -> ${staleSha}; Gate Receipt pending` }, "stale delta"],
   ];
@@ -154,6 +161,7 @@ try {
   fails({ liftBody: missingRowPacket, name: "missing-ci-row" }, "missing synchronized Lift row");
 
   const pointerFiles = [
+    "start-build/reference/parent-owned-gate.md",
     "start-build/reference/parent-owned-gate-card.md",
     "start-review/reference/single-mr-review-card.md",
     "start-build/templates/review-packet.md",
@@ -166,9 +174,13 @@ try {
     assert.match(body, /--gate-receipt-note-id/, `${relative} must supply the current Gate Receipt identity`);
   }
   const parentGate = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
-  const validation = parentGate.indexOf("validate-gate-receipt.mjs");
-  const mutation = parentGate.indexOf("GitLab Mutation Guard", validation);
-  assert(validation >= 0 && mutation > validation, "parent ready guidance must validate before the Mutation Guard ready mutation");
+  const preReady = parentGate.match(/^## Pre-ready validation\r?\n([\s\S]*?)(?=^## )/m);
+  assert.ok(preReady, "parent ready guidance must keep the canonical Pre-ready validation section");
+  assert.match(
+    preReady[1],
+    /Before the GitLab Mutation Guard's ready mutation,[\s\S]*?```text\r?\nnode skill:\/\/start-build\/scripts\/validate-gate-receipt\.mjs [^\r\n]*--gate-receipt-note-id "<current Gate Receipt note ID>"[^\r\n]*\r?\n```/,
+    "canonical Pre-ready validation command must include the receipt note flag before the Mutation Guard ready mutation",
+  );
 
   console.log("gate-receipt-validator: PASS");
 } finally {

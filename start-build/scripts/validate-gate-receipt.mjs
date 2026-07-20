@@ -163,8 +163,10 @@ function validateLift(body, expected) {
   if (!containsSha(rows.get("CI pipeline"), expected.reviewedSha)) fail("Reviewer Lift CI pointer is stale");
 
   const localGate = rows.get("Local gate");
-  const receiptPointer = new RegExp(`/merge_requests/${expected.mrIid}#note_${expected.receiptNoteId}(?=$|[\\s|)>,.;])`);
-  if (!/\bPASS\b/.test(localGate) || /pending/i.test(localGate) || !localGate.includes(expected.gateCommand) || !/Gate Receipt/i.test(localGate) || !receiptPointer.test(localGate)) {
+  const pointerTokens = localGate.match(/\/merge_requests\/[^\s|)>,.;`]+/g) ?? [];
+  const pointer = pointerTokens.length === 1 && pointerTokens[0].match(/^\/merge_requests\/(\d+)#note_(\d+)$/);
+  const contradictory = /\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate) || (localGate.match(/Gate Receipt/gi) ?? []).length !== 1;
+  if (!/\bPASS\b/.test(localGate) || contradictory || !localGate.includes(expected.gateCommand) || !pointer || pointer[1] !== expected.mrIid || pointer[2] !== expected.receiptNoteId) {
     fail("Reviewer Lift local gate or Gate Receipt pointer is stale");
   }
 
