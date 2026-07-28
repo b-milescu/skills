@@ -71,6 +71,30 @@ if printf '%s' "$child_required_cell" | grep -qF 'reference/standalone-gate.md';
   fail "child required cell includes standalone gate detail"
 fi
 
+# Issue-pickup policy is canonical in one reference; every mode that selects or
+# accepts issues must point to it instead of carrying a partial local copy.
+pickup_policy="start-build/reference/issue-pickup.md"
+for phrase in \
+  'read the issue description and all current issue notes before planning or editing.' \
+  'notes carry the current state' \
+  'source precedence' \
+  'human escalation'
+do
+  grep -qF "$phrase" "$pickup_policy" || fail "issue-pickup policy missing phrase: $phrase"
+done
+
+for mode in \
+  'Parent orchestrator' \
+  'Standalone builder' \
+  'Child `mr-builder`' \
+  'Docs-only/config-only builder' \
+  'Multi-issue coordinator'
+do
+  row="$(printf '%s\n' "$matrix_block" | grep -F "| ${mode} |")"
+  printf '%s' "$row" | grep -qF 'reference/issue-pickup.md' || \
+    fail "issue-picking mode missing canonical issue-pickup pointer: $mode"
+done
+
 docs_row="$(printf '%s\n' "$matrix_block" | grep -F '| Docs-only/config-only builder |')"
 for phrase in 'templates/review-packet-compact.md' 'Check Gate' 'TDD: N/A' 'unless behavior becomes touched'; do
   printf '%s' "$docs_row" | grep -qF "$phrase" || fail "docs-only row missing phrase: $phrase"
