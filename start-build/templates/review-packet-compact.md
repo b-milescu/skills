@@ -45,7 +45,7 @@ Before publication or a ready transition, validate every non-`none` `Finding bin
 | Local gate | `<PASS / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; completed local gate or parent Gate Receipt permits review launch for every coverage class; hybrid/ci-only may launch with exact-SHA CI pending, but failed/canceled/skipped/missing/stale/wrong-SHA CI blocks pass and finish unless waived> — <exact command>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
-| Changed paths | `<high-level path list / diffstat>` |
+| Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<one path per line, separated with <br>>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / wire-protocol / other>` |
 | Acceptance surfaces | `<none, or per-surface evidence; allowed surfaces come from project_profile.acceptance_surfaces_ref (no ref ⇒ none); evidence enum: test/smoke/docs-read/ci/N/A; compact syntax: surface:evidence — e.g. docs:docs-read, prompt:test; each declared surface must have test/smoke/docs-read/ci/N/A evidence before ready/pass>` |
 | Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
