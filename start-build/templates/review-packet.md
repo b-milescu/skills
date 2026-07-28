@@ -45,7 +45,7 @@ Before publication or a ready transition, validate every non-`none` `Finding bin
 | Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |
 | Gate coverage rationale | `<policy source + required CI mapping; unmapped CI-only jobs or none; stale/wrong-SHA evidence invalid after push>` |
 | CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
-| Local gate | `<PASS before ready/review when Gate coverage is full-local / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; hybrid/ci-only needs exact-SHA CI for uncovered required jobs or waiver> — <exact command, e.g. make check>` |
+| Local gate | `<PASS / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; completed local gate or parent Gate Receipt permits review launch for every coverage class; hybrid/ci-only may launch with exact-SHA CI pending, but failed/canceled/skipped/missing/stale/wrong-SHA CI blocks pass and finish unless waived> — <exact command, e.g. make check>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `<high-level path list / diffstat>` |

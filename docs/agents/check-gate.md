@@ -44,8 +44,8 @@ on the exact MR head SHA. Required CI mapping:
 [`CI parity`](#ci-parity): required CI jobs = `check`; locally covered jobs =
 `check`; unmapped CI-only jobs = `none`. If a future MR changes CI so required
 jobs are no longer locally covered, classify that MR as `hybrid` or `ci-only`
-and wait for exact-SHA CI success, or record an authorized CI waiver, before
-ready/review handoff.
+and record the current exact-SHA CI status before ready/review handoff.
+Pending/running CI may overlap review; failed, canceled, skipped, missing, stale, or wrong-SHA CI blocks pass eligibility and every finish action unless an authorized CI waiver is recorded.
 
 ## Executable-bit policy
 
@@ -148,7 +148,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/start-build-mode-cards.sh` | `start-build` compact mode cards for child-builder, parent-owned-gate, revision, and parent-orchestrator stay pointer-map-only, preserve fallback triggers and canonical safety anchors, link accepted `/gitlab` snippet names, and remain discoverable from `start-build/SKILL.md`. |
 | `tests/start-build-secret-invariant.sh` | `start-build/SAFETY.md`, child-builder flow, and routed builder agents preserve credential/secret-handling tokens: never-paste-secrets, no printing token-bearing config, read-into-shell-variable-without-printing discipline, and redacted diagnostics before MR/CI log surfaces. |
 | `tests/start-build-done-criteria.sh` | `start-build` done criteria stays mode-tiered (builder-ready / review-gate-complete / finish-merge / post-merge-verified) with reference-flow pointers, no builder self-approve/self-merge wording, and a mode-specific `SKILL.md` note. |
-| `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, exact-SHA Gate coverage ready handoff (full-local vs hybrid/ci-only), parent-owned child no-pass/fail boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
+| `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, parallel review launch while exact-SHA CI is pending, fail-closed pass/finish guards, parent-owned child no-pass/fail boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
 | `tests/start-build-simplicity-bar.sh` | `start-build/SAFETY.md` within-diff simplicity bar, blast-radius firewall anchors, preserved scope anti-pattern, and `SAFETY.md`/`SKILL.md` no-vendoring regressions. |
 | `tests/start-build-stale-reviewer-control.sh` | `start-build` stale reviewer control, status/activity observation, runtime interrupt/escalation, and no blind duplicate-reviewer retry regressions. |
 | `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, and issue-driven no-extra-approval prompt regressions. |

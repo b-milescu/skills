@@ -43,7 +43,7 @@ Before marking ready or requesting review, validate the MR handoff:
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready; any push invalidates prior SHA-bound local/CI evidence until the MR description and Reviewer Lift are rebound to the new head.
 - `Gate owner` is `builder` or `parent`; `Gate coverage` is `full-local`, `hybrid`, or `ci-only` (never `parent-owned`); `Gate coverage rationale` cites the project gate policy, required CI mapping, locally covered jobs, and unmapped CI-only jobs or `none`.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
-- Local gate command/result is present. `PASS` is ready-sufficient only for `full-local`; `hybrid`/`ci-only` requires exact-SHA success for uncovered required CI jobs or an authorized CI waiver. `N/A` explains why only CI can provide the gate, or parent-owned gate mode records the ownership contract from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
+- Local gate command/result is present. Review launch requires completed locally owned gate evidence; `hybrid`/`ci-only` review may start while candidate-bound exact-SHA CI is pending. `N/A` explains why only CI can provide the gate, or parent-owned gate mode records the ownership contract from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.
@@ -64,7 +64,7 @@ Detailed section-by-section instructions live next to the templates:
 Safety-critical filling rules remain in the active flow:
 
 - Keep every field in the **Reviewer Lift** block current with every push according to `../templates/reviewer-lift-schema.md`, including Gate owner/coverage/rationale and both quoted `Merge authority` and `Merge authority source` provenance.
-- Treat CI evidence as valid only when the pipeline commit SHA, when GitLab exposes it, matches `Reviewed SHA`; failed, canceled, skipped, missing, red, stale, or wrong-SHA required CI blocks `hybrid`/`ci-only` ready handoff and reviewer approval/finish unless explicitly waived.
+- Treat CI evidence as valid only when the pipeline commit SHA, when GitLab exposes it, matches `Reviewed SHA`; failed, canceled, skipped, missing, red, stale, or wrong-SHA required CI blocks reviewer pass/approval and every finish action unless explicitly waived, but pending matching CI may overlap review.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
 - Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.
 - Preserve human-readable review item IDs (`MF-N`, `SF-N`, `C-N`) in revision-packet responses and commit subjects, but route them canonically with the originating stable Report locator and exact reviewed SHA per `../../start-review/reference/finding-identities.md`; a bare short ID is not a stable cross-round trace.
