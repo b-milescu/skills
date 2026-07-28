@@ -87,6 +87,7 @@ for mode in \
   'Parent orchestrator' \
   'Standalone builder' \
   'Child `mr-builder`' \
+  'Docs-only/config-only builder' \
   'Multi-issue coordinator'
 do
   row="$(printf '%s\n' "$matrix_block" | grep -F "| ${mode} |")"
