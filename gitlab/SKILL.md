@@ -104,6 +104,21 @@ Validate every MR/issue body before mutation. MCP-native flows use `validate_git
 
 Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or Review Reports locally; then pass the resulting string/body to the MCP safe tool. File-backed `glab` fallback is allowed only under snippet fallback conditions and must enforce the same byte rule before submission. Detailed patterns: [`skill://gitlab/reference/safe-text.md`](skill://gitlab/reference/safe-text.md) and [`skill://gitlab/reference/multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
 
+## Three issue-closure oracles
+
+Keep these distinct because they answer different questions and can disagree:
+
+- `skill://gitlab/scripts/validate-closes-keyword.sh` answers the authoring question,
+  "will this close X?" It requires plain supported syntax for the target but
+  cannot prove that the description closes nothing else.
+- The `closes_issues` endpoint is a preview for
+  "does this close nothing unintended?" It may list code-spanned pairs the
+  closer would not act on. Use keyword/reference non-adjacency for exclusions;
+  it satisfies all three oracles.
+- Observed post-merge issue state is authoritative for actual closure.
+  Verification stays read-only: report `issue_closure_pending` when the intended
+  issue remains open and never force-close it to compensate.
+
 ## GitLab Mutation Guard
 
 Every GitLab mutation uses the ordered **GitLab Mutation Guard** seam in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) (`skill://gitlab/reference/mutation-guard.md`) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`: project binding, current target re-read, reviewed SHA when relevant, exact-SHA CI when relevant, Authority Verification, caller identity/context, Safe GitLab Text when relevant, fallback eligibility, one mutation, and post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` / `via=n/a` evidence. Fallback is never a bypass for stale head, red/missing/stale CI, missing authority, permission uncertainty, self-finish risk, or content-byte failure.

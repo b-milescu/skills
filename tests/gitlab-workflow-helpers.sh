@@ -1053,10 +1053,10 @@ test_post_merge_snapshot_reports_validation_not_run_cases() {
 }
 
 test_post_merge_snapshot_resolves_colon_closes_via_description_scrape() {
-  # Regression for RF-4: when the authoritative closes_issues read is
-  # unavailable, the widened scrape must still resolve a GitLab-valid colon form
-  # (`**Closes:** #88`) so a merged MR reports the true closure_status instead of
-  # a false not_linked.
+  # Regression for RF-4: when the closes_issues preview is unavailable, the
+  # widened scrape must still resolve a GitLab-valid colon form (`**Closes:**
+  # #88`) so a merged MR reports observed closure_status instead of a false
+  # not_linked.
   local dir reviewed target
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -1072,11 +1072,10 @@ test_post_merge_snapshot_resolves_colon_closes_via_description_scrape() {
   assert_json_field post_merge_snapshot.linked_issue.closure_status closed
 }
 
-test_post_merge_snapshot_trusts_empty_closes_issues_over_description() {
-  # A successful-but-empty closes_issues read is authoritative: GitLab returns the
-  # closed issue for merged MRs, so an empty result means the MR truly closes no
-  # issue. The description scrape must NOT override it, even when the description
-  # carries a colon closing form.
+test_post_merge_snapshot_uses_empty_closes_issues_preview() {
+  # A successful-but-empty closes_issues preview is not overridden by the weaker
+  # description scrape, even when the description carries a colon closing form.
+  # Actual closure remains determined by observed issue state after merge.
   local dir reviewed target
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -1084,7 +1083,7 @@ test_post_merge_snapshot_trusts_empty_closes_issues_over_description() {
   write_snapshot_mr_json "$dir/mr.json" merged "$reviewed" "" "" issue-176-post-merge-snapshot main delete '**Closes:** #88'
   write_snapshot_issue_json "$dir/issue.json" closed
 
-  # No FAKE_CLOSES_ISSUES_FILE => the fake glab api returns an authoritative [].
+  # No FAKE_CLOSES_ISSUES_FILE => the fake glab api returns an empty preview.
   FAKE_TARGET_SHA="$target" FAKE_CONTAINED_SHAS="$reviewed" run_snapshot_fixture "$dir" "$reviewed"
 
   assert_status 0
@@ -1093,8 +1092,8 @@ test_post_merge_snapshot_trusts_empty_closes_issues_over_description() {
 }
 
 test_post_merge_snapshot_resolves_link_via_closes_issues_api() {
-  # The authoritative closes_issues relationship resolves the linked issue even
-  # when the MR description carries no closing keyword the scrape could match.
+  # The closes_issues preview supplies a candidate even when the MR description
+  # carries no closing keyword the scrape could match; issue state proves closure.
   local dir reviewed target
   reviewed=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   target=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -1199,7 +1198,7 @@ test_post_merge_snapshot_reports_explicit_and_missing_containment
 test_post_merge_snapshot_fails_closed_on_non_git_fetchable_repo
 test_post_merge_snapshot_reports_validation_not_run_cases
 test_post_merge_snapshot_resolves_colon_closes_via_description_scrape
-test_post_merge_snapshot_trusts_empty_closes_issues_over_description
+test_post_merge_snapshot_uses_empty_closes_issues_preview
 test_post_merge_snapshot_resolves_link_via_closes_issues_api
 test_post_merge_snapshot_reports_link_undeterminable
 test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form
