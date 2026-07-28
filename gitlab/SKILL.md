@@ -108,7 +108,7 @@ Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or
 
 Keep these distinct because they answer different questions and can disagree:
 
-- `gitlab/scripts/validate-closes-keyword.sh` answers the authoring question,
+- `skill://gitlab/scripts/validate-closes-keyword.sh` answers the authoring question,
   "will this close X?" It requires plain supported syntax for the target but
   cannot prove that the description closes nothing else.
 - The `closes_issues` endpoint is a preview for
