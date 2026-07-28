@@ -35,12 +35,16 @@ schema="start-build/templates/reviewer-lift-schema.md"
 review_packet="start-build/templates/review-packet.md"
 compact_packet="start-build/templates/review-packet-compact.md"
 review_report="start-review/templates/review-report.md"
+safety="start-build/SAFETY.md"
 
 canonical='Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the MR.'
 issue_scope='Issue-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice.'
 missing_scope='Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions.'
 runtime_examples='Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger.'
 exception_fake_tests='Exception categories require MR rationale and must not allow fake tests or meaningless checks.'
+headline_killing_mutation='For behavior-touching work, each headline claim in the MR body must name the mutation that kills its defending assertion.'
+headline_scope='This is scoped to headline claims, not every assertion; do not run a full mutation battery per MR.'
+incapable_shape='An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.'
 
 for file in "$skill" "$child" "$flow"; do
   require_text "$file" "$canonical" "$file missing canonical behavior-touching TDD trigger"
@@ -60,5 +64,9 @@ for file in "$schema" "$review_packet" "$compact_packet" "$review_report"; do
   require_text "$file" 'N/A with rationale' "$file Reviewer Lift RED/GREEN wording missing N/A rationale requirement"
   require_text "$file" 'do not fake tests' "$file Reviewer Lift RED/GREEN wording missing no-fake-tests guard"
 done
+
+require_text "$safety" "$headline_killing_mutation" "$safety missing named killing mutation requirement for headline claims"
+require_text "$safety" "$headline_scope" "$safety missing headline-only scope and full-battery guard"
+require_text "$safety" "$incapable_shape" "$safety missing structurally-incapable assertion shape"
 
 printf 'start-build-tdd-trigger-policy: PASS\n'
