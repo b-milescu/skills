@@ -104,6 +104,23 @@ gate_receipt:
 and finisher can bind the receipt to the exact MR, issue, checkout, SHA, command,
 status transition, preflight state, and evidence.
 
+## Pre-post validation and exact note binding
+
+Render the Gate Receipt once to `<receipt.yml>`. Before creating the durable MR
+note, validate every field whose value exists before GitLab assigns a note ID:
+
+```text
+node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt "<receipt.yml>" --mr-iid "<MR IID>" --issue-iid "<issue IID>" --reviewed-sha "<current MR head SHA>" --gate-command "<project Check Gate command>"
+```
+
+A nonzero result stops before any note mutation. On success, read the same
+artifact and pass those exact bytes as the `body` to
+`safe_create_merge_request_note`; do not render a second copy. Re-read the
+created note with `get_merge_request_note` and require its body to equal
+`<receipt.yml>` byte-for-byte before updating the Reviewer Lift or handing off.
+The post-note validation below remains mandatory because it binds the assigned
+note ID and current Reviewer Lift before ready.
+
 ## Pre-ready validation
 
 Before the GitLab Mutation Guard's ready mutation, run the cross-platform,

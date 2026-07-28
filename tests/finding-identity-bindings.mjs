@@ -48,6 +48,11 @@ run([...reportArgs, "--packet", path.join(fixtures, "revision-bare-id.md")], 2, 
 run([...reportArgs, "--packet", path.join(fixtures, "revision-missing-sha.md")], 2, /missing reviewed SHA for MF-5/);
 run([...reportArgs, "--packet", path.join(fixtures, "revision-stale-sha.md")], 2, /stale finding binding for MF-5/);
 run([...reportArgs, "--packet", path.join(fixtures, "revision-contradictory.md")], 2, /contradictory finding binding for MF-5/);
+run(
+  [...reportArgs, "--packet", path.join(fixtures, "revision-comment-url.md")],
+  2,
+  /unknown report locator for MF-5/,
+);
 run([...reportArgs, "--lift", path.join(fixtures, "reviewer-lift-valid.md")], 0, /artifacts=1/);
 
 const temp = mkdtempSync(path.join(tmpdir(), "finding-identities-"));
@@ -210,6 +215,13 @@ try {
   const staleLift = path.join(temp, "lift-stale.md");
   writeFileSync(staleLift, lift.replace(/a{40}/, "c".repeat(40)));
   run([...reportArgs, "--lift", staleLift], 2, /stale finding binding for MF-5/);
+  const revisionFlow = readFileSync(path.join(root, "start-build", "reference", "implementation-flow.md"), "utf8");
+  assert.match(
+    revisionFlow,
+    /render one Revision Packet artifact[\s\S]*validate-finding-bindings\.mjs[\s\S]*safe_create_merge_request_note[\s\S]*get_merge_request_note[\s\S]*byte-for-byte/,
+    "revision handling must validate, post, and read back one exact packet artifact",
+  );
+
 } finally {
   rmSync(temp, { recursive: true, force: true });
 }

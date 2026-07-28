@@ -1,16 +1,9 @@
 import { readFileSync } from "node:fs";
 import yaml from "js-yaml";
 
-const requiredFlags = [
-  "--receipt",
-  "--review-packet",
-  "--mr-iid",
-  "--issue-iid",
-  "--reviewed-sha",
-  "--gate-receipt-note-id",
-  "--gate-command",
-  "--gate-policy-ref",
-];
+const commonFlags = ["--receipt", "--mr-iid", "--issue-iid", "--reviewed-sha", "--gate-command"];
+const postFlags = ["--review-packet", "--gate-receipt-note-id", "--gate-policy-ref"];
+const allowedFlags = ["--mode", ...commonFlags, ...postFlags];
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
 function fail(message) {
@@ -24,11 +17,15 @@ function parseArgs(argv) {
   for (let index = 0; index < argv.length; index += 2) {
     const flag = argv[index];
     const value = argv[index + 1];
-    if (!requiredFlags.includes(flag) || !value || args.has(flag)) fail("invalid arguments");
+    if (!allowedFlags.includes(flag) || !value || args.has(flag)) fail("invalid arguments");
     args.set(flag, value);
   }
-  for (const flag of requiredFlags) if (!args.has(flag)) fail(`missing ${flag}`);
-  return args;
+  const mode = args.get("--mode") ?? "post-note";
+  if (!["pre-post", "post-note"].includes(mode)) fail("invalid --mode");
+  const required = mode === "pre-post" ? commonFlags : [...commonFlags, ...postFlags];
+  for (const flag of required) if (!args.has(flag)) fail(`missing ${flag}`);
+  if (mode === "pre-post" && postFlags.some((flag) => args.has(flag))) fail("post-note flags are invalid in pre-post mode");
+  return { args, mode };
 }
 
 function readSafe(path, label) {
@@ -176,18 +173,21 @@ function validateLift(body, expected) {
   }
 }
 
-const args = parseArgs(process.argv.slice(2));
+const { args, mode } = parseArgs(process.argv.slice(2));
 const expected = {
   mrIid: args.get("--mr-iid"),
   issueIid: args.get("--issue-iid"),
   reviewedSha: args.get("--reviewed-sha").toLowerCase(),
-  receiptNoteId: args.get("--gate-receipt-note-id"),
   gateCommand: args.get("--gate-command"),
   gatePolicy: args.get("--gate-policy-ref"),
+  receiptNoteId: args.get("--gate-receipt-note-id"),
 };
-if (!/^\d+$/.test(expected.mrIid) || !/^\d+$/.test(expected.issueIid) || !/^[0-9a-f]{40}$/.test(expected.reviewedSha) || !/^\d+$/.test(expected.receiptNoteId)) fail("invalid expected binding");
-for (const value of Object.values(expected)) if (unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
+if (!/^\d+$/.test(expected.mrIid) || !/^\d+$/.test(expected.issueIid) || !/^[0-9a-f]{40}$/.test(expected.reviewedSha)) {
+  fail("invalid expected binding");
+}
+if (mode === "post-note" && !/^\d+$/.test(expected.receiptNoteId)) fail("invalid expected binding");
+for (const value of Object.values(expected)) if (value && unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
 
 validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);
-validateLift(readSafe(args.get("--review-packet"), "review packet"), expected);
-console.log("gate-receipt validation: PASS");
+if (mode === "post-note") validateLift(readSafe(args.get("--review-packet"), "review packet"), expected);
+console.log(`gate-receipt ${mode} validation: PASS`);
