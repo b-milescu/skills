@@ -25,6 +25,9 @@
 # Makes NO network call: it reads only the local input text. Presence/shape only;
 # it does not contact GitLab and does not judge whether the iid is the "right"
 # issue — the caller supplies the iid the MR is meant to close.
+# This answers the intended target's authoring question only. It cannot prove the
+# absence of another auto-close; use the `closes_issues` preview conservatively
+# for unintended candidates and observed post-merge issue state for actual closure.
 #
 # Exit codes:
 #   0   valid: at least one plain `<keyword> #<iid>` matches outside code/bold
@@ -47,6 +50,9 @@ that is NOT inside an inline code span (`` `...` ``) or a fenced code block
 
 The closing-pattern rationale (the *why*) is owned by
 start-build/templates/review-packet.md (issue #293); this helper enforces it.
+
+This validator answers the target issue's authoring question only. It cannot
+prove the absence of another auto-close in the description.
 
 Options:
   --issue-iid <iid>   Target issue iid the MR is meant to close (required, digits).

@@ -169,4 +169,32 @@ if grep -Eq '(^|[^a-zA-Z_])(glab|curl|wget)([^a-zA-Z_]|$)' "$VALIDATOR"; then
   fail "validator must make no network call (found glab/curl/wget reference)"
 fi
 
+# === Issue #371: closure evidence keeps three distinct oracles. ===
+require_file_text() {
+  local file="$1" text="$2" label="$3"
+  grep -Fq -- "$text" "$file" || fail "$label"
+}
+
+GITLAB_SKILL="$REPO_ROOT/gitlab/SKILL.md"
+POST_MERGE_HELPER="$REPO_ROOT/gitlab/scripts/gitlab-post-merge-snapshot.sh"
+
+require_file_text "$GITLAB_SKILL" '## Three issue-closure oracles' \
+  "GitLab guidance must name the three-oracle contract"
+require_file_text "$GITLAB_SKILL" '`closes_issues` endpoint is a preview' \
+  "GitLab guidance must classify closes_issues as a preview"
+require_file_text "$GITLAB_SKILL" '"will this close X?"' \
+  "GitLab guidance must route the intended-close question"
+require_file_text "$GITLAB_SKILL" '"does this close nothing unintended?"' \
+  "GitLab guidance must route the unintended-close question"
+require_file_text "$GITLAB_SKILL" 'keyword/reference non-adjacency' \
+  "GitLab guidance must document the form accepted by all three oracles"
+require_file_text "$VALIDATOR" 'authoring question only' \
+  "validator contract must stay limited to the authoring question"
+require_file_text "$VALIDATOR" 'absence of another auto-close' \
+  "validator contract must not claim absence of unintended closure"
+require_file_text "$POST_MERGE_HELPER" 'Preview candidate' \
+  "post-merge helper must not call closes_issues authoritative closure evidence"
+require_file_text "$POST_MERGE_HELPER" 'observed issue state is authoritative' \
+  "post-merge helper must bind closure evidence to observed issue state"
+
 echo "closes-keyword-lint: PASS"

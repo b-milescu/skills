@@ -19,8 +19,8 @@ Required:
 
 Options:
   --issue-iid <iid>              Linked issue/work-item IID. When omitted, derived
-                                 from the authoritative GitLab closes_issues
-                                 relationship, then a widened MR-description scrape.
+                                 from the GitLab closes_issues preview, then a
+                                 widened MR-description scrape.
   --default-branch <branch>      Default/target branch to inspect. Defaults to MR target_branch.
   --validation-command <command> Run a documented non-mutating post-merge validation command.
   --validation-source <source>   Documentation/source proving the validation command is non-mutating.
@@ -65,9 +65,9 @@ NODE
 }
 
 # Fallback linked-issue derivation: scrape the MR description for a closing
-# keyword + issue reference. Used ONLY when the authoritative closes_issues read
-# below is undeterminable/unavailable; a successful closes_issues read (even an
-# empty one) is authoritative and is never overridden by this scrape. Matches
+# keyword + issue reference. Used ONLY when the closes_issues preview below is
+# undeterminable/unavailable; a successful preview (even an empty one) is not
+# overridden by this scrape.
 # GitLab's documented closing pattern: the colon form (`Closes: #N` /
 # `**Closes:** #N`), the gerund forms (closing/fixing/resolving), and tolerates
 # intervening markdown emphasis (`*`, `_`) — but, matching GitLab's default
@@ -85,9 +85,9 @@ if (match) process.stdout.write(match[1]);
 NODE
 }
 
-# Authoritative linked-issue derivation: parse the GitLab closes_issues payload
-# (an array of the issues the MR closes) and emit the first issue IID. Immune to
-# MR description formatting and to body elision.
+# Preview candidate derivation: parse the GitLab closes_issues payload and emit
+# the first issue IID. The endpoint can include code-spanned references that the
+# merge-time closer ignores; observed issue state is authoritative after merge.
 first_closes_issue_iid() {
   local json="$1"
   JSON_PAYLOAD="$json" node <<'NODE'
@@ -100,7 +100,7 @@ NODE
 }
 
 # Derive "<hostname> <url-encoded-project-path>" from the MR web_url so the
-# authoritative closes_issues endpoint can be addressed via `glab api` without
+# closes_issues preview endpoint can be addressed via `glab api` without
 # depending on the current working directory's git remote.
 mr_project_locator() {
   local json="$1"
@@ -196,15 +196,14 @@ should_remove_source_branch="$(json_value "$mr_json" should_remove_source_branch
 force_remove_source_branch="$(json_value "$mr_json" force_remove_source_branch unknown)"
 remove_source_branch="$(json_value "$mr_json" remove_source_branch unknown)"
 [[ -n "$default_branch" ]] || default_branch="$target_branch"
-# Resolve the linked issue when no explicit --issue-iid override was given.
-# Primary + authoritative: the GitLab closes_issues relationship. A successful
-# read is authoritative even when empty (the MR closes no issue => true
-# not_linked); GitLab returns the closed issue for merged MRs too, so a
-# successful-empty read is NOT second-guessed by the description.
-# Fallback: the widened MR-description scrape runs ONLY when the closes_issues
-# read is undeterminable/unavailable (locator underivable or the API errored).
-# A read that resolves nothing and could not be determined is reported below as
-# link_undeterminable, distinct from a true not_linked. Read-only (GET).
+# Resolve a linked-issue candidate when no explicit --issue-iid override was
+# given. Primary preview: the GitLab closes_issues relationship. A successful
+# empty preview is not second-guessed by the description because the fallback
+# parser cannot supply stronger evidence. A listed candidate is not proof of
+# merge-time closure; the issue read below supplies the observed closure state.
+# Fallback: the widened MR-description scrape runs ONLY when closes_issues is
+# undeterminable/unavailable (locator underivable or the API errored).
+# No candidate from either read is reported below as link_undeterminable.
 link_determinable="true"
 if [[ -z "$issue_iid" ]]; then
   locator="$(mr_project_locator "$mr_json")"
@@ -222,9 +221,9 @@ if [[ -z "$issue_iid" ]]; then
     fi
   fi
   if [[ -z "$issue_iid" && "$closes_issues_determinable" != "true" ]]; then
-    # closes_issues was undeterminable/unavailable: fall back to the widened
-    # description scrape. A successful-but-empty closes_issues read is left as an
-    # authoritative not_linked and is never overridden here.
+    # The closes_issues preview was unavailable: fall back to the widened
+    # description scrape. A successful-but-empty preview is left as not_linked
+    # because the local scrape cannot prove a stronger relationship.
     issue_iid="$(infer_issue_iid "$mr_json")"
     [[ -n "$issue_iid" ]] || link_determinable="false"
   fi

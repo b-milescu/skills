@@ -104,6 +104,26 @@ Validate every MR/issue body before mutation. MCP-native flows use `validate_git
 
 Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or Review Reports locally; then pass the resulting string/body to the MCP safe tool. File-backed `glab` fallback is allowed only under snippet fallback conditions and must enforce the same byte rule before submission. Detailed patterns: [`skill://gitlab/reference/safe-text.md`](skill://gitlab/reference/safe-text.md) and [`skill://gitlab/reference/multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
 
+## Three issue-closure oracles
+
+Keep these oracles distinct because they answer different questions and can
+disagree:
+
+- `gitlab/scripts/validate-closes-keyword.sh` is a pure description-syntax
+  validator for the authoring question, "will this close X?" It requires a plain
+  closing keyword and target reference outside code and unsupported formatting;
+  it cannot prove that the description closes nothing else.
+- The `closes_issues` endpoint is a preview for the conservative question,
+  "does this close nothing unintended?" It may list code-spanned
+  keyword/reference pairs that the merge-time closer would not act on. Remove
+  unintended keyword/reference adjacency rather than treating formatting as a
+  reliable exclusion; keyword/reference non-adjacency satisfies all three
+  oracles.
+- After merge, observed issue state is authoritative for whether GitLab actually
+  closed that issue. Post-merge verification stays read-only: report
+  `issue_closure_pending` when the intended issue remains open and never
+  force-close it to compensate for missing closure evidence.
+
 ## GitLab Mutation Guard
 
 Every GitLab mutation uses the ordered **GitLab Mutation Guard** seam in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) (`skill://gitlab/reference/mutation-guard.md`) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`: project binding, current target re-read, reviewed SHA when relevant, exact-SHA CI when relevant, Authority Verification, caller identity/context, Safe GitLab Text when relevant, fallback eligibility, one mutation, and post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` / `via=n/a` evidence. Fallback is never a bypass for stale head, red/missing/stale CI, missing authority, permission uncertainty, self-finish risk, or content-byte failure.
