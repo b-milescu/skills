@@ -12,6 +12,10 @@ fail() {
 safety="start-build/SAFETY.md"
 flow="start-build/reference/implementation-flow.md"
 schema="start-build/templates/reviewer-lift-schema.md"
+delivery="issue-delivery-loop/SKILL.md"
+parent="start-build/reference/parent-orchestrator.md"
+parent_gate="start-build/reference/parent-owned-gate.md"
+parent_gate_card="start-build/reference/parent-owned-gate-card.md"
 
 if grep -qiE 'Run the (full )?(local )?gate locally before pushing|full Check Gate[^\n]*before pushing|full local gate[^\n]*before pushing' "$safety"; then
   fail "$safety still requires the full gate before pushing instead of before ready/review"
@@ -43,12 +47,21 @@ grep -qF 'Gate coverage` to exactly one of `full-local`, `hybrid`, or `ci-only`'
 if grep -Eq 'Gate coverage.*full-local.*/.*hybrid.*/.*ci-only.*/.*parent-owned' "$flow" "$schema"; then
   fail "Gate coverage enum includes parent-owned; ownership must be separate"
 fi
-grep -qF "even if exact-SHA CI is still pending or unavailable" "$flow" || \
-  fail "$flow missing full-local pending/unavailable CI handoff rule"
-grep -qF "wait for exact-SHA CI success for each uncovered required job" "$flow" || \
-  fail "$flow missing hybrid/ci-only exact-SHA CI wait rule"
-grep -qF "Failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks ready handoff" "$flow" || \
-  fail "$flow missing CI blocker states before ready handoff"
+for source in "$delivery" "$parent"; do
+  grep -qF "in parallel with CI" "$source" || \
+    fail "$source missing parallel reviewer-launch rule"
+done
+grep -qF "Review launch does not wait for terminal-success exact-SHA CI" "$flow" || \
+  fail "$flow missing hybrid/ci-only parallel reviewer-launch rule"
+grep -qF "Failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks pass eligibility and every finish action" "$flow" || \
+  fail "$flow missing exact-SHA CI fail-closed pass/finish guard"
+if grep -qF "wait for exact-SHA CI success for each uncovered required job before marking ready/requesting review" "$flow"; then
+  fail "$flow still pins the stale serial CI wait before review"
+fi
+grep -qF "candidate SHA and a passing Gate Receipt are sufficient to mark ready and launch review while exact-SHA CI is pending" "$parent_gate" || \
+  fail "$parent_gate missing pending-CI review-launch boundary"
+grep -qF "Review may launch while exact-SHA CI is pending" "$parent_gate_card" || \
+  fail "$parent_gate_card missing pending-CI review-launch pointer"
 grep -qF "re-bind evidence after every push" "$flow" || \
   fail "$flow missing exact-SHA evidence invalidation after push"
 grep -qF "child records \`Gate owner: parent\`, the parent-owned/not-run local gate contract, and the candidate SHA only as gate evidence" "$flow" || \
@@ -57,8 +70,8 @@ grep -qF "child records \`Gate owner: parent\`, the parent-owned/not-run local g
 for field in "Gate owner" "Gate coverage" "Gate coverage rationale"; do
   grep -qF "| $field |" "$schema" || fail "$schema missing Reviewer Lift field: $field"
 done
-grep -qF '`PASS` before ready/requesting review is sufficient only when `Gate coverage` is `full-local`' "$schema" || \
-  fail "$schema Local gate semantics are not synchronized with ready coverage policy"
+grep -qF '`hybrid`/`ci-only` review may start while exact-SHA CI is pending' "$schema" || \
+  fail "$schema Local gate semantics still pin terminal-success CI before review"
 grep -qF 'After every push, stale or wrong-SHA CI/local evidence is invalid' "$schema" || \
   fail "$schema missing exact-SHA evidence invalidation after push"
 grep -qF 'after any post-ready push, include old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive' "$schema" || \

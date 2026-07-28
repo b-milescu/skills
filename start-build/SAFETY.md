@@ -19,7 +19,7 @@ Violations must be fixed or explicitly accepted/waived in the MR before approval
 - **Behavior-touching refactors require regression evidence.** See below.
 - **Project's full check gate green before marking ready/requesting review, with exact-SHA Gate coverage classified.** Safe early Draft branch/MR pushes and pre-ready implementation pushes are allowed so the MR handoff can exist. Do not mark ready or request review until **one** of the following is true:
   1. **Full-local.** The full local gate is `PASS` on the candidate SHA and Gate coverage is `full-local`.
-  2. **Hybrid / CI-only.** All uncovered required CI jobs have exact-SHA success / an authorized CI waiver for `hybrid` or `ci-only` coverage.
+  2. **Hybrid / CI-only.** Locally owned gate evidence is complete and every uncovered required CI job has a candidate-bound status recorded. Review may start while exact-SHA CI is pending/running; failed, canceled, skipped, missing, stale, or wrong-SHA CI blocks pass eligibility and every finish action unless an authorized CI waiver is recorded.
   3. **N/A.** The gate is explicitly `N/A` with the reason recorded in Reviewer Lift.
   4. **Parent-owned.** In parent-owned gate mode, the child records the ownership contract from [reference/parent-owned-gate.md](reference/parent-owned-gate.md#ownership-contract), leaves the MR Draft, and the parent posts the Gate Receipt / owns the ready transition.
 

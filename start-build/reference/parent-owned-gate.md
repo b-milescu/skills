@@ -152,7 +152,7 @@ A single parent ready-transition check is enough when every item below is true:
 4. If issue acceptance criteria name literal target strings with byte-for-byte wording requirements, the Reviewer Lift / `Acceptance Criteria Evidence` section includes targeted exact-string comparison evidence bound to the same candidate SHA, and the parent spot-checks that evidence before ready-marking or launching re-review in parent-owned gate mode.
 5. Candidate checkout is clean before gate and `checkout_sha` equals the candidate SHA.
 6. The command from target `docs/agents/check-gate.md` runs on the exact checkout SHA and returns `PASS`.
-7. Gate coverage is classified `full-local`, `hybrid`, or `ci-only` (never `parent-owned`). For `hybrid`/`ci-only`, every uncovered required CI job has exact-SHA success for `checkout_sha`, or an authorized CI waiver is recorded; failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks ready transition.
+7. Gate coverage is classified `full-local`, `hybrid`, or `ci-only` (never `parent-owned`). For `hybrid`/`ci-only`, review launch does not wait for terminal-success exact-SHA CI: record the current exact-SHA status for every uncovered required CI job, and allow pending/running CI through the ready transition. Failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks pass eligibility and every finish action unless an authorized CI waiver is recorded.
 8. Post-gate status check shows tracked files unchanged. If tracked files
 changed during preflight gate, block ready/merge unless the changes are
 committed to MR head and gate reruns on the new SHA, or an explicit
@@ -194,7 +194,7 @@ Before the Gate Receipt exists, a child builder handoff should route to
 `required_parent_decision: "none"`, and evidence pointers such as
 `mr-description-reviewer-lift-current` and `candidate-sha-pushed`.
 
-After the Gate Receipt and ready transition, the parent can route review with the Gate Receipt comment as a Tier 1/Tier 2 source pointer. Reviewers still treat the receipt as a claim/source pointer and independently verify SHA, CI/local-gate, authority, scope, diff evidence, and any builder/parent exact-string comparison claims before approval or finish actions. Builder/parent exact-string evidence does not substitute for independent reviewer verification.
+After the Gate Receipt, the candidate SHA and a passing Gate Receipt are sufficient to mark ready and launch review while exact-SHA CI is pending. Reviewers still treat the receipt as a claim/source pointer and independently verify SHA, CI/local-gate, authority, scope, diff evidence, and any builder/parent exact-string comparison claims before pass, approval, or finish. Failed, canceled, skipped, missing, stale, or wrong-SHA required CI remains fail-closed for pass eligibility and every finish action unless an authorized CI waiver is recorded. Builder/parent exact-string evidence does not substitute for independent reviewer verification.
 
 ## Gate Receipt as canonical gate evidence; delta-sized MR description updates
 
