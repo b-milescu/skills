@@ -89,6 +89,30 @@ function run({ receiptBody = yaml.dump(receipt()), liftBody = lift(), args = {},
   return spawnSync(process.execPath, command, { encoding: "utf8" });
 }
 
+function runPrePost({ receiptBody = yaml.dump(receipt()), name = "pre-post" } = {}) {
+  const receiptPath = join(work, `${name}-receipt.yml`);
+  writeFileSync(receiptPath, receiptBody);
+  return spawnSync(process.execPath, [
+    validator,
+    "--mode", "pre-post",
+    "--receipt", receiptPath,
+    "--mr-iid", expected.mrIid,
+    "--issue-iid", expected.issueIid,
+    "--reviewed-sha", expected.reviewedSha,
+    "--gate-command", expected.gateCommand,
+  ], { encoding: "utf8" });
+}
+
+function prePostPasses(options, label) {
+  const result = runPrePost(options);
+  assert.equal(result.status, 0, `${label}: expected PASS, got ${result.status}: ${result.stderr}`);
+}
+
+function prePostFails(options, label) {
+  const result = runPrePost(options);
+  assert.notEqual(result.status, 0, `${label}: expected fail-closed PASS status was returned`);
+}
+
 function passes(options, label) {
   const result = run(options);
   assert.equal(result.status, 0, `${label}: expected PASS, got ${result.status}: ${result.stderr}`);
@@ -102,6 +126,15 @@ function fails(options, label) {
 
 try {
   passes({}, "complete exact-SHA receipt");
+  prePostPasses({}, "complete pre-post receipt");
+  const prePostMissingCleanStatus = receipt().gate_receipt;
+  prePostMissingCleanStatus.preflight_checks = prePostMissingCleanStatus.preflight_checks.filter(
+    ({ name }) => name !== "clean-status-before",
+  );
+  prePostFails(
+    { receiptBody: yaml.dump({ gate_receipt: prePostMissingCleanStatus }), name: "pre-post-missing-clean-status" },
+    "pre-post receipt missing clean-status-before",
+  );
   passes({ receiptBody: yaml.dump(receipt({ checkout_path: "C:\\worktrees\\skills-issue-360" })).replaceAll("\n", "\r\n"), liftBody: lift({}, "\r\n"), name: "windows-crlf" }, "Windows path and CRLF");
   passes({ receiptBody: yaml.dump(receipt({ checkout_path: "//server/share/skills-issue-360", observed_at: "2026-07-20T10:30:00Z" })), name: "unc-observed" }, "UNC path and observation time");
   fails({ args: { receiptNoteId: null }, name: "missing-receipt-note-input" }, "missing expected Gate Receipt note input");
@@ -180,6 +213,11 @@ try {
     preReady[1],
     /Before the GitLab Mutation Guard's ready mutation,[\s\S]*?```text\r?\nnode skill:\/\/start-build\/scripts\/validate-gate-receipt\.mjs [^\r\n]*--gate-receipt-note-id "<current Gate Receipt note ID>"[^\r\n]*\r?\n```/,
     "canonical Pre-ready validation command must include the receipt note flag before the Mutation Guard ready mutation",
+  );
+  assert.match(
+    parentGate,
+    /--mode pre-post[\s\S]*safe_create_merge_request_note[\s\S]*get_merge_request_note[\s\S]*byte-for-byte/,
+    "parent Gate Receipt workflow must validate before posting and verify the exact note readback",
   );
 
   console.log("gate-receipt-validator: PASS");
