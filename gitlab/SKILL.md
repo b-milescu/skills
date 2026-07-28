@@ -106,23 +106,18 @@ Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or
 
 ## Three issue-closure oracles
 
-Keep these oracles distinct because they answer different questions and can
-disagree:
+Keep these distinct because they answer different questions and can disagree:
 
-- `gitlab/scripts/validate-closes-keyword.sh` is a pure description-syntax
-  validator for the authoring question, "will this close X?" It requires a plain
-  closing keyword and target reference outside code and unsupported formatting;
-  it cannot prove that the description closes nothing else.
-- The `closes_issues` endpoint is a preview for the conservative question,
-  "does this close nothing unintended?" It may list code-spanned
-  keyword/reference pairs that the merge-time closer would not act on. Remove
-  unintended keyword/reference adjacency rather than treating formatting as a
-  reliable exclusion; keyword/reference non-adjacency satisfies all three
-  oracles.
-- After merge, observed issue state is authoritative for whether GitLab actually
-  closed that issue. Post-merge verification stays read-only: report
-  `issue_closure_pending` when the intended issue remains open and never
-  force-close it to compensate for missing closure evidence.
+- `gitlab/scripts/validate-closes-keyword.sh` answers the authoring question,
+  "will this close X?" It requires plain supported syntax for the target but
+  cannot prove that the description closes nothing else.
+- The `closes_issues` endpoint is a preview for
+  "does this close nothing unintended?" It may list code-spanned pairs the
+  closer would not act on. Use keyword/reference non-adjacency for exclusions;
+  it satisfies all three oracles.
+- Observed post-merge issue state is authoritative for actual closure.
+  Verification stays read-only: report `issue_closure_pending` when the intended
+  issue remains open and never force-close it to compensate.
 
 ## GitLab Mutation Guard
 
