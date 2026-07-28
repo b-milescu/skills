@@ -36,6 +36,8 @@ A refactor is **behavior-touching** if it modifies external mutation paths, prot
 
 Ambiguous = behavior-touching. Behavior-touching refactors need regression evidence and reviewer attention.
 
+For behavior-touching work, each headline claim in the MR body must name the mutation that kills its defending assertion. This is scoped to headline claims, not every assertion; do not run a full mutation battery per MR. An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
+
 Valid regression evidence includes:
 
 - targeted automated tests;

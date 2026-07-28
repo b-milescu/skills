@@ -151,7 +151,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/start-build-ready-gate-push-semantics.sh` | `start-build` early Draft/implementation push phases, parallel review launch while exact-SHA CI is pending, fail-closed pass/finish guards, parent-owned child no-pass/fail boundary, and Reviewer Lift local-gate/delta semantics stay synchronized. |
 | `tests/start-build-simplicity-bar.sh` | `start-build/SAFETY.md` within-diff simplicity bar, blast-radius firewall anchors, preserved scope anti-pattern, and `SAFETY.md`/`SKILL.md` no-vendoring regressions. |
 | `tests/start-build-stale-reviewer-control.sh` | `start-build` stale reviewer control, status/activity observation, runtime interrupt/escalation, and no blind duplicate-reviewer retry regressions. |
-| `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, and issue-driven no-extra-approval prompt regressions. |
+| `tests/start-build-tdd-trigger-policy.sh` | `start-build` behavior-touching TDD trigger, exception rationale/no-fake-tests, issue-driven no-extra-approval prompt, and headline-claim named killing-mutation regressions. |
 | `tests/start-review-command-ownership.sh` | `/start-review` GitLab command ownership stays in review cards/snippets; reviewer-owned docs/prompts reject raw `glab` command copies. |
 | `tests/start-review-mode-cards.sh` | `start-review` compact mode cards for single-MR review, request-changes rerun, finish-action, and blocked routing stay pointer-map-only, preserve fallback triggers and canonical review anchors, require final snapshots plus fresh SHA guards, and keep grouped actions / partial-review / secret-exposure blockers fail-closed. |
 
