@@ -45,6 +45,8 @@ exception_fake_tests='Exception categories require MR rationale and must not all
 headline_killing_mutation='For behavior-touching work, each headline claim in the MR body must name the mutation that kills its defending assertion.'
 headline_scope='This is scoped to headline claims, not every assertion; do not run a full mutation battery per MR.'
 incapable_shape='An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.'
+mutation_applied='A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result.'
+mutation_failure='The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.'
 
 for file in "$skill" "$child" "$flow"; do
   require_text "$file" "$canonical" "$file missing canonical behavior-touching TDD trigger"
@@ -68,5 +70,7 @@ done
 require_text "$safety" "$headline_killing_mutation" "$safety missing named killing mutation requirement for headline claims"
 require_text "$safety" "$headline_scope" "$safety missing headline-only scope and full-battery guard"
 require_text "$safety" "$incapable_shape" "$safety missing structurally-incapable assertion shape"
+require_text "$safety" "$mutation_applied" "$safety missing exact-once mutation-application evidence requirement"
+require_text "$safety" "$mutation_failure" "$safety missing guard-specific failure-message and non-zero-exit requirement"
 
 printf 'start-build-tdd-trigger-policy: PASS\n'
