@@ -88,14 +88,19 @@ require_text_case_sensitive "$schema" 'acceptance_surfaces_ref' 'reviewer-lift a
 require_text_case_sensitive "$schema" 'fail-closed' 'reviewer-lift acceptance_surfaces fail-closed no-ref default'
 
 # Changed paths is measured from the merge base, not reconstructed from
-# per-commit figures. Keep the command visible in the schema and every packet.
-require_text_case_sensitive "$schema" 'git diff --name-only <base>...HEAD' 'Changed paths measurement command in reviewer-lift-schema'
+# per-commit figures. Fixed-string checks keep the literal `...` separator safe.
+command='git diff --name-only <base>...HEAD'
+assert_file_contains "$schema" "$command" 'Changed paths measurement command'
 require_text_case_sensitive "$schema" 'per-commit' 'Changed paths merge-base semantics in reviewer-lift-schema'
 require_text_case_sensitive "$schema" 'measured, not estimated' 'MR body numeric measurement guidance in reviewer-lift-schema'
 for copy in "${copies[@]}"; do
-  require_text_case_sensitive "$copy" 'git diff --name-only <base>...HEAD' "Changed paths measurement command in $copy"
+  assert_file_contains "$copy" "$command" 'Changed paths measurement command'
   require_text_case_sensitive "$copy" 'measured output' "Changed paths measured output in $copy"
 done
+
+malformed="$tmpdir/malformed-separator.md"
+sed 's/<base>\.\.\.HEAD/<base>abcHEAD/g' "$schema" > "$malformed"
+assert_file_not_contains "$malformed" "$command" 'literal Changed paths measurement command'
 
 require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'
 require_text_case_sensitive "start-review/templates/reviewer-final-handoff.md" 'Finish owner: parent' 'reviewer final handoff Finish owner guidance'
