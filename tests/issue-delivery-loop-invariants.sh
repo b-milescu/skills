@@ -228,6 +228,9 @@ require_contains 'start-build/reference/parent-orchestrator.md'
 require_contains 'start-review/REVIEW-FLOW.md'
 require_contains 'git remote prune --dry-run origin'
 require_contains 'stale refs listed'
+require_contains 'git for-each-ref refs/tmp/review/'
+require_contains 'remaining ref names'
+require_contains 'blocks a clean-teardown claim'
 
 # Post-merge handoff to the read-only verifier recipe survives.
 require_contains 'After merge or protected auto-merge'
