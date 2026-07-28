@@ -94,6 +94,9 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
 - Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `validate_gitlab_text` before `glab`, never print bodies, and never receive secrets.
+- Paths passed to non-shell binaries must use a namespace that binary can resolve: prefer repo-relative paths, or drive-letter form when the binary requires it, rather than shell-only paths such as `/tmp/...`. When native invocation is unavailable, use the caller-local helper against caller-local paths instead of mixing path namespaces.
+- Treat only a comparison tool's exit status as the equality result. A comparison whose absence of output appears to mean equality must not suppress stderr: an unreadable input is an error, not a successful match.
+- Treat any `cd` failure as fatal; never continue a validation block in the previous directory.
 
 ## Safe multiline GitLab text
 

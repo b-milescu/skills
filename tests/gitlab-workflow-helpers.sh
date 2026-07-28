@@ -10,6 +10,17 @@ trap 'rm -rf "$TEST_TMPDIR"' EXIT
 source "$REPO_ROOT/tests/lib/gitlab-fixtures.sh"
 
 
+test_native_helper_path_and_comparison_guidance() {
+  local skill
+  skill="$REPO_ROOT/gitlab/SKILL.md"
+
+  assert_file_contains "$skill" "non-shell binaries must use a namespace that binary can resolve: prefer repo-relative paths, or drive-letter form" "native helper path namespace"
+  assert_file_contains "$skill" "caller-local helper" "caller-local helper fallback"
+  assert_file_contains "$skill" "comparison tool's exit status" "comparison exit status"
+  assert_file_contains "$skill" "must not suppress stderr" "comparison stderr visibility"
+  assert_file_contains "$skill" 'Treat any `cd` failure as fatal' "fatal directory change"
+}
+
 test_merge_watch_reports_merge_completion_terminals() {
   local dir good_sha old_sha merge_sha squash_sha
   good_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -1160,6 +1171,7 @@ test_post_merge_snapshot_scrape_requires_separator_before_issue_ref() {
   assert_json_field post_merge_snapshot.linked_issue.closure_status link_undeterminable
 }
 
+test_native_helper_path_and_comparison_guidance
 test_merge_watch_reports_merge_completion_terminals
 test_merge_watch_fails_closed_on_control_char_body
 test_merge_watch_reads_via_safe_mr_json_not_jq
