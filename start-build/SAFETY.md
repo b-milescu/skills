@@ -38,6 +38,8 @@ Ambiguous = behavior-touching. Behavior-touching refactors need regression evide
 
 For behavior-touching work, each headline claim in the MR body must name the mutation that kills its defending assertion. This is scoped to headline claims, not every assertion; do not run a full mutation battery per MR. An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
 
+A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result. The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.
+
 Valid regression evidence includes:
 
 - targeted automated tests;
