@@ -87,6 +87,16 @@ require_text_case_sensitive "$schema" 'Acceptance surfaces' 'acceptance_surfaces
 require_text_case_sensitive "$schema" 'acceptance_surfaces_ref' 'reviewer-lift acceptance_surfaces_ref reference'
 require_text_case_sensitive "$schema" 'fail-closed' 'reviewer-lift acceptance_surfaces fail-closed no-ref default'
 
+# Changed paths is measured from the merge base, not reconstructed from
+# per-commit figures. Keep the command visible in the schema and every packet.
+require_text_case_sensitive "$schema" 'git diff --name-only <base>...HEAD' 'Changed paths measurement command in reviewer-lift-schema'
+require_text_case_sensitive "$schema" 'per-commit' 'Changed paths merge-base semantics in reviewer-lift-schema'
+require_text_case_sensitive "$schema" 'measured, not estimated' 'MR body numeric measurement guidance in reviewer-lift-schema'
+for copy in "${copies[@]}"; do
+  require_text_case_sensitive "$copy" 'git diff --name-only <base>...HEAD' "Changed paths measurement command in $copy"
+  require_text_case_sensitive "$copy" 'measured output' "Changed paths measured output in $copy"
+done
+
 require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'
 require_text_case_sensitive "start-review/templates/reviewer-final-handoff.md" 'Finish owner: parent' 'reviewer final handoff Finish owner guidance'
 echo "Reviewer Lift schema check passed: ${#copies[@]} generated copies match $schema and no stale duplicate field-list tables found."

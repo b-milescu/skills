@@ -75,7 +75,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Local gate | `<copy from Reviewer Lift; verify PASS, N/A with rationale, or not-run parent-owned with Gate Receipt per ../../start-build/reference/parent-owned-gate.md; hybrid/ci-only review may start with exact-SHA CI pending, but failed/canceled/skipped/missing/stale/wrong-SHA CI blocks pass and finish unless waived>` |
 | RED | `<copy from Reviewer Lift; evaluate behavior-touching implementation RED evidence or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
-| Changed paths | `<copy from Reviewer Lift; verify against diff>` |
+| Changed paths | `<copy command and measured output from Reviewer Lift; verify with git diff --name-only <base>...HEAD>` |
 | Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
 | Acceptance surfaces | `<copy from Reviewer Lift; verify each declared surface has test, smoke, docs-read, ci, or documented N/A evidence; surfaces without evidence or undeclared touched surfaces are MF-N blockers before pass>` |
 | Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
