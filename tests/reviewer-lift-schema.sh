@@ -100,7 +100,9 @@ done
 
 malformed="$tmpdir/malformed-separator.md"
 sed 's/<base>\.\.\.HEAD/<base>abcHEAD/g' "$schema" > "$malformed"
-assert_file_not_contains "$malformed" "$command" 'literal Changed paths measurement command'
+if grep -Fq -- "$command" "$malformed"; then
+  fail "malformed separator fixture retained literal Changed paths command"
+fi
 
 require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'
 require_text_case_sensitive "start-review/templates/reviewer-final-handoff.md" 'Finish owner: parent' 'reviewer final handoff Finish owner guidance'
