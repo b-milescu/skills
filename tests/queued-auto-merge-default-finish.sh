@@ -106,6 +106,28 @@ require_text "$DELIVERY" 'queue auto-merge' \
 require_text "$DELIVERY" '(failed./.canceled|failed/canceled)[^.]*block|block[^.]*(failed./.canceled|failed/canceled)' \
   'delivery loop restates the fail-closed guard'
 
+# #374: queueing is pending, not a terminal delivery result. The delivery loop
+# returns to its existing event-driven boundary without a CI/MR watcher, then
+# routes an observed merge through the existing handoff and verifier snapshot.
+require_text "$DELIVERY" 'Treat `auto-merge queued` as pending' \
+  'queued auto-merge remains a pending delivery'
+require_text "$DELIVERY" 'does not count as \*\*MRs merged\*\*' \
+  'queue action is distinct from merge-event evidence'
+require_text "$DELIVERY" 'without polling CI' \
+  'queued delivery returns without a CI poller'
+require_text "$DELIVERY" 'phase: `post-merge-verify`' \
+  'observed merge advances the existing post-merge phase'
+require_text "$DELIVERY" 'expected_next_actor: `verifier`' \
+  'observed merge routes to the verifier'
+require_text "$DELIVERY" 'expected_next_action: `post-merge-verify`' \
+  'observed merge routes the existing verifier action'
+require_text "$DELIVERY" 'post_merge_snapshot\.kind=post-merge-snapshot' \
+  'clean completion requires the verifier snapshot'
+require_text "$DELIVERY" 'cannot satisfy clean delivery or batch completion' \
+  'queueing alone cannot satisfy completion'
+refute_text "$DELIVERY" '`wait-merge-event`' \
+  'no new wait-merge-event token'
+
 # ---------------------------------------------------------------------------
 # post-merge-verifier.md — triggers off the merge event, not a CI watcher.
 # ---------------------------------------------------------------------------
