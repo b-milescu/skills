@@ -94,4 +94,8 @@ require_text \
 require_text   start-review/REVIEW-FLOW.md   'Finish owner: parent[^.]*not approve|do not approve[^.]*Finish owner: parent'   'parent-managed reviewer does not approve'
 require_text   start-review/REVIEW-FLOW.md   'approval_action: "not-approved"[^.]*finish_action: "none"|finish_action: "none"[^.]*approval_action: "not-approved"'   'parent-managed enum-safe pass action values'
 
+if grep -Fq 'otherwise take the authorized reviewer approval action' start-review/SKILL.md; then
+  fail 'start-review/SKILL.md still contains the obsolete standalone approval clause'
+fi
+
 printf 'review-action-order: PASS\n'
