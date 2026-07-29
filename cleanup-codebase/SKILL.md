@@ -83,8 +83,8 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 ## Classification rules
 
 - **AFK** — mechanical, reversible, scoped, all proof gates satisfied, acceptance criteria clear, no behavior/domain/ownership uncertainty; normal review is still mandatory, never waived.
-- **HITL** — behavior-touching deslop (characterization tests required) or any candidate with uncertain ownership/impact; uncertainty escalates, it never relaxes.
-- **Needs info** — the fail-closed default for a concrete cleanup lead with named missing proof/source/owner/check gate; not a finding until resolved. Unstated/unbounded observability budget, no mechanical source of truth for a correction, or unclear check gate cannot be AFK.
+- **HITL** — behavior-touching deslop (characterization tests required).
+- **Needs info** — the fail-closed default for a concrete cleanup lead with named missing proof/source/owner/check gate; not a finding until resolved. Missing owner proof or missing impact proof has exactly one outcome: `Needs info`; neither can be HITL or AFK. Unstated/unbounded observability budget, no mechanical source of truth for a correction, or unclear check gate cannot be AFK.
 
 ## Planning rules
 
