@@ -5,8 +5,8 @@ set -euo pipefail
 # mode-tiered instead of single-mode (approval + CI + merge + issue-closed).
 # Asserts the four named done tiers in SAFETY.md, that each tier points to its
 # existing reference flow rather than restating it, that the child builder tier
-# ends at ready + handoff with no self-approve/self-merge wording, and that
-# SKILL.md flags the checklist as mode-specific.
+# ends at its Gate owner-specific handoff with no self-approve/self-merge
+# wording, and that SKILL.md flags the checklist as mode-specific.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 SAFETY_FILE="$REPO_ROOT/start-build/SAFETY.md"
@@ -72,10 +72,13 @@ require_done_contains 'reference/standalone-gate.md'
 require_done_contains 'reference/parent-orchestrator.md'
 require_done_contains 'reference/post-merge-verifier.md'
 
-# The builder-ready tier must describe stopping at ready + handoff. The
-# child-builder done state ends before approval/merge, so the done criteria
-# must not present builder self-approval or self-merge as a done action.
+# The builder-ready tier must end at handoff without approval/merge. The
+# universal summary must preserve the builder-owned ready transition and the
+# parent-owned Draft candidate handoff as distinct completion conditions.
 require_done_contains 'final handoff'
+require_contains "$SKILL_FILE" 'builder-owned requires a ready MR plus handoff'
+require_contains "$SKILL_FILE" 'parent-owned requires a Draft candidate plus complete handoff to the parent'
+require_not_contains "$SKILL_FILE" '(MR ready + handoff)'
 require_not_contains "$SAFETY_FILE" 'builder may self-approve'
 require_not_contains "$SAFETY_FILE" 'builder may merge its own'
 
