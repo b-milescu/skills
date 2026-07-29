@@ -19,6 +19,11 @@ require_contains() {
   grep -Fq -- "$needle" "$SKILL_FILE" || fail "missing expected token: $needle"
 }
 
+require_not_contains() {
+  local needle="$1"
+  ! grep -Fq -- "$needle" "$SKILL_FILE" || fail "unexpected token: $needle"
+}
+
 [[ -f "$SKILL_FILE" ]] || fail "missing required file: cleanup-codebase/SKILL.md"
 
 # Planning-only default survives the rescope (fail-closed: no edits/deletes from
@@ -64,6 +69,12 @@ require_contains 'proven deslop/destale candidates only'
 # stale-to-correct pair.
 require_contains 'single mechanical source of truth'
 require_contains 'stale → correct value pair'
+
+# Classification is deterministic: missing ownership/impact proof has one
+# fail-closed outcome, while proven behavior-touching deslop remains HITL.
+require_contains 'Missing owner proof or missing impact proof has exactly one outcome: `Needs info`; neither can be HITL or AFK'
+require_contains '**HITL** — behavior-touching deslop (characterization tests required).'
+require_not_contains 'or any candidate with uncertain ownership/impact'
 
 # OUT-of-scope handoffs with fallbacks stay present (deslop firewall keeps
 # boundary-moving work routed away).
