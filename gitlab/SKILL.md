@@ -19,10 +19,11 @@ Known MCP gaps: `merge_merge_request` has an observed robustness/error-normaliza
 
 ## Bounded metadata and body reads
 
-Guard-grade MR metadata reads are body-free: call
-`get_merge_request(include_description:false)` for current SHA, state, draft,
-merge status, branches, and merge commit SHA. Do not couple a description read
-to a Mutation Guard or SHA guard.
+Guard-grade MR state/SHA reads default to
+`get_merge_request_workflow_snapshot`. Use
+`get_merge_request(include_description:false)` only when a required metadata
+field is absent from the snapshot. Do not couple a description read to a
+Mutation Guard or SHA guard.
 
 Request bodies separately through the dedicated MCP readers:
 
@@ -46,7 +47,8 @@ If a bounded response is still elided, retry with a smaller
 body read is a guarded last resort only when the relevant dedicated MCP reader
 is unavailable or remains elided after that smaller/chunked attempt.
 `glab mr view` metadata projection is likewise last-resort fallback only when
-the body-free `get_merge_request` read is unavailable. Before either fallback,
+the snapshot and any field-required body-free `get_merge_request` read are
+unavailable. Before either fallback,
 preserve project binding and every applicable reviewed-SHA, exact-SHA CI,
 authority, caller-identity/context, and content-byte guard; fallback never
 weakens a safety floor.
@@ -160,36 +162,37 @@ glab issue update <id> --label foo,bar --unlabel baz
 
 ### Snippet: draft-mr-create
 
-Open the early Draft MR only after the source branch exists remotely. MCP primary: validate the Review Packet with `validate_gitlab_text`, then call `create_merge_request(draft=true, source_branch, target_branch, title, description)` and re-read with `get_merge_request`. The description must include plain `Closes #<iid>`.
+Open the early Draft MR only after the source branch exists remotely. MCP primary: validate the Review Packet with `validate_gitlab_text`, then call `create_merge_request(draft=true, source_branch, target_branch, title, description)`. Re-read state/binding without the body and read the description separately for integrity. The description must include plain `Closes #<iid>`.
 
 ```text
 
 validate_gitlab_text(role="merge request description", body=review_packet)
 create_merge_request(project_path, source_branch, target_branch, title, description=review_packet, draft=true)
-get_merge_request(project_path, mr_iid) -> verify draft=true, source/target/head/description
-
+get_merge_request(project_path, mr_iid, include_description:false) -> verify draft=true, source/target/head
+get_merge_request_description(project_path, mr_iid, description_max_bytes, description_offset_bytes) -> recover and verify review_packet byte-for-byte
 ```
 
 ### Snippet: mr-description-update
 
-Refresh the MR description / Reviewer Lift without changing draft/ready state. MCP primary: `safe_update_merge_request_description` validates content bytes, updates the bound MR description, and requires a post-update `get_merge_request` read. Do not combine with ready-marking.
+Refresh the MR description / Reviewer Lift without changing draft/ready state. MCP primary: `safe_update_merge_request_description` validates content bytes and updates the bound MR description. Re-read state/binding without the body and read the description separately for integrity. Do not combine with ready-marking.
 
 ```text
 
 safe_update_merge_request_description(project_path, mr_iid, description=review_packet)
-get_merge_request(project_path, mr_iid) -> verify description, draft state unchanged, head SHA still expected/reviewed SHA when one is in force
+get_merge_request(project_path, mr_iid, include_description:false) -> verify draft state unchanged and head SHA still expected/reviewed SHA when one is in force
+get_merge_request_description(project_path, mr_iid, description_max_bytes, description_offset_bytes) -> recover and verify review_packet byte-for-byte
 
 ```
 
 ### Snippet: draft-mr-mark-ready
 
-Use only after the local gate has passed (or N/A is documented), the MR description and Reviewer Lift name the current head SHA, and the workflow is ready for review. Do not paste this with Draft MR creation or description update commands as one executable sequence.
+Use only after the local gate has passed (or N/A is documented), the MR description and Reviewer Lift name the current head SHA, and the workflow is ready for review. Do not paste this with Draft MR creation or description update commands as one executable sequence. After the ready mutation, re-read state/binding without the body and read the description separately to prove it stayed intact.
 
-```bash
+```text
 
-glab mr update <id> --ready
-
-```
+update_merge_request(project_path, mr_iid, draft=false)
+get_merge_request(project_path, mr_iid, include_description:false) -> verify draft=false and head SHA still equals reviewed SHA
+get_merge_request_description(project_path, mr_iid, description_max_bytes, description_offset_bytes) -> recover and verify the existing description byte-for-byte
 
 ### Snippet: mr-pickup
 
@@ -305,7 +308,7 @@ get_merge_request(project_path, mr_iid) -> verify queue state and record via=mcp
 
 ### Snippet: sha-guard
 
-MCP primary is the body-free `get_merge_request(include_description:false)` read; compare its top-level `sha` with `reviewed_sha`. The fallback below is only for MCP-unavailable metadata reads and still requires explicit project binding plus help-first verification.
+MCP primary is `get_merge_request_workflow_snapshot`; compare its top-level `sha` with `reviewed_sha`. Use `get_merge_request(include_description:false)` only if a future guard needs a field absent from the snapshot. The fallback below is only for MCP-unavailable metadata reads and still requires explicit project binding plus help-first verification.
 
 ```bash
 

@@ -73,8 +73,11 @@ for (const [index, step] of schema.ordered_steps.entries()) {
 }
 
 const currentTargetReread = schema.ordered_steps.find((step) => step.id === 'current_target_reread');
-assert(currentTargetReread.requires.includes('get_merge_request(include_description:false) for MR metadata'), 'MR current-target re-read must be body-free');
-assert(doc.includes('get_merge_request(include_description:false)'), 'guard doc must require the body-free MR metadata read');
+assert(currentTargetReread.requires[0] === 'get_merge_request_workflow_snapshot for default MR guard-grade state/SHA', 'MR current-target re-read must prefer the workflow snapshot');
+assert(currentTargetReread.requires[1] === 'get_merge_request(include_description:false) only for required MR fields absent from the snapshot', 'body-free MR read must be secondary and field-driven');
+const snapshotIndex = doc.indexOf('get_merge_request_workflow_snapshot');
+const bodyFreeIndex = doc.indexOf('get_merge_request(include_description:false)');
+assert(snapshotIndex !== -1 && bodyFreeIndex > snapshotIndex, 'guard doc must order snapshot before the body-free supplemental MR read');
 assert(!doc.includes('first per-MR full read'), 'guard doc must not preserve obsolete first-full-read discipline');
 
 const blockerByToken = new Map(schema.blocker_states.map((blocker) => [blocker.token, blocker]));

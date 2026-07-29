@@ -186,6 +186,8 @@ assert_contains "$draft_create_body" 'description=review_packet' 'Draft MR descr
 assert_performs "$draft_create_body" "$VERB_MR_CREATE" 'an MR-create action'
 assert_not_performs "$draft_create_body" "$VERB_MR_UPDATE" 'an MR-update action in the create snippet'
 assert_not_performs "$draft_create_body" "$VERB_MARK_READY" 'a mark-ready action in the create snippet'
+assert_contains "$draft_create_body" 'include_description:false' 'Draft MR create body-free state re-read'
+assert_contains "$draft_create_body" 'get_merge_request_description' 'Draft MR create description integrity read'
 
 # --- MR description update: updates description, explicit target, no create/ready
 assert_contains "$mr_description_update_body" 'safe_update_merge_request_description' 'MR description safe MCP update'
@@ -195,11 +197,15 @@ assert_contains "$mr_description_update_body" 'description=review_packet' 'MR de
 assert_performs "$mr_description_update_body" "$VERB_DESCRIPTION" 'a description action'
 assert_not_performs "$mr_description_update_body" "$VERB_MR_CREATE" 'an MR-create action in the description-update snippet'
 assert_not_performs "$mr_description_update_body" "$VERB_MARK_READY" 'a mark-ready action in the description-update snippet'
+assert_contains "$mr_description_update_body" 'include_description:false' 'MR description update body-free state re-read'
+assert_contains "$mr_description_update_body" 'get_merge_request_description' 'MR description update body integrity read'
 
 # --- Draft MR mark-ready: marks ready only, no create/description -------------
 assert_performs "$draft_mark_ready_body" "$VERB_MARK_READY" 'a mark-ready action'
 assert_not_performs "$draft_mark_ready_body" "$VERB_MR_CREATE" 'an MR-create action in the mark-ready snippet'
 assert_not_contains "$draft_mark_ready_body" '--description' 'description update in mark-ready snippet'
+assert_contains "$draft_mark_ready_body" 'include_description:false' 'Draft ready transition body-free state re-read'
+assert_contains "$draft_mark_ready_body" 'get_merge_request_description' 'Draft ready transition description integrity read'
 
 # --- SHA-bound approval: approves, SHA-pinned, no merge / no approvals read ----
 # Authority-relevant invariant: approval is its own action, bound to reviewed_sha.

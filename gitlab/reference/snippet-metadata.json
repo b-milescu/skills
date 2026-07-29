@@ -144,7 +144,8 @@
       "name": "draft-mr-create",
       "mcp_primary_tools": [
         "create_merge_request",
-        "get_merge_request"
+        "get_merge_request",
+        "get_merge_request_description"
       ],
       "input_category": "merge-request-create",
       "output_category": "draft-mr-metadata",
@@ -162,7 +163,7 @@
       ],
       "post_mutation_reread": {
         "mode": "required",
-        "expectation": "Required: `get_merge_request` and verify draft=true, source/target, description present, and head SHA."
+        "expectation": "Required: body-free `get_merge_request(include_description:false)` verifies draft/source/target/head, then `get_merge_request_description` verifies description integrity."
       },
       "via_evidence": {
         "required": true,
@@ -173,19 +174,20 @@
         "requirement": "Record via=mcp or via=glab-fallback for the MR create mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "`create_merge_request`, then `get_merge_request`.",
+        "mcp_primary_tools": "`create_merge_request`, then body-free `get_merge_request(include_description:false)` plus `get_merge_request_description`.",
         "inputs": "Project path, source branch, target branch, title, validated description, draft=true, `Closes #<iid>`.",
         "outputs": "Draft MR IID/URL/source/target/head/draft state.",
         "required_guards": "Source branch must exist remotely; description passes content-byte guard; target branch is server default or explicit policy target.",
         "fallback_conditions": "`glab mr create` fallback only when MCP `create_merge_request` is unavailable after `validate_gitlab_text` and help-first verification.",
-        "post_mutation_reread": "Required: `get_merge_request` and verify draft=true, source/target, description present, and head SHA."
+        "post_mutation_reread": "Required: body-free `get_merge_request(include_description:false)` verifies draft/source/target/head, then `get_merge_request_description` verifies description integrity."
       }
     },
     {
       "name": "mr-description-update",
       "mcp_primary_tools": [
         "safe_update_merge_request_description",
-        "get_merge_request"
+        "get_merge_request",
+        "get_merge_request_description"
       ],
       "input_category": "merge-request-description-update",
       "output_category": "updated-mr-description",
@@ -203,7 +205,7 @@
       ],
       "post_mutation_reread": {
         "mode": "required",
-        "expectation": "Required: verify description changed and MR head still equals expected/reviewed SHA when one is in force."
+        "expectation": "Required: body-free `get_merge_request(include_description:false)` verifies draft/head unchanged, then `get_merge_request_description` verifies the updated description."
       },
       "via_evidence": {
         "required": true,
@@ -214,19 +216,20 @@
         "requirement": "Record via=mcp or via=glab-fallback for the description update mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "`safe_update_merge_request_description`, then `get_merge_request`.",
+        "mcp_primary_tools": "`safe_update_merge_request_description`, then body-free `get_merge_request(include_description:false)` plus `get_merge_request_description`.",
         "inputs": "Bound MR IID/URL, project path, validated description.",
         "outputs": "Updated MR description with unchanged draft/ready state.",
         "required_guards": "Bound MR/project must match; description passes content-byte guard; do not combine ready unless the workflow explicitly chooses the mark-ready path.",
         "fallback_conditions": "`glab mr update --description` fallback only when `safe_update_merge_request_description` is unavailable after `validate_gitlab_text` and help-first verification.",
-        "post_mutation_reread": "Required: verify description changed and MR head still equals expected/reviewed SHA when one is in force."
+        "post_mutation_reread": "Required: body-free `get_merge_request(include_description:false)` verifies draft/head unchanged, then `get_merge_request_description` verifies the updated description."
       }
     },
     {
       "name": "draft-mr-mark-ready",
       "mcp_primary_tools": [
         "update_merge_request",
-        "get_merge_request"
+        "get_merge_request",
+        "get_merge_request_description"
       ],
       "input_category": "ready-transition",
       "output_category": "ready-mr-state",
@@ -245,7 +248,7 @@
       ],
       "post_mutation_reread": {
         "mode": "required",
-        "expectation": "Required: verify `draft=false`, description intact, and head SHA still equals reviewed SHA."
+        "expectation": "Required: body-free `get_merge_request(include_description:false)` verifies `draft=false` and reviewed SHA, then `get_merge_request_description` verifies the description stayed intact."
       },
       "via_evidence": {
         "required": true,
@@ -256,12 +259,12 @@
         "requirement": "Record via=mcp or via=glab-fallback for the ready-state mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "`update_merge_request(draft=false)`, optionally same call with final `description`, then `get_merge_request`.",
+        "mcp_primary_tools": "`update_merge_request(draft=false)`, then body-free `get_merge_request(include_description:false)` plus `get_merge_request_description`.",
         "inputs": "Bound MR IID, expected head SHA, final Reviewer Lift, local-gate or parent Gate Receipt evidence.",
         "outputs": "MR draft=false/ready state for the same head SHA.",
         "required_guards": "Local gate must be PASS/N/A, or parent-owned Gate Receipt must pass; never ready a stale head or empty description.",
         "fallback_conditions": "`glab mr update --ready` only when MCP update is unavailable; run fresh MCP read before fallback and after fallback.",
-        "post_mutation_reread": "Required: verify `draft=false`, description intact, and head SHA still equals reviewed SHA."
+        "post_mutation_reread": "Required: body-free `get_merge_request(include_description:false)` verifies `draft=false` and reviewed SHA, then `get_merge_request_description` verifies the description stayed intact."
       }
     },
     {
@@ -639,7 +642,7 @@
     {
       "name": "sha-guard",
       "mcp_primary_tools": [
-        "get_merge_request"
+        "get_merge_request_workflow_snapshot"
       ],
       "input_category": "sha-guard",
       "output_category": "head-sha-equality-result",
@@ -667,11 +670,11 @@
         "requirement": "Record the transport used when SHA guard evidence is reported."
       },
       "markdown": {
-        "mcp_primary_tools": "`get_merge_request(include_description:false)`.",
+        "mcp_primary_tools": "`get_merge_request_workflow_snapshot`.",
         "inputs": "Bound MR IID/URL, reviewed SHA.",
-        "outputs": "Pass/fail head SHA equality from body-free MR metadata.",
+        "outputs": "Pass/fail head SHA equality from the body-free workflow snapshot.",
         "required_guards": "Any mismatch is stale review; no approval/merge/queue.",
-        "fallback_conditions": "Help-first `glab mr view` fallback only when the body-free MCP read is unavailable; still bind explicit repo/full URL.",
+        "fallback_conditions": "Help-first `glab mr view` fallback only when the MCP workflow snapshot is unavailable; still bind explicit repo/full URL.",
         "post_mutation_reread": "N/A — read-only."
       }
     },
