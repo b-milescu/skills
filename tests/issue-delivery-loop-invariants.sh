@@ -220,6 +220,20 @@ require_contains 'start-review/templates/review-report.md'
 # Decoupling proof is conditional on parallel fan-out; token preserved; serial batches skip.
 require_contains 'decoupling proof before parallel work'
 require_contains 'Serial WIP-1 batches skip'
+# #374 queued-auto-merge is an intermediate delivery state. Queue action evidence
+# is distinct from merge-event evidence; only an observed merge may advance the
+# existing handoff route to the read-only verifier, and clean completion needs
+# its checked snapshot.
+require_contains 'Treat `auto-merge queued` as pending'
+require_contains 'does not count as **MRs merged**'
+require_contains 'without polling CI'
+require_contains 'phase: `post-merge-verify`'
+require_contains 'expected_next_actor: `verifier`'
+require_contains 'expected_next_action: `post-merge-verify`'
+require_contains '`post_merge_snapshot.kind=post-merge-snapshot`'
+require_contains 'cannot satisfy clean delivery or batch completion'
+refute_file_contains "$SKILL_FILE" '`wait-merge-event`'
+
 # Batch teardown checklist: pointer-only for deletion safety.
 require_contains 'Batch teardown'
 require_contains 'cleanup_pending'
@@ -233,7 +247,7 @@ require_contains 'remaining ref names'
 require_contains 'blocks a clean-teardown claim'
 
 # Post-merge handoff to the read-only verifier recipe survives.
-require_contains 'After merge or protected auto-merge'
+require_contains 'Do not invoke post-merge verification or teardown while the MR remains queued'
 require_contains 'start-build/reference/post-merge-verifier.md'
 
 printf 'issue-delivery-loop-invariants: PASS\n'
