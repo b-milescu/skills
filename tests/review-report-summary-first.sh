@@ -176,6 +176,18 @@ for file in "${routed_final_reviewer_prompts[@]}"; do
   require_prompt_text "$file" 'verdict, approval action, finish action, action blocker, and next action separate' 'routed reviewer action separation'
 done
 
+for file in \
+  "$REPO_ROOT/start-review/SKILL.md" \
+  "$REPO_ROOT/start-review/REVIEW-FLOW.md"; do
+  require_prompt_text "$file" 'Finish owner: parent' 'parent-managed finish-owner rule'
+  require_prompt_text "$file" 'not-approved' 'parent-managed approval action'
+  require_prompt_text "$file" 'finish-by-authorized-actor' 'parent-managed next action'
+done
+
+if grep -Fq 'pass` never means "looks good but no approval was taken"' "$REPO_ROOT/start-review/SKILL.md"; then
+  fail "pass verdict still unconditionally requires reviewer approval"
+fi
+
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Context / Snapshot' 'Context / Snapshot filling guidance'
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Finding identities' 'finding identity filling guidance'
 require_prompt_text "$REPO_ROOT/start-review/templates/filling-guide.md" 'Findings' 'Findings filling guidance'

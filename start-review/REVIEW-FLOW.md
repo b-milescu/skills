@@ -104,6 +104,7 @@ Use these tables as the canonical approval/finish policy for CI and reviewer Ope
 ## Parent-managed finish owner
 
 `Finish owner: parent` means finish ownership, not merge authority. The reviewer still verifies approval/merge authority claims for routing and records the Review Report verdict/evidence, but the reviewer does not approve, direct merge, queue auto-merge, close, or clean up branches in parent-managed mode. A parent-managed pass handoff uses enum-safe values: `approval_action: "not-approved"`, `finish_action: "none"`, `action_blocker: "none"`, `next_action: "finish-by-authorized-actor"`, and `expected_next_actor: "parent"`. The parent/authorized finisher then performs any approval, direct merge, or auto-merge queue action only after fresh MR SHA, CI, authority/source, identity, and Mutation Guard checks pass.
+This parent-managed no-action handoff is a valid `pass`; the requirement to take an authorized reviewer approval action applies only outside `Finish owner: parent` mode.
 
 ## Default finish: queued auto-merge
 
