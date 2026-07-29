@@ -147,7 +147,6 @@ for path in surfaces:
         if (
             "docs/agents/agent-readiness-scorecard.md#scorecard" in line
             and "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" not in line
-            and "<repo-root>/docs/agents/agent-readiness-scorecard.md" not in line
         ):
             reasons.append("readiness scorecard path")
         if (
@@ -171,7 +170,6 @@ fi
 
 assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" "portable Agent Readiness scorecard resource"
 assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/templates/issue-body.md#agent-readiness" "portable issue body template resource"
-assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "<repo-root>/docs/agents/agent-readiness-scorecard.md" "target-rooted readiness policy reference"
 assert_file_contains "$REPO_ROOT/setup-dev-skills/SKILL.md" "skill://setup-dev-skills/dev-workflows-gitlab.md" "portable GitLab setup seed resource"
 assert_file_contains "$REPO_ROOT/setup-dev-skills/dev-workflows-gitlab.md" "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md" "portable setup readiness scorecard resource"
 
