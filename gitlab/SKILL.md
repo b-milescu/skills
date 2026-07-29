@@ -194,6 +194,8 @@ update_merge_request(project_path, mr_iid, draft=false)
 get_merge_request(project_path, mr_iid, include_description:false) -> verify draft=false and head SHA still equals reviewed SHA
 get_merge_request_description(project_path, mr_iid, description_max_bytes, description_offset_bytes) -> recover and verify the existing description byte-for-byte
 
+```
+
 ### Snippet: mr-pickup
 
 ```bash
