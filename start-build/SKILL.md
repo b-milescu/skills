@@ -90,4 +90,4 @@ See [skill://start-build/SAFETY.md](skill://start-build/SAFETY.md) for non-negot
 
 ## Done
 
-See [skill://start-build/SAFETY.md §Done criteria](skill://start-build/SAFETY.md#done-criteria) for the canonical completion checklist. That checklist is mode-specific: a child `mr-builder` is done at the builder-ready tier (MR ready + handoff), while review-gate-complete, finish-merge, and post-merge-verified belong to later, authority-scoped roles. Match the tier to your active mode in the routing matrix above.
+See [skill://start-build/SAFETY.md §Done criteria](skill://start-build/SAFETY.md#done-criteria) for the canonical completion checklist. That checklist is mode-specific: at the child `mr-builder` builder-ready tier, builder-owned requires a ready MR plus handoff, while parent-owned requires a Draft candidate plus complete handoff to the parent. Review-gate-complete, finish-merge, and post-merge-verified remain later, authority-scoped tiers. Match the tier to your active mode in the routing matrix above.
