@@ -52,21 +52,22 @@ require_text "$contract" 'Post-mutation MCP re-read' 'post-mutation MCP re-read 
 require_text "$contract" 'via=mcp' 'MCP transport evidence token'
 require_text "$contract" 'via=glab-fallback' 'fallback transport evidence token'
 
-# Slim guard-read path for repeated SHA/state guards (agents/skills #286): one
-# sanctioned interim path, first per-MR read stays full, repeated guards go slim,
-# and the bounded fallback names the documented full-body re-read gap.
-require_text gitlab/SKILL.md '## Slim guard-read for repeated SHA/state guards' 'slim guard-read section'
-require_text gitlab/SKILL.md 'is unchanged. Read the whole response' 'slim path keeps first per-MR full read unchanged'
-require_text gitlab/SKILL.md 'agents/gitlab-mcp/-/issues/87' 'linked gitlab-mcp projection issue reference'
-require_text gitlab/SKILL.md 'repeated SHA/state guard re-reads where the MCP read returns full bodies' 'documented repeated-guard fallback gap wording'
-# Elided-body fallback for first full reads (agents/skills #287): when the first
-# get_merge_request returns an elided description body, the first-read rule is not
-# satisfied; safe-mr-json bounded fallback is used to retrieve the actual content.
-require_text gitlab/SKILL.md 'elided.*body.*fallback.*first|Elided-body fallback for first' 'elided-body fallback condition for first full reads section'
-require_text gitlab/SKILL.md 'elided MCP body on first full description read' 'documented elided-body first-read gap wording'
-require_text gitlab/SKILL.md 'safe-mr-json.*bounded fallback.*retrieve.*actual description|safe-mr-json.*retrieve.*actual description|retrieve.*actual description.*safe-mr-json' 'elided-body fallback names safe-mr-json'
-require_text gitlab/reference/mutation-guard.md 'slim guard-read path' 'Mutation Guard re-read points at slim path for repeated guards'
-require_text gitlab/reference/snippet-transports.md 'slim guard-read path' 'snippet-transports names the slim guard-read path'
+# Guard reads are body-free; body recovery uses the dedicated bounded readers
+# before any guarded, help-first glab fallback (agents/skills #372).
+require_text gitlab/SKILL.md 'get_merge_request.*include_description:false' 'body-free MR guard read'
+for tool in get_merge_request_description get_issue_description get_merge_request_note get_issue_note; do
+  require_text gitlab/SKILL.md "$tool" "dedicated body reader $tool"
+done
+for field in description_grep description_max_bytes description_offset_bytes body_grep body_max_bytes body_offset_bytes; do
+  require_text gitlab/SKILL.md "$field" "bounded body recovery field $field"
+done
+require_text gitlab/SKILL.md 'retry with a smaller' 'smaller bounded retry before fallback'
+require_text gitlab/SKILL.md 'body read is a guarded last resort' 'guarded glab body fallback is last resort'
+require_text gitlab/reference/mutation-guard.md 'include_description:false' 'Mutation Guard requires body-free MR re-read'
+require_text gitlab/reference/snippet-transports.md 'include_description:false' 'transport mirror requires body-free SHA guard read'
+reject_text gitlab/SKILL.md 'first read stays full|First read per MR stays full|Slim guard-read for repeated SHA/state guards' 'obsolete first-full/slim guard discipline'
+reject_text gitlab/SKILL.md 'note body where MCP exposes no bounded param' 'obsolete unbounded-note MCP claim'
+reject_text gitlab/reference/mutation-guard.md 'first per-MR full read|slim guard-read path' 'obsolete Mutation Guard full-read discipline'
 
 require_text gitlab/reference/mutation-guard.md 'GitLab Mutation Guard' 'canonical Mutation Guard document'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_merge_robustness_gap' 'Mutation Guard MCP merge robustness gap token'

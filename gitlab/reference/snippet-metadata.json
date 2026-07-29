@@ -568,8 +568,7 @@
         "fail on JSON/control-char drift"
       ],
       "fallback_conditions": [
-        "guarded glab MR metadata projection only when get_merge_request_workflow_snapshot is unavailable",
-        "bounded fallback repeated SHA/state guard re-reads where MCP read returns full bodies"
+        "guarded glab MR metadata projection only when get_merge_request_workflow_snapshot is unavailable"
       ],
       "post_mutation_reread": {
         "mode": "none",
@@ -588,7 +587,7 @@
         "inputs": "MR IID, project path, repo URL/project binding.",
         "outputs": "Decision-grade MR JSON-equivalent metadata.",
         "required_guards": "Fail on project binding, SHA, pipeline, merge-status, branch, JSON/control-char drift.",
-        "fallback_conditions": "Guarded `glab mr view` metadata projection only when `get_merge_request_workflow_snapshot` is unavailable, including bounded repeated SHA/state guard fallback where MCP reads return full bodies.",
+        "fallback_conditions": "Guarded `glab mr view` metadata projection only when `get_merge_request_workflow_snapshot` is unavailable.",
         "post_mutation_reread": "N/A — read-only."
       }
     },
@@ -668,11 +667,11 @@
         "requirement": "Record the transport used when SHA guard evidence is reported."
       },
       "markdown": {
-        "mcp_primary_tools": "`get_merge_request`.",
+        "mcp_primary_tools": "`get_merge_request(include_description:false)`.",
         "inputs": "Bound MR IID/URL, reviewed SHA.",
-        "outputs": "Pass/fail head SHA equality; repeated guards read only `sha`/`draft`/`state`/`detailedMergeStatus` per the slim guard-read path, keeping the first per-MR full read unchanged.",
+        "outputs": "Pass/fail head SHA equality from body-free MR metadata.",
         "required_guards": "Any mismatch is stale review; no approval/merge/queue.",
-        "fallback_conditions": "`glab mr view` fallback only when MCP read unavailable; still bind explicit repo/full URL.",
+        "fallback_conditions": "Help-first `glab mr view` fallback only when the body-free MCP read is unavailable; still bind explicit repo/full URL.",
         "post_mutation_reread": "N/A — read-only."
       }
     },

@@ -17,44 +17,39 @@ Use from the GitLab-backed worktree. GitLab API actions use this transport order
 
 Known MCP gaps: `merge_merge_request` has an observed robustness/error-normalization gap for one `Branch cannot be merged` case where SHA-bound `glab` merge succeeded, and exposed `list_*` tools do not provide reliable pagination controls for exhaustive lists. Treat those as documented fallback conditions only; never weaken reviewed-SHA binding, exact-SHA CI, authority, caller-identity/token-stability, context-firewall, or content-byte safeguards to use a fallback.
 
-## Slim guard-read for repeated SHA/state guards
+## Bounded metadata and body reads
 
-The GitLab Mutation Guard re-reads the target MR before every mutation, and `sha-guard` re-checks head equality at every repeated guard. The MCP-first read for those checks is `get_merge_request`, which returns the small decision-grade fields a guard needs (`sha`, `draft`, `state`, `detailedMergeStatus`, plus `mergeStatus`, `sourceBranch`, `targetBranch`, `mergeCommitSha`) **alongside the entire `description`**. On MRs carrying a full Review Packet + Reviewer Lift the description is ~3-4k tokens, so re-fetching it for each repeated guard is a real context-pressure source on long multi-MR batches.
+Guard-grade MR metadata reads are body-free: call
+`get_merge_request(include_description:false)` for current SHA, state, draft,
+merge status, branches, and merge commit SHA. Do not couple a description read
+to a Mutation Guard or SHA guard.
 
-`get_merge_request` has no server-side projection/slim parameter today (it takes only project + MR IID and always returns the full body); a true slim response would require a gitlab-mcp server change tracked in [`agents/gitlab-mcp#87`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/87). Until that lands, use this one sanctioned interim slim guard-read path:
+Request bodies separately through the dedicated MCP readers:
 
-- **First read per MR stays full.** The first `get_merge_request` for an MR — the one a parent/reviewer genuinely needs for Review Packet / Reviewer Lift spot-checks — is unchanged. Read the whole response.
-- **Repeated guard re-reads are slim.** For every *subsequent* SHA/state guard on the same MR (the Mutation Guard current-target re-read and each repeated `sha-guard`), call MCP `get_merge_request` and consume **only** the small top-level fields (`sha` / `draft` / `state` / `detailedMergeStatus`); ignore the `description` body. This is a read-discipline rule, not a transport change: it never substitutes for the decision-grade full read where spot-check fields are required.
-- **Bounded fallback.** When repeated guard re-read returns a full body and the body itself is the context-pressure problem — documented gap "repeated SHA/state guard re-reads where the MCP read returns full bodies" — use the `safe-mr-json` snippet backed by `get_merge_request_workflow_snapshot` to project exactly decision-grade fields. As always, fallback stays second to MCP and re-checks SHA/CI/authority/identity/project binding per transport order above; never weaken any guard.
-- **Elided-body fallback for first full reads — bounded MCP re-read first.** When the first `get_merge_request` read returns an elided description body — a compressed or placeholder token such as `<<ccr:...>>` instead of the full text — the "first read stays full" rule is not satisfied; the description was not actually received. Elision is context-pressure-driven (the same full read can come back un-elided early in a session and elided deep in a parallel batch), so reach first for a **bounded MCP re-read** of only the slice you need before any `glab` detour, using the server-side bounded params shipped in [`agents/gitlab-mcp#89`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/89):
-- When only `Closes #N` auto-close trailer is needed, re-read with `get_merge_request` `description_grep:"Closes"`. When Reviewer Lift rows are needed, re-read with `description_grep:"REVIEWER-LIFT-SCHEMA"` or cap the body with `description_max_bytes`.
-- Only if a bounded MCP re-read still elides or fails — or the whole unbounded body is genuinely required and its first bounded slice also elides (do not page remaining slices; sequential whole-body paging elides at nearly the same rate) — use the `safe-mr-json` snippet as a last-resort guarded fallback to retrieve the actual description content. This is the documented gap "elided MCP body on first full description read"; fallback does not alter transport order, slim guard-read semantics, or the safety-floor litany.
+- MR and issue descriptions: `get_merge_request_description` and
+  `get_issue_description`. Start with focused `description_grep` when a known
+  line or section is sufficient; otherwise use a bounded
+  `description_max_bytes`. Follow `descriptionTruncated`,
+  `descriptionBytesReturned`, `descriptionOffsetBytes`, and
+  `descriptionTotalBytes`; advance `description_offset_bytes` by the returned
+  byte count until recovery is complete. Request an unbounded/full description
+  only when the whole body is genuinely required.
+- Individual MR and issue notes: `get_merge_request_note` and `get_issue_note`.
+  Use `body_grep`, `body_max_bytes`, and `body_offset_bytes`, following the
+  corresponding `bodyTruncated`, `bodyBytesReturned`, `bodyOffsetBytes`, and
+  `bodyTotalBytes` metadata. An omitted `body_max_bytes` requests the full note,
+  so prefer a focused or bounded read when elision or body size is a concern.
 
-## Elided-body fallback for issue notes and issue descriptions
-
-`get_issue_note` (and `get_issue`) can return an elided `<<ccr:…>>` token instead of the actual note or description body when the content is large. This is the same class of MCP context-compression gap as the MR elided-body case above, tracked in [`agents/gitlab-mcp#87`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/87). When elision is observed, the MCP-first read did not deliver the actual content. Because elision is context-pressure-driven, reach first for a **bounded MCP re-read** of only the slice you need: `get_issue` accepts the server-side bounded params shipped in [`agents/gitlab-mcp#89`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/89), so re-read with `description_grep:"Closes"` for the auto-close trailer, or `description_grep` on a known section marker for other targeted fields (a `descriptionTruncated:true` flag signals the slice was bounded). For **whole-body recovery**, make one bounded attempt (`description_max_bytes`); if that attempt also elides, go directly to the guarded `glab api` last-resort — do not page remaining slices, as sequential whole-body paging elides at nearly the same rate as the full read. Only when a grep-targeted bounded re-read still elides or fails — or for a note body where MCP exposes no bounded param — use the raw `glab api` detour, documented below as a **last-resort** fallback. (A dedicated description-read tool is the optional follow-up tracked in [`agents/gitlab-mcp#92`](https://gitlab.example.com/agents/gitlab-mcp/-/issues/92).)
-
-**Last-resort `glab api` fallback (issue note body)** — only after a bounded MCP re-read still elides or fails, or for a note body where MCP exposes no bounded param:
-
-```bash
-
-# Verify the --help flag before use: glab api --help
-
-glab api "projects/:id/issues/:iid/notes/:note_id" | jq -r '.body'
-
-```
-
-**Last-resort `glab api` fallback (issue description body)** — only after a bounded MCP re-read with `description_grep` / `description_max_bytes` still elides or fails:
-
-```bash
-
-# Verify the --help flag before use: glab api --help
-
-glab api "projects/:id/issues/:iid" | jq -r '.description'
-
-```
-
-Replace `:id` with the URL-encoded project path (e.g. `agents%2Fskills`) or numeric project ID, `:iid` with the project-scoped issue number, and `:note_id` with the global note ID. These fallbacks follow the standard guarded transport order (MCP first — including the bounded MCP re-read — then `glab api` fallback last-resort, help-first flag verification); the bounded MCP re-read is subject to the same guard re-checks, and neither path alters transport order, the safety-floor litany, or any mutation guard.
+If a bounded response is still elided, retry with a smaller
+`description_max_bytes` or `body_max_bytes`, then recover losslessly with
+`description_offset_bytes` or `body_offset_bytes`. A help-first `glab api`
+body read is a guarded last resort only when the relevant dedicated MCP reader
+is unavailable or remains elided after that smaller/chunked attempt.
+`glab mr view` metadata projection is likewise last-resort fallback only when
+the body-free `get_merge_request` read is unavailable. Before either fallback,
+preserve project binding and every applicable reviewed-SHA, exact-SHA CI,
+authority, caller-identity/context, and content-byte guard; fallback never
+weakens a safety floor.
 
 ## Guarded glab fallback and help-first rule
 
@@ -133,18 +128,15 @@ The shared mutation sequence lives in [`skill://gitlab/reference/mutation-guard.
 
 ### Snippet: local-repo-preflight
 
-```bash
-
-command -v glab >/dev/null || { echo "glab missing"; exit 1; }
-command -v jq >/dev/null || { echo "jq missing"; exit 1; }
-git rev-parse --show-toplevel >/dev/null || { echo "not a git repo"; exit 1; }
-branch="$(git branch --show-current)"
-remote="$(git config --get "branch.${branch}.remote" 2>/dev/null || true)"
-repo_url="$(git remote get-url "${remote:-origin}" 2>/dev/null || git remote get-url origin)"
-glab repo view "$repo_url" >/dev/null || { echo "glab cannot access repo"; exit 1; }
-default_branch="$(glab repo view "$repo_url" -F json | jq -er '.default_branch')" || exit 1
-
-```
+Use the canonical `local-repo-preflight` entry in
+[`snippet-metadata.json`](skill://gitlab/reference/snippet-metadata.json) and
+its synchronized row in
+[`snippet-transports.md`](skill://gitlab/reference/snippet-transports.md).
+`get_project` is the MCP primary for project/default-branch binding; local `git`
+owns cwd, remote URL, branch, and ref checks. A help-first
+`glab repo view` is fallback/troubleshooting only. Stop on non-git cwd, project
+mismatch, missing default branch, stale or missing local default ref, or
+authentication failure.
 
 ### Snippet: issue-pickup
 
@@ -291,7 +283,7 @@ get_issue(project_path, issue_iid) -> verify final labels match requested reconc
 
 ### Snippet: safe-mr-json
 
-Stable snippet name for guard-grade MR workflow metadata. MCP primary is `get_merge_request_workflow_snapshot` plus project binding; consume only decision-grade fields needed for SHA/state/CI/merge guards, with no list-only data. Fail closed on project binding, SHA, pipeline, merge-status, branch, JSON/control-character drift. Guarded `glab mr view` projection fallback is only for MCP snapshot unavailability or bounded repeated SHA/state guard reads where MCP returns full bodies.
+Stable snippet name for guard-grade MR workflow metadata. MCP primary is `get_merge_request_workflow_snapshot` plus project binding; consume only decision-grade fields needed for SHA/state/CI/merge guards, with no list-only data. Fail closed on project binding, SHA, pipeline, merge-status, branch, JSON/control-character drift. Guarded `glab mr view` projection fallback is only for MCP snapshot unavailability.
 
 ```text
 
@@ -313,7 +305,7 @@ get_merge_request(project_path, mr_iid) -> verify queue state and record via=mcp
 
 ### Snippet: sha-guard
 
-MCP primary is `get_merge_request`; read only its top-level `sha`. The fallback below is shown for the MCP-unavailable case. For *repeated* SHA/state guards on the same MR, follow the [slim guard-read path](#slim-guard-read-for-repeated-shastate-guards): keep the first per-MR read full, then consume only `sha` / `draft` / `state` / `detailedMergeStatus` on each subsequent re-read instead of re-fetching the full description.
+MCP primary is the body-free `get_merge_request(include_description:false)` read; compare its top-level `sha` with `reviewed_sha`. The fallback below is only for MCP-unavailable metadata reads and still requires explicit project binding plus help-first verification.
 
 ```bash
 

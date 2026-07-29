@@ -13,9 +13,9 @@
 #
 # Safe to invoke from a detached background bash loop (absolute-path invocation;
 # no `skill://` dependency at call time per the non-OMP rule) and from
-# foreground. References — does not duplicate — the slim guard-read /
-# `safe_mr_json` guidance in gitlab/SKILL.md and
-# gitlab/reference/snippet-transports.md (#286 lineage).
+# foreground. References — does not duplicate — the `safe_mr_json` metadata
+# projection guidance in gitlab/SKILL.md and
+# gitlab/reference/snippet-transports.md.
 
 set -euo pipefail
 
