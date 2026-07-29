@@ -120,6 +120,7 @@ VERB_APPROVALS_ENDPOINT='/approvals|get_merge_request_approval|approval_state'
 VERB_MR_NOTE='glab mr note|create_note|mr_note_create'
 VERB_ISSUE_NOTE='glab issue note|create_issue_note|issue_note_create'
 
+preflight_body="$(require_snippet local-repo-preflight)"
 draft_create_body="$(require_snippet draft-mr-create)"
 mr_description_update_body="$(require_snippet mr-description-update)"
 draft_mark_ready_body="$(require_snippet draft-mr-mark-ready)"
@@ -167,6 +168,15 @@ for name in \
   finish-mr-authority-aware; do
   require_text "$CONTRACT" "\`$name\`" "transport contract for $name"
 done
+# --- Local preflight: canonical metadata pointer, no duplicate shell recipe ----
+assert_contains "$preflight_body" 'snippet-metadata.json' 'local preflight metadata owner pointer'
+assert_contains "$preflight_body" 'snippet-transports.md' 'local preflight transport mirror pointer'
+assert_contains "$preflight_body" 'get_project' 'local preflight MCP primary'
+assert_contains "$preflight_body" 'local `git`' 'local preflight git ownership'
+assert_contains "$preflight_body" 'help-first' 'local preflight help-first fallback'
+assert_contains "$preflight_body" 'glab repo view' 'local preflight guarded fallback'
+assert_not_contains "$preflight_body" 'command -v' 'duplicate local preflight executable recipe'
+
 # --- Draft MR create: creates an MR, file-backed description, no ready/update --
 # One action: it CREATES, it does not update an existing MR and does not mark ready.
 assert_contains "$draft_create_body" 'validate_gitlab_text' 'Draft MR create validates text'
@@ -176,6 +186,8 @@ assert_contains "$draft_create_body" 'description=review_packet' 'Draft MR descr
 assert_performs "$draft_create_body" "$VERB_MR_CREATE" 'an MR-create action'
 assert_not_performs "$draft_create_body" "$VERB_MR_UPDATE" 'an MR-update action in the create snippet'
 assert_not_performs "$draft_create_body" "$VERB_MARK_READY" 'a mark-ready action in the create snippet'
+assert_contains "$draft_create_body" 'include_description:false' 'Draft MR create body-free state re-read'
+assert_contains "$draft_create_body" 'get_merge_request_description' 'Draft MR create description integrity read'
 
 # --- MR description update: updates description, explicit target, no create/ready
 assert_contains "$mr_description_update_body" 'safe_update_merge_request_description' 'MR description safe MCP update'
@@ -185,11 +197,17 @@ assert_contains "$mr_description_update_body" 'description=review_packet' 'MR de
 assert_performs "$mr_description_update_body" "$VERB_DESCRIPTION" 'a description action'
 assert_not_performs "$mr_description_update_body" "$VERB_MR_CREATE" 'an MR-create action in the description-update snippet'
 assert_not_performs "$mr_description_update_body" "$VERB_MARK_READY" 'a mark-ready action in the description-update snippet'
+assert_contains "$mr_description_update_body" 'include_description:false' 'MR description update body-free state re-read'
+assert_contains "$mr_description_update_body" 'get_merge_request_description' 'MR description update body integrity read'
 
 # --- Draft MR mark-ready: marks ready only, no create/description -------------
 assert_performs "$draft_mark_ready_body" "$VERB_MARK_READY" 'a mark-ready action'
+assert_contains "$draft_mark_ready_body" 'mark_merge_request_ready(project_path, mr_iid, expected_sha)' 'mounted native mark-ready tool'
+assert_not_contains "$draft_mark_ready_body" 'update_merge_request(project_path, mr_iid, draft=false)' 'invalid generic ready mutation'
 assert_not_performs "$draft_mark_ready_body" "$VERB_MR_CREATE" 'an MR-create action in the mark-ready snippet'
 assert_not_contains "$draft_mark_ready_body" '--description' 'description update in mark-ready snippet'
+assert_contains "$draft_mark_ready_body" 'include_description:false' 'Draft ready transition body-free state re-read'
+assert_contains "$draft_mark_ready_body" 'get_merge_request_description' 'Draft ready transition description integrity read'
 
 # --- SHA-bound approval: approves, SHA-pinned, no merge / no approvals read ----
 # Authority-relevant invariant: approval is its own action, bound to reviewed_sha.

@@ -25,9 +25,9 @@
     {
       "order": 2,
       "id": "current_target_reread",
-      "requires": ["single-record get_merge_request or get_issue read", "target_iid_or_url"],
+      "requires": ["get_merge_request_workflow_snapshot for default MR guard-grade state/SHA", "get_merge_request(include_description:false) only for required MR fields absent from the snapshot", "single-record get_issue or applicable approval/note read", "target_iid_or_url"],
       "blocks": ["target_reread_unavailable", "project_binding_mismatch", "mcp_pagination_gap"],
-      "output": "current MR/issue state, MR head SHA when MR-bound, author/caller-relevant fields"
+      "output": "body-free current MR metadata or current issue state, MR head SHA when MR-bound, author/caller-relevant fields; body content is read separately"
     },
     {
       "order": 3,
