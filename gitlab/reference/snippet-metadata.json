@@ -227,7 +227,7 @@
     {
       "name": "draft-mr-mark-ready",
       "mcp_primary_tools": [
-        "update_merge_request",
+        "mark_merge_request_ready",
         "get_merge_request",
         "get_merge_request_description"
       ],
@@ -259,11 +259,11 @@
         "requirement": "Record via=mcp or via=glab-fallback for the ready-state mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "`update_merge_request(draft=false)`, then body-free `get_merge_request(include_description:false)` plus `get_merge_request_description`.",
+        "mcp_primary_tools": "`mark_merge_request_ready(project, merge_request_iid, expected_sha)`, then body-free `get_merge_request(include_description:false)` plus `get_merge_request_description`.",
         "inputs": "Bound MR IID, expected head SHA, final Reviewer Lift, local-gate or parent Gate Receipt evidence.",
         "outputs": "MR draft=false/ready state for the same head SHA.",
         "required_guards": "Local gate must be PASS/N/A, or parent-owned Gate Receipt must pass; never ready a stale head or empty description.",
-        "fallback_conditions": "`glab mr update --ready` only when MCP update is unavailable; run fresh MCP read before fallback and after fallback.",
+        "fallback_conditions": "`glab mr update --ready` only when native `mark_merge_request_ready` is unavailable; run fresh MCP read before fallback and after fallback.",
         "post_mutation_reread": "Required: body-free `get_merge_request(include_description:false)` verifies `draft=false` and reviewed SHA, then `get_merge_request_description` verifies the description stayed intact."
       }
     },

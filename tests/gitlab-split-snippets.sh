@@ -202,6 +202,8 @@ assert_contains "$mr_description_update_body" 'get_merge_request_description' 'M
 
 # --- Draft MR mark-ready: marks ready only, no create/description -------------
 assert_performs "$draft_mark_ready_body" "$VERB_MARK_READY" 'a mark-ready action'
+assert_contains "$draft_mark_ready_body" 'mark_merge_request_ready(project_path, mr_iid, expected_sha)' 'mounted native mark-ready tool'
+assert_not_contains "$draft_mark_ready_body" 'update_merge_request(project_path, mr_iid, draft=false)' 'invalid generic ready mutation'
 assert_not_performs "$draft_mark_ready_body" "$VERB_MR_CREATE" 'an MR-create action in the mark-ready snippet'
 assert_not_contains "$draft_mark_ready_body" '--description' 'description update in mark-ready snippet'
 assert_contains "$draft_mark_ready_body" 'include_description:false' 'Draft ready transition body-free state re-read'
