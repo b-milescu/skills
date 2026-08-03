@@ -23,6 +23,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `cleanup-codebase` | Discover and plan subtractive repo maintenance — deslop (behavior- and boundary-preserving local simplification) and destale (remove/correct stale items) — as planning-only work routed to the build workflow. |
 | `retro` | Delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. |
 | `exampleproject-target-geometry-validation` | Validate target-build map geometry through a native proof chain: client provenance, extraction, Detour/MMAP route evidence, and sanitized record. |
+| `exampleproject-world-db-refresh` | Check public AshamaneCore for newer WoW 7.3.5.26972 world SQL and, only when explicitly requested, materialize an exact compatible cut. |
 
 ## External skill dependencies
 
