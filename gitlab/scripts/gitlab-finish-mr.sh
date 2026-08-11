@@ -106,14 +106,11 @@ esac
 case "$output_format" in human|yaml) ;; *) echo "FINISH_MR result=blocked reason=bad_format" >&2; exit 64 ;; esac
 
 local_git_finish=false
-case "$merge_authority" in
-  reviewer\ may\ merge|queue\ auto-merge)
-    if [[ "$caller_role" == "authorized-parent" || "$caller_role" == "human" ||
-      ( "$caller_role" == "reviewer" && "$finish_owner" == "caller" ) ]]; then
-      local_git_finish=true
-    fi
-    ;;
-esac
+if [[ "$finish_owner" == "caller" && "$caller_role" != "builder" ]]; then
+  case "$merge_authority" in
+    reviewer\ may\ merge|queue\ auto-merge) local_git_finish=true ;;
+  esac
+fi
 
 if [[ -n "$coordinator_path" ]]; then
   case "$coordinator_path" in
@@ -231,7 +228,6 @@ branch_cleanup="not_requested"
 finish_action="none"
 default_cleanup_safety="not_required"
 coordinator_state="not_requested"
-default_cleanup_pending_reason="default_not_verified"
 merged_sha_candidates=("$reviewed_sha")
 
 check_issue_state_if_requested() {
@@ -265,49 +261,24 @@ coordinator_git() {
 }
 
 establish_local_default_cleanup_safety() {
-  local candidate_sha coordinator_status current_branch
+  local candidate_sha current_branch
   default_cleanup_safety="blocked_default_not_verified"
-  default_cleanup_pending_reason="default_not_verified"
   coordinator_state="cleanup_pending:default_not_verified"
-  if ! coordinator_git fetch origin; then
-    default_cleanup_pending_reason="fetch_failed"
-    coordinator_state="cleanup_pending:fetch_failed"
-    echo "FINISH_MR default_update=blocked reason=fetch_failed" >&2
-    return 1
-  fi
-  if ! coordinator_status="$(coordinator_git status --porcelain)"; then
-    default_cleanup_pending_reason="status_unreadable"
-    coordinator_state="cleanup_pending:status_unreadable"
-    echo "FINISH_MR default_update=blocked reason=status_unreadable" >&2
-    return 1
-  fi
-  if [[ -n "$coordinator_status" ]]; then
-    default_cleanup_pending_reason="dirty_checkout"
-    coordinator_state="cleanup_pending:dirty_checkout"
+  coordinator_git fetch origin
+  if [[ -n "$(coordinator_git status --porcelain)" ]]; then
     echo "FINISH_MR default_update=blocked reason=dirty_checkout" >&2
     return 1
   fi
   if ! coordinator_git checkout "$default_branch"; then
-    default_cleanup_pending_reason="checkout_failed"
-    coordinator_state="cleanup_pending:checkout_failed"
     echo "FINISH_MR default_update=blocked reason=checkout_failed branch=$default_branch" >&2
     return 1
   fi
   if ! coordinator_git pull --ff-only origin "$default_branch"; then
-    default_cleanup_pending_reason="fast_forward_failed"
-    coordinator_state="cleanup_pending:fast_forward_failed"
     echo "FINISH_MR default_update=blocked reason=fast_forward_failed branch=$default_branch" >&2
     return 1
   fi
-  if ! current_branch="$(coordinator_git branch --show-current)"; then
-    default_cleanup_pending_reason="current_branch_unreadable"
-    coordinator_state="cleanup_pending:current_branch_unreadable"
-    echo "FINISH_MR default_update=blocked reason=current_branch_unreadable" >&2
-    return 1
-  fi
+  current_branch="$(coordinator_git branch --show-current)"
   if [[ "$current_branch" != "$default_branch" ]]; then
-    default_cleanup_pending_reason="default_branch_not_checked_out"
-    coordinator_state="cleanup_pending:default_branch_not_checked_out"
     echo "FINISH_MR default_update=blocked reason=default_branch_not_checked_out branch=${current_branch:-none}" >&2
     return 1
   fi
@@ -318,40 +289,24 @@ establish_local_default_cleanup_safety() {
       return 0
     fi
   done
-  default_cleanup_pending_reason="containment_unverified"
   echo "FINISH_MR default_update=blocked reason=merged_sha_not_on_local_default branch=$default_branch" >&2
   return 1
 }
 
 update_local_default_after_finish() {
-  local coordinator_status current_branch
-  if ! coordinator_git fetch origin; then
-    coordinator_state="cleanup_pending:fetch_failed"
-    echo "FINISH_MR default_update=skipped reason=fetch_failed" >&2
-    return 0
+  local current_branch
+  coordinator_git fetch origin
+  if [[ -z "$(coordinator_git status --porcelain)" ]] &&
+    coordinator_git checkout "$default_branch" &&
+    coordinator_git pull --ff-only origin "$default_branch"; then
+    current_branch="$(coordinator_git branch --show-current)"
+    if [[ "$current_branch" == "$default_branch" ]]; then
+      coordinator_state="verified_default:$default_branch"
+      return 0
+    fi
   fi
-  if ! coordinator_status="$(coordinator_git status --porcelain)"; then
-    coordinator_state="cleanup_pending:status_unreadable"
-    echo "FINISH_MR default_update=skipped reason=status_unreadable" >&2
-    return 0
-  fi
-  if [[ -n "$coordinator_status" ]] ||
-    ! coordinator_git checkout "$default_branch" ||
-    ! coordinator_git pull --ff-only origin "$default_branch"; then
-    coordinator_state="cleanup_pending:default_not_verified"
-    echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
-    return 0
-  fi
-  if ! current_branch="$(coordinator_git branch --show-current)"; then
-    coordinator_state="cleanup_pending:current_branch_unreadable"
-    echo "FINISH_MR default_update=skipped reason=current_branch_unreadable" >&2
-    return 0
-  fi
-  if [[ "$current_branch" == "$default_branch" ]]; then
-    coordinator_state="verified_default:$default_branch"
-  else
-    coordinator_state="cleanup_pending:default_branch_not_checked_out"
-  fi
+  coordinator_state="cleanup_pending:default_not_verified"
+  echo "FINISH_MR default_update=skipped reason=dirty_or_unavailable_checkout" >&2
 }
 
 if [[ "$mr_state" != "opened" ]]; then
@@ -439,10 +394,10 @@ retain_worktree() {
 if [[ "$finish_action" == "merged" && ( -n "$worktree_path" || "$delete_local_source_branch" == "true" ) ]]; then
   if ! establish_local_default_cleanup_safety; then
     if [[ -n "$worktree_path" ]]; then
-      worktree_cleanup="cleanup_pending:$default_cleanup_pending_reason"
+      worktree_cleanup="cleanup_pending:default_not_verified"
     fi
     if [[ "$delete_local_source_branch" == "true" ]]; then
-      branch_cleanup="cleanup_pending:$default_cleanup_pending_reason"
+      branch_cleanup="cleanup_pending:default_not_verified"
     fi
   fi
 else
@@ -485,16 +440,11 @@ if [[ "$finish_action" == "merged" && "$delete_local_source_branch" == "true" ]]
   fi
 fi
 if [[ "$finish_action" == "merged" && "$delete_remote_source_branch" == "true" ]]; then
-  if coordinator_git push origin --delete "$source_branch"; then
-    if [[ "$branch_cleanup" == "not_requested" ]]; then
-      branch_cleanup="remote_deleted"
-    else
-      branch_cleanup="$branch_cleanup,remote_deleted"
-    fi
-  elif [[ "$branch_cleanup" == "not_requested" ]]; then
-    branch_cleanup="cleanup_pending:remote_delete_failed"
+  coordinator_git push origin --delete "$source_branch"
+  if [[ "$branch_cleanup" == "not_requested" ]]; then
+    branch_cleanup="remote_deleted"
   else
-    branch_cleanup="$branch_cleanup,cleanup_pending:remote_delete_failed"
+    branch_cleanup="$branch_cleanup,remote_deleted"
   fi
 fi
 
