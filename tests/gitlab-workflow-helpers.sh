@@ -320,6 +320,22 @@ test_finish_rejects_unsafe_cleanup_paths_before_merge() {
   assert_contains "$CAPTURE_OUTPUT" "reason=coordinator_path_not_absolute"
   assert_log_not_contains "$dir/glab.log" "merge"
 
+  dir="$(make_fixture_dir finish-parent-owner-missing-coordinator)"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --finish-owner parent \
+    --source-branch build/61 \
+    --default-branch main
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=coordinator_path_missing"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+
 
   dir="$(make_fixture_dir finish-relative-worktree)"
   coordinator="$dir/coordinator"
@@ -395,8 +411,8 @@ test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
     --delete-local-source-branch
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
-  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:default_not_verified"
-  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:default_not_verified"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:dirty_checkout"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:dirty_checkout"
   assert_log_not_contains "$dir/git.log" "git worktree remove $dir/child"
   assert_log_not_contains "$dir/git.log" "git branch -d build/61"
 
@@ -438,8 +454,8 @@ test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
     --worktree-path "$dir/child" \
     --delete-local-source-branch
   assert_status 0
-  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:default_not_verified"
-  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:default_not_verified"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:containment_unverified"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:containment_unverified"
   assert_contains "$CAPTURE_OUTPUT" "coordinator=verified_default:main"
   assert_log_not_contains "$dir/git.log" "worktree remove"
   assert_log_not_contains "$dir/git.log" "branch -d build/61"
@@ -574,6 +590,61 @@ test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
   assert_log_not_contains "$dir/git.log" "worktree remove"
   assert_contains "$CAPTURE_OUTPUT" "coordinator=verified_default:main"
   assert_log_contains "$dir/git.log" "git -C $coordinator checkout main"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
+}
+
+test_finish_reports_post_mutation_git_failures() {
+  local dir
+
+  dir="$(make_fixture_dir finish-queue-fetch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  FAKE_GIT_FETCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=cleanup_pending:fetch_failed"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 --auto-merge --yes --sha abc123"
+
+  dir="$(make_fixture_dir finish-queue-current-branch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  FAKE_CURRENT_BRANCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=cleanup_pending:current_branch_unreadable"
+
+  dir="$(make_fixture_dir finish-remote-delete-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_GIT_PUSH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:remote_delete_failed"
   assert_log_not_contains "$dir/git.log" "branch -d build/61"
 }
 
@@ -1398,6 +1469,7 @@ test_finish_yaml_format_reports_structured_handoff
 test_finish_authorized_paths_are_sha_bound
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
+test_finish_reports_post_mutation_git_failures
 test_finish_blocks_local_cleanup_until_default_is_verified_safe
 test_finish_rejects_unsafe_cleanup_paths_before_merge
 test_finish_blocks_unsafe_states_before_mutation
