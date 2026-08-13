@@ -1,18 +1,32 @@
 # Dev Workflows
 
-This repo is not configured for GitLab-backed dev workflows.
+Provider: `<gitlab | github | azure-devops>`
+Repository: `<canonical repository identifier>`
+Default branch: `<default branch>`
 
-## GitLab-only skills
+Profile facts: `skill://setup-dev-skills/reference/project-profile-facts.json`.
 
-- **`/gitlab`** — only for GitLab repositories or GitLab mirrors.
-- **`/gitlab-to-issues`** — only for publishing approved plans/specs/PRDs as GitLab issues.
-- **`/start-build`** — only for implementing GitLab issues and opening GitLab merge requests.
-- **`/start-review`** — only for reviewing GitLab merge requests.
+Shared delivery uses `/forge`, `/start-build`, `/start-review`, and
+`/issue-delivery-loop`. `/forge preflight` verifies the provider/profile/remote
+binding once and exposes only the selected provider reference. Common policy
+uses issue, change request, commit SHA, and CI run terminology; provider-native
+mechanics stay in that reference.
 
-Do not use those GitLab-specific skills for this repo's configured issue tracker unless the user explicitly switches to GitLab.
+Canonical resources:
 
-## Alternatives
+- `skill://forge/SKILL.md`
+- `skill://forge/reference/common-guard.md`
+- `skill://start-build/templates/delivery-schema.md`
+- `skill://start-build/templates/reviewer-lift-schema.md`
+- `skill://start-build/reference/parent-owned-gate.md`
+- `skill://start-review/REVIEW-FLOW.md`
 
-- For issue breakdowns, follow this repo's tracker-specific workflow manually.
-- For implementation and review, follow this repo's `CLAUDE.md` / `AGENTS.md`, issue tracker docs, and project-specific commands.
-- Project docs in `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.
+This profile declares the target Check Gate, label/readiness policy, branch
+naming, required CI jobs, domain/ADR paths, release/deploy authority, manual
+validation, language families, acceptance surfaces, and auxiliary-index policy.
+These hooks never weaken reviewed-commit binding, CI binding, authority,
+independent review, complete diff coverage, or provider-native readback.
+
+For GitLab profiles only, add `/gitlab` transport and `/gitlab-to-issues`
+publishing pointers. GitHub uses native REST/GraphQL or `gh`; Azure DevOps uses
+mounted native Boards/Repos/Pipelines tools first. Add no provider SDK.

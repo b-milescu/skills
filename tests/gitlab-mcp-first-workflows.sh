@@ -23,7 +23,6 @@ workflow_docs=(
   $(agent_prompt_paths "${reviewer_prompt_names[@]}")
   docs/agents/dev-workflows.md
   docs/agents/issue-tracker.md
-  setup-dev-skills/dev-workflows-gitlab.md
   setup-dev-skills/issue-tracker-gitlab.md
 )
 

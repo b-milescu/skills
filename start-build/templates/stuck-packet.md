@@ -4,14 +4,15 @@
 
 | Field | Value |
 |---|---|
-| MR | `<gitlab MR URL>` |
-| Issue | `<gitlab issue URL>` |
+| Change request | `<provider-native identifier and locator>` |
+| Work item | `<provider-native identifier and locator>` |
 | Title | |
-| Builder | `@builder — <exact model id if exposed, e.g. claude-opus-4-7>` |
+| Builder | `<actor identifier when exposed>` |
 | Branch | |
 | Stuck duration | |
 | Severity | `<blocking / slowing / curiosity>` |
 | Safety surface | `<external-system / coordination / gates / state / migration / deploy / other>` |
+| Published artifact | `<forge publish result plus provider-native readback locator>` |
 
 ## What I'm trying to do
 

@@ -1,23 +1,30 @@
-# Multiple issue worktree mode
+# Multiple work-item worktree mode
 
-Detailed reference for `start-build` multi-issue worktree handling. This file is the canonical owner; [SKILL.md](../SKILL.md) routes here from the mode matrix.
+Use this mode only for multiple work items that satisfy the shared
+[Decoupling Contract](skill://start-build/docs/decoupling-contract.md). Unknown
+or contradicted decoupling evidence means serial work.
 
-Use this mode when the user supplies multiple issues, asks for multiple tasks, or requests more than one issue at once.
-
-1. Resolve candidates first. Build a set only if every item is one-MR-sized, unblocked, and satisfies the shared [Decoupling Contract](skill://start-build/docs/decoupling-contract.md).
-2. Prove decoupling before parallelizing using the contract's builder producer guidance. If any contract item is false, unknown, or contradicted by evidence, treat the work as coupled.
-3. If decoupling is unclear, stop and ask for a serial order or smaller set. Never parallelize coupled work to save time.
-4. Use the original checkout as a coordinator only — do not code in it during a multi-issue run:
-   - `git status --porcelain` empty;
-   - detect default branch with `gitlab` **Snippet: local-repo-preflight** (`default_branch`, or project docs if the snippet cannot run);
-   - for each issue, immediately before its `git worktree add`, run `git fetch origin`;
-   - read and record `default_sha="$(git rev-parse "origin/$default_branch")"` for that issue;
-   - create the sibling worktree from the verified remote default: `git worktree add -b <branch> <path> "origin/$default_branch"`;
-   - verify the new worktree's `HEAD` equals the recorded `default_sha`; if the SHA cannot be read or does not match, remove the new worktree if it is clean and stop instead of launching a child builder.
-5. In each worktree, run the normal implementation flow from context loading onward. One issue, one branch, one Draft MR, one check gate, one Review Packet per worktree.
-6. **Write the decoupling proof once per MR, in `Reviewer Lift > Decoupling proof`.** Follow the [Decoupling Contract's builder producer guidance](skill://start-build/docs/decoupling-contract.md#builder-producer-guidance): list co-running MR IIDs/branches, state why the contract holds, and keep `Changed paths` and `Touched safety surfaces` current so the reviewer can spot contradictions quickly. The reviewer reads this proof before re-deriving it.
-7. **Delegate isolated work from a coordinator only.** A parent/coordinator with agent-launch authority may start one builder per worktree using its runtime-specific mechanism and the [Parent-orchestrator recipe](parent-orchestrator.md#parent-loop). If you are already running inside a child builder worktree, this step is complete: do not launch builders or reviewers from the child session.
-8. **Use durable parent-readable outputs.** For child handoffs that the parent must read after cleanup, follow the [durable child output guidance](parent-orchestrator.md#durable-child-outputs): inline output, or an absolute output path in a caller-created run directory outside any `omp-worktree-*` checkout. Treat GitLab MR descriptions/comments as canonical for delivery handoffs.
-9. Keep per-issue artifacts/evidence scoped to that worktree/MR or the parent run dir named for that issue. Do not combine Review Packets, close multiple issues from one MR, or stack branches unless the user explicitly switches to a serial plan.
-10. Before revision/merge follow-up, re-check target branch and merge status. If another worktree's MR creates a conflict or stale branch, pause and report the coupling.
-11. Remove a worktree only after its branch is pushed, `git -C <path> status --porcelain` is empty, and the merge/cleanup state is known. After merge, fast-forward local default first (`git fetch origin`, `git checkout <default_branch>`, `git pull --ff-only origin <default_branch>`) or verify the MR `merge_commit_sha` / `squash_commit_sha` is an ancestor of the fast-forwarded local default before deleting local source branches. Use `git worktree prune` only after verifying stale paths.
+1. Use the original checkout as coordinator only. Require clean status and run
+   `forge preflight` for provider/repository/default-branch binding.
+2. Immediately before each child worktree, fetch origin, record the verified
+   remote-default commit, create the branch/worktree from that commit, and verify
+   its `HEAD`. Stop and remove only a clean newly-created worktree on mismatch.
+3. Run one work item, branch, Draft change request, Check Gate, and Review Packet
+   per worktree.
+4. In each Reviewer Lift, list co-running change-request identifiers/locators and
+   branches, summarize the Decoupling Contract proof, and keep changed paths and
+   safety surfaces current.
+5. Only the parent/coordinator launches builders or reviewers. Child builders do
+   not launch either role.
+6. Keep durable handoffs in provider-published change-request descriptions and
+   discussions with provider-native readback. Local run artifacts stay in a
+   caller-owned absolute directory outside temporary worktrees.
+7. Keep evidence scoped to one worktree/change request. Do not combine packets,
+   close multiple work items from one change request, or stack branches unless
+   the user explicitly switches to a serial plan.
+8. Before revision or finish, use `forge snapshot` to re-check target branch,
+   current commit, and conflict state. Report newly discovered coupling.
+9. Remove a worktree only after its branch is pushed, its status is clean, and
+   `forge post_merge_snapshot` proves the provider result commit is contained by
+   the fast-forwarded default branch. Preserve unknown or containment-unverified
+   paths and report `cleanup_pending`.

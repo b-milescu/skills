@@ -1,16 +1,17 @@
 # Unblock Response
 
-<!-- Post this filled response as an MR note with `gitlab` Snippet: mr-note-create. -->
+<!-- Publish this filled response with `forge publish` and require provider-native readback. -->
 
 ## Metadata
 
 | Field | Value |
 |---|---|
-| MR | `<gitlab MR URL>` |
-| Responding to | `<link to Stuck Packet MR comment>` |
+| Change request | `<provider-native identifier and locator>` |
+| Responding to | `<provider-published Stuck Packet locator>` |
 | Responder | |
 | Response # | |
 | Response type | `<pointer / correction / pair-offer / escalation>` |
+| Publication readback | `<provider-native result locator>` |
 
 ## Summary
 

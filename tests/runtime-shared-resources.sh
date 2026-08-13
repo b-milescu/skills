@@ -125,6 +125,10 @@ shared_doc_ref = re.compile(
     r"(?:\./|\.\./)*docs/(?:decoupling-contract|effort-scaling)\.md"
 )
 
+link_pattern = re.compile(r"\[[^\]]+\]\(skill://[A-Za-z0-9_-]+/[^)]+\)")
+probe_ref = re.compile(current_skill_ref_template.format(skill="start-review"))
+assert not probe_ref.search(link_pattern.sub("", "[REVIEW-FLOW.md](skill://start-review/REVIEW-FLOW.md)"))
+assert probe_ref.search("REVIEW-FLOW.md")
 surfaces = sorted(root.glob("*/SKILL.md")) + sorted(root.glob("agents/*/*.md"))
 violations = []
 for path in surfaces:
@@ -137,12 +141,13 @@ for path in surfaces:
         else None
     )
     for line_number, line in enumerate(text.splitlines(), 1):
+        portable_line = link_pattern.sub("", line)
         reasons = []
-        if cross_skill_ref.search(line):
+        if cross_skill_ref.search(portable_line):
             reasons.append("cross-skill resource path")
-        if current_skill_ref and current_skill_ref.search(line):
+        if current_skill_ref and current_skill_ref.search(portable_line):
             reasons.append("current-skill resource path")
-        if shared_doc_ref.search(line):
+        if shared_doc_ref.search(portable_line):
             reasons.append("shared docs path")
         if (
             "docs/agents/agent-readiness-scorecard.md#scorecard" in line
@@ -170,7 +175,6 @@ fi
 
 assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" "portable Agent Readiness scorecard resource"
 assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/templates/issue-body.md#agent-readiness" "portable issue body template resource"
-assert_file_contains "$REPO_ROOT/setup-dev-skills/SKILL.md" "skill://setup-dev-skills/dev-workflows-gitlab.md" "portable GitLab setup seed resource"
-assert_file_contains "$REPO_ROOT/setup-dev-skills/dev-workflows-gitlab.md" "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md" "portable setup readiness scorecard resource"
+assert_file_contains "$REPO_ROOT/setup-dev-skills/SKILL.md" "skill://setup-dev-skills/dev-workflows-generic.md" "portable neutral setup seed resource"
 
 echo "runtime-shared-resources: PASS"

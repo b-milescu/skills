@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Report locator | `review-report:agents/skills!340:2` |
-| Reviewed SHA | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` |
+| Reviewed commit | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` |
 
 ## Finding identities
 

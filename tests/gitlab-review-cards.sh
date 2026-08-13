@@ -63,11 +63,12 @@ done
 require_text "$action_card" 'MR comments only' 'MR-note target split rule'
 require_text "$action_card" 'issue workflow explicitly calls' 'issue-note target split rule'
 
+for card in review-read review-actions ci; do
+  require_text "forge/reference/gitlab.md" "gitlab/reference/${card}\.md" "${card} card link"
+done
+require_text "forge/reference/gitlab.md" 'gitlab/SKILL\.md' 'full-reference fallback guidance'
 for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
-  require_text "$file" '../gitlab/reference/review-read.md' 'review-read card link'
-  require_text "$file" '../gitlab/reference/review-actions.md' 'review-actions card link'
-  require_text "$file" '../gitlab/reference/ci.md' 'ci card link'
-  require_text "$file" 'fall back to .*gitlab/SKILL.md' 'full-reference fallback guidance'
+  reject_text "$file" 'gitlab/reference/(review-read|review-actions|ci)\.md' 'direct generic GitLab card ownership'
 done
 
 require_text "gitlab/SKILL.md" 'reference/review-read.md' 'review-read discoverability link'

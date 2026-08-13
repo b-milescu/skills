@@ -16,17 +16,17 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 | Signal | Where to look | Usual category |
 |---|---|---|
 | Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, claude-mem observations, `gitlab` helper output | tooling |
-| Review rounds > 1 on any MR — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
+| Review rounds > 1 on any change request — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
 | Blocker tokens fired (`missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`, `partial-review`, ...) — was the blocker avoidable upstream? | reviewer final handoffs, `delivery.handoff_contract`, action-result notes | flow |
 | `Action blocker: other` or `not_run_reason: other` used — the enum lacked a real value | handoffs, delivery blocks | taxonomy |
 | Timeout / stale / interrupted reviewer or builder rounds | Review Gate Summary, parent loop records | flow |
 | Leftover local state after the run — worktrees, `refs/tmp/review/*` temp refs, undeleted source branches, dirty checkouts | `git worktree list`, `git for-each-ref refs/tmp`, `git branch`, `git status --porcelain` | flow |
 | Check Gate failing on the default branch after merges | gate command on a fresh default-branch checkout | process |
 | Ceremony/tier mismatch — trivial work carrying a full packet or agent fan-out, or high-risk work routed through the trivial path | issue tier vs the packets/agents actually used; Effort Scaling tiers | process |
-| Handoff defects — missing or stale Reviewer Lift fields, placeholder `OQ-N`, generated-copy drift against the canonical schema | MR descriptions, schema regression tests, Review Reports | docs-drift |
+| Handoff defects — missing or stale Reviewer Lift fields, placeholder `OQ-N`, generated-copy drift against the canonical schema | change request descriptions, schema regression tests, Review Reports | docs-drift |
 | Context bloat — repeated reads of the same sources across agents, canon restated instead of pointed to, oversized launch prompts | builder/reviewer launch prompts, context-expansion rows, token warnings | context |
 | Required reads that never influenced a decision, or Tier 3 reads that did | Build Plan Packet and Review Context Capsule context rows | context |
-| Workflow state recorded only in prose because no live label exists (needs-info, human-decision, revision, unblock) | issue/MR comments vs the target repo's live label inventory | taxonomy |
+| Workflow state recorded only in prose because no live label exists (needs-info, human-decision, revision, unblock) | issue/change request comments vs the target repo's live label inventory | taxonomy |
 | Metrics reported but undefined or unmeasurable (for example, what counts as a "brief defect") | batch metrics vs the operating contract that names them | taxonomy |
 | Two canonical sources giving different vocabulary or rules for the same decision point | the docs actually cited during the run | docs-drift |
 

@@ -62,10 +62,11 @@ for forbidden in sha-bound-approval sha-bound-merge sha-bound-auto-merge-queue f
   fi
 done
 
-# start-build/SKILL.md must point at the build cards
-require_text "start-build/SKILL.md" 'gitlab/reference/build-read\.md' 'build-read card link'
-require_text "start-build/SKILL.md" 'gitlab/reference/build-actions\.md' 'build-actions card link'
-require_text "start-build/SKILL.md" 'fall back to .*gitlab/SKILL\.md' 'full-reference fallback guidance'
+# The selected /forge GitLab branch owns card links and fallback.
+require_text "forge/reference/gitlab.md" 'gitlab/reference/build-read\.md' 'build-read card link'
+require_text "forge/reference/gitlab.md" 'gitlab/reference/build-actions\.md' 'build-actions card link'
+require_text "forge/reference/gitlab.md" 'gitlab/SKILL\.md' 'full-reference fallback guidance'
+reject_text "start-build/SKILL.md" 'gitlab/reference/(build-read|build-actions)\.md' 'direct generic GitLab card ownership'
 
 # gitlab/SKILL.md must have discoverability links for the new build cards
 require_text "gitlab/SKILL.md" 'reference/build-read\.md' 'build-read discoverability link'

@@ -17,34 +17,30 @@ require_text() {
 removed_skill_dir="post-merge-verifier"
 removed_skill_file="$removed_skill_dir/SKILL.md"
 verifier_recipe="start-build/reference/post-merge-verifier.md"
-snapshot_helper="gitlab/scripts/gitlab-post-merge-snapshot.sh"
 
 [[ ! -e "$removed_skill_file" ]] || fail "removed top-level verifier skill still exists: $removed_skill_file"
 
-# The canonical verifier recipe forbids mutating actions (post-#152 wording: the
-# dropped "promised docs/ADR/follow-ups" check is intentionally NOT asserted here).
+# The canonical verifier is read-only and provider-neutral.
 require_text "$verifier_recipe" 'approve.*merge.*queue|approve, (merge|reject)' 'recipe approve/merge/queue forbidden token'
-require_text "$verifier_recipe" 'force.?close' 'recipe force-close forbidden token'
-require_text "$verifier_recipe" 'delete.*(remote |local )?(source )?branch' 'recipe delete-branch forbidden token'
-require_text "$verifier_recipe" 'release, deploy|deploy.*operator|operator mutation' 'recipe release/deploy/operator forbidden token'
-
-# The verifier reports pending state rather than mutating.
-require_text "$verifier_recipe" 'issue_closure_pending' 'recipe issue_closure_pending report token'
-require_text "$verifier_recipe" 'source_branch_cleanup_pending' 'recipe source_branch_cleanup_pending report token'
-
-# Optional compact routing blocks stay read-only and specific.
+require_text "$verifier_recipe" 'close work items' 'recipe work-item close forbidden token'
+require_text "$verifier_recipe" 'delete.*source refs' 'recipe delete-ref forbidden token'
+require_text "$verifier_recipe" 'release, deploy|product/runtime/operator mutation' 'recipe release/deploy/operator forbidden token'
+require_text "$verifier_recipe" 'pending' 'recipe pending-state token'
 require_text "$verifier_recipe" 'delivery\.handoff_contract' 'recipe handoff_contract routing token'
 require_text "$verifier_recipe" 'specific/actionable|specific actionable' 'recipe actionable blocker wording token'
-
-# Read-only invariant, canonical recipe ownership, helper wiring, and schema
-# anchors must be explicit without requiring a first-class skill file.
 require_text "$verifier_recipe" 'Canonical read-only post-merge verification recipe|canonical .*verifier recipe' 'recipe canonical-owner token'
-require_text "$verifier_recipe" 'top-level skill discovery should not expose a separate verifier entry point' 'recipe demoted-skill-surface token'
-require_text "$verifier_recipe" 'read-only confirmation|read-only GitLab/git' 'recipe read-only invariant token'
-require_text "$verifier_recipe" 'get_post_merge_snapshot' 'recipe MCP snapshot tool pointer'
+require_text "$verifier_recipe" 'top-level skill discovery' 'recipe demoted-skill-surface token'
+require_text "$verifier_recipe" 'read-only confirmation|read-only.*post-merge' 'recipe read-only invariant token'
+require_text "$verifier_recipe" 'forge post_merge_snapshot' 'recipe forge snapshot pointer'
 require_text "$verifier_recipe" 'post_merge_snapshot\.kind=post-merge-snapshot' 'recipe snapshot schema anchor'
-require_text "$snapshot_helper" 'post-merge-snapshot' 'snapshot helper emits schema kind'
-require_text "$snapshot_helper" 'read-only' 'snapshot helper read-only invariant token'
+require_text "$verifier_recipe" 'result-commit CI status bound to the provider result commit' 'result-commit CI binding'
+require_text "$verifier_recipe" 'wrong-result-commit CI stays pending' 'wrong-result CI fail-closed guard'
+
+for forbidden in '/gitlab' 'get_post_merge_snapshot' 'Closes #' 'MR IID' 'issue-note'; do
+  if grep -Fqi -- "$forbidden" "$verifier_recipe"; then
+    fail "provider-specific verifier mechanic remains: $forbidden"
+  fi
+done
 
 # Post-#152 guard: the dropped "promised docs/ADR/follow-ups" check must stay gone.
 if grep -Eiq -- 'promised (docs|adr|follow-?ups?)|docs/adr/follow' "$verifier_recipe"; then

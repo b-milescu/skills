@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import yaml from "js-yaml";
 
-const commonFlags = ["--receipt", "--mr-iid", "--issue-iid", "--reviewed-sha", "--gate-command"];
-const postFlags = ["--review-packet", "--gate-receipt-note-id", "--gate-policy-ref"];
+const commonFlags = ["--receipt", "--change-id", "--issue-id", "--reviewed-commit", "--gate-command"];
+const postFlags = ["--review-packet", "--gate-receipt-locator", "--gate-policy-ref"];
 const allowedFlags = ["--mode", ...commonFlags, ...postFlags];
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
@@ -67,7 +67,7 @@ function validateReceipt(body, expected) {
 
   const receipt = document.gate_receipt;
   const required = [
-    "kind", "version", "owner", "mr_iid", "issue_iid", "checkout_path", "checkout_sha",
+    "kind", "version", "owner", "change_id", "issue_id", "checkout_path", "checkout_commit",
     "status_before", "status_after", "command", "result", "summary", "preflight_checks", "evidence",
   ];
   for (const field of required) if (!(field in receipt)) fail(`missing gate_receipt.${field}`);
@@ -76,9 +76,9 @@ function validateReceipt(body, expected) {
     kind: "gate-receipt",
     version: "1",
     owner: "parent",
-    mr_iid: expected.mrIid,
-    issue_iid: expected.issueIid,
-    checkout_sha: expected.reviewedSha,
+    change_id: expected.changeId,
+    issue_id: expected.issueId,
+    checkout_commit: expected.reviewedCommit,
     status_before: "draft",
     status_after: "ready",
     command: expected.gateCommand,
@@ -141,8 +141,8 @@ function tableRows(body) {
   return rows;
 }
 
-function containsSha(value, sha) {
-  return new RegExp(`(?:^|[^0-9a-f])${sha}(?:$|[^0-9a-f])`, "i").test(value);
+function containsCommit(value, commit) {
+  return new RegExp(`(?:^|[^0-9a-f])${commit}(?:$|[^0-9a-f])`, "i").test(value);
 }
 
 function validateLift(body, expected) {
@@ -150,42 +150,42 @@ function validateLift(body, expected) {
   const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
   for (const name of names) if (!isNonEmptyString(rows.get(name))) fail(`missing Reviewer Lift ${name}`);
 
-  if (rows.get("Reviewed SHA").trim() !== `\`${expected.reviewedSha}\``) fail("Reviewer Lift Reviewed SHA is stale");
+  if (rows.get("Reviewed SHA").trim() !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
   const rationale = rows.get("Gate coverage rationale");
   for (const value of [expected.gatePolicy, expected.gateCommand, "required CI jobs", "locally covered jobs", "unmapped CI-only jobs"]) {
     if (!rationale.includes(value)) fail("Reviewer Lift gate coverage rationale is incomplete");
   }
 
-  if (!containsSha(rows.get("CI pipeline"), expected.reviewedSha)) fail("Reviewer Lift CI pointer is stale");
+  if (!containsCommit(rows.get("CI pipeline"), expected.reviewedCommit)) fail("Reviewer Lift CI pointer is stale");
 
   const localGate = rows.get("Local gate");
-  const pointerTokens = localGate.match(/\/merge_requests\/[^\s|)>,.;`]+/g) ?? [];
-  const pointer = pointerTokens.length === 1 && pointerTokens[0].match(/^\/merge_requests\/(\d+)#note_(\d+)$/);
+  const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];
+  const locator = locatorTokens.length === 1 ? locatorTokens[0] : "";
   const contradictory = /\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate) || (localGate.match(/Gate Receipt/gi) ?? []).length !== 1;
-  if (!/\bPASS\b/.test(localGate) || contradictory || !localGate.includes(expected.gateCommand) || !pointer || pointer[1] !== expected.mrIid || pointer[2] !== expected.receiptNoteId) {
+  if (!/\bPASS\b/.test(localGate) || contradictory || !localGate.includes(expected.gateCommand) || locator !== expected.receiptLocator) {
     fail("Reviewer Lift local gate or Gate Receipt pointer is stale");
   }
 
   const delta = rows.get("Delta since last ready push");
-  if (!/^N\/A before ready$/i.test(delta.trim()) && (!containsSha(delta, expected.reviewedSha) || /pending/i.test(delta))) {
+  if (!/^N\/A before ready$/i.test(delta.trim()) && (!containsCommit(delta, expected.reviewedCommit) || /pending/i.test(delta))) {
     fail("Reviewer Lift delta is stale");
   }
 }
 
 const { args, mode } = parseArgs(process.argv.slice(2));
 const expected = {
-  mrIid: args.get("--mr-iid"),
-  issueIid: args.get("--issue-iid"),
-  reviewedSha: args.get("--reviewed-sha").toLowerCase(),
+  changeId: args.get("--change-id"),
+  issueId: args.get("--issue-id"),
+  reviewedCommit: args.get("--reviewed-commit").toLowerCase(),
   gateCommand: args.get("--gate-command"),
   gatePolicy: args.get("--gate-policy-ref"),
-  receiptNoteId: args.get("--gate-receipt-note-id"),
+  receiptLocator: args.get("--gate-receipt-locator"),
 };
-if (!/^\d+$/.test(expected.mrIid) || !/^\d+$/.test(expected.issueIid) || !/^[0-9a-f]{40}$/.test(expected.reviewedSha)) {
+if (![expected.changeId, expected.issueId].every(isNonEmptyString) || !/^[0-9a-f]{40}$/.test(expected.reviewedCommit)) {
   fail("invalid expected binding");
 }
-if (mode === "post-note" && !/^\d+$/.test(expected.receiptNoteId)) fail("invalid expected binding");
+if (mode === "post-note" && !isNonEmptyString(expected.receiptLocator)) fail("invalid expected binding");
 for (const value of Object.values(expected)) if (value && unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
 
 validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);

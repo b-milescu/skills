@@ -4,108 +4,55 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-fail() {
-  printf 'start-build-mode-cards: FAIL: %s\n' "$*" >&2
-  exit 1
-}
+fail() { printf 'start-build-mode-cards: FAIL: %s\n' "$*" >&2; exit 1; }
+require() { grep -Eiq -- "$2" "$1" || fail "$1 missing $3"; }
+reject() { ! grep -Eiq -- "$2" "$1" || fail "$1 contains $3"; }
 
-require_file() {
-  local file="$1"
-  [[ -f "$file" ]] || fail "missing compact mode card: $file"
-}
+cards=(
+  start-build/reference/child-builder-card.md
+  start-build/reference/parent-owned-gate-card.md
+  start-build/reference/revision-card.md
+  start-build/reference/parent-orchestrator-card.md
+)
 
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-reject_text() {
-  local file="$1" pattern="$2" label="$3"
-  if grep -En -- "$pattern" "$file" >&2; then
-    fail "$file contains $label"
-  fi
-}
-
-require_card_contract() {
-  local file="$1"
-  require_file "$file"
-  require_text "$file" 'pointer map|pointer-map' 'pointer-map wording'
-  require_text "$file" 'not an alternate policy source' 'not-policy-source wording'
-  require_text "$file" '^## Checklist' 'Checklist section'
-  require_text "$file" '^## Fallback to canonical docs' 'canonical fallback section'
-  reject_text "$file" '```' 'raw command/code fence'
-  reject_text "$file" '(^|[[:space:]])glab[[:space:]]+(issue|mr|ci|repo|api)\b' 'raw glab command copy'
-  reject_text "$file" '(^|[[:space:]])git[[:space:]]+(status|fetch|checkout|pull|push|rev-parse|ls-remote|merge|branch)\b' 'raw git command copy'
-
-  for trigger in \
-    'ambiguity' \
-    'missing field' \
-    'transport/help drift' \
-    'authority uncertainty' \
-    'SHA/CI mismatch' \
-    'cross-project binding' \
-    'partial review' \
-    'any mutation action'; do
-    require_text "$file" "$trigger" "fallback trigger: $trigger"
+for card in "${cards[@]}"; do
+  require "$card" 'pointer map' 'pointer-map contract'
+  require "$card" 'not an alternate policy source' 'not-policy-source contract'
+  require "$card" '^## Checklist$' 'Checklist'
+  require "$card" '^## Fallback to canonical docs$' 'canonical fallback'
+  require "$card" 'skill://forge/reference/common-guard.md' 'common guard owner'
+  require "$card" 'forge snapshot' 'snapshot verb'
+  require "$card" 'ci-decision-table' 'CI policy pointer'
+  require "$card" 'authority' 'authority boundary'
+  require "$card" 'child-builder' 'child boundary'
+  require "$card" 'Gate Receipt|gate-receipt' 'Gate Receipt'
+  require "$card" 'post-merge-verifier' 'read-only verifier pointer'
+  for trigger in 'ambiguity' 'missing field' 'transport/help drift' 'authority uncertainty' 'SHA/CI mismatch' 'cross-project binding' 'partial review' 'any mutation action'; do
+    require "$card" "$trigger" "fallback trigger $trigger"
   done
-
-  require_text "$file" 'sha-guard' 'final SHA guard pointer'
-  require_text "$file" 'ci-decision-table' 'CI decision policy pointer'
-  require_text "$file" 'authority' 'authority source verification pointer'
-  require_text "$file" 'child-builder.*authority-boundary|child-builder-card\.md' 'child-builder boundary pointer'
-  require_text "$file" 'Gate Receipt|gate-receipt' 'Gate Receipt pointer'
-  require_text "$file" 'post-merge-verifier' 'post-merge verifier read-only pointer'
-  reject_text "$file" 'post-merge-verifier/SKILL[.]md' 'removed top-level verifier skill pointer'
-}
-
-child_card="start-build/reference/child-builder-card.md"
-parent_gate_card="start-build/reference/parent-owned-gate-card.md"
-revision_card="start-build/reference/revision-card.md"
-parent_card="start-build/reference/parent-orchestrator-card.md"
-
-for card in "$child_card" "$parent_gate_card" "$revision_card" "$parent_card"; do
-  require_card_contract "$card"
+  reject "$card" 'GitLab|glab|Closes #[<0-9]|get_post_merge_snapshot|local-repo-preflight|draft-mr|mr-description|safe-mr-json|sha-guard|ci-watch-sha-pinned|finish-mr-authority-aware|mr-note-create' 'retired provider mechanics'
+  reject "$card" '```' 'raw command block'
 done
 
-# Accepted compact card names stay discoverable from the primary start-build entry point.
-for owner in start-build/SKILL.md; do
-  for card_name in \
-    'child-builder-card\.md' \
-    'parent-owned-gate-card\.md' \
-    'revision-card\.md' \
-    'parent-orchestrator-card\.md'; do
-    require_text "$owner" "$card_name" "discoverability link $card_name"
-  done
-  require_text "$owner" 'pointer maps|pointer-map' 'pointer-only card framing'
-  require_text "$owner" 'any mutation action' 'mutation fallback trigger'
-done
+require "${cards[0]}" 'forge preflight' 'child preflight'
+require "${cards[0]}" 'forge publish' 'child publication'
+require "${cards[1]}" 'guarded `forge act`' 'guarded ready action'
+require "${cards[2]}" 'forge publish' 'revision publication'
+require "${cards[3]}" 'forge preflight' 'parent preflight'
+require "${cards[3]}" 'guarded `forge act`' 'parent action'
+require "${cards[3]}" 'forge post_merge_snapshot' 'post-merge snapshot'
 
-# Snippet names are stable API; cards should link to names, never paste command bodies.
-for snippet in \
-  local-repo-preflight \
-  issue-pickup \
-  draft-mr-create \
-  mr-description-update \
-  mr-pickup \
-  safe-mr-json \
-  sha-guard \
-  ci-decision-snapshot \
-  ci-watch-sha-pinned \
-  finish-mr-authority-aware \
-  mr-note-create \
-  draft-mr-mark-ready; do
-  grep -R "SKILL\.md#snippet-${snippet}" start-build/reference/*-card.md >/dev/null || \
-    fail "missing accepted gitlab snippet pointer: $snippet"
-done
+require "${cards[0]}" 'child-builder.md#child-checklist' 'child checklist anchor'
+require "${cards[0]}" 'child-builder.md#authority-boundary' 'child authority anchor'
+require "${cards[1]}" 'parent-owned-gate.md#parent-verification-checklist' 'parent checklist anchor'
+require "${cards[1]}" 'parent-owned-gate.md#gate-receipt-schema' 'receipt schema anchor'
+require "${cards[2]}" 'implementation-flow.md#procedure' 'revision procedure anchor'
+require "${cards[2]}" 'revision-packet.md' 'revision packet'
+require "${cards[3]}" 'parent-orchestrator.md#parent-loop' 'parent loop anchor'
 
-# Canonical start-build anchors stay referenced instead of restating policy.
-require_text "$child_card" 'child-builder\.md#child-checklist' 'child checklist canonical anchor'
-require_text "$child_card" 'child-builder\.md#authority-boundary' 'child authority canonical anchor'
-require_text "$parent_gate_card" 'parent-owned-gate\.md#parent-verification-checklist' 'parent Gate Receipt canonical checklist anchor'
-require_text "$parent_gate_card" 'parent-owned-gate\.md#gate-receipt-schema' 'Gate Receipt schema canonical seam anchor'
-require_text "$revision_card" 'implementation-flow\.md#procedure' 'revision procedure canonical anchor'
-require_text "$revision_card" 'revision-packet\.md' 'revision packet template pointer'
-require_text "$parent_card" 'parent-orchestrator\.md#parent-loop' 'parent loop canonical anchor'
-require_text "$parent_card" 'post-merge-verifier\.md' 'post-merge verifier canonical anchor'
+for card in child-builder-card parent-owned-gate-card revision-card parent-orchestrator-card; do
+  require start-build/SKILL.md "skill://start-build/reference/${card}.md" "$card discoverability"
+done
+require start-build/SKILL.md 'Compact pointer maps' 'pointer-map framing'
 
 printf 'start-build-mode-cards: PASS\n'

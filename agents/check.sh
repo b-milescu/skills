@@ -146,11 +146,11 @@ workflow_skill_for_agent() {
 }
 
 check_agent_prompt_strategy() {
-  local file rel name workflow_skill workflow_skill_file gitlab_skill_file
+  local file rel name workflow_skill workflow_skill_file forge_skill_file
 
-  gitlab_skill_file="$REPO_ROOT/gitlab/SKILL.md"
-  if [[ ! -f "$gitlab_skill_file" ]]; then
-    error "agent prompt strategy: canonical GitLab transport skill missing: $(relpath "$gitlab_skill_file")"
+  forge_skill_file="$REPO_ROOT/forge/SKILL.md"
+  if [[ ! -f "$forge_skill_file" ]]; then
+    error "agent prompt strategy: canonical forge transport skill missing: $(relpath "$forge_skill_file")"
   fi
 
   for file in "$REPO_ROOT/agents/claude"/*.md "$REPO_ROOT/agents/omp"/*.md; do
@@ -167,8 +167,8 @@ check_agent_prompt_strategy() {
     if ! grep -Fq 'Canonical development pattern source: `'"$workflow_skill"'`' "$file"; then
       error "agent prompt strategy: $rel must point to canonical workflow skill $workflow_skill"
     fi
-    if ! grep -Fq 'gitlab' "$file"; then
-      error "agent prompt strategy: $rel must point to gitlab for GitLab transport/fallback mechanics"
+    if ! grep -Fq 'forge' "$file" || ! grep -Fq 'bound provider' "$file"; then
+      error "agent prompt strategy: $rel must select the bound provider through forge"
     fi
   done
 }

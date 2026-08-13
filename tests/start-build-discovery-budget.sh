@@ -59,16 +59,16 @@ printf '%s\n' "$packet_block" | grep -q '../templates/build-plan-packet.md' || f
 require_block_text "$packet_block" 'loaded context sources' "Build Plan Packet block missing loaded-context-source recording"
 require_block_text "$packet_block" 'why each source was relevant' "Build Plan Packet block missing context relevance rationale"
 
-require_block_text "$(cat "$skill")" 'rulebook index first' "$skill missing rulebook-index-first guidance"
-if grep -qE 'Load the host project.?s rulebook first.*architecture docs, ADRs' "$skill"; then
-  fail "$skill still implies architecture docs and ADRs are loaded as part of the first rulebook read"
-fi
-
-for pattern in 'Standalone `/start-build` mode' 'Child `mr-builder` mode'; do
-  grep -qF "$pattern" "$skill" || fail "$skill missing authority boundary text: $pattern"
-done
-
-grep -qF 'templates/build-plan-packet.md' "$skill" || fail "$skill missing build plan packet template pointer"
+grep -qF 'skill://start-build/reference/context-and-planning.md' "$skill" || \
+  fail "$skill missing canonical context-and-planning pointer"
+grep -qF 'skill://start-build/templates/build-plan-packet.md' "$skill" || \
+  fail "$skill missing canonical Build Plan Packet pointer"
+grep -qF -- '- **Standalone:**' "$skill" || \
+  fail "$skill missing compact Standalone contract"
+grep -qF -- '- **Child `mr-builder`:**' "$skill" || \
+  fail "$skill missing compact Child contract"
+grep -qF 'parent owns Gate Receipt and ready' "$skill" || \
+  fail "$skill missing parent-owned child boundary"
 
 for field in '## Issue' '## Intended behavior' '## Loaded context sources' '## Affected surfaces' '## Test plan' '## Risk' '## Non-goals'; do
   grep -qF "$field" "$template" || fail "$template missing $field"

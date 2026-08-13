@@ -10,7 +10,7 @@
 # This is a presence/shape + closed-set MEMBERSHIP check. It validates that each
 # required row name appears as a table row, and that the closed-set rows below
 # hold an allowed value:
-#   - Merge authority  ∈ {none — requires explicit human/parent instruction,
+#   - Finish authority  ∈ {none — requires explicit human/parent instruction,
 #                         approval-only, reviewer may merge, queue auto-merge,
 #                         human release, project default: <...>}
 #   - Review gate      ∈ {mandatory, bypassed (human override)}
@@ -28,8 +28,8 @@
 # It does NOT fail closed on SEMANTIC correctness (e.g. whether a declared
 # acceptance surface actually matches the diff) — that stays parent/reviewer
 # judgment. The single exception is an ADVISORY (warn-only) heuristic: when
-# `Merge authority` is a finish-authority-granting value but the paired
-# `Merge authority source` cell carries no quotable affirmative grant, it writes
+# `Finish authority` is a finish-authority-granting value but the paired
+# `Finish authority source` cell carries no quotable affirmative grant, it writes
 # one stderr diagnostic naming the offending row and STILL EXITS 0 (issue #294).
 #
 # Makes NO network call: it only reads local files (schema, acceptance-surface
@@ -262,26 +262,35 @@ function unwrap(v) {
 function valueOf(rowName) {
   return unwrap(values.get(rowName.toLowerCase()));
 }
+function rejectInnerCodeSpans(rowName, raw) {
+  if (raw === undefined) return;
+  const trimmed = raw.trim();
+  const wholeWrapped = trimmed.startsWith('`') && trimmed.endsWith('`') &&
+    trimmed.slice(1, -1).indexOf('`') === -1;
+  if (trimmed.includes('`') && !wholeWrapped) {
+    failInvalidValue(rowName, raw, 'detail=individually_wrapped_tokens_forbidden');
+  }
+}
 
-// Merge authority accepts a fixed enum plus the open `project default: <...>`
+// Finish authority accepts a fixed enum plus the open `project default: <...>`
 // form, so it is checked with a predicate rather than a flat set. The fail-closed
 // default is `none — requires explicit human/parent instruction` (RF-1, issue
 // #293): a bare `none` is NOT accepted — the value must carry the explicit
 // human/parent-instruction qualifier so it cannot be confused with a silent grant.
-const mergeAuthorityFixed = new Set([
+const finishAuthorityFixed = new Set([
   'none — requires explicit human/parent instruction',
   'approval-only',
   'reviewer may merge',
   'queue auto-merge',
   'human release',
 ]);
-function mergeAuthorityOk(v) {
-  if (mergeAuthorityFixed.has(v)) return true;
+function finishAuthorityOk(v) {
+  if (finishAuthorityFixed.has(v)) return true;
   return /^project default:\s*\S/.test(v);
 }
 
 const enumRows = [
-  { row: 'Merge authority', ok: mergeAuthorityOk },
+  { row: 'Finish authority', ok: finishAuthorityOk },
   { row: 'Review gate', ok: (v) => v === 'mandatory' || v === 'bypassed (human override)' },
   { row: 'Gate owner', ok: (v) => v === 'builder' || v === 'parent' },
   { row: 'Gate coverage', ok: (v) => v === 'full-local' || v === 'hybrid' || v === 'ci-only' },
@@ -315,6 +324,7 @@ const safetySurfaceVocab = new Set([
 ]);
 const safetyRow = 'Touched safety surfaces';
 const safetyValue = valueOf(safetyRow);
+rejectInnerCodeSpans(safetyRow, values.get(safetyRow.toLowerCase()));
 if (safetyValue !== undefined) {
   const normalized = safetyValue.trim();
   // The only empty-equivalents are explicit `none` / `[]`. A present-but-blank
@@ -370,10 +380,10 @@ function extractVocabColumn(text, headingRe) {
   return rows;
 }
 
-// --- Merge-authority source affirmative-grant WARNING (issue #294). ----------
+// --- Finish-authority source affirmative-grant WARNING (issue #294). ---------
 // Warn-only, heuristic, layered on top of the closed-set membership check above
-// (#270) and the RF-1 fail-closed default (#293). When `Merge authority` is a
-// finish-authority-GRANTING value AND the paired `Merge authority source` cell
+// (#270) and the RF-1 fail-closed default (#293). When `Finish authority` is a
+// finish-authority-GRANTING value AND the paired `Finish authority source` cell
 // carries no quotable affirmative grant, emit an advisory stderr diagnostic
 // naming the offending row and KEEP GOING (exit 0). This NEVER fails closed and
 // NEVER blocks ready/merge; false positives are low-stakes precisely because the
@@ -384,7 +394,7 @@ function extractVocabColumn(text, headingRe) {
 // three NON-granting values — `none — requires explicit human/parent
 // instruction`, `approval-only`, `human release` — must never warn, and a
 // `project default:` that is silent on (or disclaims) merge is not granting.
-function mergeAuthorityGrants(v) {
+function finishAuthorityGrants(v) {
   if (v === 'reviewer may merge' || v === 'queue auto-merge') return true;
   const m = /^project default:\s*(.+)$/.exec(v);
   if (m) {
@@ -418,20 +428,21 @@ function sourceHasAffirmativeGrant(src) {
   return hasStraightQuote || hasSmartQuote || hasCodeSpan || hasInstructionMarker;
 }
 
-const mergeAuthorityValue = valueOf('Merge authority');
-if (mergeAuthorityValue !== undefined && mergeAuthorityGrants(mergeAuthorityValue)) {
-  const mergeSource = valueOf('Merge authority source');
+const finishAuthorityValue = valueOf('Finish authority');
+if (finishAuthorityValue !== undefined && finishAuthorityGrants(finishAuthorityValue)) {
+  const mergeSource = valueOf('Finish authority source');
   if (!sourceHasAffirmativeGrant(mergeSource)) {
     // Advisory only: name the offending row, then keep going (exit 0).
     process.stderr.write(
-      'REVIEWER_LIFT result=warn reason=merge_authority_unquoted_grant ' +
-        'row=Merge authority source detail=granting_merge_authority_without_quotable_affirmative_grant\n'
+      'REVIEWER_LIFT result=warn reason=finish_authority_unquoted_grant ' +
+        'row=Finish authority source detail=granting_finish_authority_without_quotable_affirmative_grant\n'
     );
   }
 }
 
 const acceptanceRow = 'Acceptance surfaces';
 const acceptanceValue = valueOf(acceptanceRow);
+rejectInnerCodeSpans(acceptanceRow, values.get(acceptanceRow.toLowerCase()));
 if (acceptanceValue !== undefined) {
   const vocab = new Set(
     extractVocabColumn(vocabText, /^### Acceptance-surface vocabulary/)

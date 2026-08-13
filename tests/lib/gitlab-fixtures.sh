@@ -49,13 +49,42 @@ fi
 printf 'git %s%s\n' "${worktree:+-C $worktree }" "$*" >> "$FAKE_GIT_LOG"
 case "${1:-}" in
   status)
-    if [[ -n "$worktree" ]]; then
+    if [[ "$worktree" == */coordinator ]]; then
+      printf '%s' "${FAKE_GIT_STATUS:-}"
+    elif [[ -n "$worktree" ]]; then
+      [[ "${FAKE_WORKTREE_STATUS_EXIT:-0}" -eq 0 ]] || exit "$FAKE_WORKTREE_STATUS_EXIT"
       printf '%s' "${FAKE_WORKTREE_STATUS:-}"
     else
       printf '%s' "${FAKE_GIT_STATUS:-}"
     fi
     ;;
-  fetch|checkout|pull|branch|push)
+  fetch)
+    exit "${FAKE_GIT_FETCH_STATUS:-0}"
+    ;;
+  checkout|pull)
+    ;;
+  push)
+    exit "${FAKE_GIT_PUSH_STATUS:-0}"
+    ;;
+  branch)
+    if [[ "${2:-}" == "--show-current" ]]; then
+      if [[ -z "$worktree" || "$worktree" == */coordinator ]]; then
+        [[ "${FAKE_CURRENT_BRANCH_STATUS:-0}" -eq 0 ]] || exit "$FAKE_CURRENT_BRANCH_STATUS"
+        printf '%s\n' "${FAKE_CURRENT_BRANCH:-main}"
+      else
+        [[ "${FAKE_WORKTREE_BRANCH_STATUS:-0}" -eq 0 ]] || exit "$FAKE_WORKTREE_BRANCH_STATUS"
+        printf '%s\n' "${FAKE_WORKTREE_BRANCH:-build/61}"
+      fi
+    fi
+    ;;
+  rev-parse)
+    [[ "${2:-}" == "--path-format=absolute" && "${3:-}" == "--git-common-dir" ]] ||
+      { echo "unexpected git rev-parse command: $*" >&2; exit 99; }
+    if [[ "$worktree" == */coordinator ]]; then
+      printf '%s\n' "${FAKE_COORDINATOR_COMMON_DIR:-/repo/.git}"
+    else
+      printf '%s\n' "${FAKE_WORKTREE_COMMON_DIR:-/repo/.git}"
+    fi
     ;;
   merge-base)
     [[ "${2:-}" == "--is-ancestor" ]] || { echo "unexpected git merge-base command: $*" >&2; exit 99; }
@@ -67,6 +96,7 @@ case "${1:-}" in
     ;;
   worktree)
     [[ "${2:-}" == "remove" ]] || { echo "unexpected git worktree command: $*" >&2; exit 99; }
+    exit "${FAKE_WORKTREE_REMOVE_STATUS:-0}"
     ;;
   *)
     echo "unexpected git command: ${worktree:+-C $worktree }$*" >&2
@@ -135,6 +165,16 @@ run_finish_fixture() {
     FAKE_WORKTREE_STATUS="${FAKE_WORKTREE_STATUS:-}" \
     FAKE_MERGE_BASE_STATUS="${FAKE_MERGE_BASE_STATUS:-0}" \
     FAKE_MERGE_BASE_ACCEPTS="${FAKE_MERGE_BASE_ACCEPTS:-}" \
+    FAKE_CURRENT_BRANCH="${FAKE_CURRENT_BRANCH:-main}" \
+    FAKE_GIT_FETCH_STATUS="${FAKE_GIT_FETCH_STATUS:-0}" \
+    FAKE_GIT_PUSH_STATUS="${FAKE_GIT_PUSH_STATUS:-0}" \
+    FAKE_CURRENT_BRANCH_STATUS="${FAKE_CURRENT_BRANCH_STATUS:-0}" \
+    FAKE_WORKTREE_BRANCH="${FAKE_WORKTREE_BRANCH:-build/61}" \
+    FAKE_WORKTREE_BRANCH_STATUS="${FAKE_WORKTREE_BRANCH_STATUS:-0}" \
+    FAKE_WORKTREE_STATUS_EXIT="${FAKE_WORKTREE_STATUS_EXIT:-0}" \
+    FAKE_COORDINATOR_COMMON_DIR="${FAKE_COORDINATOR_COMMON_DIR:-/repo/.git}" \
+    FAKE_WORKTREE_COMMON_DIR="${FAKE_WORKTREE_COMMON_DIR:-/repo/.git}" \
+    FAKE_WORKTREE_REMOVE_STATUS="${FAKE_WORKTREE_REMOVE_STATUS:-0}" \
     PATH="$dir/bin:$PATH" \
     bash "$REPO_ROOT/gitlab/scripts/gitlab-finish-mr.sh" "$@"
 }

@@ -1,95 +1,85 @@
 ---
 name: issue-delivery-loop
 description: >-
-  Parent coordinator for batch GitLab issue delivery. Use when asked to process
-  ready issues, run an issue-to-MR loop, or manage a bounded delivery batch.
-  Requires Decoupling Contract before parallel builder/reviewer fan-out;
-  delegates implementation/review to start-build/start-review.
+  Parent coordinator for bounded GitLab, GitHub, or Azure DevOps issue delivery.
+  Uses WIP-1 by default and routes builders/reviewers without duplicating policy.
 ---
 
 # Issue Delivery Loop
 
-Coordinate ready-issue batches without duplicating canonical build/review procedures.
+Coordinate a bounded ready-issue batch. Invoke `forge preflight` once, then use
+the selected provider for every snapshot, publication, action, and post-merge
+read. Generic callers do not branch on provider afterward.
 
-## Start here
+Default WIP: 1; serial by default.
 
-Follow the Operating contract below; this ramp just orders the first actions:
+1. Bind provider/repository/default branch/readiness profile through `forge`.
+   Read the bounded ready queue and default-branch CI health. Unknown red health
+   is surfaced before fan-out; a recorded known-red baseline may proceed.
+   Ready selection respects dependency ordering.
+2. Default WIP is one. Parallel work requires the shared
+   [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md)
+   before any branch/worktree or child launch. Preserve coordinator checkout
+   isolation; children must not copy auxiliary-index artifacts between worktrees.
+3. Classify every issue/change request before launch:
+   - `trivial`: mechanical only; no runtime, safety, schema, CI, state, deploy,
+     concurrency, broad coupling, or broad harness change.
+   - `high-risk`: security/auth/secrets, migration/data loss, deploy/runtime/CI,
+     concurrency/state/queue, billing/permissions, unclear criteria, ≥20 files,
+     or ≥1000 diff lines.
+   - `moderate`: everything else. Ten or more test files/shared harness changes
+     are at least moderate.
+4. Resolve the retained internal routes from the current dialect directory:
+   `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`, and one
+   fresh `mr-reviewer-final`. Route basenames/model pins do not name a provider.
+5. Run the canonical parent loop from
+   [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
+   One issue/worktree/branch/Draft change request/Review Packet per child. Pass
+   explicit `Gate owner`; runtime notices never become scope stop instructions.
+6. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
+   its compact claims from provider-native Tier 1 or repository Tier 2 evidence.
+   Parent-owned candidates route through the parent-owned Gate Receipt contract before ready.
+7. Launch independent review in parallel with CI as soon as the exact candidate
+   gate contract allows; do not block-watch CI before reviewer launch. A
+   failed/canceled bound CI run blocks pass/finish, never queues.
+8. On reviewer pass, keep verdict, approval, and finish separate. The default
+   permitted finish is `queue auto-merge`; the parent owns it when
+   `Finish owner: parent`. Every mutation uses one `forge act`.
+9. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
+   cannot satisfy clean delivery or batch completion. Return to the event-driven
+   boundary without polling CI. Provider merge-event evidence advances the
+   existing handoff to phase: `post-merge-verify`,
+   expected_next_actor: `verifier`, and
+   expected_next_action: `post-merge-verify`; require a checked read-only
+   `post_merge_snapshot.kind=post-merge-snapshot` from
+   `forge post_merge_snapshot`.
+10. Teardown only after every change is verified merged or blocked. Fetch and
+    fast-forward default first; remove only clean worktrees/refs/branches whose
+    provider result-commit and default-branch safety checks pass. Otherwise
+    report `cleanup_pending`. This preserves #380 coordinator-isolation and
+    cleanup ordering.
 
-1. Preflight (`skill://gitlab/SKILL.md`) and read the ready queue. Also check default-branch health as part of preflight (advisory, never a hard block): `git fetch origin`, then read the default branch's latest pipeline status — **green** proceeds; **red with a known/tracked cause** (e.g. a filed follow-up) proceeds knowingly with the known-red reason recorded; **red, unknown** is surfaced before fanning builds (fix `main` first, or proceed via an explicit decision). This extends, does not duplicate, `start-build` Snippet: local-repo-preflight.
-2. For parallel fan-out only: prove the [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md) before any parallel work. Serial WIP-1 batches skip this step.
-3. Classify target issue/MR `trivial`, `moderate`, or `high-risk` using [Tier routing](#tier-routing).
-4. Run the parent loop per [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), using [`skill://start-build/reference/parent-owned-gate.md`](skill://start-build/reference/parent-owned-gate.md) for parent-owned Gate Receipt mode, delegating builds to [`skill://start-build/reference/child-builder.md`](skill://start-build/reference/child-builder.md) and review to [`skill://start-review/REVIEW-FLOW.md`](skill://start-review/REVIEW-FLOW.md). Launch review as soon as the build handoff lands, in parallel with CI, for every tier — do not block-watch the pipeline to green before launching the reviewer (the merge floor is enforced by the queued auto-merge finish, not by a foreground CI watch); see [`parent-orchestrator.md` Reviewer launch timing](skill://start-build/reference/parent-orchestrator.md).
-5. On `pass` (with recorded approval action), finish by authority. The default finish is approve SHA-bound then **queue auto-merge** (merge-when-pipeline-succeeds), so GitLab completes the merge the instant the reviewed-SHA pipeline passes; the exact-SHA CI floor and fail-closed guard (a `failed`/`canceled` reviewed-SHA pipeline blocks, never queues) stay intact per the canonical flows. When the invoking human explicitly grants merge permission as a batch instruction (e.g. "go ahead and merge them all"), map that instruction to authority `queue auto-merge`, **not** `human release`; `human release` is reserved for human-gated production release or deploy steps and must not be used for general batch merge permissions — see [`skill://gitlab/reference/authority-verification.md`](skill://gitlab/reference/authority-verification.md) for the authority enum semantics. Treat `auto-merge queued` as pending: it counts as **MRs queued (auto-merge)**, does not count as **MRs merged**, and cannot satisfy clean delivery or batch completion. Record the guarded queue result, then return to the existing event-driven handoff boundary without polling CI, block-watching the MR, claiming merge, invoking the verifier, running teardown, or claiming clean completion.
-6. Once Tier 1/Tier 2 evidence reports the MR merge event, advance the existing `delivery.handoff_contract` to phase: `post-merge-verify`, expected_next_actor: `verifier`, and expected_next_action: `post-merge-verify`, with the merge-event evidence listed for the next actor; then invoke the `skill://start-build/reference/post-merge-verifier.md` recipe. Clean completion requires checking its `post_merge_snapshot.kind=post-merge-snapshot` result against the teardown contract; `issue_closure_pending`, `source_branch_cleanup_pending`, and existing cleanup/blocker conditions remain pending or blocked rather than done.
-7. Report the per-batch metrics listed in the Operating contract.
-8. (Optional) Hand the per-batch metrics to `/retro` to turn friction evidence into routed follow-up issues.
+## Metrics
 
-The batch is not done until every [Batch teardown](#batch-teardown) box is checked or reported as a blocker.
+Report provider-qualified evidence for issues attempted, change requests opened,
+merged, queued, and blocked; total/max review rounds; CI failures; brief defects;
+and follow-up issues created. Use `N/A — <why>` when unobservable. Queue counts
+as queued, never merged.
 
-## Use when
+## Floors
 
-- process a queue carrying the target repo's AFK-ready Triage Role label
+Project-profile hooks may specialize labels, branches, CI jobs, docs, gate,
+release/deploy, manual validation, language, or auxiliary indexes. They never
+weaken reviewed-commit binding, commit-bound CI, explicit authority provenance,
+independent review, child/reviewer/verifier boundaries, complete diff coverage,
+or provider-native post-read. No live mutation bodies or provider commands are
+copied here; `forge` owns transport selection and the provider reference owns
+native mechanics.
 
-## Tier routing
-
-Skill-only tier routing applies only to flows launched through the parent delivery loop. Manual direct agent selection outside enforcement surface; skill docs choose exact route basenames. Model pins live in frontmatter; provider effort pins live too.
-
-Before launching any child builder, classify each target issue/MR:
-
-- `trivial` requires all criteria to be true: docs/prose/templates/labels/inventory/checklist or other mechanical no-runtime work; no runtime behavior; no security/auth/permissions/billing; no schema/migration/persistence; no deploy/runtime/CI semantic change; no concurrency/state-machine/locking impact; no broad architecture/cross-file coupling; no broad multi-file or shared-harness test refactor; clear acceptance criteria.
-- `high-risk` applies when any trigger is present: auth/security/crypto/secrets; migrations/schema/data-loss; deploy/runtime/infra/CI semantics; concurrency/locking/state machines/queues; billing/permissions/access control; large diff (`>=20` files or `>=1000` diff lines); unclear acceptance criteria.
-- `moderate` is the default when work is neither `trivial` nor `high-risk`.
-
-Test surface alone does not lower the tier: route by blast radius, not by runtime-vs-test surface. A broad test-only refactor — many touched test files (objective signal: `>=10` test files) or a shared test-harness / cross-file test-coupling change — is **not** `trivial` even though it is test-only and runs no runtime code; route it at least `moderate` so a large semantic test refactor takes the higher-effort build/review path instead of bouncing through avoidable review rounds. (A broad test refactor that also trips a `high-risk` trigger above — for example `>=20` touched files — still routes `high-risk`.)
-
-The exact per-tier model-free route basenames live in one canonical table, owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md) — launch seams resolve those basenames from the current dialect directory (`agents/claude/<route>.md` or `agents/omp/<route>.md`). This loop classifies tier; do not restate route-name rows here. Route basenames are distinct from role/mode labels such as `child mr-builder` and `mr-reviewer`.
-
-Independent-review floors hold regardless route: mandatory independent final-reviewer route `mr-reviewer-final`, resolved from the current dialect directory. There is no review scout, no generic fallback reviewer, no shim, and no cross-runtime substitute; missing route remains route-unavailable blocker.
-
-## Operating contract
-
-- Default WIP: 1 active delivery loop, serial by default.
-- Run the parent loop per `skill://start-build/reference/parent-orchestrator.md` — proving the decoupling proof before parallel work, completing the full parent spot-check field list, following `skill://start-build/reference/parent-owned-gate.md` when parent-owned Gate Receipt mode is active, honoring the minimal child/reviewer/revision launch prompts, driving the decision loop, and finishing only behind the SHA/CI/authority guards; the three-round limit defers to `skill://start-build/reference/standalone-gate.md`.
-- Delegate implementation to child `mr-builder` sessions via exact routed builder agent from [Tier routing](#tier-routing), with `skill://start-build/reference/child-builder.md` as the child-mode procedure source (router: `skill://start-build/SKILL.md` mode matrix).
-- Delegate independent review fresh final-reviewer sessions via `skill://start-review/REVIEW-FLOW.md`: route `mr-reviewer-final`, resolved from the current dialect directory.
-- Preserve builder/reviewer authority boundaries from those canonical flows; do not restate command bodies. Parent-managed batches pass literal `Finish owner: parent` into the final-reviewer launch path: reviewers produce Review Report verdict/evidence only, and the parent coordinator owns any approval, direct merge, or auto-merge queue action after fresh MR SHA/CI/authority/identity/mutation guards pass.
-- Child/reviewer prompts pass one target issue/MR, exact role/mode, stop condition, expected handoff schema, forbidden actions, minimum evidence pointers only. Child stop conditions must say runtime budget/token/runtime notices are runtime state rather than task-scope changes, so a notice alone never becomes a human stop instruction. Do not restate broad parent reasoning unless specific risk requires narrow extra context.
-- Select gate ownership per batch pass and pass it explicitly in each child-builder prompt's `Gate owner` field (`builder` = builder-owned gate, `parent` = parent-owned gate), per [minimal child-builder launch prompt](skill://start-build/reference/parent-orchestrator.md). Setting it once keeps identically-shaped issues on one gate mode instead of child inferring mode from finish-authority prose; if omitted, documented default is builder-owned (`builder`). Per-mode semantics stay owned by `skill://start-build/reference/parent-owned-gate.md`.
-- Event-driven waiting: you are notified when child build/review completes — do not poll, re-read, or re-invoke children mid-run; act on returned handoffs. Read `delivery.handoff_contract` first for routing, but still verify compact claims from Tier 1/Tier 2 evidence before acting. When a child yields early because of a runtime/tool/budget notice, resume the same child/worktree when runtime recovered and state still safe; otherwise mark a runtime/tool blocker or relaunch same assigned scope without recasting the issue as product/workflow-scope blocked. Parent-owned gate handoffs route through `skill://start-build/reference/parent-owned-gate.md`. Canonical timeout handling remains `skill://start-build/reference/timeout-handling.md`.
-- Scale ceremony to risk and blast radius (`skill://issue-delivery-loop/docs/effort-scaling.md`): trivial/docs/mechanical issues take the compact path with light verification; behavior/safety changes take the full path with adversarial verification. The mandatory independent review gate never scales away, and when merge authority is granted up front the approving reviewer finishes in-session rather than spawning a separate finisher — this in-session finish applies to standalone `/start-review` runs where no parent coordinator exists; parent-orchestrated batches always keep `Finish owner: parent` regardless of when merge authority was granted.
-- Durable child outputs: prefer inline handoffs; if file output is required, use a caller-created absolute run directory outside any `omp-worktree-*`; GitLab MR descriptions/comments remain canonical.
-- Project-profile hooks are coordinator inputs, not safety overrides. They may
-  specialize gate policy, labels, branch naming, CI jobs, domain docs,
-  release/deploy policy, manual validation, language families, and auxiliary
-  indexes, but they must not weaken reviewed-SHA binding, exact-SHA CI, explicit
-  authority source, independent review, child-builder boundaries, verifier
-  read-only boundaries, or MCP-first transport correctness plus help-first
-  `glab` fallback correctness.
-- Auxiliary project-index updates default to the parent/coordinator checkout unless the project profile explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
-- Metrics to report per batch (names match `retro/templates/retro-report.md`; use `N/A — <why>` when a metric was not observable):
-  - **Issues attempted** — count of issues picked up this batch; evidence: GitLab issue list.
-  - **MRs opened** — Draft or ready MRs created; evidence: MR list for this batch.
-  - **MRs merged** — MRs successfully merged; evidence: MR merge events.
-  - **MRs queued (auto-merge)** — MRs queued for merge-when-pipeline-succeeds by the parent/authorized finisher in `Finish owner: parent` mode; evidence: auto-merge queue actions.
-  - **MRs blocked** — MRs ending this batch in a blocked state; evidence: builder/reviewer handoff `blocked` fields.
-  - **Review rounds (total / max per MR)** — total reviewer sessions across all MRs plus the single-MR maximum; evidence: reviewer handoff chain.
-  - **CI failures** — pipeline runs that ended in a failed state during this batch; evidence: CI snapshots in Review Packets / handoffs.
-  - **Brief defects** — issue briefs that omitted critical context, acceptance criteria, test strategy, or non-goals, causing avoidable discovery or rework; defined by the brief-quality-defects criteria in [the reviewer filling guide §Follow-ups for Other Tasks](skill://start-review/templates/filling-guide.md) and [the review report template](skill://start-review/templates/review-report.md); evidence: reviewer "Follow-ups for Other Tasks" sections noting brief-quality gaps.
-  - **Follow-up issues created** — GitLab issues filed during this batch to capture out-of-scope work; evidence: issue creation events.
-- Auto-merge queue results are intermediate: record the queue action, count the MR as queued rather than merged, and return to the event-driven handoff boundary without a CI or MR watcher. Do not invoke post-merge verification or teardown while the MR remains queued. Only Tier 1/Tier 2 merge-event evidence advances the existing `delivery.handoff_contract` to phase: `post-merge-verify`, expected_next_actor: `verifier`, and expected_next_action: `post-merge-verify`; invoke `skill://start-build/reference/post-merge-verifier.md` at that point, and require a checked `post_merge_snapshot.kind=post-merge-snapshot` result before clean completion.
-- Canonical sources: `skill://gitlab/SKILL.md`, `skill://start-build/SKILL.md`, `skill://start-build/reference/parent-orchestrator.md`, `skill://start-build/reference/parent-owned-gate.md`, `skill://start-build/reference/child-builder.md`, `skill://start-build/reference/post-merge-verifier.md`, `skill://start-build/templates/reviewer-lift-schema.md`, `skill://start-build/templates/review-packet.md`, `skill://start-review/REVIEW-FLOW.md`, `skill://start-review/templates/review-report.md`.
-
-## Batch teardown
-
-After every MR in the batch is merged with a checked `post_merge_snapshot.kind=post-merge-snapshot`, or is blocked, sweep the following before closing the batch. A queued MR is non-terminal: it prevents teardown and clean batch completion until Tier 1/Tier 2 evidence reports its merge event and the verifier snapshot is checked. Report unresolved snapshot findings or teardown items as pending/blockers using the existing vocabulary.
-
-- [ ] Run-worktrees removed: follow the cleanup-order rules in [parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md) — fetch origin, fast-forward local default, then remove each clean worktree. Retain any unclean worktree and report `cleanup_pending`.
-- [ ] `refs/tmp/review/*` cleared: follow the [reviewer temp-ref removal rules](skill://start-review/REVIEW-FLOW.md) — delete each temp ref only after its review worktree is removed and no other review uses it (`git update-ref -d refs/tmp/review/mr-<iid>`). Then run `git for-each-ref refs/tmp/review/`; a non-empty result is `cleanup_pending`: report the remaining ref names. A non-empty namespace blocks a clean-teardown claim.
-- [ ] Local source branches handled per project policy: delete only when policy + default-branch safety checks permit (see §Fresh default cleanup order above).
-- [ ] Remote source branches gone after merge: for each merged MR, confirm the finish path removed the real remote source branch (`git ls-remote origin <source_branch>` returns nothing). If the branch still exists remotely, delete it only when the merged-SHA containment / default-branch safety check in [parent-orchestrator §Fresh default cleanup order](skill://start-build/reference/parent-orchestrator.md) passes; otherwise report `cleanup_pending`.
-- [ ] Stale local `origin/*` tracking refs pruned or absent: after the real remote source-branch checks above, run the `git remote prune --dry-run origin` equivalent stale-ref check. Cleanup is complete only when that result is empty. If stale refs remain, report `cleanup_pending` with the stale refs listed instead of treating branch cleanup as done.
-- [ ] Check Gate green on fresh default branch: `git fetch origin && git checkout <default_branch> && git merge --ff-only origin/<default_branch>` then run the target repo's Check Gate per `project_profile.gate_policy_ref` (see `docs/agents/check-gate.md` in the target repo).
-
-## Handoff
-
-Use this skill as coordinator-only guidance. Keep live GitLab transport syntax and fallback conditions in `/gitlab`, durable child-output details in `start-build`, and workflow detail in `start-build` / `start-review`.
+Use only the exact paths in this delivery session's session-owned worktree ledger
+and follow the cleanup-order rules in
+[parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md).
+Repository-wide worktree discovery may verify a recorded path but never expands
+owned cleanup scope. Retain every dirty, unknown, unmerged, or
+containment-unverified entry and report `cleanup_pending` with the exact
+residual session-owned worktree path.

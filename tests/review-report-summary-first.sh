@@ -37,8 +37,8 @@ require_summary_text() {
 require_summary_text 'Review verdict' 'review verdict field'
 require_summary_text 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum'
 require_summary_text 'Report locator' 'stable report locator field'
-require_summary_text 'Reviewed SHA' 'reviewed SHA field'
-require_summary_text 'CI status[[:space:]]*/[[:space:]]*SHA|CI .*status.*SHA' 'CI status/SHA field'
+require_summary_text 'Reviewed commit' 'reviewed commit field'
+require_summary_text 'CI status[[:space:]]*/[[:space:]]*commit|CI .*status.*commit' 'CI status/commit field'
 require_summary_text 'Findings summary' 'findings summary field'
 require_summary_text 'MF' 'Must Fix (MF) summary'
 require_summary_text 'SF' 'Should Fix (SF) summary'
@@ -97,8 +97,8 @@ cat > "$bad_placeholders" <<'BAD'
 | Field | Value |
 |---|---|
 | Review verdict | `<pass / request-changes / reject / blocked>` |
-| Reviewed SHA | `<sha>` |
-| CI status / SHA | `<status / sha>` |
+| Reviewed commit | `<commit>` |
+| CI status / commit | `<status / commit>` |
 | Findings summary | `MF: 0; SF: 0; C: 0` |
 | Local checks | `<checks>` |
 | Approval action | `<action>` |
@@ -157,22 +157,21 @@ for file in "${prompt_files[@]}"; do
   require_prompt_text "$file" 'Decision Summary' 'Decision Summary reference'
   require_prompt_text "$file" 'Review verdict' 'review verdict summary field reference'
   require_prompt_text "$file" 'pass[[:space:]]*/[[:space:]]*request-changes[[:space:]]*/[[:space:]]*reject[[:space:]]*/[[:space:]]*blocked' 'blocked-capable verdict enum reference'
-  require_prompt_text "$file" 'reviewed SHA' 'reviewed SHA summary field reference'
+  require_prompt_text "$file" 'reviewed commit' 'reviewed commit summary field reference'
   require_prompt_text "$file" 'Report locator' 'stable report locator summary field reference'
-  require_prompt_text "$file" 'CI[^\n]*(status[[:space:]]*/[[:space:]]*SHA|status[^\n]*SHA)' 'CI status/SHA summary field reference'
+  require_prompt_text "$file" 'CI[^\n]*(status[[:space:]]*/[[:space:]]*commit|status[^\n]*commit)' 'CI status/commit summary field reference'
   require_prompt_text "$file" 'MF-N[^\n]*SF-N[^\n]*C-N|MF[^\n]*SF[^\n]*C' 'MF/SF/C summary field reference'
   require_prompt_text "$file" 'local checks' 'local checks summary field reference'
   require_prompt_text "$file" 'Approval action' 'approval action summary field reference'
   require_prompt_text "$file" 'Finish action' 'finish action summary field reference'
   require_prompt_text "$file" 'Action blocker' 'action blocker summary field reference'
   require_prompt_text "$file" 'Next action' 'next action summary field reference'
-  require_prompt_text "$file" 'Report link|report link' 'report link summary field reference'
 done
 
 for file in "${routed_final_reviewer_prompts[@]}"; do
   require_prompt_text "$file" 'Review Report' 'routed reviewer Review Report reference'
   require_prompt_text "$file" 'final handoff' 'routed reviewer final handoff reference'
-  require_prompt_text "$file" 'MR, SHA, CI/gate, authority, finding, action, and blocker evidence' 'routed reviewer report/handoff evidence fields'
+  require_prompt_text "$file" 'change-request, reviewed-commit, CI/gate, authority, finding, action, and blocker evidence' 'routed reviewer report/handoff evidence fields'
   require_prompt_text "$file" 'verdict, approval action, finish action, action blocker, and next action separate' 'routed reviewer action separation'
 done
 

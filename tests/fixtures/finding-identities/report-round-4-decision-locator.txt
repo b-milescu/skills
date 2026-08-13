@@ -1,0 +1,30 @@
+# Review Report
+
+## Decision Summary
+
+| Field | Value |
+|---|---|
+| Reviewed commit | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` |
+| Report locator | `review-report:agents/skills!361:4` |
+
+## Context / Snapshot
+
+| Field | Value |
+|---|---|
+| Reviewed commit | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` |
+
+## Finding identities
+
+<!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
+| Report locator | Reviewed SHA | Finding ID |
+|---|---|---|
+| `review-report:agents/skills!361:4` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |
+| `review-report:agents/skills!361:4` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-2` |
+<!-- FINDING-IDENTITY-SCHEMA:END -->
+
+## Findings
+
+### Must Fix
+
+- **MF-1 — durable report shape.**
+- **MF-2 — matching tuple validation.**

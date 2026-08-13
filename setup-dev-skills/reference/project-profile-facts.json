@@ -7,7 +7,13 @@
   "description": "Machine-readable project-profile facts used by setup-dev-skills to instantiate or verify Agent Setup Docs without hardcoding one repository's paths or labels into reusable Agent Skills.",
   "machine_resource": "skill://setup-dev-skills/reference/project-profile-facts.json",
   "human_owner": "setup-dev-skills/SKILL.md",
+  "provider_detection": {
+    "executable": "skill://setup-dev-skills/scripts/detect-provider.mjs",
+    "input_fields": ["remote", "profile_provider", "profile_id"],
+    "fail_closed": ["unknown", "ambiguous", "profile-remote-mismatch"]
+  },
   "required_project_profile_fields": [
+    "provider",
     "tracker",
     "agent_setup_docs",
     "label_vocabulary",
@@ -51,6 +57,10 @@
   "default_profile": {
     "profile_id": "default",
     "profile_path": "docs/agents/dev-workflows.md#project-profile-hooks",
+    "provider": {
+      "kind": "gitlab",
+      "reference": "skill://forge/reference/gitlab.md"
+    },
     "tracker": {
       "kind": "gitlab",
       "host": "gitlab.example.com",
@@ -121,11 +131,23 @@
     "gitlab_mutation_guard": "skill://gitlab/reference/mutation-guard.md",
     "gitlab_authority_verification": "skill://gitlab/reference/authority-verification.md",
     "start_build_parent_owned_gate": "skill://start-build/reference/parent-owned-gate.md",
-    "start_build_delivery_schema": "skill://start-build/templates/gitlab-delivery-schema.md",
+    "start_build_delivery_schema": "skill://start-build/templates/delivery-schema.md",
     "start_build_reviewer_lift_schema": "skill://start-build/templates/reviewer-lift-schema.md",
     "gitlab_to_issues_readiness_scorecard": "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md",
     "gitlab_to_issues_issue_body_template": "skill://gitlab-to-issues/templates/issue-body.md"
   },
+  "provider_fixtures": [
+    {
+      "kind": "github",
+      "remote": "https://github.com/example/project.git",
+      "reference": "skill://forge/reference/github.md"
+    },
+    {
+      "kind": "azure-devops",
+      "remote": "https://dev.azure.com/example/project/_git/repository",
+      "reference": "skill://forge/reference/azure-devops.md"
+    }
+  ],
   "cross_project_fixtures": [
     {
       "profile_id": "non-default-docs-and-labels",

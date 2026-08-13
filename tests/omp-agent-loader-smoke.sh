@@ -101,6 +101,7 @@ const requiredTools = ["read", "grep", "glob", "bash", "edit", "write", "todo", 
 const forbiddenTools = ["search", "find", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools", "mcp:codebase-memory-mcp", "mcp", "mcp:*", "mcp__*", "mcp__gitlab-mcp__*", "mcp__codebase-memory-mcp__*", "mcp__gitlab_mcp_get_issue", "mcp__codebase_memory_mcp_search_graph"];
 const requiredMcp = [
   "mcp__gitlab_mcp_*",
+  "mcp__azure_devops_*",
   "mcp__wowtools_*",
   "mcp__codebase_memory_mcp_*",
 ];
@@ -120,7 +121,7 @@ for (const name of expectedNames) {
   for (const tool of requiredTools) assert(agent.tools.includes(tool), `${name} missing tool ${tool}`);
   for (const tool of forbiddenTools) assert(!agent.tools.includes(tool), `${name} retained forbidden tool ${tool}`);
   for (const tool of requiredMcp) assert(agent.tools.includes(tool), `${name} missing MCP tool ${tool}`);
-  assert(Array.isArray(agent.autoloadSkills) && agent.autoloadSkills.includes("gitlab") && agent.autoloadSkills.includes("tdd"), `${name} missing autoload skills`);
+  assert(Array.isArray(agent.autoloadSkills) && agent.autoloadSkills.includes("forge") && agent.autoloadSkills.includes("tdd"), `${name} missing autoload skills`);
   if (name.startsWith("mr-builder")) {
     assert(agent.autoloadSkills.includes("start-build"), `${name} missing start-build autoload`);
   } else {

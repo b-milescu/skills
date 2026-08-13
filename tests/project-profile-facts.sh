@@ -151,7 +151,7 @@ for (const pathToken of [
 assert(setupSkill.includes('Substitute each `<agent_setup_docs.*>` placeholder'), 'setup skill must require target-profile path substitution for the Agent skills block');
 
 for (const file of [
-  'setup-dev-skills/dev-workflows-gitlab.md',
+  'setup-dev-skills/dev-workflows-generic.md',
   'setup-dev-skills/issue-tracker-gitlab.md',
   'setup-dev-skills/triage-labels.md',
   'setup-dev-skills/check-gate.md',
@@ -177,7 +177,7 @@ for (const surface of ['docs', 'prompt', 'agent_inventory', 'install_surface', '
   assert(liveDevWorkflows.includes(surface), `live dev-workflows acceptance-surface vocabulary must list ${surface}`);
 }
 
-const deliverySchema = read('start-build/templates/gitlab-delivery-schema.md');
+const deliverySchema = read('start-build/templates/delivery-schema.md');
 assert(deliverySchema.includes('acceptance_surfaces_ref'), 'delivery schema must expose acceptance_surfaces_ref hook');
 for (const surface of ['agent_inventory', 'install_surface', 'ci_finish', 'mutation_guard']) {
   assert(!deliverySchema.includes(surface), `delivery schema must not hardcode this repo acceptance surface ${surface} as a global value`);

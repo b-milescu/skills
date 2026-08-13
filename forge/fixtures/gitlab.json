@@ -1,0 +1,15 @@
+{
+  "provider": "gitlab",
+  "expected": { "project": "agents/skills", "change": 361, "source": "1111111111111111111111111111111111111111", "result": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "close_item": true, "delete_source": true, "action_flag": true },
+  "preflight": { "path_with_namespace": "agents/skills", "default_branch": "main" },
+  "snapshot": {
+    "iid": 361, "sha": "1111111111111111111111111111111111111111", "draft": true,
+    "diffs": { "next_page": null, "truncated": false },
+    "discussions": { "next_page": null, "truncated": false, "unresolved_required": 0 },
+    "approvals": { "complete": true, "approved": true },
+    "pipeline": { "sha": "1111111111111111111111111111111111111111", "status": "success" }
+  },
+  "publish": { "operation": "update_merge_request", "iid": 361, "description_sha": "packet-1", "readback": { "iid": 361, "description_sha": "packet-1" }, "report": { "note_id": 9, "body_sha": "report-1", "readback": { "note_id": 9, "body_sha": "report-1" } } },
+  "act": { "requested": "queue-auto-merge", "allowed": ["queue-auto-merge"], "result": { "iid": 361, "sha": "1111111111111111111111111111111111111111", "merge_when_pipeline_succeeds": true }, "readback": { "iid": 361, "sha": "1111111111111111111111111111111111111111", "merge_when_pipeline_succeeds": true } },
+  "post_merge_snapshot": { "iid": 361, "state": "merged", "merge_commit_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "default_branch_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "pipeline": { "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "status": "success" }, "issue": { "iid": 381, "state": "closed" }, "source_branch": { "name": "issue-381", "exists": false }, "page": { "next_page": null, "truncated": false } }
+}

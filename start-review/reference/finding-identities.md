@@ -2,7 +2,7 @@
 
 A review finding is identified by the tuple `(Report locator, Reviewed SHA, Finding ID)`.
 
-- `Report locator` is one stable identifier chosen before the Review Report is posted. Use the eventual GitLab Review Report comment URL when it is already known; otherwise use a stable report ID such as `review-report:<project>!<mr-iid>:<round>`. Never publish `pending`, a mutable local path, or a bare MR IID as the locator. The posted comment URL remains separately available as `report_url`.
+- `Report locator` is one stable identifier chosen before the Review Report is posted. Use the eventual durable Review Report artifact URL when it is already known; otherwise use a stable report ID such as `review-report:<project>!<mr-iid>:<round>`. Never publish `pending`, a mutable local path, or a bare MR IID as the locator. The posted comment URL remains separately available as `report_url`.
 - `Reviewed SHA` is the exact 40-hex MR head reviewed by that report.
 - `Finding ID` remains the short human-readable `MF-N`, `SF-N`, or `C-N` label. A later report may reuse a short ID because the full tuple remains distinct.
 

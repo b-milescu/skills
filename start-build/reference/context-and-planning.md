@@ -1,6 +1,6 @@
 # Context and planning flow
 
-Detailed discovery, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance for `start-build`. This file is the canonical owner of these sections; [SKILL.md](../SKILL.md) routes to them from the mode matrix.
+Detailed discovery, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance for `start-build`. This file is the canonical owner of these sections; [SKILL.md](../SKILL.md) routes here from its compact invocation-mode procedure.
 
 ## Discovery Budget
 
@@ -28,8 +28,8 @@ Before you claim the full local gate is green, discover it in this order:
 Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
-- Shared `delivery.kind=gitlab-delivery` blocks, when present, satisfy each of the following:
-  - follow `../templates/gitlab-delivery-schema.md` field order;
+- Shared `delivery.kind=change-delivery` blocks, when present, satisfy each of the following:
+  - follow `../templates/delivery-schema.md` field order;
   - include `delivery.handoff_contract` with `phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and non-empty `evidence_ready_for_next_actor`;
   - are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
 
@@ -39,7 +39,7 @@ Before marking ready or requesting review, validate the MR handoff:
   language families, and auxiliary indexes. They specialize policy only; they
   must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
   independent review, child-builder boundaries, verifier read-only boundaries, or
-  MCP-first transport correctness plus help-first `glab` fallback correctness.
+  provider-native transport and fallback correctness.
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready; any push invalidates prior SHA-bound local/CI evidence until the MR description and Reviewer Lift are rebound to the new head.
 - `Gate owner` is `builder` or `parent`; `Gate coverage` is `full-local`, `hybrid`, or `ci-only` (never `parent-owned`); `Gate coverage rationale` cites the project gate policy, required CI mapping, locally covered jobs, and unmapped CI-only jobs or `none`.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
@@ -47,8 +47,8 @@ Before marking ready or requesting review, validate the MR handoff:
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.
-- Merge authority is explicit and treated as a quoted claim, not a builder grant.
-- Merge authority source is present and verifiable; missing or conflicting source information blocks finish actions until a parent/human/rulebook source resolves it, but does not revoke default approval authority by itself.
+- Finish authority is explicit and treated as a quoted claim, not a builder grant.
+- Finish authority source is present and verifiable; missing or conflicting source information blocks finish actions until a parent/human/rulebook source resolves it, but does not revoke default approval authority by itself.
 
 ## Compact packet eligibility
 
@@ -63,7 +63,7 @@ Detailed section-by-section instructions live next to the templates:
 
 Safety-critical filling rules remain in the active flow:
 
-- Keep every field in the **Reviewer Lift** block current with every push according to `../templates/reviewer-lift-schema.md`, including Gate owner/coverage/rationale and both quoted `Merge authority` and `Merge authority source` provenance.
+- Keep every field in the **Reviewer Lift** block current with every push according to `../templates/reviewer-lift-schema.md`, including Gate owner/coverage/rationale and both quoted `Finish authority` and `Finish authority source` provenance.
 - Treat CI evidence as valid only when the pipeline commit SHA, when GitLab exposes it, matches `Reviewed SHA`; failed, canceled, skipped, missing, red, stale, or wrong-SHA required CI blocks reviewer pass/approval and every finish action unless explicitly waived, but pending matching CI may overlap review.
 - Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
 - Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.

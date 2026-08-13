@@ -220,6 +220,7 @@ test_finish_yaml_format_reports_structured_handoff() {
 test_finish_authorized_paths_are_sha_bound() {
   local dir
   dir="$(make_fixture_dir finish-reviewer-merge)"
+  mkdir -p "$dir/coordinator"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
   write_branch_json "$dir/branch.json" success abc123
 
@@ -230,6 +231,7 @@ test_finish_authorized_paths_are_sha_bound() {
     --caller-role reviewer \
     --source-branch build/61 \
     --default-branch main \
+    --coordinator-path "$dir/coordinator" \
     --approve-as-reviewer
 
   assert_status 0
@@ -238,6 +240,7 @@ test_finish_authorized_paths_are_sha_bound() {
   assert_contains "$CAPTURE_OUTPUT" "via=glab-fallback"
 
   dir="$(make_fixture_dir finish-auto-merge)"
+  mkdir -p "$dir/coordinator"
   write_mr_json "$dir/mr.json" opened abc123 running abc123
   write_branch_json "$dir/branch.json" running abc123
 
@@ -247,7 +250,8 @@ test_finish_authorized_paths_are_sha_bound() {
     --merge-authority "queue auto-merge" \
     --caller-role authorized-parent \
     --source-branch build/61 \
-    --default-branch main
+    --default-branch main \
+    --coordinator-path "$dir/coordinator"
 
   assert_status 0
   assert_log_contains "$dir/glab.log" "glab mr merge 59 --auto-merge --yes --sha abc123"
@@ -255,8 +259,10 @@ test_finish_authorized_paths_are_sha_bound() {
 }
 
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
-  local dir
+  local coordinator dir
   dir="$(make_fixture_dir finish-merge-cleanup)"
+  mkdir -p "$dir/coordinator"
+  coordinator="$(cd "$dir/coordinator" && pwd -P)"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
   write_branch_json "$dir/branch.json" success abc123
   write_issue_json "$dir/issue.json" closed
@@ -268,6 +274,7 @@ test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
     --caller-role authorized-parent \
     --source-branch build/61 \
     --default-branch main \
+    --coordinator-path "$coordinator" \
     --issue-iid 88 \
     --delete-local-source-branch \
     --delete-remote-source-branch
@@ -278,14 +285,118 @@ test_finish_reports_issue_and_deletes_source_branches_after_direct_merge() {
   assert_contains "$CAPTURE_OUTPUT" "issue_state=closed"
   assert_contains "$CAPTURE_OUTPUT" "branch=local_deleted,remote_deleted"
   assert_log_contains "$dir/glab.log" "glab issue view 88 -F json"
-  assert_log_contains "$dir/git.log" "git branch -d build/61"
-  assert_log_contains "$dir/git.log" "git push origin --delete build/61"
+  assert_log_contains "$dir/git.log" "git -C $coordinator branch -d build/61"
+  assert_log_contains "$dir/git.log" "git -C $coordinator push origin --delete build/61"
+}
+
+test_finish_rejects_unsafe_cleanup_paths_before_merge() {
+  local coordinator dir
+  dir="$(make_fixture_dir finish-missing-coordinator)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=coordinator_path_missing"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+  dir="$(make_fixture_dir finish-relative-coordinator)"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path relative-coordinator
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=coordinator_path_not_absolute"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+  dir="$(make_fixture_dir finish-parent-owner-missing-coordinator)"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --finish-owner parent \
+    --source-branch build/61 \
+    --default-branch main
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=coordinator_path_missing"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+
+
+  dir="$(make_fixture_dir finish-relative-worktree)"
+  coordinator="$dir/coordinator"
+  mkdir -p "$coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$coordinator" \
+    --worktree-path relative-child
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=worktree_path_not_absolute"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+  dir="$(make_fixture_dir finish-missing-worktree)"
+  coordinator="$dir/coordinator"
+  mkdir -p "$coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$coordinator" \
+    --worktree-path "$dir/missing-child"
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=worktree_path_missing"
+  assert_log_not_contains "$dir/glab.log" "merge"
+
+  dir="$(make_fixture_dir finish-worktree-collision)"
+  coordinator="$dir/coordinator"
+  mkdir -p "$coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$coordinator" \
+    --worktree-path "$coordinator"
+  assert_status 5
+  assert_contains "$CAPTURE_OUTPUT" "reason=worktree_path_collision"
+  assert_log_not_contains "$dir/glab.log" "merge"
 }
 
 test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
-  local dir
+  local child coordinator dir
 
   dir="$(make_fixture_dir finish-cleanup-dirty-default)"
+  mkdir -p "$dir/coordinator" "$dir/child"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
   write_branch_json "$dir/branch.json" success abc123
   FAKE_GIT_STATUS=' M coordinator-file' run_finish_fixture "$dir" \
@@ -295,16 +406,20 @@ test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
     --caller-role authorized-parent \
     --source-branch build/61 \
     --default-branch main \
-    --worktree-path /tmp/clean-worktree \
+    --coordinator-path "$dir/coordinator" \
+    --worktree-path "$dir/child" \
     --delete-local-source-branch
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
-  assert_contains "$CAPTURE_OUTPUT" "worktree=blocked_default_not_verified"
-  assert_contains "$CAPTURE_OUTPUT" "branch=local_delete_blocked_default_not_verified"
-  assert_log_not_contains "$dir/git.log" "git worktree remove /tmp/clean-worktree"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:dirty_checkout"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:dirty_checkout"
+  assert_log_not_contains "$dir/git.log" "git worktree remove $dir/child"
   assert_log_not_contains "$dir/git.log" "git branch -d build/61"
 
   dir="$(make_fixture_dir finish-cleanup-merge-sha)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  child="$(cd "$dir/child" && pwd -P)"
+  coordinator="$(cd "$dir/coordinator" && pwd -P)"
   write_mr_json "$dir/mr.json" opened abc123 success abc123 merge999
   write_branch_json "$dir/branch.json" success abc123
   FAKE_MERGE_BASE_ACCEPTS=merge999 run_finish_fixture "$dir" \
@@ -314,19 +429,110 @@ test_finish_blocks_local_cleanup_until_default_is_verified_safe() {
     --caller-role authorized-parent \
     --source-branch build/61 \
     --default-branch main \
-    --worktree-path /tmp/clean-worktree \
+    --coordinator-path "$coordinator" \
+    --worktree-path "$child" \
     --delete-local-source-branch
   assert_status 0
   assert_contains "$CAPTURE_OUTPUT" "worktree=removed"
-  assert_contains "$CAPTURE_OUTPUT" "branch=local_deleted"
-  assert_log_contains "$dir/git.log" "git merge-base --is-ancestor abc123 main"
-  assert_log_contains "$dir/git.log" "git merge-base --is-ancestor merge999 main"
-  assert_log_contains "$dir/git.log" "git worktree remove /tmp/clean-worktree"
-  assert_log_contains "$dir/git.log" "git branch -d build/61"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=verified_default:main"
+  assert_log_contains "$dir/git.log" "git -C $coordinator merge-base --is-ancestor abc123 main"
+  assert_log_contains "$dir/git.log" "git -C $coordinator merge-base --is-ancestor merge999 main"
+  assert_log_contains "$dir/git.log" "git -C $coordinator worktree remove $child"
+  assert_log_contains "$dir/git.log" "git -C $coordinator branch -d build/61"
+  dir="$(make_fixture_dir finish-cleanup-containment-failure)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_MERGE_BASE_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --worktree-path "$dir/child" \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:containment_unverified"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:containment_unverified"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=verified_default:main"
+  assert_log_not_contains "$dir/git.log" "worktree remove"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
+}
+
+
+test_finish_retains_worktree_not_bound_to_recorded_source_branch() {
+  local dir
+
+  dir="$(make_fixture_dir finish-worktree-branch-mismatch)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_WORKTREE_BRANCH=other-branch run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --worktree-path "$dir/child" \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:source_branch_mismatch"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:worktree_retained"
+  assert_log_not_contains "$dir/git.log" "worktree remove"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
+}
+
+test_finish_retains_unregistered_and_remove_failed_worktrees() {
+  local dir
+
+  dir="$(make_fixture_dir finish-worktree-unregistered)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_COORDINATOR_COMMON_DIR=/repo/.git FAKE_WORKTREE_COMMON_DIR=/other/.git \
+    run_finish_fixture "$dir" \
+      --mr-iid 59 \
+      --reviewed-sha abc123 \
+      --merge-authority "reviewer may merge" \
+      --caller-role authorized-parent \
+      --source-branch build/61 \
+      --default-branch main \
+      --coordinator-path "$dir/coordinator" \
+      --worktree-path "$dir/child" \
+      --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:unregistered_worktree"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:worktree_retained"
+  assert_log_not_contains "$dir/git.log" "worktree remove"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
+
+  dir="$(make_fixture_dir finish-worktree-remove-failed)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_WORKTREE_REMOVE_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --worktree-path "$dir/child" \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:remove_failed"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:worktree_retained"
+  assert_log_contains "$dir/git.log" "worktree remove"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
 }
 
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
-  local dir
+  local coordinator dir
 
   dir="$(make_fixture_dir finish-cleanup-handoff)"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
@@ -361,6 +567,85 @@ test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
   assert_contains "$CAPTURE_OUTPUT" "reason=stale_ci"
   assert_log_not_contains "$dir/git.log" "git branch -d build/61"
   assert_log_not_contains "$dir/git.log" "git push origin --delete build/61"
+
+  dir="$(make_fixture_dir finish-cleanup-unmerged)"
+  mkdir -p "$dir/coordinator" "$dir/child"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  coordinator="$(cd "$dir/coordinator" && pwd -P)"
+  run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$coordinator" \
+    --worktree-path "$dir/child" \
+    --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:merge_not_verified"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:merge_not_verified"
+  assert_log_not_contains "$dir/git.log" "worktree remove"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=verified_default:main"
+  assert_log_contains "$dir/git.log" "git -C $coordinator checkout main"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
+}
+
+test_finish_reports_post_mutation_git_failures() {
+  local dir
+
+  dir="$(make_fixture_dir finish-queue-fetch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  FAKE_GIT_FETCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=cleanup_pending:fetch_failed"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 --auto-merge --yes --sha abc123"
+
+  dir="$(make_fixture_dir finish-queue-current-branch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 running abc123
+  write_branch_json "$dir/branch.json" running abc123
+  FAKE_CURRENT_BRANCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "queue auto-merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator"
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=auto_merge_queued"
+  assert_contains "$CAPTURE_OUTPUT" "coordinator=cleanup_pending:current_branch_unreadable"
+
+  dir="$(make_fixture_dir finish-remote-delete-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_GIT_PUSH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:remote_delete_failed"
+  assert_log_not_contains "$dir/git.log" "branch -d build/61"
 }
 
 test_finish_blocks_unsafe_states_before_mutation() {
@@ -430,13 +715,17 @@ test_finish_blocks_unsafe_states_before_mutation() {
   assert_log_not_contains "$dir/glab.log" "merge"
 
   dir="$(make_fixture_dir finish-dirty-worktree)"
+  mkdir -p "$dir/coordinator" "$dir/child"
   write_mr_json "$dir/mr.json" opened abc123 success abc123
   write_branch_json "$dir/branch.json" success abc123
   FAKE_WORKTREE_STATUS=' M uncommitted-file' run_finish_fixture "$dir" \
-    --mr-iid 59 --reviewed-sha abc123 --merge-authority "reviewer may merge" --caller-role reviewer --source-branch build/61 --default-branch main --worktree-path /tmp/dirty-worktree
-  assert_status 5
-  assert_contains "$CAPTURE_OUTPUT" "reason=dirty_worktree_cleanup"
-  assert_log_not_contains "$dir/glab.log" "merge"
+    --mr-iid 59 --reviewed-sha abc123 --merge-authority "reviewer may merge" --caller-role reviewer --source-branch build/61 --default-branch main --coordinator-path "$dir/coordinator" --worktree-path "$dir/child" --delete-local-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "FINISH_MR result=merged"
+  assert_contains "$CAPTURE_OUTPUT" "worktree=cleanup_pending:dirty_worktree"
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:worktree_retained"
+  assert_log_contains "$dir/glab.log" "glab mr merge 59 --yes --sha abc123 --auto-merge=false"
+  assert_log_not_contains "$dir/git.log" "worktree remove"
 }
 
 test_wrappers_create_issue_and_mr_notes_without_body_leak() {
@@ -1180,7 +1469,9 @@ test_finish_yaml_format_reports_structured_handoff
 test_finish_authorized_paths_are_sha_bound
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
+test_finish_reports_post_mutation_git_failures
 test_finish_blocks_local_cleanup_until_default_is_verified_safe
+test_finish_rejects_unsafe_cleanup_paths_before_merge
 test_finish_blocks_unsafe_states_before_mutation
 test_wrappers_create_issue_and_mr_notes_without_body_leak
 test_wrappers_create_and_update_mr_descriptions_with_control_validation
@@ -1202,6 +1493,8 @@ test_post_merge_snapshot_uses_empty_closes_issues_preview
 test_post_merge_snapshot_resolves_link_via_closes_issues_api
 test_post_merge_snapshot_reports_link_undeterminable
 test_post_merge_snapshot_scrape_rejects_non_closing_fixe_form
+test_finish_retains_worktree_not_bound_to_recorded_source_branch
+test_finish_retains_unregistered_and_remove_failed_worktrees
 test_post_merge_snapshot_scrape_requires_separator_before_issue_ref
 
 echo "gitlab-workflow-helpers: PASS"

@@ -10,8 +10,8 @@ cat > "$TMPDIR/good/agents/claude/neutral-worker.md" <<'MD'
 ---
 name: neutral-worker
 description: Claude worker fixture
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
-skills: start-build, tdd, gitlab
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__azure-devops__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
+skills: start-build, tdd, forge
 model: inherit
 effort: high
 ---
@@ -23,10 +23,10 @@ cat > "$TMPDIR/good/agents/omp/neutral-worker.md" <<'MD'
 ---
 name: neutral-worker
 description: OMP worker fixture
-tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
+tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: anthropic/claude-opus-4-8
 thinking-level: high
-autoload-skills: start-build, tdd, gitlab
+autoload-skills: start-build, tdd, forge
 ---
 
 OMP body may mention irc coordination.
@@ -240,15 +240,15 @@ for expected in \
   "OMP tool \"find\" must use OMP-native tool \"glob\"" \
   "OMP tool \"ls\" must use OMP-native tool \"directory reads via read\"" \
   "OMP tool \"intercom\" must use OMP-native tool \"irc\"" \
- "OMP MCP selector \"mcp:gitlab-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp:*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp:codebase-memory-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp__gitlab-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp__codebase-memory-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp__gitlab_mcp_get_project\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
- "OMP MCP selector \"mcp__codebase_memory_mcp_search_graph\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp:gitlab-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp:*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp:codebase-memory-mcp\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp__gitlab-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp__codebase-memory-mcp__*\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp__gitlab_mcp_get_project\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
+ "OMP MCP selector \"mcp__codebase_memory_mcp_search_graph\" is not approved; allowed selectors: mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*" \
   "frontmatter YAML does not parse" \
   "OMP model \"claude-opus-4-8\" not an approved model/provider; allowed provider prefixes: anthropic/, openai-codex/, pi/, zai/" \
   "OMP thinking-level \"med\" is not a valid value; allowed: inherit, off, minimal, low, medium, high, xhigh" \

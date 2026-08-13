@@ -1,14 +1,16 @@
 # Dev Workflows
 
-This repo uses GitLab-backed dev workflows.
+This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 
 ## Skills
 
-- **`/gitlab`** — authoritative MCP-first GitLab transport reference for local/self-hosted GitLab: preflight, issues, MRs, CI, diffs, notes, approvals, merges, guarded `glab` fallback/helper conditions, and known MCP gaps.
-- **`/gitlab-to-issues`** — break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues using vertical slices and this repo's triage labels.
-- **`/start-build`** — pick up scoped GitLab issues, implement with TDD where applicable, and open Draft MRs with Review Packets.
-- **`/start-review`** — review GitLab MRs against project rules, safety invariants, CI, and test evidence; approve, request changes, reject, or merge when authority allows.
-- **`/issue-delivery-loop`** — coordinate bounded ready-issue batches and issue-to-MR loops; keep Decoupling Contract proof, parent spot-checks, revision routing, delivery metrics, and post-merge verifier recipe handoff in one place. See `skill://issue-delivery-loop/SKILL.md`.
+- **`/forge`** — selects the verified provider once and exposes preflight, snapshot, publish, act, and post-merge snapshot.
+- **`/gitlab`** — GitLab-specific MCP-first transport used only by the selected GitLab branch.
+- **`/gitlab-to-issues`** — GitLab-only issue publishing for approved plans.
+- **`/start-build`** — implements issues with TDD and an early Draft change request.
+- **`/start-review`** — independently reviews one bound change request and exact commit/CI evidence.
+- **`/issue-delivery-loop`** — coordinates bounded batches using retained internal `mr-builder-*` and `mr-reviewer-final` routes.
+- **`/retro`** — mines finished delivery evidence and proposes bounded follow-up issues.
 - **`/retro`** — delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. See `skill://retro/SKILL.md`.
 
 ## Skill activation mechanism
@@ -24,14 +26,15 @@ Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch pr
 
 ## Active recipes
 
-- `skill://issue-delivery-loop/SKILL.md` — coordinator wrapper for ready-issue batches and issue-to-MR loops; delegates implementation/review to `start-build` / `start-review`, enforces Decoupling Contract before parallel fan-out, and keeps GitLab transport details in `/gitlab`.
-- `skill://start-build/reference/parent-orchestrator.md` — active project-agnostic parent loop for issue resolution, durable child outputs, child `mr-builder` handoff, parent spot-check, `mr-reviewer`, revision rounds, SHA/CI guards, authority-aware finish, cleanup, and post-merge verification via `skill://start-build/reference/post-merge-verifier.md`.
-- `skill://start-build/reference/post-merge-verifier.md` — canonical read-only verifier recipe merged/default-branch state, linked issue closure pending closure, branch cleanup, documented non-mutating post-merge validation. Transport details live in the `/gitlab` transport reference; use GitLab MCP tool `get_post_merge_snapshot`; do not copy snippets here.
-- `skill://start-build/templates/gitlab-delivery-schema.md` — canonical shared GitLab `delivery.kind=gitlab-delivery` block and evidence/action taxonomy; compact delivery fields are routing indexes until verified from Tier 1/Tier 2 evidence.
-- `skill://setup-dev-skills/reference/project-profile-facts.json` — canonical Setup Skill fact source used to verify this repo's Agent Setup Doc paths, live label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs.
-- `skill://start-build/reference/parent-owned-gate.md` — canonical parent-owned Check Gate / Gate Receipt seam for child handoff ownership fields, receipt schema, parent verification checklist, ready-transition conditions, exact-SHA Gate coverage handling, and evidence-ready tokens. Cross-project invocations use `skill://start-build/reference/parent-owned-gate.md`; target repo Check Gate policy stays repo-relative at `docs/agents/check-gate.md`.
-- `skill://gitlab/reference/mutation-guard.md` — canonical GitLab Mutation Guard seam for mutating GitLab actions. Cross-project invocations use `skill://gitlab/reference/mutation-guard.md`, `skill://gitlab/reference/mutation-guard.schema.json`, and `skill://gitlab/reference/snippet-transports.md` for guard resources while keeping target-repo policy references repo-relative (`docs/agents/...`).
-- `skill://gitlab/reference/authority-verification.md` — canonical Authority Verification seam for approval/merge authority claim shape, source precedence, conflict/restriction/missing-source results, verified authority output, action routing, and no-self approval/merge context. Cross-project invocations use `skill://gitlab/reference/authority-verification.md` and `skill://gitlab/reference/authority-verification.schema.json`.
+- `skill://forge/SKILL.md` — shared five-operation transport seam; this profile selects `skill://forge/reference/gitlab.md`.
+- `skill://forge/reference/common-guard.md` — shared mutation order and Authority Verification; provider branches own native mechanics.
+- `skill://issue-delivery-loop/SKILL.md` — bounded coordinator delegating build/review without copying provider mechanics.
+- `skill://start-build/reference/parent-orchestrator.md` — provider-neutral parent loop and cleanup ordering.
+- `skill://start-build/reference/post-merge-verifier.md` — read-only verifier using `forge post_merge_snapshot`.
+- `skill://start-build/templates/delivery-schema.md` — `delivery.kind=change-delivery`; compact records are untrusted routing indexes.
+- `skill://setup-dev-skills/reference/project-profile-facts.json` — provider/profile and Agent Setup Doc facts.
+- `skill://start-build/reference/parent-owned-gate.md` — parent Gate Receipt and exact-candidate ready seam.
+- `skill://gitlab/SKILL.md` — selected GitLab transport branch only.
 
 ## Skill-only tier routing
 
@@ -43,11 +46,11 @@ Independent-review floors hold every tier: mandatory final-reviewer route is `mr
 
 ## Project-profile hooks
 
-GitLab workflow skills keep global schema names GitLab-specific: `issue`, `MR`,
-`pipeline`, `source branch`, `target branch`, and `SHA`. This repo declares
-project-specific policy through bounded `project_profile` extension fields in
-[`skill://start-build/templates/gitlab-delivery-schema.md`](skill://start-build/templates/gitlab-delivery-schema.md);
-do not invent provider-neutral aliases for the GitLab records.
+Shared workflow records are provider-neutral: `provider`, `repository`, `issue`,
+`change_request`, `commit`, and `ci`. Their identifiers and locators are opaque
+outside the selected provider. This repo's profile binds them to GitLab and
+declares policy hooks through
+[`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
 
 This repo uses the default profile from `skill://setup-dev-skills/reference/project-profile-facts.json`: repo-local policy docs stay under `docs/agents/...`, while reusable cross-project resources use explicit `skill://...` URIs.
 
@@ -68,16 +71,16 @@ This repo uses the default profile from `skill://setup-dev-skills/reference/proj
 Triage Role names map through this repo's live label vocabulary in `docs/agents/triage-labels.md`; reusable skills must read that mapping instead of assuming a global label string.
 
 Project-profile hooks may specialize this repo's policy, but they must not
-weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
-independent review, the child-builder boundary, the verifier read-only boundary,
-or MCP-first transport correctness plus help-first `glab` fallback correctness.
+weaken reviewed-commit binding, commit-bound CI, explicit authority source,
+independent review, the child-builder boundary, verifier read-only behavior, or
+the selected provider's native transport/readback rules.
 
 ### Acceptance-surface vocabulary
 
 This repo's `project_profile.acceptance_surfaces_ref` resolves here. These are
 the only allowed `acceptance_surfaces` surface values for this repo; the global
 evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
-[`skill://start-build/templates/gitlab-delivery-schema.md`](skill://start-build/templates/gitlab-delivery-schema.md).
+[`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
 
 | Surface value | Meaning |
 | --- | --- |
@@ -85,11 +88,11 @@ evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
 | `prompt` | Agent prompt / SKILL.md / agent definition file changed. |
 | `agent_inventory` | Agent inventory manifest or registry changed. |
 | `install_surface` | Install script, symlink, or deploy artifact changed. |
-| `transport` | GitLab transport / MCP / glab fallback logic changed. |
-| `authority` | Authority verification, approval, or merge authority logic changed. |
-| `ci_finish` | CI watch, finish guard, or CI-verdict logic changed. |
-| `mutation_guard` | GitLab mutation guard or safe-text handling changed. |
-| `tooling` | Repo-local helper script, validator, test harness, or dev-workflow tooling changed. |
+| `transport` | `/forge` selection or provider-native transport logic changed. |
+| `authority` | Authority verification, approval, vote, or finish logic changed. |
+| `ci_finish` | Bound CI or finish-verdict logic changed. |
+| `mutation_guard` | Common guard or provider safe-body/action handling changed. |
+| `tooling` | Repo-local helper, validator, test harness, or setup generation changed. |
 
 When no surface above is touched, declare `acceptance_surfaces` as `[]`/`none`. A
 declared surface without evidence, or an observably-changed surface that is not
@@ -97,9 +100,9 @@ declared, blocks ready/pass.
 
 ### Branch naming
 
-Use issue-referencing source branches for GitLab MRs, for example
-`issue-<iid>-<slug>`. Do not rename the delivery schema's `source_branch` or
-`target_branch` fields.
+Use issue-referencing source branches, for example `issue-<id>-<slug>`.
+Provider-native source/target shapes remain inside the selected `/forge`
+reference; the shared schema uses `change_request.source` and `.target`.
 
 ### Review approval / merge policy
 
@@ -133,9 +136,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Before any GitLab API action, invoke `/gitlab` and follow MCP-first transport order; use `glab` only for documented guarded fallback/helper/troubleshooting cases.
-- For GitLab mutations, follow the GitLab Mutation Guard from `skill://gitlab/reference/mutation-guard.md`; keep this repo's `docs/agents/...` policy references repo-relative when working from another project.
+- Invoke `/forge` before shared workflow reads or actions; this repo's verified GitLab branch then invokes `/gitlab`.
 - Before converting an approved plan into GitLab issues, invoke `/gitlab-to-issues`.
-- Before implementation from GitLab issues, invoke `/start-build`.
-- Before MR review, invoke `/start-review`.
+- Before implementation, invoke `/start-build`; before independent review, invoke `/start-review`.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

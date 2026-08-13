@@ -310,11 +310,6 @@ for file in \
   fi
 done
 
-for file in start-build/SKILL.md start-build/reference/implementation-flow.md; do
-  require_text "$file" 'Snippet: draft-mr-create' 'Draft MR create snippet reference'
-  require_text "$file" 'Snippet: mr-description-update' 'MR description update snippet reference'
-  require_text "$file" 'Snippet: draft-mr-mark-ready' 'Draft MR mark-ready snippet reference'
-done
 
 for file in \
   gitlab/SKILL.md \
@@ -328,46 +323,30 @@ for file in \
   fi
 done
 
+# The selected GitLab provider branch owns card/snippet discovery. Generic
+# workflows must not directly own GitLab Snippet references.
+for card in build-read build-actions review-read review-actions ci; do
+  require_text "forge/reference/gitlab.md" "gitlab/reference/${card}\\.md" "$card provider-card link"
+done
 for file in \
+  start-build/SKILL.md \
+  start-build/reference/implementation-flow.md \
   start-review/SKILL.md \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
   start-review/templates/review-report.md \
   start-review/templates/unblock-response.md; do
-  require_text "$file" 'Snippet: mr-note-create' 'MR-note snippet reference'
-  if grep -Fq 'Snippet: issue-note-create' "$file"; then
-    fail "$file references issue-note-create in MR review posting guidance"
+  if grep -Eq 'Snippet: (draft-mr|mr-|issue-note|sha-bound)' "$file"; then
+    fail "$file directly owns a GitLab Snippet reference"
   fi
 done
 
-# --- Review Report posting contract: file-backed, read-back-verified --------
-for file in \
-  start-review/REVIEW-FLOW.md \
-  start-review/SKILL.md \
-  start-review/templates/filling-guide.md \
-  start-review/templates/review-report.md \
-  start-review/reference/blocked-review-routing-card.md \
-  start-review/reference/single-mr-review-card.md \
-  start-review/reference/finish-action-card.md \
-  start-review/reference/request-changes-rerun-card.md; do
-  require_review_report_posting_contract "$file" "$file Review Report posting contract"
-done
-
 require_text "$SKILL" 'Snippet: issue-note-create' 'issue-note snippet reference'
-require_text "start-build/reference/post-merge-verifier.md" 'Snippet: issue-note-create' 'post-merge issue-note snippet reference'
 
 # --- No-combined-approve+merge warning survives (transport-independent prose) --
 require_text "$SKILL" 'Choose (exactly )?one action' 'choose-one-action warning for approval/merge snippets'
 require_text "$SKILL" 'Never run[^.]*combined[^.]*approval/merge block' 'no combined approval/merge block warning'
 
-for file in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
-  if grep -Fq 'approve-merge-sha-bound' "$file"; then
-    fail "$file still references retired combined approve-merge-sha-bound snippet"
-  fi
-  require_text "$file" 'Snippet: sha-bound-approval' 'sha-bound approval snippet reference'
-  require_text "$file" 'Snippet: sha-bound-merge' 'sha-bound merge snippet reference'
-  require_text "$file" 'Snippet: sha-bound-auto-merge-queue' 'sha-bound auto-merge queue snippet reference'
-done
 
 # --- One-action-per-snippet (no combined approve+merge), transport-independent -
 # The authority-aware finish helper is intentionally allowed to carry conditional

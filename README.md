@@ -16,9 +16,10 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 |---|---|
 | `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) for scaffolding per-repo Agent Setup Docs, including coding guardrails. Invoke explicitly as `/setup-dev-skills`; agents may recommend it when docs are missing/stale, but must ask before running or writing. |
 | `gitlab` | MCP-first GitLab transport reference with guarded help-first `glab` fallback/helper contracts for local/self-hosted GitLab work. |
-| `start-build` | Pick up GitLab issues, implement with TDD, open Draft MRs with Review Packets. |
-| `start-review` | Review GitLab MRs against project rules, post Review Reports, approve/merge. |
-| `issue-delivery-loop` | Parent coordinator for bounded ready-issue batches: serial by default, parallel only with Decoupling Contract proof, delegates to child builders/reviewers, tracks delivery metrics, and routes post-merge checks to the `start-build` verifier recipe. |
+| `forge` | Five-operation provider seam for GitLab, GitHub, and Azure DevOps transport selection, evidence, guarded actions, and post-merge snapshots. |
+| `start-build` | Pick up issues, implement with TDD, and open Draft change requests with Review Packets. |
+| `start-review` | Independently review one bound change request, exact commit, complete review surface, and CI evidence. |
+| `issue-delivery-loop` | Coordinate bounded issue batches, serial by default, with Decoupling Contract gating and provider-neutral build/review/verifier routing. |
 | `gitlab-to-issues` | Break approved plans/specs into GitLab issues using local tracker docs and triage labels. |
 | `cleanup-codebase` | Discover and plan subtractive repo maintenance — deslop (behavior- and boundary-preserving local simplification) and destale (remove/correct stale items) — as planning-only work routed to the build workflow. |
 | `retro` | Delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. |

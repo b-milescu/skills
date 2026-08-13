@@ -39,10 +39,10 @@ if grep -qF 'subagent({ action: "list" })' "$child_doc"; then
   fail "$child_doc contains runtime-specific subagent discovery text"
 fi
 
-child_row="$(grep -F '| Child `mr-builder` |' "$skill" || true)"
-[ -n "$child_row" ] || fail "$skill missing child mr-builder read-matrix row"
-printf '%s' "$child_row" | grep -qF 'reference/child-builder.md' || \
-  fail "$skill child row does not point to the child-builder path doc"
+grep -qF -- '- **Child `mr-builder`:**' "$skill" || \
+  fail "$skill missing compact child mr-builder mode"
+grep -qF 'skill://start-build/reference/child-builder.md' "$skill" || \
+  fail "$skill missing explicit child-builder skill URI"
 
 printf 'start-build-child-path-size: PASS (%s lines, %s words; legacy BUILD-FLOW.md baseline %s lines, %s words)\n' \
   "$child_lines" "$child_words" "$baseline_lines" "$baseline_words"

@@ -6,6 +6,7 @@ Choose the concrete issue-tracker template by tracker type:
 
 - GitLab: `setup-dev-skills/issue-tracker-gitlab.md`
 - GitHub: `setup-dev-skills/issue-tracker-github.md`
+- Azure DevOps: `setup-dev-skills/issue-tracker-azure-devops.md`
 - Local Markdown: `setup-dev-skills/issue-tracker-local.md`
 
 Do not treat this generic path as a default tracker template or a GitLab alias.

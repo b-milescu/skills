@@ -38,6 +38,8 @@ function rejectWithoutEcho(label, args, protectedValue, expectedText) {
 
 const reportArgs = reports.flatMap((file) => ["--report", file]);
 run(reportArgs, 0, /reports=2 identities=2 artifacts=0/);
+const durableReport = path.join(fixtures, "report-round-4-decision-locator.txt");
+run(["--report", durableReport], 0, /reports=1 identities=2 artifacts=0/);
 
 const validOutput = run(
   [...reportArgs, "--packet", path.join(fixtures, "revision-valid.md")],
@@ -80,8 +82,8 @@ try {
   writeFileSync(
     duplicateLocatorReport,
     firstReport.replace(
-      "| Reviewed SHA |",
-      "| Report locator | `review-report:agents/skills!340:99` |\n| Reviewed SHA |",
+      "| Reviewed commit |",
+      "| Report locator | `review-report:agents/skills!340:99` |\n| Reviewed commit |",
     ),
   );
   reject("conflicting duplicate Report locator", ["--report", duplicateLocatorReport], /exactly one Report locator/);
@@ -90,11 +92,39 @@ try {
   writeFileSync(
     duplicateShaReport,
     firstReport.replace(
-      "| Reviewed SHA | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |",
-      "| Reviewed SHA | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |\n| Reviewed SHA | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |",
+      "| Reviewed commit | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |",
+      "| Reviewed commit | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |\n| Reviewed commit | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |",
     ),
   );
-  reject("duplicate Reviewed SHA", ["--report", duplicateShaReport], /exactly one Reviewed SHA/);
+  reject("duplicate Reviewed commit", ["--report", duplicateShaReport], /exactly one Reviewed commit/);
+  const missingCommitReport = path.join(temp, "report-missing-commit.md");
+  writeFileSync(missingCommitReport, firstReport.replace(/\| Reviewed commit \|.*\n/, ""));
+  reject("missing Reviewed commit", ["--report", missingCommitReport], /exactly one Reviewed commit/);
+
+  const invalidCommitReport = path.join(temp, "report-invalid-commit.md");
+  writeFileSync(invalidCommitReport, firstReport.replace("a".repeat(40), "not-a-commit"));
+  reject("invalid Reviewed commit", ["--report", invalidCommitReport], /invalid exact Reviewed commit/);
+  const durable = readFileSync(durableReport, "utf8");
+  const duplicateDecisionLocator = path.join(temp, "report-decision-duplicate-locator.md");
+  writeFileSync(duplicateDecisionLocator, durable.replace(
+    "| Report locator | `review-report:agents/skills!361:4` |",
+    "| Report locator | `review-report:agents/skills!361:4` |\n| Report locator | `review-report:agents/skills!361:4` |",
+  ));
+  reject("duplicate Decision Summary locator", ["--report", duplicateDecisionLocator], /exactly one Report locator/);
+
+  const conflictingDecisionLocator = path.join(temp, "report-decision-conflicting-locator.md");
+  writeFileSync(conflictingDecisionLocator, durable.replace(
+    "| Report locator | `review-report:agents/skills!361:4` |",
+    "| Report locator | `review-report:agents/skills!361:99` |",
+  ));
+  reject("conflicting Decision Summary locator", ["--report", conflictingDecisionLocator], /contradicts finding identities/);
+
+  const mismatchedDecisionTuple = path.join(temp, "report-decision-tuple-mismatch.md");
+  writeFileSync(mismatchedDecisionTuple, durable.replace(
+    "| `review-report:agents/skills!361:4` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
+    "| `review-report:agents/skills!361:99` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
+  ));
+  reject("Decision Summary tuple mismatch", ["--report", mismatchedDecisionTuple], /contradicts finding identities/);
 
   const lift = readFileSync(path.join(fixtures, "reviewer-lift-valid.md"), "utf8");
   const conflictingLiftRows = path.join(temp, "lift-conflicting-rows.md");
@@ -218,8 +248,8 @@ try {
   const revisionFlow = readFileSync(path.join(root, "start-build", "reference", "implementation-flow.md"), "utf8");
   assert.match(
     revisionFlow,
-    /render one Revision Packet artifact[\s\S]*validate-finding-bindings\.mjs[\s\S]*safe_create_merge_request_note[\s\S]*get_merge_request_note[\s\S]*byte-for-byte/,
-    "revision handling must validate, post, and read back one exact packet artifact",
+    /Render one Revision Packet artifact[\s\S]*validate-finding-bindings\.mjs[\s\S]*forge publish[\s\S]*provider-native byte-for-byte readback/,
+    "revision handling must validate, publish, and read back one exact packet artifact",
   );
 
 } finally {

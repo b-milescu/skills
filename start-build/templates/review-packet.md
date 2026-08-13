@@ -8,22 +8,21 @@ section-by-section instructions and the conditional-section triggers.
 
 | Field | Value |
 |---|---|
-| Issue | `<gitlab issue URL>` |
+| Work item | `<provider-native identifier and locator>` |
+| Change request | `<provider-native identifier and locator>` |
 | Title | |
-| Builder | `@builder — <exact model id if exposed, e.g. claude-opus-4-7>` |
+| Builder | `@builder — <exact model id if exposed>` |
 | Branch | |
 | Base commit | |
-| Commit(s) under review | |
+| Current/reviewed commit(s) | |
 | ADR needed? | `<yes/no; planned ADR slug if yes>` |
 | Blocks | |
 | Blocked by | |
 
-The issue-closing reference must be a plain, unbolded `Closes #N` on its own line
-(e.g. `Closes #123`). Do not bold or wrap the keyword (`**Closes:** #N` and
-`` `Closes #N` `` are not matched by GitLab's auto-close regex and leave the issue
-open after merge).
-
-Closes #N
+Before publication or a ready transition, use the selected `/forge` provider to
+validate the native work-item relationship/closure preview and require
+provider-native publication readback. Missing, incomplete, stale, or mismatched
+evidence fails closed.
 
 ## Reviewer Lift
 
@@ -31,33 +30,33 @@ Field names, order, and required semantics are canonical in `reviewer-lift-schem
 
 Before a parent-owned ready transition, validate the canonical receipt and this
 current Reviewer Lift with `skill://start-build/scripts/validate-gate-receipt.mjs`,
-supplying `--gate-receipt-note-id "<current Gate Receipt note ID>"`.
+supplying `--gate-receipt-locator "<opaque current Gate Receipt locator>"`.
 
 Before publication or a ready transition, validate every non-`none` `Finding bindings` tuple against the originating Review Report files with `node start-review/scripts/validate-finding-bindings.mjs --report <report.md> ... --lift <this-review-packet.md>` per `../../start-review/reference/finding-identities.md`.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
-| Reviewed SHA | `<head SHA at ready-marking; update on every post-ready push>` |
-| Finding bindings | `<none, or report=<stable report locator>; sha=<originating reviewed SHA>; id=<MF-N/SF-N/C-N>; separate multiple tuples with <br>; validate against originating reports before publication/ready>` |
+| Reviewed SHA | `<change-request head commit at ready-marking; update on every post-ready push>` |
+| Finding bindings | `<none, or report=<stable report locator>; sha=<originating reviewed commit>; id=<MF-N/SF-N/C-N>; separate multiple tuples with <br>; validate against originating reports before publication/ready>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |
 | Gate coverage rationale | `<policy source + required CI mapping; unmapped CI-only jobs or none; stale/wrong-SHA evidence invalid after push>` |
-| CI pipeline | `<pipeline URL + ID + status + commit SHA when available, or N/A — why>` |
-| Local gate | `<PASS / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; completed local gate or parent Gate Receipt permits review launch for every coverage class; hybrid/ci-only may launch with exact-SHA CI pending, but failed/canceled/skipped/missing/stale/wrong-SHA CI blocks pass and finish unless waived> — <exact command, e.g. make check>` |
+| CI pipeline | `<provider-native CI locator + ID + status + commit when available, or N/A — why>` |
+| Local gate | `<PASS / FAIL while draft / N/A — why / not-run — parent-owned per ../reference/parent-owned-gate.md with Gate Receipt pending; completed local gate or parent Gate Receipt permits review launch for every coverage class; hybrid/ci-only may launch with exact-commit CI pending, but failed/canceled/skipped/missing/stale/wrong-commit CI blocks pass and finish unless waived> — <exact command, e.g. make check>` |
 | RED | `<behavior-touching implementation: exact failing test/check command + expected failure reason, or N/A with rationale — why; do not fake tests>` |
 | GREEN | `<behavior-touching implementation: exact passing test/check command + brief result, or N/A with rationale — why; do not fake tests>` |
 | Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<one path per line, separated with <br>>` |
 | Touched safety surfaces | `<none / external-system / credentials / state / migration / gates / locks / deploy / wire-protocol / other>` |
 | Acceptance surfaces | `<none, or per-surface evidence; allowed surfaces come from project_profile.acceptance_surfaces_ref (no ref ⇒ none); evidence enum: test/smoke/docs-read/ci/N/A; compact syntax: surface:evidence — e.g. docs:docs-read, prompt:test; each declared surface must have test/smoke/docs-read/ci/N/A evidence before ready/pass>` |
-| Decoupling proof | `<single MR, or co-running MR IIDs/branches + Decoupling Contract proof summary>` |
+| Decoupling proof | `<single change request, or co-running change-request identifiers/branches + Decoupling Contract proof summary>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
 | Approval authority | `<default-after-pass / restricted: source-or-reason>` |
-| Approval authority source | `<stable repo policy ref, e.g. start-review/REVIEW-FLOW.md#approval-authority-policy / parent task prompt / human or MR comment URL / project rulebook path+section>` |
-| Merge authority | `<quoted claim; defaults to none — requires explicit human/parent instruction; a granting value (reviewer may merge / queue auto-merge / project default: ...) needs an affirmative quoted grant in the source: approval-only / reviewer may merge / queue auto-merge / human release / project default: ...>` |
-| Merge authority source | `<parent task prompt / human MR comment URL / rulebook path+section / project default source; for any non-none value must quote an affirmative merge/auto-merge grant — a disclaiming/silent source forces the none default>` |
+| Approval authority source | `<stable repo policy ref / parent task prompt / human or provider discussion locator / project rulebook path+section>` |
+| Finish authority | `<quoted claim; defaults to none — requires explicit human/parent instruction; a granting value needs an affirmative quoted grant in the source>` |
+| Finish authority source | `<parent task prompt / human discussion locator / rulebook path+section / project default source; a disclaiming or silent source forces the none default>` |
 | Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
