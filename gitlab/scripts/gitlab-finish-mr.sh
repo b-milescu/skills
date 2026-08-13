@@ -436,12 +436,13 @@ retain_worktree() {
   fi
 }
 
-if [[ "$finish_action" == "merged" && ( -n "$worktree_path" || "$delete_local_source_branch" == "true" ) ]]; then
+if [[ "$finish_action" == "merged" &&
+  ( -n "$worktree_path" || "$delete_local_source_branch" == "true" || "$delete_remote_source_branch" == "true" ) ]]; then
   if ! establish_local_default_cleanup_safety; then
     if [[ -n "$worktree_path" ]]; then
       worktree_cleanup="cleanup_pending:$default_cleanup_pending_reason"
     fi
-    if [[ "$delete_local_source_branch" == "true" ]]; then
+    if [[ "$delete_local_source_branch" == "true" || "$delete_remote_source_branch" == "true" ]]; then
       branch_cleanup="cleanup_pending:$default_cleanup_pending_reason"
     fi
   fi
@@ -485,7 +486,9 @@ if [[ "$finish_action" == "merged" && "$delete_local_source_branch" == "true" ]]
   fi
 fi
 if [[ "$finish_action" == "merged" && "$delete_remote_source_branch" == "true" ]]; then
-  if coordinator_git push origin --delete "$source_branch"; then
+  if [[ "$branch_cleanup" == cleanup_pending:* ]]; then
+    :
+  elif coordinator_git push origin --delete "$source_branch"; then
     if [[ "$branch_cleanup" == "not_requested" ]]; then
       branch_cleanup="remote_deleted"
     else

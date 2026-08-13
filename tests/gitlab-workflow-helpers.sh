@@ -593,6 +593,63 @@ test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures() {
   assert_log_not_contains "$dir/git.log" "branch -d build/61"
 }
 
+test_finish_remote_cleanup_requires_verified_default_containment() {
+  local dir
+
+  dir="$(make_fixture_dir finish-remote-containment-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_MERGE_BASE_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:containment_unverified"
+  assert_log_contains "$dir/git.log" "merge-base --is-ancestor abc123 main"
+  assert_log_not_contains "$dir/git.log" "push origin --delete build/61"
+
+  dir="$(make_fixture_dir finish-remote-fetch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_GIT_FETCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:fetch_failed"
+  assert_log_not_contains "$dir/git.log" "push origin --delete build/61"
+
+  dir="$(make_fixture_dir finish-remote-current-branch-failed)"
+  mkdir -p "$dir/coordinator"
+  write_mr_json "$dir/mr.json" opened abc123 success abc123
+  write_branch_json "$dir/branch.json" success abc123
+  FAKE_CURRENT_BRANCH_STATUS=1 run_finish_fixture "$dir" \
+    --mr-iid 59 \
+    --reviewed-sha abc123 \
+    --merge-authority "reviewer may merge" \
+    --caller-role authorized-parent \
+    --source-branch build/61 \
+    --default-branch main \
+    --coordinator-path "$dir/coordinator" \
+    --delete-remote-source-branch
+  assert_status 0
+  assert_contains "$CAPTURE_OUTPUT" "branch=cleanup_pending:current_branch_unreadable"
+  assert_log_not_contains "$dir/git.log" "push origin --delete build/61"
+}
+
+
 test_finish_reports_post_mutation_git_failures() {
   local dir
 
@@ -1470,6 +1527,7 @@ test_finish_authorized_paths_are_sha_bound
 test_finish_reports_issue_and_deletes_source_branches_after_direct_merge
 test_finish_cleanup_flags_do_not_delete_branches_on_handoff_or_failures
 test_finish_reports_post_mutation_git_failures
+test_finish_remote_cleanup_requires_verified_default_containment
 test_finish_blocks_local_cleanup_until_default_is_verified_safe
 test_finish_rejects_unsafe_cleanup_paths_before_merge
 test_finish_blocks_unsafe_states_before_mutation
