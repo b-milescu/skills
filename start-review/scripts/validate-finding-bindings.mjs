@@ -77,22 +77,40 @@ const shaLocators = new Map();
 
 for (const file of args.report) {
   const body = read(file);
-  const snapshot = body.split(/^## Context \/ Snapshot\s*$/m)[1]?.split(/^## /m)[0] ?? body;
-  const reportFields = fields(snapshot, "Report locator");
-  const shaFields = fields(snapshot, "Reviewed SHA");
-  if (reportFields.length !== 1) fail(`${file}: report must contain exactly one Report locator`);
-  if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed SHA`);
-  const report = reportFields[0];
+  const snapshot = body.split(/^## Context \/ Snapshot\s*$/m)[1]?.split(/^## /m)[0] ?? "";
+  const decision = body.split(/^## Decision Summary\s*$/m)[1]?.split(/^## /m)[0] ?? "";
+  const bindings = table(body, file);
+  if (!bindings) fail(`${file}: missing finding identity table`);
+
+  const snapshotLocators = fields(snapshot, "Report locator");
+  const decisionLocators = fields(decision, "Report locator");
+  if (snapshotLocators.length > 1) fail(`${file}: report must contain exactly one Report locator`);
+  let report = snapshotLocators[0];
+  if (!report) {
+    if (decisionLocators.length !== 1) fail(`${file}: report must contain exactly one Report locator`);
+    report = decisionLocators[0];
+    if (bindings.some((binding) => binding.report !== report)) {
+      fail(`${file}: Decision Summary Report locator contradicts finding identities`);
+    }
+  } else if (decisionLocators.some((locator) => locator !== report)) {
+    fail(`${file}: report contains contradictory Report locators`);
+  }
+
+  const shaFields = fields(snapshot, "Reviewed commit");
+  if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed commit`);
+  const decisionShas = fields(decision, "Reviewed commit");
   const sha = shaFields[0].toLowerCase();
+  if (decisionShas.some((value) => value.toLowerCase() !== sha)) {
+    fail(`${file}: report contains contradictory Reviewed commits`);
+  }
   if (!report || !LOCATOR.test(report)) fail(`${file}: missing or invalid stable Report locator`);
-  if (!SHA.test(sha)) fail(`${file}: missing or invalid exact Reviewed SHA`);
+  if (!SHA.test(sha)) fail(`${file}: missing or invalid exact Reviewed commit`);
   if (locatorShas.has(report) && locatorShas.get(report) !== sha) fail(`${file}: report locator has contradictory reviewed SHAs`);
   locatorShas.set(report, sha);
   if (!shaLocators.has(sha)) shaLocators.set(sha, new Set());
   shaLocators.get(sha).add(report);
 
-  const bindings = table(body, file);
-  if (!bindings) fail(`${file}: missing finding identity table`);
+  rejectDuplicateBindings(bindings, file);
   for (const binding of bindings) {
     if (binding.report !== report || binding.sha.toLowerCase() !== sha) fail(`${file}: finding identity contradicts report locator or reviewed SHA`);
     if (!/^(?:MF|SF|C)-\d+$/.test(binding.id)) fail(`${file}: invalid finding ID`);

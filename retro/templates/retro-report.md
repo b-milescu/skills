@@ -3,21 +3,21 @@
 The Retro Report is the session deliverable; accepted follow-up issues are the durable record. Post or keep the report in the conversation (or a caller-provided run directory) — do not edit canonical skills/docs directly from a retro, and do not invent metric values: use `N/A — <why>` when a metric was not observable.
 
 ```markdown
-# Retro Report — <scope, e.g. batch issues #204–#207 / MRs !193–!196>
+# Retro Report — <scope, e.g. batch issues #204–#207 / change requests !193–!196>
 
 <n> findings — <a> adopt / <e> experiment / <m> monitor / <h> human-decision.
-Scope: <issues / MRs / session>. Date: <YYYY-MM-DD>.
+Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 
 ## Batch metrics
 
 | Metric | Value |
 |---|---|
 | Issues attempted | <n> |
-| MRs opened | <n> |
-| MRs merged | <n> |
-| MRs queued (auto-merge) | <n> |
-| MRs blocked | <n> |
-| Review rounds (total / max per MR) | <n> / <n> |
+| change requests opened | <n> |
+| change requests merged | <n> |
+| change requests queued (auto-merge) | <n> |
+| change requests blocked | <n> |
+| Review rounds (total / max per change request) | <n> / <n> |
 | CI failures | <n> |
 | Brief defects | <n> |
 | Follow-up issues created | <n> |
@@ -33,7 +33,7 @@ Scope: <issues / MRs / session>. Date: <YYYY-MM-DD>.
 - **Category:** <flow | process | context | taxonomy | tooling | docs-drift>
 - **Disposition:** <adopt | experiment | monitor | human-decision>
 - **Claim:** <what friction happened, or what should improve>
-- **Evidence + source:** <MR/issue/report URL, command output locator, observation ID — smallest excerpt that backs the claim; never secrets>
+- **Evidence + source:** <change request/issue/report URL, command output locator, observation ID — smallest excerpt that backs the claim; never secrets>
 - **Owner doc:** <the canonical doc/skill that owns the behavior>
 - **Proposal:** <bounded change; for human-decision, the question to escalate instead of a fix>
 - **Expected effect:** <what gets better and for whom>

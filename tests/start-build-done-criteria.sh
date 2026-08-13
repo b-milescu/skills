@@ -72,17 +72,16 @@ require_done_contains 'reference/standalone-gate.md'
 require_done_contains 'reference/parent-orchestrator.md'
 require_done_contains 'reference/post-merge-verifier.md'
 
-# The builder-ready tier must end at handoff without approval/merge. The
-# universal summary must preserve the builder-owned ready transition and the
-# parent-owned Draft candidate handoff as distinct completion conditions.
+# Builder-ready ends at final handoff without self-approval/merge. The entrypoint
+# points at the canonical tiers and keeps compact builder/parent mode behavior.
 require_done_contains 'final handoff'
-require_contains "$SKILL_FILE" 'builder-owned requires a ready MR plus handoff'
-require_contains "$SKILL_FILE" 'parent-owned requires a Draft candidate plus complete handoff to the parent'
-require_not_contains "$SKILL_FILE" '(MR ready + handoff)'
+require_contains "$SKILL_FILE" 'skill://start-build/SAFETY.md#done-criteria'
+require_contains "$SKILL_FILE" 'Done is mode-tiered'
+require_contains "$SKILL_FILE" 'Builder-owned mode runs the project Check Gate'
+require_contains "$SKILL_FILE" 'Parent-owned mode records `not-run —'
+require_contains "$SKILL_FILE" 'leaves Draft'
+require_contains "$SKILL_FILE" 'hands the candidate to the parent'
 require_not_contains "$SAFETY_FILE" 'builder may self-approve'
 require_not_contains "$SAFETY_FILE" 'builder may merge its own'
-
-# SKILL.md flags that the canonical checklist is mode-specific.
-require_contains "$SKILL_FILE" 'mode-specific'
 
 echo "start-build done criteria regression: PASS"

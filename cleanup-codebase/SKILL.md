@@ -51,8 +51,8 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 ## Boundaries with sibling skills
 
 - **When NOT to use this skill:** if you already have a pending change/diff and just want it tidied → `/simplify` (or `/code-review`). Cleanup is for discovering debt across *committed* code with no active change.
-- **Implementation route:** planning-only. Approved slices → the build workflow (`/start-build`), which produces the diff; `/simplify` + `/code-review` run *downstream* on that diff; the start-review structural maintainability sweep gates the same smells at MR time. **No direct cleanup→simplify edge** (a plan cannot be consumed by a diff-level applier).
-- **vs the start-review structural sweep:** same smell taxonomy, different altitude — cleanup finds them repo-wide as plan candidates; the sweep gates them inside one MR diff. Do not merge.
+- **Implementation route:** planning-only. Approved slices → the build workflow (`/start-build`), which produces the diff; `/simplify` + `/code-review` run *downstream* on that diff; the start-review structural maintainability sweep gates the same smells at change request time. **No direct cleanup→simplify edge** (a plan cannot be consumed by a diff-level applier).
+- **vs the start-review structural sweep:** same smell taxonomy, different altitude — cleanup finds them repo-wide as plan candidates; the sweep gates them inside one change-request diff. Do not merge.
 - **Subagent fan-out:** the default posture for discovery — fan out read-only subagents to sweep the repo broadly when scope is unspecified; narrow to a single pass whenever the user explicitly scopes narrower than repo-wide (the narrower scopes defined in Quick start step 1). If fan-out is partial, failed, or skipped within the declared scope, report partial coverage under known gaps before findings and do not claim repo-wide coverage.
 
 ## Quick start

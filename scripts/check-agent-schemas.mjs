@@ -52,16 +52,14 @@ const RETIRED_PI_FIELDS = new Set([
   'maxSubagentDepth',
 ]);
 
-const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__wowtools__*', 'mcp__codebase-memory-mcp__*']);
+const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__azure-devops__*', 'mcp__wowtools__*', 'mcp__codebase-memory-mcp__*']);
 const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
 
-// OMP MR agents access MCP servers through server-scoped wildcard selectors
-// only. Bare `mcp`, `mcp:*`, broad `mcp__*`, Claude-style hyphenated selectors
-// like `mcp__gitlab-mcp__*` or `mcp__codebase-memory-mcp__*`, and exact
-// OMP tool enumerations (`mcp__gitlab_mcp_get_project`,
-// `mcp__codebase_memory_mcp_search_graph`, ...) are all rejected; the
-// wildcards keep access server-scoped without enumerating every tool.
-const OMP_MCP_SELECTORS = new Set(['mcp__gitlab_mcp_*', 'mcp__wowtools_*', 'mcp__codebase_memory_mcp_*']);
+// OMP routed agents access MCP servers through server-scoped wildcard selectors
+// only. Bare or broad selectors, Claude-style hyphenated selectors, and exact
+// tool enumerations are rejected. Provider-specific selectors expose only the
+// bound GitLab or Azure DevOps native surface; GitHub uses native `gh` via bash.
+const OMP_MCP_SELECTORS = new Set(['mcp__gitlab_mcp_*', 'mcp__azure_devops_*', 'mcp__wowtools_*', 'mcp__codebase_memory_mcp_*']);
 const ALLOWED_OMP_MCP_SELECTORS = [...OMP_MCP_SELECTORS].join(', ');
 
 const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);

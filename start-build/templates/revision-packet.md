@@ -4,16 +4,17 @@
 
 | Field | Value |
 |---|---|
-| MR | `<gitlab MR URL>` |
-| Responding to | `<originating Review Report stable locator plus posted comment URL when available, CI failure, or post-ready delta note>` |
+| Change request | `<provider-native identifier and locator>` |
+| Responding to | `<originating Review Report locator plus provider-published locator, CI failure, or post-ready delta>` |
 | Revision # | |
 | Branch | |
-| Previous reviewed SHA | |
+| Previous reviewed commit | |
 | New commit(s) | |
-| New reviewed SHA | `<head SHA after revision push; also update Reviewer Lift in MR description>` |
-| Delta since previous reviewed SHA | `<old SHA -> new SHA; reason; changed files; substantive? yes/no>` |
+| New reviewed commit | `<current head after revision push; also refresh Reviewer Lift>` |
+| Delta | `<old commit -> new commit; reason; changed files; substantive? yes/no>` |
 | Gate rerun | `<command + result, or N/A — why>` |
-| CI pipeline | `<pipeline URL + ID + status + commit SHA when available>` |
+| CI | `<provider-native locator + ID + status + exact commit>` |
+<!-- Publish with `forge publish` and require provider-native readback. -->
 
 ## Summary
 
@@ -22,9 +23,9 @@
 Repeat the canonical tuple from each originating Review Report for every short ID addressed below. The contract and marker format are owned by `../../start-review/reference/finding-identities.md`. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --packet <this-revision-packet.md>`; missing, stale, ambiguous, or contradictory bindings fail closed.
 
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
-| Report locator | Reviewed SHA | Finding ID |
+| Report locator | Reviewed commit | Finding ID |
 |---|---|---|
-| `<stable originating report locator>` | `<exact originating reviewed SHA>` | `<MF-N / SF-N / C-N>` |
+| `<stable originating report locator>` | `<exact originating reviewed commit>` | `<MF-N / SF-N / C-N>` |
 <!-- FINDING-IDENTITY-SCHEMA:END -->
 
 ## Response to Must Fix

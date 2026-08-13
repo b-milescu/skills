@@ -55,15 +55,16 @@ for phrase in 'ship it' 'looks fine' 'lgtm'; do
     "$canonical missing example of non-bypassing vague phrase: $phrase"
 done
 
-# Audit trail: reason, named human/authorized actor, Review gate field, MR comment.
+# Audit trail: reason, named human/authorized actor, Review gate field, and
+# provider-published audit locator.
 require_text "$canonical" 'named human' \
   "$canonical missing named-human/authorized-actor bypass requirement"
 require_text "$canonical" 'reason' \
   "$canonical missing bypass reason requirement"
 require_text "$canonical" 'bypassed (human override)' \
   "$canonical missing Review gate field bypass value"
-require_text "$canonical" 'MR comment' \
-  "$canonical missing MR comment audit-trail requirement"
+require_text "$canonical" 'provider-published audit locator' \
+  "$canonical missing provider-neutral audit-trail requirement"
 
 # Bypass never grants builder self-approval/self-merge.
 require_text "$canonical" 'self-approval' \

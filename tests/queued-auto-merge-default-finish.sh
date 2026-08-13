@@ -22,6 +22,10 @@ PARENT="start-build/reference/parent-orchestrator.md"
 DELIVERY="issue-delivery-loop/SKILL.md"
 VERIFIER="start-build/reference/post-merge-verifier.md"
 EFFORT="start-build/docs/effort-scaling.md"
+GITLAB_FORGE="forge/reference/gitlab.md"
+GITLAB_SKILL="gitlab/SKILL.md"
+GITLAB_ACTIONS="gitlab/reference/review-actions.md"
+GITLAB_CI_FINISH="gitlab/reference/ci-finish-guards.md"
 
 failures=0
 
@@ -47,33 +51,33 @@ refute_text() {
 # ---------------------------------------------------------------------------
 require_text "$REVIEW_FLOW" '^## Default finish: queued auto-merge$' \
   'canonical Default finish section'
-# Default finish on pass + merge authority is approve-SHA-bound + queue auto-merge.
+# Neutral policy: default finish, exact-reviewed-commit protected queue, intact
+# CI floor, fail-closed states, non-terminal queue, capability/authority, and
+# parent finish ownership.
 require_text "$REVIEW_FLOW" 'default finish[^.]*queue auto-merge|queue auto-merge[^.]*default finish' \
   'queued auto-merge is the default finish'
-require_text "$REVIEW_FLOW" 'sha-bound-auto-merge-queue' \
-  'default finish uses the sha-bound auto-merge queue snippet'
-# Exact-SHA CI floor explicitly restated as intact.
+require_text "$REVIEW_FLOW" 'exact-reviewed-commit protected' \
+  'exact-reviewed-commit protected queue'
 require_text "$REVIEW_FLOW" 'floor is intact|floor[^.]*intact' \
-  'exact-SHA CI floor restated as intact'
-require_text "$REVIEW_FLOW" 'will not complete a queued merge until the reviewed-SHA pipeline succeeds' \
-  'queued merge blocked until reviewed-SHA pipeline succeeds'
-require_text "$REVIEW_FLOW" 'pipeline must succeed' \
-  'protected merge "pipeline must succeed" precondition'
-require_text "$REVIEW_FLOW" 'not a CI waiver|never substitutes for the reviewer.s own exact-SHA CI' \
-  'queued auto-merge is not a CI waiver'
-# Fail-closed guard: failed/canceled reviewed-SHA pipeline is a block, not a queue.
-require_text "$REVIEW_FLOW" 'pending./.running./.success|pending/running/success' \
-  'queue only on pending/running/success reviewed-SHA pipeline'
-require_text "$REVIEW_FLOW" '(failed./.canceled|failed/canceled)[^.]*block|block[^.]*(failed./.canceled|failed/canceled)' \
-  'fail-closed: failed/canceled reviewed-SHA pipeline blocks, not queues'
-# Precondition: protected auto-merge + known 405 fallback snippet.
-require_text "$REVIEW_FLOW" 'protected auto-merge' \
-  'protected auto-merge precondition'
-require_text "$REVIEW_FLOW" 'auto-merge-api-fallback' \
-  '405 path routes through auto-merge-api-fallback snippet'
-# approval-only / human release exemption stays explicit.
-require_text "$REVIEW_FLOW" 'approval-only[^.]*human release|human release[^.]*approval-only' \
-  'approval-only / human release exemption from default finish'
+  'CI floor restated as intact'
+require_text "$REVIEW_FLOW" '(failed./.canceled./.missing./.stale|failed/canceled/missing/stale)[^.]*block|block[^.]*(failed./.canceled./.missing./.stale|failed/canceled/missing/stale)' \
+  'fail-closed CI blocks'
+require_text "$REVIEW_FLOW" 'not a CI waiver' 'queued finish is not a CI waiver'
+require_text "$REVIEW_FLOW" 'provider.*capability|provider offers' 'provider capability requirement'
+require_text "$REVIEW_FLOW" 'authority' 'finish authority requirement'
+require_text "$REVIEW_FLOW" 'queued is non-terminal|queue is non-terminal|never reported as merged' 'queue is not merged'
+
+# GitLab mechanics stay behind the selected provider entry point and its cards.
+for card in review-actions ci; do
+  require_text "$GITLAB_FORGE" "gitlab/reference/${card}\\.md" "$card provider-card link"
+done
+require_text "$GITLAB_SKILL" 'sha-bound-auto-merge-queue' 'GitLab SHA-bound queue snippet'
+require_text "$GITLAB_SKILL" 'protected auto-merge' 'GitLab protected auto-merge'
+require_text "$GITLAB_SKILL" 'auto-merge-api-fallback' 'GitLab fallback snippet'
+require_text "$GITLAB_SKILL" 'approval-only' 'GitLab approval-only mapping'
+require_text "$GITLAB_SKILL" 'human release' 'GitLab human-release mapping'
+require_text "$GITLAB_ACTIONS" 'protected checks' 'GitLab protected-check queue requirement'
+require_text "$GITLAB_CI_FINISH" 'exact-SHA green CI for merge' 'GitLab merge CI policy'
 
 # ---------------------------------------------------------------------------
 # parent-orchestrator.md — parallel launch default; trivial-tier wait retired.

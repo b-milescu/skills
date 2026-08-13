@@ -4,117 +4,62 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-fail() {
-  printf 'start-review-mode-cards: FAIL: %s\n' "$*" >&2
-  exit 1
-}
+fail() { printf 'start-review-mode-cards: FAIL: %s\n' "$*" >&2; exit 1; }
+require() { grep -Eiq -- "$2" "$1" || fail "$1 missing $3"; }
+reject() { ! grep -Eiq -- "$2" "$1" || fail "$1 contains $3"; }
 
-require_file() {
-  local file="$1"
-  [[ -f "$file" ]] || fail "missing compact mode card: $file"
-}
+cards=(
+  start-review/reference/single-mr-review-card.md
+  start-review/reference/request-changes-rerun-card.md
+  start-review/reference/finish-action-card.md
+  start-review/reference/blocked-review-routing-card.md
+)
 
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-reject_text() {
-  local file="$1" pattern="$2" label="$3"
-  if grep -En -- "$pattern" "$file" >&2; then
-    fail "$file contains $label"
-  fi
-}
-
-require_card_contract() {
-  local file="$1"
-  require_file "$file"
-  require_text "$file" 'pointer map|pointer-map' 'pointer-map wording'
-  require_text "$file" 'not an alternate policy source' 'not-policy-source wording'
-  require_text "$file" '^## Checklist' 'Checklist section'
-  require_text "$file" '^## Fallback to canonical docs' 'canonical fallback section'
-  reject_text "$file" '```' 'raw command/code fence'
-  reject_text "$file" '(^|[[:space:]])glab[[:space:]]+(issue|mr|ci|repo|api)\b' 'raw glab command copy'
-  reject_text "$file" '(^|[[:space:]])git[[:space:]]+(status|fetch|checkout|pull|push|rev-parse|ls-remote|merge|branch)\b' 'raw git command copy'
-
-  for trigger in \
-    'ambiguity' \
-    'missing field' \
-    'transport/help drift' \
-    'authority uncertainty' \
-    'SHA/CI mismatch' \
-    'cross-project binding' \
-    'partial review' \
-    'suspected secret exposure' \
-    'grouped action pressure' \
-    'any mutation action'; do
-    require_text "$file" "$trigger" "fallback trigger: $trigger"
-  done
-
-  for anchor in \
-    'REVIEW-FLOW\.md#context-firewall' \
-    'REVIEW-FLOW\.md#review-context-capsule' \
-    'REVIEW-FLOW\.md#fail-closed-review-coverage' \
-    'REVIEW-FLOW\.md#ci-decision-table' \
-    'REVIEW-FLOW\.md#open-question-decision-table' \
-    'REVIEW-FLOW\.md#approval-authority-policy' \
-    'REVIEW-FLOW\.md#merge-authority-source-precedence' \
-    'REVIEW-FLOW\.md#project-binding'; do
-    require_text "$file" "$anchor" "canonical anchor: $anchor"
-  done
-
-  require_text "$file" 'review-read\.md|review-actions\.md|ci\.md|gitlab' 'gitlab card/helper pointer'
-  require_text "$file" 'Snippet: mr-pickup|Snippet: mr-note-create|Snippet: sha-guard|Snippet: ci-decision-snapshot' 'accepted snippet-name pointer'
-  require_text "$file" 'final MR/CI/authority snapshot|final[^.]*MR[^.]*CI[^.]*authority[^.]*snapshot' 'final MR/CI/authority snapshot before report posting'
-  require_text "$file" 'sha-guard[^.]*immediately before|immediately before[^.]*sha-guard' 'fresh SHA guard before approval/finish actions'
-  require_text "$file" 'approval' 'approval guard mention'
-  require_text "$file" 'direct merge' 'direct merge guard mention'
-  require_text "$file" 'auto-merge queue|queue auto-merge|auto-merge' 'auto-merge queue guard mention'
-  require_text "$file" 'never group|no grouped|Choose one action|one action' 'grouped action prohibition'
-  require_text "$file" 'partial-review' 'partial-review blocker token'
-  require_text "$file" 'secret-exposure-suspected' 'secret-exposure blocker token'
-}
-
-single_card="start-review/reference/single-mr-review-card.md"
-rerun_card="start-review/reference/request-changes-rerun-card.md"
-finish_card="start-review/reference/finish-action-card.md"
-blocked_card="start-review/reference/blocked-review-routing-card.md"
-
-for card in "$single_card" "$rerun_card" "$finish_card" "$blocked_card"; do
-  require_card_contract "$card"
+for card in "${cards[@]}"; do
+  require "$card" 'pointer map/checklist' 'pointer-map contract'
+  require "$card" 'not an alternate policy source' 'not-policy contract'
+  require "$card" '^## Checklist$' 'Checklist'
+  require "$card" '^## Fallback to canonical docs$' 'canonical fallback'
+  require "$card" 'skill://forge/reference/common-guard.md' 'ordered common guard'
+  require "$card" 'forge snapshot' 'snapshot verb'
+  require "$card" 'provider-native (snapshot/)?readback|provider-native action readback' 'provider-native readback'
+  require "$card" 'reviewed commit' 'reviewed-commit binding'
+  require "$card" 'CI' 'bound CI'
+  require "$card" 'authority' 'authority boundary'
+  require "$card" 'exactly one|one authorized action|No approval or finish' 'single-action boundary'
+  require "$card" 'selected `/forge` provider reference' 'selected-provider fallback'
+  require "$card" 'ambiguity' 'ambiguity fallback'
+  require "$card" 'missing field' 'missing-field fallback'
+  require "$card" 'transport/help drift' 'transport fallback'
+  require "$card" 'authority uncertainty' 'authority fallback'
+  require "$card" 'commit/CI mismatch' 'commit/CI fallback'
+  require "$card" 'cross-project binding' 'binding fallback'
+  require "$card" 'partial review' 'partial-review fallback'
+  require "$card" 'suspected secret exposure' 'secret fallback'
+  require "$card" 'grouped action pressure' 'grouped-action fallback'
+  require "$card" 'any mutation action' 'mutation fallback'
+  reject "$card" '(^|[[:space:]`])git(lab)?[[:space:]]+(status|fetch|checkout|pull|push|rev-parse|ls-remote|merge|branch|issue|mr|ci|repo|api)|Snippet:|gitlab/SKILL|review-(read|actions)[.]md|sha-guard|sha-bound|finish-mr|direct merge|MR URL|one MR|Reviewed SHA|exact-SHA' 'raw or provider-specific mechanics'
+  reject "$card" '```' 'raw command block'
+  lines="$(wc -l < "$card")"
+  (( lines <= 60 )) || fail "$card exceeds compact size: $lines lines"
 done
 
-for owner in start-review/SKILL.md start-review/REVIEW-FLOW.md; do
-  for card in \
-    'single-mr-review-card\.md' \
-    'request-changes-rerun-card\.md' \
-    'finish-action-card\.md' \
-    'blocked-review-routing-card\.md'; do
-    require_text "$owner" "$card" "$card discoverability link"
-  done
-  require_text "$owner" 'fall back .*gitlab/SKILL\.md|fallback .*gitlab/SKILL\.md|Fallback .*gitlab/SKILL\.md' 'full gitlab fallback guidance'
-done
+single="${cards[0]}"; rerun="${cards[1]}"; finish="${cards[2]}"; blocked="${cards[3]}"
+require "$single" 'one change request per fresh reviewer' 'fresh single review'
+require "$single" 'Context Firewall' 'context firewall'
+require "$single" 'Fail-closed review coverage' 'coverage owner'
+require "$rerun" 'revision packet' 'revision evidence'
+require "$rerun" 'Prior Review Report' 'prior report binding'
+require "$rerun" 'current delta' 'revision delta'
+require "$finish" 'Approval authority never implies finish authority' 'approval/finish separation'
+require "$finish" 'guarded `forge act`' 'guarded action'
+require "$blocked" 'partial-review' 'partial review token'
+require "$blocked" 'secret-exposure-suspected' 'secret token'
+require "$blocked" 'No approval or finish' 'blocked action boundary'
 
-require_text "$single_card" 'one MR.*one fresh reviewer session|one fresh reviewer session.*one MR' 'single-MR fresh-session scope'
-
-# Issue #250: trivial-tier mutation actions are satisfied by named canonical
-# anchors instead of the whole REVIEW-FLOW.md. The mutation-action trigger stays
-# present (require_card_contract enforces 'any mutation action'), but on the
-# single card it must route to the enumerated anchors and the procedure action
-# steps, while the gitlab/SKILL.md transport-fallback leg stays intact.
-require_text "$single_card" 'any mutation action[^.]*named canonical anchors|named canonical anchors[^.]*mutation' 'single-card mutation path routes to named anchors, not whole flow'
-require_text "$single_card" 'REVIEW-FLOW\.md#procedure' 'single-card mutation path cites procedure action steps anchor'
-require_text "$single_card" 'gitlab/SKILL\.md.*transport/help drift|transport/help drift.*gitlab/SKILL\.md' 'single-card preserves gitlab/SKILL.md transport-fallback leg'
-for anchor in \
-  'REVIEW-FLOW\.md#approval-authority-policy' \
-  'REVIEW-FLOW\.md#merge-authority-source-precedence' \
-  'REVIEW-FLOW\.md#ci-decision-table' \
-  'REVIEW-FLOW\.md#fail-closed-review-coverage' \
-  'REVIEW-FLOW\.md#context-firewall'; do
-  require_text "$single_card" "$anchor" "single-card mutation anchor: $anchor"
+for card in single-mr-review-card request-changes-rerun-card finish-action-card blocked-review-routing-card; do
+  require start-review/SKILL.md "skill://start-review/reference/${card}.md" "$card discoverability"
 done
-require_text "$rerun_card" 'revision packet|Delta since last ready push|builder revision' 'request-changes revision evidence pointer'
-require_text "$finish_card" 'finish-mr-authority-aware|sha-bound-merge|sha-bound-auto-merge-queue' 'finish action helper/snippet pointer'
-require_text "$blocked_card" 'Action blocker|review_verdict: blocked|blocked Review Report' 'blocked routing vocabulary'
+require start-review/SKILL.md 'Compact pointer maps' 'pointer-map framing'
 
 printf 'start-review-mode-cards: PASS\n'

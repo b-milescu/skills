@@ -168,7 +168,7 @@ assert(transportDoc.includes(guardSchemaResource), 'snippet-transports.md must n
 const ciFinishDoc = requireText('gitlab/reference/ci-finish-guards.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
 assert(ciFinishDoc.includes(guardDocResource), 'ci-finish-guards.md must name guard doc skill URI');
 assert(!/### Guard and authority order/.test(ciFinishDoc), 'ci-finish-guards.md must not restate the old full guard order section');
-const devWorkflowsDoc = requireText('docs/agents/dev-workflows.md', /skill:\/\/gitlab\/reference\/mutation-guard\.md/, 'cross-project Mutation Guard skill URI');
+const devWorkflowsDoc = requireText('docs/agents/dev-workflows.md', /skill:\/\/forge\/reference\/common-guard\.md/, 'cross-project common guard skill URI');
 assert(devWorkflowsDoc.includes('docs/agents/...'), 'dev-workflows cross-project guidance must keep target docs repo-relative');
 
 for (const path of [

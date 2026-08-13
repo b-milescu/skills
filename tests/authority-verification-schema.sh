@@ -166,7 +166,7 @@ assert(selfMerge.caller.context_relation === 'builder-session', 'self merge bloc
 for (const [path, label] of [
   ['start-build/templates/reviewer-lift-schema.md', 'Reviewer Lift schema'],
   ['start-review/templates/review-report.md', 'Review Report template'],
-  ['start-build/templates/gitlab-delivery-schema.md', 'delivery schema'],
+  ['start-build/templates/delivery-schema.md', 'delivery schema'],
   ['start-build/templates/builder-final-handoff.md', 'builder delivery handoff'],
   ['start-review/templates/reviewer-final-handoff.md', 'reviewer delivery handoff'],
   ['gitlab/reference/finish-result-schema.json', 'finish result schema'],

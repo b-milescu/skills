@@ -16,29 +16,28 @@ require_text() {
 
 reject_text() {
   local file="$1" pattern="$2" label="$3"
-  if grep -Eiq -- "$pattern" "$file"; then
-    fail "$file contains unsafe $label"
-  fi
+  ! grep -Eiq -- "$pattern" "$file" || fail "$file contains $label"
 }
 
 flow="start-review/REVIEW-FLOW.md"
 skill="start-review/SKILL.md"
+report="start-review/templates/review-report.md"
+handoff="start-review/templates/reviewer-final-handoff.md"
 
 for file in "$skill" "$flow"; do
-  require_text "$file" 'single-MR[^.]*default[^.]*preferred|default[^.]*preferred[^.]*single-MR|one MR per fresh reviewer session[^.]*default[^.]*preferred' 'single-MR default/preferred policy'
-  require_text "$file" 'one MR per fresh reviewer session|one fresh reviewer session[^.]*one MR' 'one MR per fresh reviewer session wording'
+  require_text "$file" 'one change' 'one-change policy'
+  require_text "$file" 'request per fresh reviewer session' 'fresh reviewer policy'
+  reject_text "$file" 'batch-approve|batch approve|batch-approval|batch approval' 'batch approval policy'
 done
-
-require_text "$flow" 'single reviewer session[^.]*cannot[^.]*separate LLM contexts|cannot[^.]*separate LLM contexts[^.]*single reviewer session' 'single-session cannot emulate separate LLM contexts'
-require_text "$flow" 'parent/harness[^.]*separate sessions[^.]*worktrees|separate sessions[^.]*worktrees[^.]*parent/harness' 'parent/harness isolated sessions/worktrees requirement'
-require_text "$flow" 'explicit serialized mode[^.]*does not batch[^.]*decisions[^.]*comments[^.]*actions' 'serialized mode no-batch constraint'
-require_text "$flow" 'Decoupling Contract' 'Decoupling Contract retained'
-require_text "$flow" 'one Review Report[^.]*one `Review verdict`[^.]*one reviewed SHA per MR|one Review Report[^.]*one reviewed SHA per MR' 'separate report/verdict/SHA per MR'
-require_text "$flow" 'approval[^.]*merge[^.]*sequence per MR|per MR[^.]*approval[^.]*merge' 'per-MR action result path'
-
-for file in "$skill" "$flow"; do
-  reject_text "$file" 'batch-approve|batch approve|batch-approval|batch approval' 'batch approval wording'
-  reject_text "$file" 'approve[^.]*multiple MRs|multiple MRs[^.]*approve' 'multi-MR approval wording without per-MR guard'
-done
+require_text "$flow" 'parent/harness proves the Decoupling' 'parent-proven Decoupling Contract'
+require_text "$flow" 'each change request' 'per-change isolation'
+require_text "$flow" 'own isolated checkout and fresh' 'isolated checkout and fresh reviewer'
+require_text "$flow" 'never batches decisions, comments, or actions' 'serialized no-batch rule'
+require_text "$flow" 'git rev-parse HEAD[^.]*exact reviewed commit' 'exact reviewed-commit checkout'
+require_text "$flow" 'one durable non-blocking report' 'one durable report publication'
+require_text "$report" '^# Review Report$' 'canonical Review Report template'
+require_text "$report" 'Review verdict' 'per-change verdict'
+require_text "$handoff" '^# Reviewer Final Handoff$' 'canonical reviewer handoff'
+require_text "$handoff" 'review_verdict' 'per-change handoff verdict'
 
 printf 'review-one-mr-per-reviewer: PASS\n'

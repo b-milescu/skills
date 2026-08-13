@@ -92,7 +92,7 @@ for prompt in "${final_reviewer_prompts[@]}"; do
   require_text "$prompt" 'anti-fabrication' 'anti-fabrication boundary'
   require_text "$prompt" 'Review Report' 'Review Report handoff invariant'
   require_text "$prompt" 'final handoff|reviewer-final-handoff\.md' 'final handoff invariant'
-  require_text "$prompt" 'SHA[^.]*CI|CI[^.]*SHA' 'SHA/CI evidence invariant'
+  require_text "$prompt" 'reviewed-commit[^.]*CI|CI[^.]*reviewed-commit' 'reviewed-commit/CI evidence invariant'
   require_text "$prompt" 'authority' 'authority invariant'
   require_text "$prompt" 'verdict[^.]*approval action[^.]*finish action|approval action[^.]*finish action[^.]*next action' 'verdict/action separation invariant'
   require_text "$prompt" 'merge/?auto-merge|queue auto-merge' 'merge/auto-merge authority boundary'

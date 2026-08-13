@@ -61,7 +61,7 @@ command -v node >/dev/null 2>&1 || fail "node required to run this test"
 # than tripping over a placeholder.
 valid_value_for() {
   case "$1" in
-    "Merge authority")      printf 'approval-only' ;;
+    "Finish authority")      printf 'approval-only' ;;
     "Review gate")          printf 'mandatory' ;;
     "Gate owner")           printf 'parent' ;;
     "Gate coverage")        printf 'full-local' ;;
@@ -170,16 +170,16 @@ EXPECTED_BAD_STATUS=4
 # A block with all-valid enum/vocab values passes (already exercised by
 # build_block above, but assert the closed-set variants explicitly).
 for v in "approval-only" "reviewer may merge" "queue auto-merge" "human release" "project default: minister approval" "none — requires explicit human/parent instruction"; do
-  run_validator "$(build_block_override "Merge authority" "$v")"
+  run_validator "$(build_block_override "Finish authority" "$v")"
   assert_status 0
 done
 # RF-1 (issue #293): the fail-closed default value
 # `none — requires explicit human/parent instruction` is a member of the Merge
 # authority closed set. A bare `none` is NOT a member (the value must carry the
 # explicit-instruction qualifier so it cannot be confused with a silent grant).
-run_validator "$(build_block_override "Merge authority" "none")"
+run_validator "$(build_block_override "Finish authority" "none")"
 assert_status "$EXPECTED_BAD_STATUS"
-assert_contains "Merge authority"
+assert_contains "Finish authority"
 for v in "mandatory" "bypassed (human override)"; do
   run_validator "$(build_block_override "Review gate" "$v")"
   assert_status 0
@@ -208,12 +208,15 @@ done
 # Values wrapped in a markdown code span (`value`) — as in the generated-copy
 # template — are accepted: a surrounding backtick pair is stripped before the
 # membership check.
-run_validator "$(build_block_override "Merge authority" '`project default: parent owns merge`')"
+run_validator "$(build_block_override "Finish authority" '`project default: parent owns merge`')"
 assert_status 0
 run_validator "$(build_block_override "Gate coverage" '`full-local`')"
 assert_status 0
 run_validator "$(build_block_override "Acceptance surfaces" '`docs:docs-read, prompt:test`')"
 assert_status 0
+run_validator "$(build_block_override "Acceptance surfaces" '`docs:docs-read`, `prompt:test`')"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Acceptance surfaces"
 # A backtick-wrapped BAD value still fails closed (no smuggling past the check).
 run_validator "$(build_block_override "Gate owner" '`reviewer`')"
 assert_status "$EXPECTED_BAD_STATUS"
@@ -246,9 +249,9 @@ for surface in "${VOCAB_SURFACES[@]}"; do
 done
 
 # Negative: for EACH closed-set row, a bad value fails closed naming that row.
-run_validator "$(build_block_override "Merge authority" "default-after-pass")"
+run_validator "$(build_block_override "Finish authority" "default-after-pass")"
 assert_status "$EXPECTED_BAD_STATUS"
-assert_contains "Merge authority"
+assert_contains "Finish authority"
 
 run_validator "$(build_block_override "Review gate" "optional")"
 assert_status "$EXPECTED_BAD_STATUS"
@@ -294,6 +297,9 @@ done
 # Backtick-wrapped value is accepted (matches generated-copy presentation).
 run_validator "$(build_block_override "Touched safety surfaces" '`wire-protocol`')"
 assert_status 0
+run_validator "$(build_block_override "Touched safety surfaces" '`state`, `gates`')"
+assert_status "$EXPECTED_BAD_STATUS"
+assert_contains "Touched safety surfaces"
 # Unknown safety surface fails closed naming the row; `other` catch-all does not
 # leak to typos or invented values.
 for bad in "wire-protcol" "protocol" "bogus-surface" "state, bogus-surface"; do
@@ -316,23 +322,23 @@ assert_contains "Touched safety surfaces"
 
 # Presence still wins precedence: a missing required row reports missing_row (3),
 # not a value error, so the #265 presence contract is unchanged.
-run_validator "$(build_block "Merge authority")"
+run_validator "$(build_block "Finish authority")"
 assert_status 3
-assert_contains "Merge authority"
+assert_contains "Finish authority"
 
-# === Merge-authority source affirmative-grant WARNING (issue #294). ===
+# === Finish-authority source affirmative-grant WARNING (issue #294). ===
 # Warn-only, heuristic, layered on top of the closed-set membership check (#270)
-# and RF-1 default (#293). When `Merge authority` is a finish-authority-GRANTING
+# and RF-1 default (#293). When `Finish authority` is a finish-authority-GRANTING
 # value (`reviewer may merge`, `queue auto-merge`, or a granting
-# `project default: <policy>`) AND the paired `Merge authority source` cell
+# `project default: <policy>`) AND the paired `Finish authority source` cell
 # carries NO quotable affirmative grant, the linter emits an advisory stderr
 # diagnostic naming the offending row and EXITS 0 — it never fails closed and
 # never blocks. The three non-granting values must NEVER warn. (Maintainer
 # decision recorded on issue #294 note 25512.)
 
 # build_block_override2 prints a full, present Lift block but replaces TWO named
-# rows' values, so a granting Merge authority can be paired with a chosen
-# Merge authority source.
+# rows' values, so a granting Finish authority can be paired with a chosen
+# Finish authority source.
 build_block_override2() {
   local t1="$1" v1="$2" t2="$3" v2="$4"
   printf '| Field | Value |\n'
@@ -349,22 +355,22 @@ build_block_override2() {
   done
 }
 
-WARN_TOKEN="merge_authority_unquoted_grant"
+WARN_TOKEN="finish_authority_unquoted_grant"
 
 # --- Granting authority + NO quotable affirmative grant in source => WARN + exit 0.
 for granting in "reviewer may merge" "queue auto-merge" "project default: reviewer merges on green"; do
   # An empty-equivalent / disclaiming / bare-path source has no quotable grant.
   for weak_source in "none" "n/a" "setup docs do not grant finish authority"; do
-    run_validator "$(build_block_override2 "Merge authority" "$granting" "Merge authority source" "$weak_source")"
+    run_validator "$(build_block_override2 "Finish authority" "$granting" "Finish authority source" "$weak_source")"
     assert_status 0
     assert_contains "$WARN_TOKEN"
-    assert_contains "Merge authority source"
+    assert_contains "Finish authority source"
   done
 done
 
 # A backtick-wrapped granting value with a weak source still warns (presentation
 # is stripped before the grant check, matching the membership check).
-run_validator "$(build_block_override2 "Merge authority" '`queue auto-merge`' "Merge authority source" "none")"
+run_validator "$(build_block_override2 "Finish authority" '`queue auto-merge`' "Finish authority source" "none")"
 assert_status 0
 assert_contains "$WARN_TOKEN"
 
@@ -376,7 +382,7 @@ for good_source in \
   'parent task prompt: reviewer may merge on green' \
   'human MR comment https://gitlab.example.com/agents/skills/-/merge_requests/1#note_1' \
   '“queue auto-merge once CI is green”'; do
-  run_validator "$(build_block_override2 "Merge authority" "reviewer may merge" "Merge authority source" "$good_source")"
+  run_validator "$(build_block_override2 "Finish authority" "reviewer may merge" "Finish authority source" "$good_source")"
   assert_status 0
   [[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
     fail "granting value WITH affirmative grant must not warn; got: $CAPTURE_OUTPUT"
@@ -386,7 +392,7 @@ done
 # Even with an empty/disclaiming source, a non-granting authority is silent.
 for nongranting in "none — requires explicit human/parent instruction" "approval-only" "human release"; do
   for src in "none" "setup docs do not grant finish authority" ""; do
-    run_validator "$(build_block_override2 "Merge authority" "$nongranting" "Merge authority source" "$src")"
+    run_validator "$(build_block_override2 "Finish authority" "$nongranting" "Finish authority source" "$src")"
     assert_status 0
     [[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
       fail "non-granting value '$nongranting' must never warn; got: $CAPTURE_OUTPUT"
@@ -395,16 +401,16 @@ done
 
 # --- A non-granting `project default: <policy>` (silent on / disclaiming
 # merge) must NOT warn: only granting project-default policies are in scope.
-run_validator "$(build_block_override2 "Merge authority" "project default: approval-only, human releases" "Merge authority source" "none")"
+run_validator "$(build_block_override2 "Finish authority" "project default: approval-only, human releases" "Finish authority source" "none")"
 assert_status 0
 [[ "$CAPTURE_OUTPUT" != *"$WARN_TOKEN"* ]] || \
   fail "non-granting project default must not warn; got: $CAPTURE_OUTPUT"
 
 # --- The warning is advisory only: closed-set membership still fails closed
-# first. A bad (out-of-set) Merge authority reports invalid_value (4), not warn.
-run_validator "$(build_block_override2 "Merge authority" "default-after-pass" "Merge authority source" "none")"
+# first. A bad (out-of-set) Finish authority reports invalid_value (4), not warn.
+run_validator "$(build_block_override2 "Finish authority" "default-after-pass" "Finish authority source" "none")"
 assert_status "$EXPECTED_BAD_STATUS"
-assert_contains "Merge authority"
+assert_contains "Finish authority"
 
 # === No network call: helper must not reference glab/curl/wget. ===
 if grep -Eq '(^|[^a-zA-Z_])(glab|curl|wget)([^a-zA-Z_]|$)' "$VALIDATOR"; then

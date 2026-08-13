@@ -1,6 +1,6 @@
 # Agent dialects
 
-Keep agent definitions split by runtime dialect. MR !31 showed why: a shared
+Keep agent definitions split by runtime dialect. change request !31 showed why: a shared
 agent file can silently lose working tools when one runtime reads another
 runtime's frontmatter schema.
 
@@ -10,7 +10,7 @@ runtime's frontmatter schema.
 - `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
-- MR builder/reviewer route basenames are shared across runtime dirs:
+- change request builder/reviewer route basenames are shared across runtime dirs:
   `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`,
   and `mr-reviewer-final`.
 - The current runtime resolves the basename in its dialect directory:
@@ -18,7 +18,7 @@ runtime's frontmatter schema.
 - Model pins live in frontmatter, not route names; provider pins live there too.
   Route basenames stay distinct from role/mode labels such as
   `child mr-builder` and `mr-reviewer`.
-- OMP routed MR agents pin `model: pi/task` (role alias), not a concrete provider/model id. OMP resolves the concrete model from `modelRoles.task` (else parent active / `modelRoles.default`) against available models at spawn; tier differentiation stays in `thinking-level` (`low`/`medium`/`high`/`xhigh`). Highest-priority optional local override: `task.agentModelOverrides.<agent-name>`.
+- OMP routed change request agents pin `model: pi/task` (role alias), not a concrete provider/model id. OMP resolves the concrete model from `modelRoles.task` (else parent active / `modelRoles.default`) against available models at spawn; tier differentiation stays in `thinking-level` (`low`/`medium`/`high`/`xhigh`). Highest-priority optional local override: `task.agentModelOverrides.<agent-name>`.
 - Missing route has no fallback, shim, old-filename, or cross-runtime
   substitute; treat it as route-unavailable. Any other agent still requires
   counterpart in both dialects.
@@ -42,9 +42,9 @@ use retired bridge tools such as `search`, `find`, `ls`, or `intercom`. Multiwor
 canonical kebab-case forms such as `thinking-level`, `autoload-skills`, and
 `read-summarize`.
 
-## MCP access for MR agents
+## MCP access for change request agents
 
-MR builder and reviewer variants use least-privilege MCP selections in the
+change request builder and reviewer variants use least-privilege MCP selections in the
 runtime's native dialect.
 
 - Claude Code variants keep explicit `tools:` allowlists PascalCase builtin

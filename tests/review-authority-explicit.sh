@@ -1,93 +1,54 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-cd "$REPO_ROOT"
-# shellcheck source=tests/lib/agent-prompt-sets.sh
-source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$ROOT"
+TEST_NAME=review-authority-explicit
+source tests/lib/assertions.sh
+source tests/lib/agent-prompt-sets.sh
 
-
-fail() {
-  printf 'review-authority-explicit: FAIL: %s\n' "$*" >&2
-  exit 1
-}
-
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-review_authority_docs=(
-  "start-review/REVIEW-FLOW.md"
-  "start-review/SKILL.md"
-  "start-review/templates/review-report.md"
-  "start-review/templates/filling-guide.md"
+docs=(
+  start-review/REVIEW-FLOW.md
+  start-review/SKILL.md
+  start-review/templates/review-report.md
+  start-review/templates/filling-guide.md
 )
-routed_final_reviewer_prompts=( $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}") )
-
-# Reviewer-facing guidance must default approval after pass while keeping merge
-# authority explicit. Missing merge authority must not silently become
-# approval-only finish authority.
-for file in "${review_authority_docs[@]}"; do
-  require_text \
-    "$file" \
-    'approval[^.]*default|default[^.]*approval|default-after-pass' \
-    'default approval-after-pass policy'
-  require_text \
-    "$file" \
-    'approval[^.]*distinct[^.]*merge|merge[^.]*distinct[^.]*approval|separate[^.]*Approval action[^.]*Finish action|missing merge authority[^.]*not default approval' \
-    'approval authority separated from merge authority'
-  if grep -Ein -- \
-    'missing[^.]*Merge authority[^.]*approval-only|default[^.]*approval-only|approval-only[^.]*(if absent|when absent|if missing|when missing)' \
-    "$file" |
-    grep -Eiv -- 'do not default|not default|not approval-only|blocks finish|finish[^.]*only'; then
-    grep -Ein -- \
-      'missing[^.]*Merge authority[^.]*approval-only|default[^.]*approval-only|approval-only[^.]*(if absent|when absent|if missing|when missing)' \
-      "$file" >&2 || true
-    fail "$file implies missing Merge authority may default to approval-only finish authority"
-  fi
+for file in "${docs[@]}"; do
+  assert_file_contains "$file" 'Approval authority' "$file approval authority"
+  assert_file_contains "$file" 'Finish authority' "$file finish authority"
+  assert_file_contains "$file" 'default-after-pass' "$file policy-gated approval default"
+  assert_file_not_contains "$file" 'Merge authority' "$file retired generic merge authority"
+  assert_file_not_contains "$file" 'bound MR' "$file retired bound-MR terminology"
+  assert_file_not_contains "$file" 'GitLab Review Report' "$file retired GitLab report terminology"
 done
 
-require_text \
-  "start-review/REVIEW-FLOW.md" \
-  'Reviewer approval is allowed by default after a passing review unless explicitly restricted' \
-  'canonical default approval-after-pass policy'
-require_text \
-  "start-review/REVIEW-FLOW.md" \
-  'Missing merge authority/source blocks finish, not the review judgment or default approval by itself|block only the finish action' \
-  'missing merge authority blocks finish but not default approval'
-require_text \
-  "start-review/templates/review-report.md" \
-  'Approval authority.*default-after-pass|default-after-pass.*Approval authority' \
-  'Review Report Approval authority row'
-require_text \
-  "start-review/templates/review-report.md" \
-  'Merge authority.*finish|finish-authority.*Merge authority' \
-  'Review Report Merge authority row scoped to finish actions'
-require_text \
-  "start-review/templates/filling-guide.md" \
-  'Missing Merge authority[^.]*blocks finish actions[^.]*not default approval|missing merge authority[^.]*blocks finish[^.]*not default approval' \
-  'filling-guide missing merge authority finish-only blocker'
+flow=start-review/REVIEW-FLOW.md
+assert_file_contains "$flow" 'stable repository policy' "stable approval policy source"
+assert_file_contains "$flow" 'Missing Finish authority blocks only' "missing finish authority scope"
+assert_file_contains "$flow" 'never judgment or independently permitted approval' "judgment and approval remain independent"
+assert_file_contains "$flow" 'Silence never becomes `approval-only`' "silence does not create authority"
+assert_file_contains "$flow" 'Finish owner: parent' "parent finish owner"
+assert_file_contains "$flow" 'not-approved' "parent takes no approval"
+assert_file_contains "$flow" 'finish `none`' "parent takes no finish"
+assert_file_contains "$flow" 'forge publish' "durable provider-neutral report publication"
+assert_file_contains forge/reference/common-guard.md 'Authority Verification' "common authority guard owner"
+assert_file_contains start-review/SKILL.md 'Reviewer Lift row' "Reviewer Lift claims"
 
-for file in "${routed_final_reviewer_prompts[@]}"; do
-  require_text "$file" 'Canonical development pattern source: `start-review`' 'routed reviewer start-review authority source'
-  require_text "$file" 'approval action' 'routed reviewer approval action separation'
-  require_text "$file" 'finish action' 'routed reviewer finish action separation'
-  require_text "$file" 'authority verification' 'routed reviewer authority verification'
-  require_text "$file" 'never[^.]*merge[^.]*unless `start-review` plus `gitlab` authority verification explicitly permit' 'routed reviewer merge requires verified authority'
-  require_text "$file" 'Reviewer Lift[^.]*claims to verify' 'routed reviewer treats handoff authority as claim'
+for file in $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}"); do
+  assert_file_contains "$file" 'Canonical development pattern source: `start-review`' "$file start-review source"
+  assert_file_contains "$file" '`forge` common-guard authority verification' "$file forge authority source"
+  assert_file_contains "$file" 'Reviewer Lift' "$file claims-to-verify seam"
+  assert_file_contains "$file" 'Finish owner: parent' "$file parent ownership"
+  assert_file_contains "$file" 'approval_action: "not-approved"' "$file parent no approval"
+  assert_file_contains "$file" 'finish_action: "none"' "$file parent no finish"
 done
 
-for file in $(agent_prompt_paths "${routed_builder_prompt_names[@]}"); do
-  require_text "$file" 'Finish owner: parent' 'routed builder prompt finish owner mention'
-  require_text "$file" 'never changes Gate owner|not.*Gate owner' 'routed builder finish owner not gate owner'
-done
-for file in "${routed_final_reviewer_prompts[@]}"; do
-  require_text "$file" 'Finish owner: parent' 'routed reviewer finish-owner parent contract'
-done
-for file in start-review/REVIEW-FLOW.md start-build/reference/parent-orchestrator.md issue-delivery-loop/SKILL.md gitlab/reference/authority-verification.md; do
-  require_text "$file" 'Finish owner: parent' 'parent-managed finish owner literal'
-  require_text "$file" 'parent[^.]*approval[^.]*merge[^.]*auto-merge|approval[^.]*merge[^.]*auto-merge[^.]*parent' 'parent owns finish actions'
+assert_file_contains forge/reference/gitlab.md 'gitlab/reference/review-actions.md' "GitLab authority entry point"
+assert_file_contains gitlab/reference/authority-verification.md 'Finish owner: parent' "GitLab native authority contract"
+
+for file in start-build/reference/parent-orchestrator.md issue-delivery-loop/SKILL.md; do
+  assert_file_contains "$file" 'Finish owner: parent' "$file parent finish owner"
+  assert_file_contains "$file" 'parent' "$file parent owns actions"
 done
 
-printf 'review-authority-explicit: PASS\n'
+printf '%s\n' "review-authority-explicit: PASS"

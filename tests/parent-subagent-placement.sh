@@ -27,7 +27,7 @@ for match in "${matches[@]}"; do
   fi
 done
 
-for phrase in 'issue-implementation specialization' 'MR / code-review specialization'; do
+for phrase in 'issue-implementation specialization' 'change-review specialization'; do
   if ! grep -qF "$phrase" "$parent_file"; then
     echo "parent-subagent-placement: parent reference lacks discovery guidance phrase: $phrase" >&2
     exit 1
