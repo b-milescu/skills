@@ -43,7 +43,7 @@ for token in \
 done
 
 for token in \
-  'Prefer the default plan-mode execution.' \
+  'Set `command = plan` in every safe-workflow run block.' \
   'native mock providers' \
   'Do not use `command = apply` against real infrastructure by default.' \
   'isolated credentials' \
@@ -53,6 +53,8 @@ for token in \
   'https://opentofu.org/docs/cli/commands/test/'; do
   assert_file_contains "$TESTING" "$token"
 done
+
+reject_text "$TESTING" 'default plan-mode|plan-mode default|defaults? to plan' 'wording that implies plan is the native engine default'
 
 for token in \
   'explicit provider source/version constraints' \

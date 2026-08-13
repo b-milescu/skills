@@ -5,7 +5,7 @@ Use only the native test features supported by the bound engine/version. Terrafo
 ## Test shape
 
 - Put tests in `.tftest.hcl` files and assert caller-visible behavior: outputs, resources, checks, or plan diagnostics.
-- Prefer the default plan-mode execution. Use native mock providers, mock data/resources, and overrides only when the bound version supports them and the behavior needs them.
+- Set `command = plan` in every safe-workflow run block. Use native mock providers, mock data/resources, and overrides only when the bound version supports them and the behavior needs them.
 - Keep fixtures deterministic and local. Assert the real behavioral delta rather than source text, internal expression shape, incidental ordering, or provider implementation details.
 - One RED covers one missing behavior. Preserve the same run block, command, variables, and safe execution mode through GREEN and refactor.
 - An expected failure is valid only when it identifies the intended missing behavior. Parser errors, initialization failures, unavailable providers, credentials, networking, or unrelated assertions block implementation.
