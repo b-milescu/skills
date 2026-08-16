@@ -20,7 +20,7 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `start-build` | Pick up issues, implement with TDD, and open Draft change requests with Review Packets. |
 | `start-review` | Independently review one bound change request, exact commit, complete review surface, and CI evidence. |
 | `issue-delivery-loop` | Coordinate bounded issue batches, serial by default, with Decoupling Contract gating and provider-neutral build/review/verifier routing. |
-| `gitlab-to-issues` | Plan-to-issues publisher for GitLab, GitHub, and Azure DevOps. Slash remains `/gitlab-to-issues`. |
+| `plan-to-issues` | Plan-to-issues publisher for GitLab, GitHub, and Azure DevOps. Slash is `/plan-to-issues`. |
 | `cleanup-codebase` | Discover and plan subtractive repo maintenance — deslop (behavior- and boundary-preserving local simplification) and destale (remove/correct stale items) — as planning-only work routed to the build workflow. |
 | `retro` | Delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. |
 | `exampleproject-target-geometry-validation` | Validate target-build map geometry through a native proof chain: client provenance, extraction, Detour/MMAP route evidence, and sanitized record. |

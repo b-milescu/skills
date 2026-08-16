@@ -97,25 +97,25 @@ assert(fixture.dev_workflows.path === fixture.agent_setup_docs.dev_workflows, 'f
 // so acceptance_surfaces is forced to []/none rather than borrowing this repo's vocabulary.
 assert(fixture.dev_workflows.acceptance_surfaces_ref === undefined, 'no-vocabulary fixture must omit acceptance_surfaces_ref to demonstrate the fail-closed default');
 
-const gitlabToIssuesSkill = read('gitlab-to-issues/SKILL.md');
-const readinessScorecard = facts.skill_resources.gitlab_to_issues_readiness_scorecard;
+const planToIssuesSkill = read('plan-to-issues/SKILL.md');
+const readinessScorecard = facts.skill_resources.plan_to_issues_readiness_scorecard;
 
-function assertGitlabToIssuesProfileFlow(profile, expected) {
+function assertPlanToIssuesProfileFlow(profile, expected) {
   assert(profile.agent_setup_docs.issue_tracker === expected.issueTracker, `${expected.name} issue-tracker path drifted`);
   assert(profile.agent_setup_docs.triage_labels === expected.triageLabels, `${expected.name} triage-label path drifted`);
   assert(profile.label_vocabulary.triage_role_labels.afk_ready === expected.afkReady, `${expected.name} AFK-ready label drifted`);
   assert(profile.label_vocabulary.kind_labels.docs === expected.docs, `${expected.name} docs label drifted`);
-  assert(readinessScorecard === 'skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md', `${expected.name} readiness scorecard must stay skill-owned`);
+  assert(readinessScorecard === 'skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md', `${expected.name} readiness scorecard must stay skill-owned`);
 }
 
-assertGitlabToIssuesProfileFlow(defaultProfile, {
+assertPlanToIssuesProfileFlow(defaultProfile, {
   name: 'default profile',
   issueTracker: 'docs/agents/issue-tracker.md',
   triageLabels: 'docs/agents/triage-labels.md',
   afkReady: 'ready-for-agent',
   docs: 'docs'
 });
-assertGitlabToIssuesProfileFlow(fixture, {
+assertPlanToIssuesProfileFlow(fixture, {
   name: 'non-default profile',
   issueTracker: 'engineering/agent-docs/tracker.md',
   triageLabels: 'engineering/agent-docs/labels.md',
@@ -128,9 +128,9 @@ for (const binding of [
   '<issue-tracker-doc>',
   '<triage-labels-doc>'
 ]) {
-  assert(gitlabToIssuesSkill.includes(binding), `gitlab-to-issues skill missing selected-profile binding ${binding}`);
+  assert(planToIssuesSkill.includes(binding), `plan-to-issues skill missing selected-profile binding ${binding}`);
 }
-assert(gitlabToIssuesSkill.includes(readinessScorecard), 'gitlab-to-issues Agent Readiness must use the skill-owned scorecard');
+assert(planToIssuesSkill.includes(readinessScorecard), 'plan-to-issues Agent Readiness must use the skill-owned scorecard');
 
 const setupSkill = read('setup-dev-skills/SKILL.md');
 assert(setupSkill.includes(factsResource), 'setup skill must name the skill:// fact source');

@@ -101,7 +101,7 @@ import sys
 root = Path(sys.argv[1])
 skill_names = {
     "gitlab",
-    "gitlab-to-issues",
+    "plan-to-issues",
     "issue-delivery-loop",
     "setup-dev-skills",
     "start-build",
@@ -151,12 +151,12 @@ for path in surfaces:
             reasons.append("shared docs path")
         if (
             "docs/agents/agent-readiness-scorecard.md#scorecard" in line
-            and "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" not in line
+            and "skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" not in line
         ):
             reasons.append("readiness scorecard path")
         if (
             "templates/issue-body.md" in line
-            and "skill://gitlab-to-issues/templates/issue-body.md" not in line
+            and "skill://plan-to-issues/templates/issue-body.md" not in line
         ):
             reasons.append("issue body template path")
         if reasons:
@@ -173,8 +173,8 @@ if [[ -s "$portable_resource_bad_refs" ]]; then
   exit 1
 fi
 
-assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" "portable Agent Readiness scorecard resource"
-assert_file_contains "$REPO_ROOT/gitlab-to-issues/SKILL.md" "skill://gitlab-to-issues/templates/issue-body.md#agent-readiness" "portable issue body template resource"
+assert_file_contains "$REPO_ROOT/plan-to-issues/SKILL.md" "skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" "portable Agent Readiness scorecard resource"
+assert_file_contains "$REPO_ROOT/plan-to-issues/SKILL.md" "skill://plan-to-issues/templates/issue-body.md#agent-readiness" "portable issue body template resource"
 assert_file_contains "$REPO_ROOT/setup-dev-skills/SKILL.md" "skill://setup-dev-skills/dev-workflows-generic.md" "portable neutral setup seed resource"
 
 echo "runtime-shared-resources: PASS"

@@ -18,7 +18,7 @@ Before fallback issue, MR, CI, note, approval, or merge commands, invoke `/gitla
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitLab issue using the workflow and transport contract from `/gitlab`. If publishing an approved plan, spec, PRD, or conversation as multiple vertical slices, use `/gitlab-to-issues`.
+Create a GitLab issue using the workflow and transport contract from `/gitlab`. If publishing an approved plan, spec, PRD, or conversation as multiple vertical slices, use `/plan-to-issues`.
 
 ## When a skill says "fetch the relevant ticket"
 

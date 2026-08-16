@@ -27,7 +27,7 @@ validation, language families, acceptance surfaces, and auxiliary-index policy.
 These hooks never weaken reviewed-commit binding, CI binding, authority,
 independent review, complete diff coverage, or provider-native readback.
 
-`/gitlab-to-issues` is the shared publisher for GitLab, GitHub, and Azure DevOps
+`/plan-to-issues` is the shared publisher for GitLab, GitHub, and Azure DevOps
 after `/forge preflight`. `/gitlab` remains GitLab-only transport. GitHub uses
 native REST/GraphQL or `gh` inside the selected forge reference; Azure DevOps uses
 mounted native Boards/Repos/Pipelines tools first. Add no provider SDK.

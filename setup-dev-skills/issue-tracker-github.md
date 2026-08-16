@@ -15,11 +15,11 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Approved-plan publishing
 
-After `/forge preflight`, use `/gitlab-to-issues` for approved-plan breakdowns. `/gitlab` stays GitLab-only transport.
+After `/forge preflight`, use `/plan-to-issues` for approved-plan breakdowns. `/gitlab` stays GitLab-only transport.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitHub issue. If publishing an approved plan as multiple vertical slices, use `/gitlab-to-issues` after `/forge preflight`.
+Create a GitHub issue. If publishing an approved plan as multiple vertical slices, use `/plan-to-issues` after `/forge preflight`.
 
 ## When a skill says "fetch the relevant ticket"
 

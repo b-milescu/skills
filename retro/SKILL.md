@@ -11,7 +11,7 @@ description: >-
 
 # Retro
 
-Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/gitlab-to-issues` and ship through the normal build/review workflow.
+Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/plan-to-issues` and ship through the normal build/review workflow.
 
 This skill is project-agnostic and runs from any target repo. Project-specific facts — live labels, Check Gate commands, doc ownership, workflow policy — come from the target repo's Agent Setup Docs and `project_profile` hooks at run time; never assume the skills repo's own layout or vocabulary in a finding.
 
@@ -48,7 +48,7 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence. The catalogue is a checklist, not a cap — record any evidence-backed friction even when no row matches.
 4. **Classify findings.** One `RF-N` per finding using the taxonomy below. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
 5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.
-6. **Confirm routing with the user**, then file accepted `adopt` / `experiment` findings as issues via `/gitlab-to-issues` in the repo chosen by the Route-don't-edit rule, using that repo's live triage labels. `monitor` findings stay in the report for the next retro. `human-decision` findings are escalated as questions, not filed as fix issues.
+6. **Confirm routing with the user**, then file accepted `adopt` / `experiment` findings as issues via `/plan-to-issues` in the repo chosen by the Route-don't-edit rule, using that repo's live triage labels. `monitor` findings stay in the report for the next retro. `human-decision` findings are escalated as questions, not filed as fix issues.
 
 ## Finding taxonomy
 
@@ -69,7 +69,7 @@ Required fields per finding: category, disposition, claim, evidence + source, ow
 
 - Never print secrets, credentials, auth headers, or sensitive payloads in reports or issues; redact with `[REDACTED]`.
 - Never paste full session dumps; cite the smallest excerpt or a locator that backs the claim.
-- Read-only while collecting; no tracker mutations except user-approved follow-up issue creation through `/gitlab-to-issues`.
+- Read-only while collecting; no tracker mutations except user-approved follow-up issue creation through `/plan-to-issues`.
 - Do not overfit: a single bad round is rarely a process defect. Prefer `monitor` over speculative churn.
 
 ## Templates

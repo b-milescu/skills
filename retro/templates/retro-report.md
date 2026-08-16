@@ -52,7 +52,7 @@ list). List any finding reclassified to human-decision by this check, or state
 
 | RF | Disposition | Route |
 |---|---|---|
-| RF-1 | adopt | `/gitlab-to-issues` — <target repo> issue with <labels> |
+| RF-1 | adopt | `/plan-to-issues` — <target repo> issue with <labels> |
 | RF-2 | monitor | next retro |
 ```
 

@@ -77,7 +77,7 @@ auxiliary indexes. Repo policy stays repo-relative; reusable resources use
 read-only in child worktrees unless assigned.
 
 Generated docs reference `/forge`, `/start-build`, `/start-review`, and
-`/gitlab-to-issues` for GitLab, GitHub, and Azure DevOps. Add `/gitlab` only for
+`/plan-to-issues` for GitLab, GitHub, and Azure DevOps. Add `/gitlab` only for
 the GitLab profile. Other providers use their native `/forge` branch; never
 disable the shared workflows solely because the repository is not GitLab.
 

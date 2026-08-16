@@ -1,6 +1,6 @@
 # gitlab-mcp contract verification reference
 
-Reference for the MCP-first GitLab workflow transport used by `/gitlab` and, when `/forge` binds GitLab, by `/gitlab-to-issues`. MCP is the primary path for normal GitLab API actions; guarded `glab` fallback remains documented for known gaps, helper-only safe-text paths, and troubleshooting.
+Reference for the MCP-first GitLab workflow transport used by `/gitlab` and, when `/forge` binds GitLab, by `/plan-to-issues`. MCP is the primary path for normal GitLab API actions; guarded `glab` fallback remains documented for known gaps, helper-only safe-text paths, and troubleshooting.
 
 Scope discipline for this reference:
 
