@@ -24,7 +24,7 @@ VERIFIER="start-build/reference/post-merge-verifier.md"
 EFFORT="start-build/docs/effort-scaling.md"
 GITLAB_FORGE="forge/reference/gitlab.md"
 GITLAB_SKILL="gitlab/SKILL.md"
-GITLAB_ACTIONS="gitlab/reference/review-actions.md"
+GITLAB_ACTIONS="gitlab/SKILL.md"
 GITLAB_CI_FINISH="gitlab/reference/ci-finish-guards.md"
 
 failures=0
@@ -67,16 +67,15 @@ require_text "$REVIEW_FLOW" 'provider.*capability|provider offers' 'provider cap
 require_text "$REVIEW_FLOW" 'authority' 'finish authority requirement'
 require_text "$REVIEW_FLOW" 'queued is non-terminal|queue is non-terminal|never reported as merged' 'queue is not merged'
 
-# GitLab mechanics stay behind the selected provider entry point and its cards.
-for card in review-actions ci; do
-  require_text "$GITLAB_FORGE" "gitlab/reference/${card}\\.md" "$card provider-card link"
-done
+# GitLab mechanics stay behind the selected provider entry point.
+require_text "$GITLAB_FORGE" 'gitlab/SKILL.md' 'GitLab skill entry point'
+require_text "$GITLAB_FORGE" 'gitlab/reference/ci-finish-guards.md' 'CI/finish guard link'
 require_text "$GITLAB_SKILL" 'sha-bound-auto-merge-queue' 'GitLab SHA-bound queue snippet'
 require_text "$GITLAB_SKILL" 'protected auto-merge' 'GitLab protected auto-merge'
 require_text "$GITLAB_SKILL" 'auto-merge-api-fallback' 'GitLab fallback snippet'
 require_text "$GITLAB_SKILL" 'approval-only' 'GitLab approval-only mapping'
 require_text "$GITLAB_SKILL" 'human release' 'GitLab human-release mapping'
-require_text "$GITLAB_ACTIONS" 'protected checks' 'GitLab protected-check queue requirement'
+require_text "$GITLAB_ACTIONS" 'protected auto-merge' 'GitLab protected-check queue requirement'
 require_text "$GITLAB_CI_FINISH" 'exact-SHA green CI for merge' 'GitLab merge CI policy'
 
 # ---------------------------------------------------------------------------

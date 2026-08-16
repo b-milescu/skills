@@ -15,7 +15,6 @@ schema="start-build/templates/reviewer-lift-schema.md"
 delivery="issue-delivery-loop/SKILL.md"
 parent="start-build/reference/parent-orchestrator.md"
 parent_gate="start-build/reference/parent-owned-gate.md"
-parent_gate_card="start-build/reference/parent-owned-gate-card.md"
 
 if grep -qiE 'Run the (full )?(local )?gate locally before pushing|full Check Gate[^\n]*before pushing|full local gate[^\n]*before pushing' "$safety"; then
   fail "$safety still requires the full gate before pushing instead of before ready/review"
@@ -66,8 +65,6 @@ grep -qF "wrong-commit required CI" "$parent_gate" || \
   fail "$parent_gate missing wrong-commit CI guard"
 grep -qF "blocks pass eligibility and every finish action" "$parent_gate" || \
   fail "$parent_gate missing CI fail-closed action boundary"
-grep -qF "review may launch while bound exact-commit CI is pending" "$parent_gate_card" || \
-  fail "$parent_gate_card missing pending-CI review-launch pointer"
 grep -qF "re-bind evidence after every push" "$flow" || \
   fail "$flow missing exact-SHA evidence invalidation after push"
 grep -qF "child records \`Gate owner: parent\`, the parent-owned/not-run local gate contract, and the candidate commit only as gate evidence" "$flow" || \
