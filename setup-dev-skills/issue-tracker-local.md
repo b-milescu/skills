@@ -10,9 +10,9 @@ Issues and PRDs for this repo live as markdown files in `.scratch/`.
 - Triage state is recorded as a `Status:` line near the top of each issue file; see `triage-labels.md` for role strings.
 - Comments and conversation history append to the bottom of the file under `## Comments`.
 
-## GitLab-only workflow note
+## Unsupported forge publishing
 
-`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this local tracker unless the user explicitly switches to GitLab. For issue breakdowns, follow this repo's local-markdown workflow manually.
+`/gitlab-to-issues` does not publish to local markdown; fail closed. `/start-build` and `/start-review` require a supported forge. `/gitlab` stays GitLab-only transport.
 
 ## When a skill says "publish to the issue tracker"
 

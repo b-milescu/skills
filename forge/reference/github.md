@@ -24,6 +24,12 @@ Use native REST/GraphQL or `gh`; add no SDK. Bind a pull request to `headRefOid`
 - If a requested mutation has no native binding or safe snapshot sandwich,
   return `sha-bound-action-unsupported`.
 
+## Issue publish
+
+Create one issue through native REST/GraphQL or `gh` (no SDK), apply mapped
+labels, then re-read the issue and require byte-for-byte body and label match.
+Fail closed if this branch cannot name a native create.
+
 ## Post-merge
 
 Verify the provider-reported result commit for merge, squash, rebase, or indirect

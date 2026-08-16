@@ -23,3 +23,11 @@ provider-specific source of truth rather than copying those mechanics here.
 
 The cards preserve least privilege and fall back to the full
 [`gitlab/SKILL.md`](../../gitlab/SKILL.md) only under documented conditions.
+
+## Issue publish
+
+Create one issue through disclosed `/gitlab` MCP-first `create_issue` (labels on
+create, or `update_issue` label-reconcile), then native `get_issue` /
+`get_issue_description` readback of title, labels, and body. Fallback only when
+`/gitlab` already names that condition. Fail closed if this branch cannot name
+a native create.

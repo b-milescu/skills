@@ -22,7 +22,9 @@ They never load an unselected provider reference.
 2. **`snapshot`** — return only the decision-grade issue, change-request, complete
    diff/discussion/review, and commit-bound CI evidence requested by the caller.
 3. **`publish`** — validate and publish one safe durable artifact, then require
-   provider-native byte-for-byte readback before reporting success.
+   provider-native byte-for-byte readback before reporting success. A durable
+   artifact may be a tracker issue or work item (create + readback), not only a
+   change-request or review-report update.
 4. **`act`** — run the ordered [common guard](reference/common-guard.md), perform
    exactly one provider mutation, and classify its provider-native readback.
 5. **`post_merge_snapshot`** — return read-only merged state, linked-item state,

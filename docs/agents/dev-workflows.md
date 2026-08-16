@@ -6,11 +6,10 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 
 - **`/forge`** — selects the verified provider once and exposes preflight, snapshot, publish, act, and post-merge snapshot.
 - **`/gitlab`** — GitLab-specific MCP-first transport used only by the selected GitLab branch.
-- **`/gitlab-to-issues`** — GitLab-only issue publishing for approved plans.
+- **`/gitlab-to-issues`** — plan-to-issues via `/gitlab-to-issues` after `/forge preflight`.
 - **`/start-build`** — implements issues with TDD and an early Draft change request.
 - **`/start-review`** — independently reviews one bound change request and exact commit/CI evidence.
 - **`/issue-delivery-loop`** — coordinates bounded batches using retained internal `mr-builder-*` and `mr-reviewer-final` routes.
-- **`/retro`** — mines finished delivery evidence and proposes bounded follow-up issues.
 - **`/retro`** — delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. See `skill://retro/SKILL.md`.
 
 ## Skill activation mechanism
@@ -137,6 +136,6 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 ## Usage rules
 
 - Invoke `/forge` before shared workflow reads or actions; this repo's verified GitLab branch then invokes `/gitlab`.
-- Before converting an approved plan into GitLab issues, invoke `/gitlab-to-issues`.
+- Before converting an approved plan into tracker issues, invoke `/gitlab-to-issues` after `/forge preflight`.
 - Before implementation, invoke `/start-build`; before independent review, invoke `/start-review`.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

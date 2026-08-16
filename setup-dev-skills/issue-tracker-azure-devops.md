@@ -10,3 +10,5 @@ shared workflows treat their identifiers and locators as opaque strings.
 Positive reviewer votes and `transitionWorkItems` are not normalized to approval
 or closure. Verify current blocking policies and the linked work item's observed
 Completed state category.
+
+After `/forge preflight`, use `/gitlab-to-issues` to publish an approved plan as vertical work-item slices.

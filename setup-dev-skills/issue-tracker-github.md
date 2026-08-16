@@ -13,13 +13,13 @@ Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all is
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
-## GitLab-only workflow note
+## Approved-plan publishing
 
-`/gitlab`, `/gitlab-to-issues`, `/start-build`, and `/start-review` are GitLab-specific. Do not use them for this GitHub tracker unless the repo also has a GitLab mirror and the user explicitly chooses that workflow. For issue breakdowns, follow this repo's GitHub-specific workflow manually.
+After `/forge preflight`, use `/gitlab-to-issues` for approved-plan breakdowns. `/gitlab` stays GitLab-only transport.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitHub issue.
+Create a GitHub issue. If publishing an approved plan as multiple vertical slices, use `/gitlab-to-issues` after `/forge preflight`.
 
 ## When a skill says "fetch the relevant ticket"
 

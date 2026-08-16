@@ -6,7 +6,7 @@ reviewer a stable checklist for spotting gaps.
 
 This doc owns the readiness criteria. [Triage Labels](triage-labels.md) owns the
 live label vocabulary. The [`gitlab-to-issues` issue body template](../../gitlab-to-issues/templates/issue-body.md#agent-readiness)
-owns the compatible issue body section for newly published GitLab issues. Keep
+owns the compatible issue body section for newly published tracker issues. Keep
 those files pointer-first; do not copy this full contract into each workflow doc.
 
 ## Pass rule
@@ -34,7 +34,7 @@ the missing context is resolved.
 | AFK safety | The issue explains why an agent can proceed without new human decisions or live product/runtime/operator mutations. |
 | Reviewer focus | The expected hardest review area is named so the reviewer can compare the MR against the readiness contract. |
 
-## Use in GitLab issue publishing
+## Use in `/gitlab-to-issues` publishing
 
 New AFK issues published through `/gitlab-to-issues` use the compatible
 `## Agent Readiness` section from the issue body template. Preserve that section
