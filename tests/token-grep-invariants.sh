@@ -39,7 +39,7 @@ while IFS='|' read -r kind file needle; do
   [[ -n "${kind:-}" && "$kind" != \#* ]] || continue
   case "$kind" in
     contain) assert_file_contains "$file" "$needle" ;;
-    absent) assert_file_not_contains "$file" "$needle" ;;
+    absent) if grep -Fq -- "$needle" "$file"; then fail "$file contains forbidden: $needle"; fi ;;
     re) require_text "$file" "$needle" "$needle" ;;
     nre) reject_text "$file" "$needle" "$needle" ;;
     *) fail "unknown table kind: $kind" ;;
@@ -762,6 +762,14 @@ contain|start-build/reference/parent-orchestrator.md|residual session-owned work
 contain|issue-delivery-loop/SKILL.md|session-owned worktree ledger
 contain|issue-delivery-loop/SKILL.md|residual session-owned worktree
 TABLE
+
+# MF-1: planted forbidden needle in an existing file must fail.
+planted="$(mktemp)"
+printf '%s\n' 'MF1-PLANTED-NEEDLE' > "$planted"
+rc=0
+grep -Fq -- 'MF1-PLANTED-NEEDLE' "$planted" && rc=1
+rm -f "$planted"
+[[ "$rc" -eq 1 ]] || fail "planted forbidden needle did not fail"
 
 # terraform-tofu reject needles (regex, must stay out of the file)
 reject_text terraform-tofu/reference/native-testing.md 'default plan-mode|plan-mode default|defaults? to plan' 'wording that implies plan is the native engine default'
