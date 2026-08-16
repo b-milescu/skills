@@ -26,6 +26,13 @@ native REST only for a required guarded operation they do not expose. Add no SDK
   success.
 - `transitionWorkItems` is best effort and never normalized to closure.
 
+## Issue publish
+
+Create one Boards work item through the mounted Boards write (native REST only
+when that write is not exposed), apply the mapped fields, then re-read the work
+item byte-for-byte. Identifiers stay opaque. Fail closed if this branch cannot
+name a native create.
+
 ## Post-merge
 
 Verify reviewed-source binding, `lastMergeCommit` result identity and CI,

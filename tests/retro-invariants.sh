@@ -56,7 +56,7 @@ require_contains 'safety-floor check'
 require_contains '`batch`'
 require_contains '`lookback <date range>`'
 require_contains 'Aggregate counts'
-require_contains 'claude-mem DB discovery with graceful degradation'
+require_contains 'Active memory discovery with graceful degradation'
 require_contains 'if it is unavailable, say so and continue'
 require_contains 'Date-range scoping'
 require_contains "don't-overfit-to-anecdotes rule"

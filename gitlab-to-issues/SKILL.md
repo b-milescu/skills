@@ -1,23 +1,27 @@
 ---
 name: gitlab-to-issues
-description: Break an approved plan, spec, PRD, or conversation into independently-grabbable GitLab issues as vertical slices with target-repo triage labels. Use when the user asks for /gitlab-to-issues, GitLab issue creation, or a GitLab-specific breakdown for AFK/HITL agents.
+description: >-
+  Break an approved plan, spec, PRD, or conversation into independently-grabbable
+  tracker issues as vertical slices with target-repo triage labels. Use when the
+  user asks for /gitlab-to-issues, /plan-to-issues, "break this into issues",
+  GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
 ---
 
-# GitLab To Issues
+# gitlab-to-issues — plan-to-issues publisher
 
-Turn an approved plan into GitLab issues for the current target GitLab repository using that repo's Agent Setup Docs and triage labels. This skill intentionally uses the distinct `gitlab-to-issues` name.
+Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels. This skill intentionally keeps the historical `gitlab-to-issues` name.
 
 ## Quick start
 
-1. Invoke `/gitlab` and run **Snippet: local-repo-preflight** from the intended target repository before any publishing work.
+1. Invoke `/forge preflight` from the intended target repository before any publishing work.
 2. Resolve the target repo root with `git rev-parse --show-toplevel`; treat that path as `<repo-root>` for all repo-local docs.
 3. From the selected `project_profile`, bind `<issue-tracker-doc>` to `<repo-root>/<project_profile.agent_setup_docs.issue_tracker>` and `<triage-labels-doc>` to `<repo-root>/<project_profile.agent_setup_docs.triage_labels>`. Reuse these bindings for every target-repo tracker or label read; `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` are only the default profile's values.
-4. Read `<issue-tracker-doc>` and `<triage-labels-doc>`. If either file is missing, or if `<issue-tracker-doc>` does not say the tracker is GitLab, stop and ask the user to set up or choose the correct workflow. Do not fall back to default-profile paths or read target docs from the skill installation directory.
-5. Before drafting or publishing, display the detected GitLab target as host/project (for example, `gitlab.example/group/project`) from `/gitlab` preflight/repo metadata and ask the user to confirm it if there is any ambiguity.
+4. Read `<issue-tracker-doc>` and `<triage-labels-doc>`. If either file is missing, stop and ask the user to set up or choose the correct workflow. Fail closed unless the tracker is GitLab, GitHub, or Azure DevOps; if it is local markdown, Other, or silent, stop and ask. Do not fall back to default-profile paths or read target docs from the skill installation directory.
+5. Before drafting or publishing, display the preflight target (provider and canonical repository from `/forge`) and ask the user to confirm it if there is any ambiguity.
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.
 8. Draft vertical slices; ask the user to approve the breakdown before publishing.
-9. Publish approved slices to GitLab using `/gitlab` MCP-first transport contracts only after explicit publish approval; use guarded `glab` fallback only when `/gitlab` names the fallback condition.
+9. After explicit publish approval, publish each approved slice as one `forge publish` tracker-issue or work-item artifact and require provider-native readback. The disclosed provider reference owns native create, labels, comments, safe-body, and fallback.
 
 ## Slice rules
 
@@ -53,9 +57,9 @@ Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/
 
 Publish approved issues in dependency order so later issues can reference real blockers. Do not close or modify parent issues unless the user explicitly asks.
 
-Before publishing, show the user the detected GitLab target, labels to apply, issue count, and issue titles, then ask for explicit approval to publish. If approval is not explicit, do not create issues.
+Before publishing, show the user the detected preflight target, labels to apply, issue count, and issue titles, then ask for explicit approval to publish. If approval is not explicit, do not create issues.
 
-Use `/gitlab` for MCP primary tools, guarded `glab` fallback syntax, comments, labels, safe-text rules, and known pitfalls. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<triage-labels-doc>`; otherwise record the slice type in the issue body.
+Each approved slice is one `forge publish` tracker-issue or work-item plus provider-native readback. The disclosed provider reference owns native create, labels, comments, safe-body, and fallback. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<triage-labels-doc>`; otherwise record the slice type in the issue body.
 
 For generated AFK issues, preserve the `## Agent Readiness` section from the issue body template. If any readiness field lacks durable context and no maintainer waiver exists, publish the slice as HITL or Needs info instead of applying an AFK-ready label.
 

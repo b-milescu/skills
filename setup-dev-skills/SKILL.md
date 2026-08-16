@@ -76,8 +76,8 @@ auxiliary indexes. Repo policy stays repo-relative; reusable resources use
 `skill://...`. Auxiliary indexes default to parent ownership and remain
 read-only in child worktrees unless assigned.
 
-Generated docs reference `/forge`, `/start-build`, and `/start-review` for
-GitLab, GitHub, and Azure DevOps. Add `/gitlab` and `/gitlab-to-issues` only for
+Generated docs reference `/forge`, `/start-build`, `/start-review`, and
+`/gitlab-to-issues` for GitLab, GitHub, and Azure DevOps. Add `/gitlab` only for
 the GitLab profile. Other providers use their native `/forge` branch; never
 disable the shared workflows solely because the repository is not GitLab.
 
@@ -114,7 +114,7 @@ Substitute each `<agent_setup_docs.*>` placeholder from the selected
 or from live target-repo findings. Do not copy the default `docs/agents/...`
 paths into repos with a non-default Agent Setup Doc root.
 
-Use this skill's neutral seed files with `skill://setup-dev-skills/reference/project-profile-facts.json`. Adapt provider/repository, paths, labels, gate, branch naming, CI, languages, auxiliary indexes, release/deploy, manual validation, and existing guidance from live inspection. Reconcile older output in place without overwriting user additions. Generate the provider-bound neutral Dev Workflow from `skill://setup-dev-skills/dev-workflows-generic.md`; add GitLab-only tracker/publishing pointers only when the selected provider is GitLab.
+Use this skill's neutral seed files with `skill://setup-dev-skills/reference/project-profile-facts.json`. Adapt provider/repository, paths, labels, gate, branch naming, CI, languages, auxiliary indexes, release/deploy, manual validation, and existing guidance from live inspection. Reconcile older output in place without overwriting user additions. Generate the provider-bound neutral Dev Workflow from `skill://setup-dev-skills/dev-workflows-generic.md`; add GitLab-only `/gitlab` transport pointers only when the selected provider is GitLab.
 
 Done only when every `<agent_setup_docs.*>` placeholder is substituted, no default `docs/agents/...` path remains in a non-default-root repo, and `triage-labels.md` carries no placeholder or default label unless the user chose to seed it.
 

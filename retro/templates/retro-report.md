@@ -62,4 +62,4 @@ list). List any finding reclassified to human-decision by this check, or state
 - **One root cause per `RF-N`.** Merge symptoms that share a cause; split findings that need different owners or routes.
 - **Evidence is mandatory.** A finding with no citable evidence is not a finding; either gather the evidence or drop it.
 - **Stable IDs.** Number `RF-N` in report order and keep IDs stable when follow-up issues cite them.
-- **Metrics are claims.** Copy batch metrics from the delivery run's report when one exists; recompute from GitLab evidence only when missing, and say which you did.
+- **Metrics are claims.** Copy batch metrics from the delivery run's report when one exists; recompute from tracker evidence only when missing, and say which you did.

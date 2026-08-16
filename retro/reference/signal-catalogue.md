@@ -15,7 +15,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 
 | Signal | Where to look | Usual category |
 |---|---|---|
-| Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, claude-mem observations, `gitlab` helper output | tooling |
+| Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, memory-plugin observations if present, `/forge` helper output | tooling |
 | Review rounds > 1 on any change request — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
 | Blocker tokens fired (`missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`, `partial-review`, ...) — was the blocker avoidable upstream? | reviewer final handoffs, `delivery.handoff_contract`, action-result notes | flow |
 | `Action blocker: other` or `not_run_reason: other` used — the enum lacked a real value | handoffs, delivery blocks | taxonomy |
@@ -32,13 +32,13 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 
 ## Recurrence check
 
-Before classifying a `tooling` or `flow` finding as `adopt`, check whether it already recurred: search claude-mem (when available) and recent GitLab issues for the same error signature or workaround. A first occurrence with a clean recovery may stay `monitor`; a second occurrence is a pattern that earns a fix proposal naming the owner doc.
+Before classifying a `tooling` or `flow` finding as `adopt`, check whether it already recurred: search the active memory skill/MCP (when available) and recent issues on the bound tracker for the same error signature or workaround. A first occurrence with a clean recovery may stay `monitor`; a second occurrence is a pattern that earns a fix proposal naming the owner doc.
 
 ## Owner-doc mapping hints
 
 Route proposals at the doc that owns the behavior, not the doc where the symptom appeared:
 
-- GitLab transport mechanics, snippet/fallback syntax, helper behavior → the `gitlab` skill.
+- GitLab transport mechanics, snippet/fallback syntax, helper behavior → the `gitlab` skill only when that branch is bound; generic collection is forge.
 - Build behavior, TDD/safety policy, builder handoffs → `start-build` (mode reference docs own mode detail).
 - Review behavior, verdict/CI/OQ policy, reviewer handoffs → `start-review`.
 - Batch coordination, tier routing, batch metrics → `issue-delivery-loop`.
