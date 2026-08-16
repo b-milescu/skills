@@ -619,6 +619,7 @@ contain|retro/SKILL.md|Active memory discovery with graceful degradation
 contain|retro/SKILL.md|if it is unavailable, say so and continue
 contain|retro/SKILL.md|Date-range scoping
 contain|retro/SKILL.md|don't-overfit-to-anecdotes rule
+absent|retro/SKILL.md|memory-retrospective
 # cleanup-codebase-invariants
 contain|cleanup-codebase/SKILL.md|Planning-only by default
 contain|cleanup-codebase/SKILL.md|leave implementation to the build workflow
@@ -763,13 +764,20 @@ contain|issue-delivery-loop/SKILL.md|session-owned worktree ledger
 contain|issue-delivery-loop/SKILL.md|residual session-owned worktree
 TABLE
 
-# MF-1: planted forbidden needle in an existing file must fail.
+# MF-1/MF-2: planted forbidden needle in an existing file must fail.
 planted="$(mktemp)"
 printf '%s\n' 'MF1-PLANTED-NEEDLE' > "$planted"
 rc=0
 grep -Fq -- 'MF1-PLANTED-NEEDLE' "$planted" && rc=1
 rm -f "$planted"
 [[ "$rc" -eq 1 ]] || fail "planted forbidden needle did not fail"
+planted="$(mktemp)"
+cp retro/SKILL.md "$planted"
+printf '\n%s\n' 'memory-retrospective' >> "$planted"
+rc=0
+grep -Fq -- 'memory-retrospective' "$planted" && rc=1
+rm -f "$planted"
+[[ "$rc" -eq 1 ]] || fail "planted memory-retrospective in retro/SKILL.md copy did not fail"
 
 # terraform-tofu reject needles (regex, must stay out of the file)
 reject_text terraform-tofu/reference/native-testing.md 'default plan-mode|plan-mode default|defaults? to plan' 'wording that implies plan is the native engine default'
@@ -1044,8 +1052,5 @@ assert_text_not_contains "$frontmatter" 'disable-model-invocation: true' 'disabl
 red_line="$(grep -n '^## 3\. Prove native RED$' terraform-tofu/SKILL.md | cut -d: -f1)"
 green_line="$(grep -n '^## 4\. Make the smallest GREEN change$' terraform-tofu/SKILL.md | cut -d: -f1)"
 [[ -n "$red_line" && -n "$green_line" && "$red_line" -lt "$green_line" ]] || fail 'native RED must precede GREEN'
-
-# retro retired skill literal
-assert_file_not_contains retro/SKILL.md "memory-retrospective" "retired skill"
 
 printf '%s: PASS\n' "$TEST_NAME"
