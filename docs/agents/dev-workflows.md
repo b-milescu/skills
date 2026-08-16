@@ -129,10 +129,6 @@ merge, auto-merge, release, deploy, or operator authority by itself.
 
 Parent/coordinator checkouts own generated auxiliary project-index updates by default. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child. Child worktrees must not copy index artifacts between worktrees; regenerate assigned indexes in the owning checkout instead.
 
-## Design briefs
-
-- `docs/agents/mr-build-review-orchestration.md` — issue #55 historical design brief for the parent-orchestrator loop. It records rationale, provenance, and links to active sources; active workflow policy now lives in the recipe above.
-
 ## Usage rules
 
 - Invoke `/forge` before shared workflow reads or actions; this repo's verified GitLab branch then invokes `/gitlab`.

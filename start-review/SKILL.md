@@ -13,12 +13,6 @@ not proof. Verify every safety-critical claim from provider-native Tier 1 or
 repository Tier 2 evidence. Never review work you built, planned, revised, or
 parent-orchestrated.
 
-Compact pointer maps: [single review](skill://start-review/reference/single-mr-review-card.md),
-[request-changes rerun](skill://start-review/reference/request-changes-rerun-card.md),
-[finish action](skill://start-review/reference/finish-action-card.md), and
-[blocked routing](skill://start-review/reference/blocked-review-routing-card.md).
-They are checklists, not policy; use canonical docs on any mutation action.
-
 ## Procedure
 
 1. Read the project rulebook and [REVIEW-FLOW.md](skill://start-review/REVIEW-FLOW.md).

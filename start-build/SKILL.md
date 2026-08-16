@@ -28,11 +28,10 @@ worktrees, and one Review Packet/gate/handoff per change request.
 Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
 Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
 
-Compact pointer maps: [child](skill://start-build/reference/child-builder-card.md),
-[parent gate](skill://start-build/reference/parent-owned-gate-card.md),
-[revision](skill://start-build/reference/revision-card.md), and
-[parent](skill://start-build/reference/parent-orchestrator-card.md). They are
-checklists, not policy; use canonical docs on any mutation action.
+Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
+[parent gate](skill://start-build/reference/parent-owned-gate.md),
+[implementation flow](skill://start-build/reference/implementation-flow.md), and
+[parent](skill://start-build/reference/parent-orchestrator.md).
 
 ## Procedure
 

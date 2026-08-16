@@ -10,19 +10,19 @@ URLs, close-keyword syntax, and note locators; generic workflow code does not.
 
 The GitLab branch owns draft/ready changes, exact-SHA pipelines, approvals,
 direct merge or queued auto-merge, closure previews, branch removal, and merged
-commit/squash containment. Keep existing `/gitlab` cards and fixtures as the
+commit/squash containment. Use [`gitlab/SKILL.md`](../../gitlab/SKILL.md) as the
 provider-specific source of truth rather than copying those mechanics here.
 
-## Provider cards
+## Provider transport
 
-- [Build reads](../../gitlab/reference/build-read.md)
-- [Build actions](../../gitlab/reference/build-actions.md)
-- [Review reads](../../gitlab/reference/review-read.md)
-- [Review actions](../../gitlab/reference/review-actions.md)
-- [CI](../../gitlab/reference/ci.md)
+- [GitLab skill](../../gitlab/SKILL.md)
+- [Snippet transports](../../gitlab/reference/snippet-transports.md)
+- [Mutation guard](../../gitlab/reference/mutation-guard.md)
+- [CI/finish guards](../../gitlab/reference/ci-finish-guards.md)
+- [Authority verification](../../gitlab/reference/authority-verification.md)
 
-The cards preserve least privilege and fall back to the full
-[`gitlab/SKILL.md`](../../gitlab/SKILL.md) only under documented conditions.
+Fall back to the full [`gitlab/SKILL.md`](../../gitlab/SKILL.md) only under
+documented conditions.
 
 ## Issue publish
 
