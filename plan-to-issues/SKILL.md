@@ -1,5 +1,5 @@
 ---
-name: gitlab-to-issues
+name: plan-to-issues
 description: >-
   Break an approved plan, spec, PRD, or conversation into independently-grabbable
   tracker issues as vertical slices with target-repo triage labels. Use when the
@@ -7,9 +7,9 @@ description: >-
   GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
 ---
 
-# gitlab-to-issues — plan-to-issues publisher
+# plan-to-issues
 
-Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels. This skill intentionally keeps the historical `gitlab-to-issues` name.
+Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels. `/gitlab-to-issues` is the old name for this skill; treat it as `/plan-to-issues`.
 
 ## Quick start
 
@@ -27,13 +27,13 @@ Turn an approved plan into tracker issues or work items for the current target r
 
 Each issue is a thin vertical slice through all affected user-visible layers: docs, CLI behavior, Dev Workflow guidance, state, API, UI, tests, deploy/runbook, or other observable surfaces. Do not assume every project has schema/API/UI. Each slice should be demoable, reviewable, and testable on its own.
 
-Slice *toward* the shared [Decoupling Contract](skill://gitlab-to-issues/docs/decoupling-contract.md): aim each slice at independence so a builder and reviewer can later grade it against that same contract. This skill references the contract for the independence target only; it does not enforce or prove decoupling — that stays with `/start-build`, `/start-review`, and `/issue-delivery-loop`.
+Slice *toward* the shared [Decoupling Contract](skill://plan-to-issues/docs/decoupling-contract.md): aim each slice at independence so a builder and reviewer can later grade it against that same contract. This skill references the contract for the independence target only; it does not enforce or prove decoupling — that stays with `/start-build`, `/start-review`, and `/issue-delivery-loop`.
 
 ## Slice types and labels
 
 Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy label creation. That selected-profile file owns the live vocabulary; this section only describes when to look there.
 
-- **AFK**: ready for an agent to implement; see the skill-owned [Agent Readiness scorecard](skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard) for what that requires. Fill the [Agent Readiness](skill://gitlab-to-issues/templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<triage-labels-doc>` defines one.
+- **AFK**: ready for an agent to implement; see the skill-owned [Agent Readiness scorecard](skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard) for what that requires. Fill the [Agent Readiness](skill://plan-to-issues/templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<triage-labels-doc>` defines one.
 - **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<triage-labels-doc>` defines one.
 - **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<triage-labels-doc>` defines one.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
@@ -48,8 +48,8 @@ For each proposed slice, show:
 - **Blocked by**: issue title or dependency, if any
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
-- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](skill://gitlab-to-issues/templates/issue-body.md#agent-readiness)
-- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](skill://gitlab-to-issues/docs/decoupling-contract.md)
+- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](skill://plan-to-issues/templates/issue-body.md#agent-readiness)
+- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](skill://plan-to-issues/docs/decoupling-contract.md)
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
 
@@ -65,4 +65,4 @@ For generated AFK issues, preserve the `## Agent Readiness` section from the iss
 
 ## Issue body template
 
-Use [skill://gitlab-to-issues/templates/issue-body.md](skill://gitlab-to-issues/templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.
+Use [skill://plan-to-issues/templates/issue-body.md](skill://plan-to-issues/templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.

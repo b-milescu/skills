@@ -14,7 +14,6 @@ source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
 
 workflow_docs=(
   gitlab/SKILL.md
-  gitlab-to-issues/SKILL.md
   start-build/SKILL.md
   start-review/SKILL.md
   start-review/REVIEW-FLOW.md

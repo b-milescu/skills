@@ -12,7 +12,7 @@ Issues and PRDs for this repo live as markdown files in `.scratch/`.
 
 ## Unsupported forge publishing
 
-`/gitlab-to-issues` does not publish to local markdown; fail closed. `/start-build` and `/start-review` require a supported forge. `/gitlab` stays GitLab-only transport.
+`/plan-to-issues` does not publish to local markdown; fail closed. `/start-build` and `/start-review` require a supported forge. `/gitlab` stays GitLab-only transport.
 
 ## When a skill says "publish to the issue tracker"
 

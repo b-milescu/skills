@@ -4,7 +4,7 @@ set -euo pipefail
 # Invariant guard for retro/SKILL.md.
 # Pins the secret/dump safety tokens, the proposal-only / route-out boundary
 # (the skill never edits canonical skills/docs/tests directly; it emits
-# proposals and routes approved candidates out via /gitlab-to-issues), the
+# proposals and routes approved candidates out via /plan-to-issues), the
 # safety-floor guard (floor-touching proposals are classified human-decision),
 # and the lookback-scope tokens added by #256. Assertions are HEAD-exact
 # tokens, not paraphrases (per the #254 lesson).
@@ -39,11 +39,11 @@ require_contains 'redact with `[REDACTED]`'
 
 # Proposal-only / route-out boundary: emit proposals, never edit the canonical
 # skill/doc/test surfaces directly, and route approved candidates out to the
-# issue workflow via /gitlab-to-issues.
+# issue workflow via /plan-to-issues.
 require_contains 'Proposal-only'
 require_contains 'never edits skills, templates, docs, gates, or tests directly'
 require_contains "Route, don't edit"
-require_contains '/gitlab-to-issues'
+require_contains '/plan-to-issues'
 
 # Safety-floor guard: a proposal that touches a hard floor is classified
 # human-decision and stops there (this closes the longitudinal floor-guard gap).

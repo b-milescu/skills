@@ -133,8 +133,8 @@
     "start_build_parent_owned_gate": "skill://start-build/reference/parent-owned-gate.md",
     "start_build_delivery_schema": "skill://start-build/templates/delivery-schema.md",
     "start_build_reviewer_lift_schema": "skill://start-build/templates/reviewer-lift-schema.md",
-    "gitlab_to_issues_readiness_scorecard": "skill://gitlab-to-issues/docs/agents/agent-readiness-scorecard.md",
-    "gitlab_to_issues_issue_body_template": "skill://gitlab-to-issues/templates/issue-body.md"
+    "plan_to_issues_readiness_scorecard": "skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md",
+    "plan_to_issues_issue_body_template": "skill://plan-to-issues/templates/issue-body.md"
   },
   "provider_fixtures": [
     {

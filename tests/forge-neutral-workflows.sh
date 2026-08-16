@@ -55,7 +55,7 @@ if grep -R -n -E 'gitlab-delivery|gitlab-delivery-schema|GITLAB-DELIVERY-SCHEMA'
   fail "retired GitLab delivery schema remains in an active shared surface"
 fi
 
-for workflow in start-build/SKILL.md start-review/SKILL.md issue-delivery-loop/SKILL.md gitlab-to-issues/SKILL.md retro/SKILL.md; do
+for workflow in start-build/SKILL.md start-review/SKILL.md issue-delivery-loop/SKILL.md plan-to-issues/SKILL.md retro/SKILL.md; do
   assert_file_contains "$workflow" "forge" "$workflow invokes forge"
   assert_file_not_contains "$workflow" 'skill://gitlab' "$workflow has no unconditional GitLab dependency"
 done
