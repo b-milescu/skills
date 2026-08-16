@@ -173,7 +173,6 @@ assert(devWorkflowsDoc.includes('docs/agents/...'), 'dev-workflows cross-project
 
 for (const path of [
   'gitlab/SKILL.md',
-  'gitlab/reference/review-actions.md',
   'gitlab/scripts/README.md'
 ]) {
   const text = requireText(path, /Mutation Guard/, 'Mutation Guard reference');

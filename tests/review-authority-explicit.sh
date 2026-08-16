@@ -43,7 +43,7 @@ for file in $(agent_prompt_paths "${routed_final_reviewer_prompt_names[@]}"); do
   assert_file_contains "$file" 'finish_action: "none"' "$file parent no finish"
 done
 
-assert_file_contains forge/reference/gitlab.md 'gitlab/reference/review-actions.md' "GitLab authority entry point"
+assert_file_contains forge/reference/gitlab.md 'gitlab/reference/authority-verification.md' "GitLab authority entry point"
 assert_file_contains gitlab/reference/authority-verification.md 'Finish owner: parent' "GitLab native authority contract"
 
 for file in start-build/reference/parent-orchestrator.md issue-delivery-loop/SKILL.md; do

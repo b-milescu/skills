@@ -323,11 +323,13 @@ for file in \
   fi
 done
 
-# The selected GitLab provider branch owns card/snippet discovery. Generic
+# The selected GitLab provider branch owns snippet discovery. Generic
 # workflows must not directly own GitLab Snippet references.
-for card in build-read build-actions review-read review-actions ci; do
-  require_text "forge/reference/gitlab.md" "gitlab/reference/${card}\\.md" "$card provider-card link"
-done
+require_text "forge/reference/gitlab.md" 'gitlab/SKILL.md' 'GitLab skill entry point'
+require_text "forge/reference/gitlab.md" 'gitlab/reference/snippet-transports.md' 'snippet-transports link'
+require_text "forge/reference/gitlab.md" 'gitlab/reference/mutation-guard.md' 'mutation-guard link'
+require_text "forge/reference/gitlab.md" 'gitlab/reference/ci-finish-guards.md' 'CI/finish guard link'
+require_text "forge/reference/gitlab.md" 'gitlab/reference/authority-verification.md' 'authority-verification link'
 for file in \
   start-build/SKILL.md \
   start-build/reference/implementation-flow.md \
