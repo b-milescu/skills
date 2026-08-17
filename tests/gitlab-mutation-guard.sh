@@ -172,8 +172,7 @@ const devWorkflowsDoc = requireText('docs/agents/dev-workflows.md', /skill:\/\/f
 assert(devWorkflowsDoc.includes('docs/agents/...'), 'dev-workflows cross-project guidance must keep target docs repo-relative');
 
 for (const path of [
-  'gitlab/SKILL.md',
-  'gitlab/scripts/README.md'
+  'gitlab/SKILL.md'
 ]) {
   const text = requireText(path, /Mutation Guard/, 'Mutation Guard reference');
   assert(text.includes('mutation-guard.md') || text.includes(guardDocResource), `${path} must link the guard doc`);

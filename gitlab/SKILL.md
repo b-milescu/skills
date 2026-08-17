@@ -105,7 +105,7 @@ Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or
 
 Keep these distinct because they answer different questions and can disagree:
 
-- `skill://gitlab/scripts/validate-closes-keyword.sh` answers the authoring question,
+- `validate_closes_keyword` answers the authoring question,
   "will this close X?" It requires plain supported syntax for the target but
   cannot prove that the description closes nothing else.
 - The `closes_issues` endpoint is a preview for
@@ -394,7 +394,7 @@ get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issu
 
 ## Optional helper scripts
 
-The `gitlab/scripts/` files remain as historical/optional fallback artifacts and regression fixtures. Active workflow snippets above do not instruct agents to invoke script URIs; use MCP-native tools first and guarded help-first `glab` fallback only where the snippet transport contract allows it.
+MCP is the only shipped GitLab transport and validator. Documented help-first `glab` remains inline fallback text only. Do not invoke `gitlab/scripts/*`.
 
 ## Troubleshooting
 

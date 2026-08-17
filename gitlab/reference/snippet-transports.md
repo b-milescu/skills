@@ -1,6 +1,6 @@
 # GitLab snippet transport contracts
 
-Stable `/gitlab` snippet names are workflow API. This file is the human-readable transport contract for each snippet: MCP primary tool(s), required inputs, outputs, fail-closed checks, guarded `glab` fallback conditions, and post-mutation MCP re-read requirements. Active workflow snippets name MCP-native tools/contracts; shell helper scripts, when still present in `gitlab/scripts/`, are historical/optional artifacts and are not the primary transport.
+Stable `/gitlab` snippet names are workflow API. This file is the human-readable transport contract for each snippet: MCP primary tool(s), required inputs, outputs, fail-closed checks, guarded `glab` fallback conditions, and post-mutation MCP re-read requirements. Active workflow snippets name MCP-native tools/contracts.
 
 Machine-actionable source truth: `skill://gitlab/reference/snippet-metadata.json`. Markdown table is checked against this metadata by `tests/gitlab-snippet-metadata.sh`.
 

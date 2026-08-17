@@ -7,16 +7,10 @@ approval/merge authority claim shape, source precedence, conflict/restricted
 results, action routing, and no-self relationship to caller context. This table is
 sourced from [`start-build/SAFETY.md` non-negotiables](../../start-build/SAFETY.md#non-negotiables)
 (no builder self-approval or self-merge; finish actions belong only to an
-authorized reviewer, parent, or human after independent review) and it mirrors,
-case-for-case, the inline finish authority switch in
-[`scripts/gitlab-finish-mr.sh`](../scripts/gitlab-finish-mr.sh).
+authorized reviewer, parent, or human after independent review). MCP
+`finish_merge_request` enforces this table. MCP / `glab` `confirm:true` and
+`sha=` enforce intent and head-binding, **not** role authority.
 
-The deterministic gate [`scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh)
-enforces this table. The gate is pure-local and makes no network call: it decides
-role authority only. MCP / `glab` `confirm:true` and `sha=` enforce intent and
-head-binding, **not** role authority. The matrix-match regression test in
-[`tests/gitlab-finish-authority.sh`](../../tests/gitlab-finish-authority.sh)
-parses this table and asserts the gate agrees with it cell-for-cell.
 
 This matrix feeds the canonical [Authority Verification](authority-verification.md) phase of the [GitLab Mutation Guard](mutation-guard.md); it does not own approval authority defaults, source precedence, project binding, SHA/CI, fallback eligibility, or post-mutation re-read ordering. `Finish owner: parent` is an additional routing constraint layered before this table: reviewer callers must handoff instead of approve, merge, or queue auto-merge, while `authorized-parent`/`human` finish paths still require the same verified merge authority source and fresh guards.
 
@@ -61,8 +55,8 @@ Notes:
 
 ## Identity and context guard
 
-The gate still requires non-empty `--caller-user-id` and `--mr-author-id` with
-`reason=invalid_user_id` on missing values, but GitLab account equality is not an
+The gate still requires non-empty caller and MR author ids with
+`identity_unavailable` on missing values, but GitLab account equality is not an
 authority blocker by itself. Review independence is a session/context boundary:
 a fresh gate-eligible reviewer may approve or merge even when the authenticated
 GitLab account is the same account that opened the MR. Builder self-approval and

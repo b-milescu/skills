@@ -4,7 +4,7 @@ set -euo pipefail
 # Enforces executable-bit policy documented in docs/agents/check-gate.md
 # §Executable-bit policy: tracked file mode 100755 is allowed only for
 # directly invoked entrypoints `install.sh` and `scripts/check.sh`.
-# Legacy `gitlab/scripts/*.sh` helpers and every other tracked
+# Every other tracked
 # shell/helper file must stay 100644.
 #
 # The guard reads `git ls-files -s` (the git index mode), not filesystem
@@ -114,11 +114,11 @@ make_fixture_repo "$stray_test_repo" \
   100644:install.sh 100755:tests/regression.sh
 assert_repo_fails "$stray_test_repo" "tests/regression.sh" "executable tests/*.sh"
 
-# executable legacy gitlab/scripts helper must fail; helpers are no longer
-# direct active entrypoints.
+# executable non-allowlisted helper path must fail.
 legacy_helper_repo="$TMPDIR/legacy-helper"
-make_fixture_repo "$legacy_helper_repo" 100755:gitlab/scripts/gitlab-wrappers.sh
-assert_repo_fails "$legacy_helper_repo" "gitlab/scripts/gitlab-wrappers.sh" "executable legacy gitlab/scripts helper"
+make_fixture_repo "$legacy_helper_repo" 100755:scripts/helper.sh
+assert_repo_fails "$legacy_helper_repo" "scripts/helper.sh" "executable non-allowlisted helper"
+
 
 # executable outside allowlist (e.g. new top-level script) must fail —
 # allowlist may not open new executables.
@@ -131,7 +131,6 @@ allowed_repo="$TMPDIR/allowed"
 make_fixture_repo "$allowed_repo" \
  100755:install.sh \
  100755:scripts/check.sh \
- 100644:gitlab/scripts/gitlab-wrappers.sh \
  100644:tests/regression.sh
 assert_repo_passes "$allowed_repo" "documented entrypoints"
 

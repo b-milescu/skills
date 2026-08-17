@@ -7,7 +7,6 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
-- `gitlab/scripts/` — helper scripts bundled with the `/gitlab` skill.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills

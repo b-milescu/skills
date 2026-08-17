@@ -126,7 +126,7 @@ The no-self rule is unconditional and context-based:
 - GitLab account equality (`caller_user_id == mr_author_id`) is **not** a blocker by itself for a fresh, gate-eligible reviewer. Identity is audit/token-stability evidence; review independence is the session/context boundary.
 - Missing or changed caller identity maps to `identity_unavailable` or `identity_changed` before the role × authority decision runs.
 
-The deterministic role × merge-authority × action table remains in [`authority-matrix.md`](authority-matrix.md) and is enforced by [`../scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh). That matrix is the finish-action sub-decision inside this broader authority seam.
+The deterministic role × merge-authority × action table remains in [`authority-matrix.md`](authority-matrix.md) and is enforced by MCP `finish_merge_request`. That matrix is the finish-action sub-decision inside this broader authority seam.
 
 ## Finish/result reporting
 
