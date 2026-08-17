@@ -14,8 +14,6 @@ source "$REPO_ROOT/tests/lib/command-capture.sh"
 source "$REPO_ROOT/tests/lib/marked-sections.sh"
 # shellcheck source=tests/lib/schema-sync.sh
 source "$REPO_ROOT/tests/lib/schema-sync.sh"
-# shellcheck source=tests/lib/gitlab-fixtures.sh
-source "$REPO_ROOT/tests/lib/gitlab-fixtures.sh"
 
 fixture_doc="$TEST_TMPDIR/fixture.md"
 cat > "$fixture_doc" <<'MARKDOWN'
@@ -63,19 +61,5 @@ extract_yaml_keys_from_marked_block "$fixture_doc" 'DELIVERY:BEGIN' 'DELIVERY:EN
 printf 'delivery\nissue\nmr\n' > "$TEST_TMPDIR/yaml.expected"
 assert_files_match "$TEST_TMPDIR/yaml.expected" "$TEST_TMPDIR/yaml.actual" 'marked YAML key extraction drifted'
 
-dir="$(make_fixture_dir self-check)"
-write_mr_json "$dir/mr.json" opened abc123 success abc123
-write_branch_json "$dir/branch.json" success abc123
-write_issue_json "$dir/issue.json" opened
-run_capture env \
-  FAKE_MR_JSON_FILE="$dir/mr.json" \
-  FAKE_ISSUE_JSON_FILE="$dir/issue.json" \
-  FAKE_BRANCH_JSON_FILE="$dir/branch.json" \
-  FAKE_GLAB_LOG="$dir/glab.log" \
-  PATH="$dir/bin:$PATH" \
-  glab mr view 59 -F json
-assert_status 0
-assert_capture_contains '"sha": "abc123"'
-assert_log_contains "$dir/glab.log" 'glab mr view 59 -F json'
 
 echo "regression-harness: PASS"

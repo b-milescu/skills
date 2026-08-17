@@ -1,15 +1,14 @@
 # Caller identity and authentication for the finish gate
 
-The deterministic finish gate
-[`scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh)
+MCP `finish_merge_request`
 decides role authority from the caller role, merge-authority claim, action, and
 two GitLab identities: the **caller** taking the finish action and the **author**
 of the MR being finished. This document defines how the orchestrating agent
 obtains, re-verifies, and passes those identities, and why GitLab identity is an
 audit/token-stability input rather than the review-independence boundary.
 
-The gate itself is pure-local and makes no network call. Resolving identities is
-the **caller's** responsibility before invoking the gate; the gate only validates
+Resolving identities is
+the **caller's** responsibility before invoking `finish_merge_request`; the tool validates
 and compares the ids it is handed (see the
 [authority matrix](authority-matrix.md)) while the broader
 [Authority Verification](authority-verification.md) seam combines those ids with
@@ -28,36 +27,35 @@ The caller lifecycle feeds the Caller identity and context phase of the [GitLab 
 2. **Immutable for the action.** Once captured, `caller_user_id` is fixed for the
    duration of this finish action. Downstream steps must not re-derive it from a
    different source (CI variables, git config, branch metadata, etc.).
-3. **Re-verify immediately before the gate.** Just before calling the gate, the
+3. **Re-verify immediately before finish.** Just before calling `finish_merge_request`, the
    agent calls `get_current_user()` again and compares the id to the
    entry-time `caller_user_id`. If the id changed (token swap, session change,
-   impersonation), stop and escalate with `identity_changed`; do not run the gate
+   impersonation), stop and escalate with `identity_changed`; do not finish
    with a different identity than the one captured at entry.
 4. **MR author id.** `mr_author_id` is read from
    `get_merge_request(...).author.id` for the MR being finished. It is the GitLab
    account that opened the MR.
-5. **Pass both ids to the gate.** Invoke
-   `gitlab-finish-authority.sh --caller-user-id <id> --mr-author-id <id> ...`.
-   The gate blocks empty/missing ids with `reason=invalid_user_id`. Equal
+5. **Pass both ids to `finish_merge_request`.** Empty/missing ids fail closed
+   with `identity_unavailable`. Equal
    `caller_user_id` / `mr_author_id` values are permitted for gate-eligible
    roles; review independence is enforced by the role and Context Firewall.
 
 ## Gate input surface
 
-[`scripts/gitlab-finish-authority.sh`](../scripts/gitlab-finish-authority.sh)
-accepts exactly seven inputs: five required named inputs plus two optional source
-inputs. The caller resolves and passes all of them; the gate only validates and
-compares the values it is handed.
+MCP `finish_merge_request` takes the caller role, caller/author ids, merge
+authority/source, and requested action. The caller resolves those values; the
+tool validates and compares them.
 
-| Flag | Required | Meaning |
+
+| Input | Required | Meaning |
 | --- | --- | --- |
-| `--caller-role` | yes | Role taking the action: `builder`, `reviewer`, `authorized-parent`, or `human`. |
-| `--caller-user-id` | yes | GitLab account id acting now, from `get_current_user()` (see lifecycle above). |
-| `--mr-author-id` | yes | GitLab account id that opened the MR, from `get_merge_request.author.id`. |
-| `--merge-authority` | yes | `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`. |
-| `--action` | yes | Requested finish action: `handoff`, `approve`, `merge`, or `queue-auto-merge`. |
-| `--authority-source` | optional | The caller's **declared** provenance string for the `--merge-authority` it passed (where that authority claim came from). |
-| `--expected-authority-source` | optional | The provenance string the caller **requires** the declared source to equal before any non-`handoff` finish action is permitted. |
+| caller role | yes | Role taking the action: `builder`, `reviewer`, `authorized-parent`, or `human`. |
+| caller user id | yes | GitLab account id acting now, from `get_current_user()`. |
+| MR author id | yes | GitLab account id that opened the MR, from `get_merge_request.author.id`. |
+| merge authority | yes | `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`. |
+| action | yes | Requested finish action: `handoff`, `approve`, `merge`, or `queue-auto-merge`. |
+| authority source | optional | Declared provenance for the merge-authority claim. |
+| expected authority source | optional | Provenance the declared source must equal before any non-`handoff` finish action. |
 
 The five required inputs are owned by the [authority matrix](authority-matrix.md)
 decision; this section adds only the two optional source inputs and their
@@ -65,15 +63,15 @@ fail-closed contract below.
 
 ## Authority-source mismatch contract
 
-`--authority-source` and `--expected-authority-source` let the caller pin the
+Authority source and expected authority source let the caller pin the
 **provenance** of the merge authority it is acting on, separately from the
 role × merge-authority × action decision. They drive the
 `authority_source_mismatch` fail-closed reason.
 
-- **What each means.** `--authority-source` is the source the caller *declares*
-  the `--merge-authority` value came from (for example a stable repo policy
+- **What each means.** Authority source is the source the caller *declares*
+  the merge-authority value came from (for example a stable repo policy
   default, a quoted human MR-comment grant, or a parent-task instruction).
-  `--expected-authority-source` is the source the caller *requires* — the
+  Expected authority source is the source the caller *requires* — the
   provenance the merge-authority claim must match to be trustworthy.
 - **Who supplies them.** The same orchestrating caller that resolves the
   identities supplies both. The declared source is whatever provenance the caller
@@ -84,18 +82,18 @@ role × merge-authority × action decision. They drive the
   non-`handoff` actions regardless of source (see the
   [authority matrix](authority-matrix.md)).
 - **When `authority_source_mismatch` fires.** The check runs only when
-  `--expected-authority-source` is non-empty. If an expected source is declared
-  and the passed `--authority-source` does not equal it exactly, the gate blocks
-  with exit code `8` and `reason=authority_source_mismatch`, **before** the
-  role-authority checks. When `--expected-authority-source` is omitted (empty),
+  expected authority source is non-empty. If an expected source is declared
+  and the passed authority source does not equal it exactly, finish blocks
+  with `authority_source_mismatch`, **before** the
+  role-authority checks. When expected authority source is omitted (empty),
   the gate performs no source comparison and proceeds to the authority checks.
   The comparison is an exact string match, so the caller must normalize the
   declared and expected provenance strings to the same form.
-- **How the caller fails closed / escalates.** On exit `8`
-  (`authority_source_mismatch`) the caller must make **no** finish mutation: do
+- **How the caller fails closed / escalates.** On `authority_source_mismatch`
+  the caller must make **no** finish mutation: do
   not approve, merge, or queue auto-merge. Re-resolve the merge-authority
-  provenance from its canonical source, and re-run the gate only with a freshly
-  re-verified, matching `--authority-source`. If the provenance cannot be
+  provenance from its canonical source, and retry `finish_merge_request` only with a freshly
+  re-verified, matching authority source. If the provenance cannot be
   reconciled, stop and escalate to the parent/human with the mismatch rather than
   proceeding on an unverified authority claim.
 

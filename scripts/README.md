@@ -15,4 +15,3 @@ Executable-bit policy: only directly invoked entrypoints keep executable bits.
 `scripts/check.sh` is executable because `npm run check` invokes it by path;
 helper scripts documented with `bash ...` or `node ...` stay non-executable.
 
-GitLab workflow helper scripts are owned by the `/gitlab` skill so installed agent runtimes receive them with the skill. See [`../gitlab/scripts/README.md`](../gitlab/scripts/README.md).
