@@ -619,6 +619,16 @@ contain|retro/SKILL.md|Active memory discovery with graceful degradation
 contain|retro/SKILL.md|if it is unavailable, say so and continue
 contain|retro/SKILL.md|Date-range scoping
 contain|retro/SKILL.md|don't-overfit-to-anecdotes rule
+contain|retro/SKILL.md|Refute before presenting
+contain|retro/SKILL.md|Refute the draft
+contain|retro/SKILL.md|read-only refuter subagent
+contain|retro/SKILL.md|the harness picks the agent type
+contain|retro/reference/refutation.md|Target the finding, not the drafter
+contain|retro/reference/refutation.md|Verdicts only
+contain|retro/reference/refutation.md|Read-only
+contain|retro/reference/refutation.md|safety floor check is the refuter's attestation
+contain|retro/templates/retro-report.md|Refutation log
+contain|retro/templates/retro-report.md|Refutation:
 absent|retro/SKILL.md|memory-retrospective
 # cleanup-codebase-invariants
 contain|cleanup-codebase/SKILL.md|Planning-only by default

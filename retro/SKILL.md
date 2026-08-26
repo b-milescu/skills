@@ -23,7 +23,7 @@ Not this skill: raw memory analytics or aggregate query mechanics (the active me
 
 ## Scopes
 
-Pick one scope per run; both produce the same Retro Report and route findings through the same machinery (signal catalogue, `RF-N` taxonomy + dispositions, owner-doc mapping, routing plan, and the safety-floor check).
+Pick one scope per run; both produce the same Retro Report and route findings through the same machinery (signal catalogue, `RF-N` taxonomy + dispositions, owner-doc mapping, the refuter pass, routing plan, and the safety-floor check).
 
 - **`batch`** (default) — the just-finished `/start-build` + `/start-review` session or `/issue-delivery-loop` batch. Behavior below is unchanged.
 - **`lookback <date range>`** — recurring friction across an explicit date range. Bound the window first. This scope adds four behaviors on top of `batch`:
@@ -36,6 +36,7 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 ## Operating contract
 
 - **Evidence-first.** Every finding carries claim / evidence / source — the same discipline as the Review Context Capsule. One anecdote is a `monitor`; a repeat is a pattern.
+- **Refute before presenting.** A finding the drafter never argued against is a guess with citations. Every report crosses one refuter pass before the user sees it, and each surviving finding carries the strongest counter-argument it beat.
 - **Read-only collection.** Use `/forge snapshot` and read-only git/file inspection. Never mutate change requests, issues, labels, branches, or worktrees while collecting. The only mutations this skill leads to are the follow-up issues the user approves.
 - **Current context first.** The primary input is the run at hand: conversation evidence, builder/reviewer final handoffs, Review Reports, revision rounds, blocker tokens, Gate Receipts, batch metrics, and local leftovers. Expand to the active memory plugin/MCP if present, or older tracker history only to confirm whether a friction is recurring.
 - **Safety floors are not retro material.** Never propose weakening the hard floors in [Effort Scaling](skill://retro/docs/effort-scaling.md): mandatory independent review gate, TDD for behavior-touching work, SHA/CI/authority guards, Context Firewall, child-builder and verifier boundaries, MCP-first transport correctness. A proposal that touches one is classified `human-decision` and stops there.
@@ -48,7 +49,8 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence. The catalogue is a checklist, not a cap — record any evidence-backed friction even when no row matches.
 4. **Classify findings.** One `RF-N` per finding using the taxonomy below. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
 5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.
-6. **Confirm routing with the user**, then file accepted `adopt` / `experiment` findings as issues via `/plan-to-issues` in the repo chosen by the Route-don't-edit rule, using that repo's live triage labels. `monitor` findings stay in the report for the next retro. `human-decision` findings are escalated as questions, not filed as fix issues.
+6. **Refute the draft.** Launch one read-only refuter subagent (the harness picks the agent type) with a fresh context, the draft report, and the evidence locators — not the collection reasoning. It re-derives each finding from its cited source and returns one verdict per `RF-N` using [reference/refutation.md](reference/refutation.md). Apply every verdict before the report leaves the session. Done when every `RF-N` carries a verdict and every survivor carries the counter-argument it withstood.
+7. **Present the refuted report, confirm routing with the user**, then file accepted `adopt` / `experiment` findings as issues via `/plan-to-issues` in the repo chosen by the Route-don't-edit rule, using that repo's live triage labels. `monitor` findings stay in the report for the next retro. `human-decision` findings are escalated as questions, not filed as fix issues.
 
 ## Finding taxonomy
 
@@ -76,3 +78,4 @@ Required fields per finding: category, disposition, claim, evidence + source, ow
 
 - [templates/retro-report.md](templates/retro-report.md) — Retro Report shape with stable `RF-N` IDs, metrics table, safety floor check, and routing plan.
 - [reference/signal-catalogue.md](reference/signal-catalogue.md) — friction signal inventory with detection sources and category definitions.
+- [reference/refutation.md](reference/refutation.md) — refuter attack surface, verdict vocabulary, and refuter boundary.
