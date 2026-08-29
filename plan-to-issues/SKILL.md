@@ -3,13 +3,13 @@ name: plan-to-issues
 description: >-
   Break an approved plan, spec, PRD, or conversation into independently-grabbable
   tracker issues as vertical slices with target-repo triage labels. Use when the
-  user asks for /gitlab-to-issues, /plan-to-issues, "break this into issues",
+  user asks for /plan-to-issues, "break this into issues",
   GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
 ---
 
 # plan-to-issues
 
-Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels. `/gitlab-to-issues` is the old name for this skill; treat it as `/plan-to-issues`.
+Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels.
 
 ## Quick start
 
