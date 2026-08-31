@@ -66,6 +66,17 @@ merged, queued, and blocked; total/max review rounds; CI failures; brief defects
 and follow-up issues created. Use `N/A — <why>` when unobservable. Queue counts
 as queued, never merged.
 
+A *brief defect* is a defect in the issue as written — a wrong baseline
+observation, a stale premise, or an unsatisfiable acceptance criterion —
+discovered during delivery. Count it separately from the other three root-cause
+classes in the same split: a *builder defect* (the issue was sound but the work
+missed it), an *evidence gap* (a claim landed without the proof it required), and
+*reviewer scope creep* (the review demanded more than the issue asked). This is
+the four-way root-cause split named in
+[the retro signal catalogue](skill://retro/reference/signal-catalogue.md); the
+definition lives here so a coordinator can count it at batch close without
+loading the `retro` skill.
+
 ## Floors
 
 Project-profile hooks may specialize labels, branches, CI jobs, docs, gate,
