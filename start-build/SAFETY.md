@@ -64,10 +64,10 @@ Valid regression evidence includes:
 - "Just one raw external call." Use adapters.
 - "Observe-only initializes the executor, so it's fine." Verify no mutating methods are called.
 - "This is only a refactor." Safety surfaces still need regression evidence.
-- "Float is simpler." Not for money/domain math.
+- "Float is simpler." Use an exact numeric type where values must stay precise.
 - "I'll broaden scope while here." Open a separate issue.
 - "The test exercises the code." Tests need meaningful assertions.
-- "Local fallback files can be committed for audit." No; local-only advisory.
+- "Local fallback files can be committed for audit." Keep local-only advisory output out of the commit.
 - "I'll paste the failing log into the MR." Strip secrets first; redact tokens, headers, env values.
 
 ## Escalation
