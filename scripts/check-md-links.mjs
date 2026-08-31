@@ -212,6 +212,11 @@ function checkDestination({ file, lineNumber, destination }) {
     return;
   }
 
+  if (/^skill:/iu.test(destination)) {
+    checkSkillDestination({ file, lineNumber, destination });
+    return;
+  }
+
   if (isExternalDestination(destination)) {
     checkExternalDestination({ file, lineNumber, destination });
     return;
@@ -228,6 +233,27 @@ function checkDestination({ file, lineNumber, destination }) {
   if (fragment && isMarkdownFile(targetPath) && !anchorExists(targetPath, fragment)) {
     const targetLabel = target || path.basename(file.absolute);
     addDiagnostic(file, lineNumber, `anchor "${decodeFragment(fragment)}" not found in ${targetLabel}`);
+  }
+}
+
+function checkSkillDestination({ file, lineNumber, destination }) {
+  const withoutScheme = destination.replace(/^skill:(?:\/\/)?/iu, '');
+  const { target, fragment } = splitLocalDestination(withoutScheme);
+
+  if (!target) {
+    addDiagnostic(file, lineNumber, `skill:// link has no target path: ${destination}`);
+    return;
+  }
+
+  const targetPath = path.join(REPO_ROOT, target);
+
+  if (!fs.existsSync(targetPath)) {
+    addDiagnostic(file, lineNumber, `skill:// target does not exist: ${target}`);
+    return;
+  }
+
+  if (fragment && isMarkdownFile(targetPath) && !anchorExists(targetPath, fragment)) {
+    addDiagnostic(file, lineNumber, `anchor "${decodeFragment(fragment)}" not found in ${target}`);
   }
 }
 
