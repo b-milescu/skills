@@ -63,8 +63,6 @@ node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --rec
 node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <opaque provider locator> --gate-command <command> --gate-policy-ref <policy>
 ```
 
-## Pre-ready validation
-
 ## Parent verification checklist
 
 1. `forge preflight` binds provider/repository/default branch and the intended
@@ -98,6 +96,10 @@ independent reviewer verification.
 
 ## Stale exact-SHA evidence fails closed after a revision push
 
+Any push makes older-commit local gate, CI, review, and Gate Receipt pointers
+stale evidence until rebound. Parent-owned mode requires a new exact-commit Gate Receipt
+before another ready/review handoff.
+
 ## Evidence-ready tokens
 
 - `change-request-description-reviewer-lift-current`
@@ -108,7 +110,3 @@ independent reviewer verification.
 Before the receipt, route `phase: parent-gate`, next actor `parent`, next action
 `parent-run-gate`, with no extra decision. A Gate Receipt is canonical gate
 evidence; later description updates are delta-only.
-
-Any push makes older-commit local gate, CI, review, and Gate Receipt pointers
-stale evidence until rebound. Parent-owned mode requires a new exact-commit Gate Receipt
-before another ready/review handoff.
