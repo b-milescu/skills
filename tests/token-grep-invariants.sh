@@ -430,6 +430,10 @@ contain|start-review/REVIEW-FLOW.md|missing/incomplete/unknown/wrong binding
 contain|start-review/REVIEW-FLOW.md|authorized written waiver
 contain|start-review/REVIEW-FLOW.md|recorded scope/provenance
 contain|start-review/REVIEW-FLOW.md|reviewer cannot self-waive
+contain|start-review/REVIEW-FLOW.md|documented no-CI project with a wholly-absent pipeline
+contain|start-review/REVIEW-FLOW.md|no pipeline has ever run on any ref
+contain|start-review/REVIEW-FLOW.md|any pipeline history returns it to the missing/unknown-binding row and blocks
+contain|start-review/REVIEW-FLOW.md|the only case where an absent pipeline is the expected state
 contain|start-review/REVIEW-FLOW.md|never substitutes for CI
 contain|start-review/REVIEW-FLOW.md|never grants approval
 contain|start-review/REVIEW-FLOW.md|answered from evidence
@@ -911,6 +915,23 @@ for file in start-review/SKILL.md start-review/templates/filling-guide.md; do
     fail "$file duplicates CI matrix"
   fi
 done
+
+# review-ci-oq-no-ci-row (#392): a wholly-absent pipeline in a documented no-CI
+# project has its own dedicated, forge-neutral row inside the extracted CI
+# decision table section (Reading B, dedicated-row form). The row must live
+# inside the #396-hardened sed range and must not name a provider mechanic.
+no_ci_section=$(sed -n '/^## CI and Open Question decision tables$/,/^## Finish authority source precedence$/p' start-review/REVIEW-FLOW.md)
+[[ -n "$no_ci_section" ]] || fail "REVIEW-FLOW.md CI decision table section is empty; no-CI row guard cannot fire"
+grep -Eq '^\|[[:space:]]*documented no-CI project with a wholly-absent pipeline[[:space:]]*\|' <<<"$no_ci_section" \
+  || fail "REVIEW-FLOW.md CI decision table missing the dedicated documented no-CI project row (#392)"
+grep -Fq 'no pipeline has ever run on any ref' <<<"$no_ci_section" \
+  || fail "REVIEW-FLOW.md no-CI row missing the pipeline-history carve-out (#392)"
+if grep -Eiq 'no_ci_expected|GitLab|glab' <<<"$no_ci_section"; then
+  fail "REVIEW-FLOW.md CI decision table names a provider mechanic; the no-CI row must stay forge-neutral (#392)"
+fi
+# ci-finish-guards.md must agree with the canonical table and keep its pointer.
+require_text gitlab/reference/ci-finish-guards.md 'REVIEW-FLOW\.md#ci-decision-table' 'ci-finish-guards CI decision table pointer (#392)'
+require_text gitlab/reference/ci-finish-guards.md 'dedicated forge-neutral row' 'ci-finish-guards agreement with the dedicated no-CI row (#392)'
 
 # review-context-policy capsule rows + launch prompts
 for file in start-review/REVIEW-FLOW.md start-review/templates/review-report.md; do
