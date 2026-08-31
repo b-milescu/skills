@@ -147,11 +147,15 @@ taste, naming, and formatting remain non-blocking `C-N`.
 | conditionally required job absent | allowed only when target-repo Check Gate or `project_profile` declares it not applicable and every applicable required job succeeds; rules-omitted is absent, not skipped |
 | failed/canceled/skipped applicable CI | blocks pass, approval, and finish |
 | missing/incomplete/unknown/wrong binding | blocks pass, approval, and finish |
+| documented no-CI project with a wholly-absent pipeline | pass/approval/finish eligible only when the target-repo Check Gate or `project_profile` declares no CI is configured and its required-job set is empty and no pipeline has ever run on any ref; any pipeline history returns it to the missing/unknown-binding row and blocks |
 | authorized written waiver | applies only to its recorded scope/provenance; reviewer cannot self-waive |
 
-Absent conditionally required CI for any other reason blocks. Local Gate PASS,
-readiness, or Gate coverage never substitutes for CI and never grants approval
-or finish.
+Absent conditionally required CI for any other reason blocks. A wholly-absent
+pipeline otherwise counts as a missing binding and blocks; the documented no-CI
+project row is the only case where an absent pipeline is the expected state
+rather than a blocker, and it never rests on the empty-set success of row 3.
+Local Gate PASS, readiness, or Gate coverage never substitutes for CI and
+never grants approval or finish.
 
 ### Open Question decision table
 
