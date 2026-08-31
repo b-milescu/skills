@@ -40,6 +40,7 @@ These values are this repo's project-specific vocabulary and match `setup-dev-sk
 - Use `docs` or `refactor` as optional kind labels when the slice fits.
 - Apply `needs-info` when an issue needs more information before AFK work, and state the missing information in the issue/MR body or a comment.
 - Apply `human-decision` when an issue needs a maintainer decision before AFK work, and state the decision request in the issue/MR body or a comment. Keep this distinct from the MR-level `human-decision-needed` Review Report verdict token.
+- When the maintainer decision is recorded and the `human-decision` label is removed, reconcile the issue body in that same step: mark the decision acceptance criterion satisfied and point it at the durable decision note that records the decision, so the body cites that record instead of restating the decision. This exit rule is bounded to that label transition; it does not license rewriting issue bodies generally.
 - Do not apply `needs-triage`, `ready-for-human`, `wontfix`, `needs-revision`, or `needs-unblock`; those labels do not exist in this project.
 - If work needs revision or unblock, state that in the issue/MR body or comment and ask a maintainer whether the live vocabulary should expand.
 
