@@ -45,11 +45,15 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 ## Flow
 
 1. **Bound the retro.** Name the batch/session, the issue/change-request IDs in scope, and the time range. Ask only when scope is genuinely ambiguous.
-2. **Collect evidence (read-only).** Batch metrics; per-change request review rounds and verdicts; `Action blocker` / `blocker_token` values; Gate Receipts and gate outcomes; timeout/stale/interrupted rounds; transport fallbacks and repeated workarounds; local state (`git worktree list`, `git for-each-ref refs/tmp`, `git status --porcelain`, gate result on the fresh default branch); ceremony-vs-tier fit per [Effort Scaling](skill://retro/docs/effort-scaling.md). Done when every source above is inspected or explicitly marked `N/A — <why>`.
+2. **Collect evidence (read-only).** Batch metrics; per-change request review rounds and verdicts; `Action blocker` / `blocker_token` values; Gate Receipts and gate outcomes; timeout/stale/interrupted rounds; transport fallbacks and repeated workarounds; local state (`git worktree list`, `git for-each-ref refs/tmp`, `git status --porcelain`, gate result on the fresh default branch); ceremony-vs-tier fit per [Effort Scaling](skill://retro/docs/effort-scaling.md).
+
+   **Complete when:** every source above is inspected or marked `N/A — <why>`.
 3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence. The catalogue is a checklist, not a cap — record any evidence-backed friction even when no row matches.
 4. **Classify findings.** One `RF-N` per finding using the taxonomy below. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
 5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.
-6. **Refute the draft.** Launch one read-only refuter subagent (the harness picks the agent type) with a fresh context, the draft report, and the evidence locators — not the collection reasoning. It re-derives each finding from its cited source and returns one verdict per `RF-N` using [reference/refutation.md](reference/refutation.md). Apply every verdict before the report leaves the session. Done when every `RF-N` carries a verdict and every survivor carries the counter-argument it withstood.
+6. **Refute the draft.** Launch one read-only refuter subagent (the harness picks the agent type) with a fresh context, the draft report, and the evidence locators — not the collection reasoning. It re-derives each finding from its cited source and returns one verdict per `RF-N` using [reference/refutation.md](reference/refutation.md). Apply every verdict before the report leaves the session.
+
+   **Complete when:** every `RF-N` carries a verdict and every survivor carries the counter-argument it withstood, or marked `N/A — <why>`.
 7. **Present the refuted report, confirm routing with the user**, then file accepted `adopt` / `experiment` findings as issues via `/plan-to-issues` in the repo chosen by the Route-don't-edit rule, using that repo's live triage labels. `monitor` findings stay in the report for the next retro. `human-decision` findings are escalated as questions, not filed as fix issues.
 
 ## Finding taxonomy

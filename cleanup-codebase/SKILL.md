@@ -61,6 +61,8 @@ Code, docs, config, deps (upgrades as separate reviewable slices), CI, examples.
 2. Resolve repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); a dirty worktree means call out possible noise. Load project context: rulebook, README/CONTRIBUTING, `docs/agents/*`, check-gate docs, `CONTEXT.md`, and ADRs.
 3. For repo-wide scope, fan out read-only discovery subagents for broad coverage (see Boundaries). For an explicit narrower scope (step 1), use enough read-only passes to cover that scope. If coverage is incomplete, label the run partial, list uninspected surfaces under known gaps before findings, and do not present absence-of-debt claims.
 4. Discover ecosystems from manifests/config/CI, then build the candidate list (deslop and destale), applying the deslop gate sequence and the destale source-of-truth gate with recorded proof and negative checks.
+
+   **Complete when:** every candidate carries a gate verdict and every unproven lead is recorded as a known gap rather than dropped, or marked `N/A — <why>`.
 5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
 6. After approval, route to `/plan-to-issues` for issue creation; implementation goes to the build workflow (see Operating stance).
 

@@ -57,6 +57,9 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
 5. Implement vertical TDD slices. Use provider fixtures or fakes; never use live
    product/operator mutation as test evidence. Run only targeted checks during
    implementation and keep the Draft packet current.
+
+   **Complete when:** every issue acceptance criterion is covered by a landed
+   slice with a passing targeted check or marked `N/A — <why>`.
 6. Before handoff, update every affected caller/test/doc/generated copy. Bind
    Reviewer Lift `Reviewed SHA`, CI run, local gate, changed paths, surfaces,
    authorities, and delta to the current commit. Validate non-`none` finding
