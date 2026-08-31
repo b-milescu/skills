@@ -73,6 +73,7 @@ Copy these fields from the builder's `Reviewer Lift` block before reading the di
 | Reviewed SHA | `<copy from Reviewer Lift; must equal change request head sha at approve-time>` |
 | Finding bindings | `<copy from Reviewer Lift; verify every report locator + originating reviewed SHA + short ID tuple against the originating report, or none>` |
 | Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
+| Transport | `<copy from Reviewer Lift; verify mcp / glab-fallback / n/a matches the finish-result transport enum and that any glab-fallback names its eligible MCP gap>` |
 | Gate owner | `<copy from Reviewer Lift; verify builder vs parent ownership and parent-owned child boundary when applicable>` |
 | Gate coverage | `<copy from Reviewer Lift; verify full-local / hybrid / ci-only; parent-owned is invalid coverage>` |
 | Gate coverage rationale | `<copy from Reviewer Lift; verify policy source, required CI mapping, unmapped CI-only jobs or none, and exact-SHA freshness>` |
