@@ -69,6 +69,20 @@ try {
   // A missing/invalid gate_owner_received fails closed rather than silently passing.
   assert.notEqual(run(handoff({ status: "ready-for-review" })).status, 0, "missing gate_owner_received fails");
 
+  // Reference pin (issue #400): the validator must stay wired into workflow prose
+  // with a runnable command line, following the sibling validators' pattern, so it
+  // cannot silently become orphaned again. The parent spot-check and the child
+  // self-check each name a runnable invocation of this script.
+  const wiredDocs = ["start-build/reference/parent-orchestrator.md", "start-build/reference/child-builder.md"];
+  for (const rel of wiredDocs) {
+    const body = readFileSync(join(root, rel), "utf8");
+    assert.match(
+      body,
+      /node skill:\/\/start-build\/scripts\/validate-handoff-gate-consistency\.mjs --handoff/,
+      `${rel} names a runnable validate-handoff-gate-consistency invocation`,
+    );
+  }
+
   console.log("handoff-gate-consistency: PASS");
 } finally {
   rmSync(work, { recursive: true, force: true });
