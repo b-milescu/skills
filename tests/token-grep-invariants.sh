@@ -954,6 +954,26 @@ for prompt in "$reviewer_prompt" "$builder_prompt"; do
   ! printf '%s' "$prompt" | grep -Eiq 'invoke (start-review|start-build) and gitlab|Reading? (an? )?(internal )?reference|MR URL' || fail 'launch prompt owns transport or raw policy reads'
 done
 
+# issue #399: launch-prompt Forbidden-actions lines must not bundle a
+# prohibition that subsumes an action the same prompt requires.
+reviewer_forbidden="$(printf '%s\n' "$reviewer_prompt" | grep -E '^Forbidden actions:')"
+builder_forbidden="$(printf '%s\n' "$builder_prompt" | grep -E '^Forbidden actions:')"
+[[ -n "$reviewer_forbidden" ]] || fail 'reviewer prompt missing Forbidden actions line'
+[[ -n "$builder_forbidden" ]] || fail 'builder prompt missing Forbidden actions line'
+# An MR note is a mutation (gitlab/reference/mutation-guard.md), so "mutate
+# provider state" subsumed the Review Report publication the same prompt
+# requires. The reviewer forbidden line must enumerate the real state-changing
+# actions instead. Reintroducing the phrase must FAIL this test.
+if printf '%s' "$reviewer_forbidden" | grep -Fq 'mutate provider state'; then
+  fail 'reviewer Forbidden actions line still forbids "mutate provider state"; it subsumes the required Review Report publication'
+fi
+# The parent-owned-gate condition must be its own line, not a trailing clause a
+# skim or truncation can drop — dropping it inverted a builder-owned gate into a
+# parent-owned one. The Forbidden actions line must not end with that condition.
+if printf '%s' "$builder_forbidden" | grep -Eiq 'Gate owner is parent|Gate Receipt|ready transition'; then
+  fail 'builder Forbidden actions line still carries the parent-owned-gate conditional as a trailing clause'
+fi
+
 # review-reject close-wording scan
 while IFS=: read -r file line text; do
   [[ -n "${file:-}" ]] || continue

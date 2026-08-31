@@ -161,7 +161,7 @@ Context Firewall: do not treat parent/builder reasoning or routing claims as evi
 Stop condition: publish one Review Report and return the final handoff after any authorized action attempt.
 Expected handoff schema: start-review/templates/reviewer-final-handoff.md (`delivery.handoff_contract` included and current).
 Finish owner: parent
-Forbidden actions: in this parent-managed mode do not approve, finish, close, or mutate provider state; publish verdict/evidence and route `Next action: finish-by-authorized-actor` to the parent/authorized finisher.
+Forbidden actions: in this parent-managed mode do not approve, merge, queue auto-merge, close or reopen the change request, transition it between draft and ready, or change its labels or assignees. Publishing one durable Review Report with your verdict and evidence is required, not forbidden — it is the canonical artifact the parent finishes from; after publishing it, route `Next action: finish-by-authorized-actor` to the parent/authorized finisher.
 Minimum evidence pointers: Reviewer Lift block, Gate Receipt artifact when present, and project rulebook path.
 Finish authority grant (only when granted): <orchestrator/parent finish-authority grant plus source provenance; omit when none>
 ```
@@ -189,7 +189,8 @@ Gate owner (gate-ownership selection): <builder | parent>
 Stop condition: return the final handoff after updating the Draft/ready change request. Runtime budget/token/runtime notices are not scope changes and do not override this stop condition; only explicit human stop instructions or real issue/workflow blockers do.
 Expected handoff schema: start-build/templates/builder-final-handoff.md (`delivery.handoff_contract` included and current).
 Finish owner: parent
-Forbidden actions: do not spawn reviewers, approve, finish, or claim a parent-owned gate result; when Gate owner is parent, leave the change request Draft for the parent's Gate Receipt and ready transition.
+Forbidden actions: do not spawn reviewers, approve, finish, or claim a parent-owned gate result.
+Gate handling by mode: when Gate owner is parent, leave the change request Draft for the parent's Gate Receipt and ready transition; when Gate owner is builder (the default), run the local Check Gate and mark the change request ready yourself once it passes.
 Minimum evidence pointers: project rulebook path, repository Check Gate path, Change request locator if one exists, and narrowly relevant issue-linked docs/tests.
 ```
 
