@@ -728,6 +728,10 @@ contain|start-build/templates/review-packet-compact.md|parent-owned-gate.md
 contain|start-review/templates/review-report.md|parent-owned-gate.md
 contain|issue-delivery-loop/SKILL.md|parent-owned
 contain|docs/agents/check-gate.md|tests/token-grep-invariants.sh
+# triage-labels-human-decision-exit
+contain|docs/agents/triage-labels.md|reconcile the issue body in that same step
+contain|docs/agents/triage-labels.md|point it at the durable decision note
+contain|docs/agents/triage-labels.md|does not license rewriting issue bodies generally
 # issue-delivery-loop-invariants
 contain|issue-delivery-loop/SKILL.md|forge preflight
 contain|issue-delivery-loop/SKILL.md|default-branch CI health
