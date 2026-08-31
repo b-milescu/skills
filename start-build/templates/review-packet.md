@@ -40,6 +40,7 @@ Before publication or a ready transition, validate every non-`none` `Finding bin
 | Reviewed SHA | `<change-request head commit at ready-marking; update on every post-ready push>` |
 | Finding bindings | `<none, or report=<stable report locator>; sha=<originating reviewed commit>; id=<MF-N/SF-N/C-N>; separate multiple tuples with <br>; validate against originating reports before publication/ready>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
+| Transport | `<build-side mutation transport; one of mcp / glab-fallback (gap: <named MCP gap from gitlab/SKILL.md>) / n/a; matches finish-result-schema transport enum; defaults to mcp when absent>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |
 | Gate coverage rationale | `<policy source + required CI mapping; unmapped CI-only jobs or none; stale/wrong-SHA evidence invalid after push>` |
