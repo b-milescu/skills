@@ -20,6 +20,8 @@ Blocked external: [example](https://example.com/outside-policy).
 Broken file: [missing](missing.md).
 Broken anchor: [bad anchor](details.md#missing-heading).
 Allowed skill URI: [shared resource](skill://start-build/docs/decoupling-contract.md).
+Broken skill target: [bad skill](skill://start-build/reference/does-not-exist.md).
+Broken skill anchor: [bad skill anchor](skill://start-build/SAFETY.md#no-such-anchor).
 MD
 
 cat > "$TMPDIR/docs/details.md" <<'MD'
@@ -43,7 +45,9 @@ fi
 for expected in \
   "$TMPDIR/docs/index.md:10: external URL host \"example.com\" is not allowlisted" \
   "$TMPDIR/docs/index.md:11: target file does not exist: missing.md" \
-  "$TMPDIR/docs/index.md:12: anchor \"missing-heading\" not found in details.md"; do
+  "$TMPDIR/docs/index.md:12: anchor \"missing-heading\" not found in details.md" \
+  "$TMPDIR/docs/index.md:14: skill:// target does not exist: start-build/reference/does-not-exist.md" \
+  "$TMPDIR/docs/index.md:15: anchor \"no-such-anchor\" not found in start-build/SAFETY.md"; do
   if [[ "$output" != *"$expected"* ]]; then
     echo "missing expected diagnostic: $expected" >&2
     echo "--- output ---" >&2
