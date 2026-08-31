@@ -76,9 +76,11 @@ and provider-native post-read. A failed phase never tries another transport.
 
 ## Safety floors
 
-No credential reads/printing; no weakened gates, locks, migrations, deploy
-policy, exact-commit CI, independent review, child/parent/reviewer/verifier
-boundaries, or authority guards. Queued finish is non-terminal. Post-merge
+[SAFETY.md](skill://start-build/SAFETY.md) is the single owner of this pair's
+safety floors — read them there rather than re-deriving them here. Its
+non-negotiables and done-criteria tiers hold the line on exact-commit CI,
+independent review, and child/parent/reviewer/verifier boundaries, plus
+authority guards; queued finish is non-terminal and Post-merge
 verification is read-only. Keep scope tight and prefer the smallest direct
 change.
 
