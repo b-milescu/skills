@@ -761,6 +761,7 @@ contain|issue-delivery-loop/SKILL.md|#380 coordinator-isolation
 contain|issue-delivery-loop/SKILL.md|cleanup ordering
 contain|issue-delivery-loop/SKILL.md|Project-profile hooks
 contain|issue-delivery-loop/SKILL.md|provider-native post-read
+contain|issue-delivery-loop/SKILL.md|a defect in the issue as written
 absent|issue-delivery-loop/SKILL.md|skill://gitlab
 absent|issue-delivery-loop/SKILL.md|glab 
 contain|start-build/reference/parent-orchestrator.md|mr-builder-trivial
