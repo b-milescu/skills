@@ -39,7 +39,10 @@ source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
 
 extract_snippet() {
   local file="$1" name="$2"
-  extract_markdown_section "$file" "### Snippet: $name" '^### Snippet:'
+  # Terminate on the next heading of ANY level (not just the next `### Snippet:`)
+  # so the final snippet does not run to EOF and absorb trailing `## ` sections
+  # (e.g. `## Optional helper scripts`, `## Troubleshooting`). See issue #388.
+  extract_markdown_section "$file" "### Snippet: $name" '^#'
 }
 
 require_snippet() {
@@ -150,6 +153,17 @@ for name in \
 done
 snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
 [[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"
+
+# --- Snippet terminator: a body stops at the next heading of ANY level (#388) ---
+# extract_snippet must terminate a snippet body on the next heading of any level,
+# not only on the next `^### Snippet:` heading. Otherwise the final snippet
+# (finish-mr-authority-aware) runs to EOF and absorbs the trailing `## ` sections
+# (e.g. `## Optional helper scripts`, `## Troubleshooting`) that are NOT part of
+# the snippet. This regression fails if the terminator is reverted to
+# `^### Snippet:`, which would let those `## ` headings leak back into the body.
+finish_trailing_headings="$(printf '%s\n' "$finish_body" | grep -c '^## ' || true)"
+[[ "$finish_trailing_headings" -eq 0 ]] \
+  || fail "finish-mr-authority-aware body absorbed $finish_trailing_headings trailing '## ' heading(s); the snippet terminator must stop at the next heading of any level"
 
 
 CONTRACT="gitlab/reference/snippet-transports.md"
