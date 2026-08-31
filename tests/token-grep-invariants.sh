@@ -904,6 +904,7 @@ assert_enum "reviewer handoff blocker enum" "$(yaml_field start-review/templates
 
 # review-ci-oq: no provider mapping in generic table; no matrix copy
 section=$(sed -n '/^## CI and Open Question decision tables$/,/^## Finish authority source precedence$/p' start-review/REVIEW-FLOW.md)
+[[ -n "$section" ]] || fail "REVIEW-FLOW.md CI decision table section is empty; heading renamed or moved (guard would not fire)"
 if grep -Eq 'headRefOid|lastMergeCommit|GitLab' <<<"$section"; then fail "provider mapping in generic table"; fi
 for file in start-review/SKILL.md start-review/templates/filling-guide.md; do
   if grep -Eq 'rules-omitted|conditionally required job absent|reviewer cannot self-waive' "$file"; then
