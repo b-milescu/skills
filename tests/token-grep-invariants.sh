@@ -899,7 +899,7 @@ fi
 
 # review-blocked-verdict enums
 normalize_enum() {
-  tr '/|' '\n' | sed -E 's/[`"<>]//g; s/^[[:space:]]+//; s/[[:space:]]+$//' | sed '/^$/d'
+  sed -E 's/[[:space:]]+— canonical values:.*$//' | tr '/|' '\n' | sed -E 's/[`"<>]//g; s/^[[:space:]]+//; s/[[:space:]]+$//' | sed '/^$/d'
 }
 assert_enum() {
   local label=$1 actual=$2 expected=$3
@@ -911,8 +911,15 @@ report_row() {
 yaml_field() {
   sed -nE "s/^[[:space:]]+$2:[[:space:]]*\"([^\"]+)\".*/\1/p" "$1" | head -n1
 }
-verdicts=$'pass\nrequest-changes\nreject\nblocked'
-blockers=$'none\nmissing-authority\nstale-or-missing-ci\nchanged-head-sha\nmerge-conflict\nsha-bound-action-unsupported\npreflight-failure\npermission-failure\nhuman-decision-needed\npartial-review\nsecret-exposure-suspected\nother'
+handoff_token_enum() {
+  node --input-type=module - start-review/reference/handoff-tokens.schema.json "$1" <<'NODE'
+import fs from "node:fs";
+const schema = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+process.stdout.write(schema[process.argv[3]].join("\n"));
+NODE
+}
+verdicts="$(handoff_token_enum review_verdict)"
+blockers="$(handoff_token_enum action_blocker)"
 assert_enum "Review Report verdict enum" "$(report_row start-review/templates/review-report.md 'Review verdict')" "$verdicts"
 assert_enum "reviewer handoff verdict enum" "$(yaml_field start-review/templates/reviewer-final-handoff.md review_verdict)" "$verdicts"
 assert_enum "Review Report blocker enum" "$(report_row start-review/templates/review-report.md 'Action blocker')" "$blockers"
