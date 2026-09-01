@@ -21,7 +21,7 @@ This rulebook is a pointer-first entry point. Keep live tracker, label, check-ga
 | --- | --- | --- |
 | `README.md` | Overview, layout, install, skill catalogue. | Live ops or workflow syntax. |
 | `CLAUDE.md` | Agent routing and this ownership map. | Repeated inventories or procedures. |
-| `docs/agents/` | Repo tracker, labels, gates, guardrails, workflows. | Skill internals or broad onboarding. |
+| `docs/agents/` | Tracker, labels, gates, coding guardrails, and dev workflow skill references. | Skill internals or onboarding. |
 | `setup-dev-skills/` | Creates/reconciles target-repo Agent Setup Docs. | Live policy after setup. |
 | `CONTEXT.md` | Project glossary and relationships. | Ops or durable decisions. |
 | `docs/adr/` | Durable design decisions. | Glossary or live ops. |
