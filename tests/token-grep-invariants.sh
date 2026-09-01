@@ -728,6 +728,11 @@ contain|start-build/templates/review-packet-compact.md|parent-owned-gate.md
 contain|start-review/templates/review-report.md|parent-owned-gate.md
 contain|issue-delivery-loop/SKILL.md|parent-owned
 contain|docs/agents/check-gate.md|tests/token-grep-invariants.sh
+# check-gate-fabricated-home-doc
+contain|docs/agents/check-gate.md|fabricated disposable HOME containing stub required external skills
+contain|docs/agents/check-gate.md|not the operator's real HOME
+contain|docs/agents/check-gate.md|no `AGENT_SKILLS_CHECK_HOME` override
+contain|docs/agents/check-gate.md|only that real-HOME operator run detects installed-runtime external-skill drift
 # triage-labels-human-decision-exit
 contain|docs/agents/triage-labels.md|reconcile the issue body in that same step
 contain|docs/agents/triage-labels.md|point it at the durable decision note
