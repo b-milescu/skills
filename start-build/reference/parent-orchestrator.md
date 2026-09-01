@@ -116,7 +116,7 @@ authority grants it; otherwise stop at the most permissive authorized action.
 
 ## Reviewer launch timing
 
-Step 5 launches the final reviewer in parallel with CI for every tier as soon as the build handoff lands. This parent-side sequencing never substitutes for the reviewer's exact-SHA CI verification, bounded wait, or fail-closed policy: candidate-bound failed or canceled CI blocks finish, and the reviewer independently applies `start-review` policy to non-pass-eligible CI.
+Parallel launch is the default for every tier: step 5 starts the final reviewer with CI as soon as the build handoff lands. This parent-side sequencing never substitutes for the reviewer's exact-SHA CI verification, bounded wait, or fail-closed policy. For candidate-bound failed/canceled CI, do not finish; the reviewer independently applies `start-review` policy to non-pass-eligible CI.
 
 - Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
 
