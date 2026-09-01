@@ -24,7 +24,7 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 | Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` |
+| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` — canonical values: [`handoff-tokens.schema.json`](../reference/handoff-tokens.schema.json) |
 | Finish authority | `<verified finish authority value or blocked: missing-authority>` |
 | Finish authority source | `<verified finish authority source or blocked: missing-authority>` |
 | Finish owner | `<parent for parent-managed dev-flow; otherwise reviewer / authorized actor / N/A>` |
