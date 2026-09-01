@@ -41,9 +41,9 @@ Default WIP: 1; serial by default.
    its compact claims from provider-native Tier 1 or repository Tier 2 evidence,
    preserving reviewed-commit binding and explicit authority provenance.
    Parent-owned candidates route through the parent-owned Gate Receipt contract before ready.
-7. Launch independent review in parallel with commit-bound CI as soon as the
-   exact candidate gate contract allows; do not block-watch CI before reviewer
-   launch. A failed/canceled bound CI run blocks pass/finish, never queues.
+7. Launch independent review in parallel with CI as soon as the exact candidate
+   gate contract allows; do not block-watch CI before reviewer launch. A
+   failed/canceled commit-bound CI run blocks pass/finish, never queues.
 8. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
    `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
