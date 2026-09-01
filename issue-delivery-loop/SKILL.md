@@ -2,7 +2,7 @@
 name: issue-delivery-loop
 description: >-
   Parent coordinator for bounded GitLab, GitHub, or Azure DevOps issue delivery.
-  Uses WIP-1 by default and routes builders/reviewers without duplicating policy.
+  Automatically fans out provably decoupled ready items and routes builders/reviewers.
 ---
 
 # Issue Delivery Loop
@@ -11,16 +11,21 @@ Coordinate a bounded ready-issue batch. Invoke `forge preflight` once, then use
 the selected provider for every snapshot, publication, action, and post-merge
 read. Generic callers do not branch on provider afterward.
 
-Default WIP: 1; serial by default.
+Default: fan out every provably decoupled subset.
 
 1. Bind provider/repository/default branch/readiness profile through `forge`.
    Read the bounded ready queue and default-branch CI health. Unknown red health
    is surfaced before fan-out; a recorded known-red baseline may proceed.
    Ready selection respects dependency ordering.
-2. Default WIP is one. Parallel work requires the shared
+2. For a multi-item ready batch, evaluate the shared
    [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md)
-   before any branch/worktree or child launch. Preserve coordinator checkout
-   isolation; children must not copy auxiliary-index artifacts between worktrees.
+   per pair before the first child launch.
+   Automatically launch every provably decoupled subset in parallel. Use one child
+   per item and one issue/worktree/branch/Draft change request/Review Packet per
+   child. Coupled members serialize only within their coupled cluster in dependency order.
+   Never serialize otherwise decoupled items. Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP.
+   Preserve coordinator checkout isolation;
+   children must not copy auxiliary-index artifacts between worktrees.
 3. Classify every issue/change request before launch:
    - `trivial`: mechanical only; no runtime, safety, schema, CI, state, deploy,
      concurrency, broad coupling, or broad harness change.

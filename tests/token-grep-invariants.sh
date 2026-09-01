@@ -747,7 +747,9 @@ contain|docs/agents/triage-labels.md|does not license rewriting issue bodies gen
 # issue-delivery-loop-invariants
 contain|issue-delivery-loop/SKILL.md|forge preflight
 contain|issue-delivery-loop/SKILL.md|default-branch CI health
-contain|issue-delivery-loop/SKILL.md|serial by default
+contain|issue-delivery-loop/SKILL.md|Automatically launch every provably decoupled subset in parallel
+contain|issue-delivery-loop/SKILL.md|Coupled members serialize only within their coupled cluster in dependency order
+contain|issue-delivery-loop/SKILL.md|Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP
 contain|issue-delivery-loop/SKILL.md|dependency ordering
 contain|issue-delivery-loop/SKILL.md|Decoupling Contract
 contain|issue-delivery-loop/SKILL.md|coordinator checkout
