@@ -107,6 +107,11 @@ contain|start-build/reference/child-builder.md|must not start a reviewer
 absent|start-build/reference/child-builder.md|subagent({ action: "list" })
 contain|start-build/SKILL.md|- **Child `mr-builder`:**
 contain|start-build/SKILL.md|skill://start-build/reference/child-builder.md
+# handoff-token-validator-wiring
+re|start-build/reference/child-builder.md|validate-handoff-tokens\.mjs.*workflow-time
+re|start-build/reference/parent-orchestrator.md|validate-handoff-tokens\.mjs.*workflow-time
+re|start-review/templates/filling-guide.md|validate-handoff-tokens\.mjs.*workflow-time
+re|start-review/REVIEW-FLOW.md|validate-handoff-tokens\.mjs.*workflow-time
 # start-build-context-read-matrix
 re|start-build/SKILL.md|^## Invocation modes$
 re|start-build/SKILL.md|\*\*Standalone:\*\*
