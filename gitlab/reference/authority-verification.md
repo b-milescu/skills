@@ -80,7 +80,7 @@ The enforced role × merge-authority × action sub-decision is in [`authority-ma
 
 ## Finish/result reporting
 
-Record authority evidence separately from transport evidence:
+Record Authority Verification evidence separately from transport evidence:
 
 - Authority: verified source refs, precedence/conflict result, caller role/context, identity status, and `authority_verification_source`.
 - Transport: `via=mcp`, `via=glab-fallback`, or `via=n/a` from the Mutation Guard / finish result.
