@@ -52,15 +52,15 @@ require_text "$contract" 'via=glab-fallback' 'fallback transport evidence token'
 
 # Guard reads are body-free; body recovery uses the dedicated bounded readers
 # before any guarded, help-first glab fallback (agents/skills #372).
-require_text gitlab/SKILL.md 'get_merge_request.*include_description:false' 'body-free MR guard read'
+require_text gitlab/reference/bounded-reads.md 'get_merge_request.*include_description:false' 'body-free MR guard read'
 for tool in get_merge_request_description get_issue_description get_merge_request_note get_issue_note; do
-  require_text gitlab/SKILL.md "$tool" "dedicated body reader $tool"
+  require_text gitlab/reference/bounded-reads.md "$tool" "dedicated body reader $tool"
 done
 for field in description_grep description_max_bytes description_offset_bytes body_grep body_max_bytes body_offset_bytes; do
-  require_text gitlab/SKILL.md "$field" "bounded body recovery field $field"
+  require_text gitlab/reference/bounded-reads.md "$field" "bounded body recovery field $field"
 done
-require_text gitlab/SKILL.md 'retry with a smaller' 'smaller bounded retry before fallback'
-require_text gitlab/SKILL.md 'body read is a guarded last resort' 'guarded glab body fallback is last resort'
+require_text gitlab/reference/bounded-reads.md 'retry with a smaller' 'smaller bounded retry before fallback'
+require_text gitlab/reference/bounded-reads.md 'body read is a guarded last resort' 'guarded glab body fallback is last resort'
 require_text gitlab/reference/mutation-guard.md 'include_description:false' 'Mutation Guard requires body-free MR re-read'
 require_text gitlab/reference/snippet-transports.md 'include_description:false' 'transport mirror requires body-free SHA guard read'
 reject_text gitlab/SKILL.md 'first read stays full|First read per MR stays full|Slim guard-read for repeated SHA/state guards' 'obsolete first-full/slim guard discipline'
