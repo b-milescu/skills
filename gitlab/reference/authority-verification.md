@@ -55,7 +55,7 @@ Each entry also carries `source_type`, `source`, and `value`; `true` is valid on
 | `repo-default` | approval only | Valid only when the default says so and no explicit restriction exists. |
 | `builder-claim` | no | Routing hint that must resolve to a grant-capable source. |
 
-The schema's `source_precedence[].granted_actions` is the machine source of truth. Repo defaults never imply merge, auto-merge, release, close, or cleanup authority.
+The schema's `source_precedence[].granted_actions` is the machine source of truth. Repo defaults do not imply merge/auto-merge/release/cleanup authority. They also do not imply close authority.
 
 Precedence fails closed:
 
