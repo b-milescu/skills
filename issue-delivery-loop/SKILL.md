@@ -39,9 +39,9 @@ Default WIP: 1; serial by default.
    explicit `Gate owner`; runtime notices never become scope stop instructions.
 6. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
    its compact claims, including commit-bound CI, from provider-native Tier 1 or
-   repository Tier 2 evidence, preserving reviewed-commit binding and explicit
-   authority provenance. Parent-owned candidates route through the parent-owned
-   Gate Receipt contract before ready.
+   repository Tier 2 evidence while preserving reviewed-commit binding.
+   Keep explicit authority provenance bound. Parent-owned candidates route
+   through the parent-owned Gate Receipt contract before ready.
 7. Launch independent review in parallel with CI as soon as the exact candidate
    gate contract allows; do not block-watch CI before reviewer launch. A
    failed/canceled bound CI run blocks pass/finish, never queues.
