@@ -6,9 +6,9 @@ disable-model-invocation: true
 
 # Setup Dev Skills
 
-Scaffold or reconcile Agent Setup Docs: issue tracker, triage labels, project-profile hooks, domain docs, check gate, coding guardrails, and dev workflows. Human-confirmed flow: explore, present findings, confirm with user, then write.
+Reconcile Agent Setup Docs for tracker, triage, project profile, domain, Check Gate, coding guardrails, and dev workflows. Human-confirmed flow: explore, present findings, confirm, write.
 
-Canonical project-profile facts live in `skill://setup-dev-skills/reference/project-profile-facts.json`. Use that file as the machine-readable source for default Agent Setup Doc paths, tracker fields, Triage Role mapping, Check Gate refs, Dev Workflow refs, branch naming, CI parity, and runtime skill-resource URIs; target repo findings instantiate or override those facts.
+Canonical project-profile facts live in `skill://setup-dev-skills/reference/project-profile-facts.json`. Use that file as the machine-readable source for Agent Setup Doc paths, provider/repository/default branch, tracker fields, Triage Role mapping, Check Gate refs and Dev Workflow refs, branch naming, CI parity, release/deploy policy, manual validation, domain/ADR locations, languages, runtime skill-resource URIs, and auxiliary indexes; target repo findings instantiate or override those facts.
 
 ## Invocation mode
 
@@ -25,8 +25,7 @@ Read current repo state; don't assume:
 - `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, and `src/*/docs/adr/`
 - `docs/agents/`, especially prior setup output and `docs/agents/check-gate.md`
 - Existing coding guidance in root rulebooks, `CONTRIBUTING.md`, or `docs/agents/coding-guardrails.md`; pasted generic behavioral-guidance blocks
-- Existing project-profile declarations: gate policy, label vocabulary, branch naming, CI job requirements, domain/ADR locations, release/deploy policy, manual validation rules, and auxiliary index tooling such as a code-graph or search-index directory
-- Compare existing docs against the fact source (see L11) before copying defaults such as `docs/agents/...` or any label string
+- Existing project-profile declarations and deviations from the fact source (see L11)
 - Older setup markers: `/setup-matt-pocock-skills`, `Label in mattpocock/skills`, canonical-five label tables, lazy-label-creation prose, stale skill names
 - `.scratch/` — local markdown issue tracker convention?
 - Existing tracker labels when safe: `glab label list`, `gh label list`, or local docs
@@ -66,32 +65,19 @@ Explain these guardrails reduce common agent coding mistakes: hidden assumptions
 
 ### F — Project-profile hooks and dev workflows
 
-Explain that the shared workflows bind one provider through `/forge` and use
-opaque `issue`, `change_request`, `commit`, and `ci` records from
-`skill://start-build/templates/delivery-schema.md`. Read the fact source, then
-record provider, repository/default branch, tracker docs, label mapping, Check
-Gate, Dev Workflow, branch naming, CI requirements, release/deploy policy,
-manual validation, domain/ADR locations, languages, runtime resources, and
-auxiliary indexes. Repo policy stays repo-relative; reusable resources use
-`skill://...`. Auxiliary indexes default to parent ownership and remain
-read-only in child worktrees unless assigned.
+Explain that shared workflows bind one provider through `/forge` and use opaque `issue`, `change_request`, `commit`, and `ci` records from `skill://start-build/templates/delivery-schema.md`. Record the target repo's fact-source profile (see L11). Repo policy stays repo-relative; reusable resources use `skill://...`. Auxiliary indexes default to parent-owned and read-only in child worktrees unless assigned.
 
-Generated docs reference `/forge`, `/start-build`, `/start-review`, and
-`/plan-to-issues` for GitLab, GitHub, and Azure DevOps. Add `/gitlab` only for
-the GitLab profile. Other providers use their native `/forge` branch; never
-disable the shared workflows solely because the repository is not GitLab.
+Generated docs reference `/forge`, `/start-build`, `/start-review`, and `/plan-to-issues` for GitLab, GitHub, and Azure DevOps. Add `/gitlab` only for the GitLab profile. Other providers use their native `/forge` branch; never disable the shared workflows solely because the repository is not GitLab.
 
 ## 3. Confirm draft
 
-Show draft contents before writing: `## Agent skills` block plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, `coding-guardrails.md`, and `dev-workflows.md` or the target-specific paths from the fact source (see L11). If upgrading, include markers found, keep/update/regenerate decisions per section, and rationale. Include the project-profile fact map: tracker, labels / Triage Role mapping, gate policy, branch naming, CI jobs, domain/ADR locations, release/deploy policy, manual validation rules, language families, runtime skill resources, and auxiliary index tooling. Let user edit.
+Show before writing: `## Agent skills` plus `docs/agents/issue-tracker.md`, `triage-labels.md`, `domain.md`, `check-gate.md`, `coding-guardrails.md`, and `dev-workflows.md` or target-specific paths from the fact source (see L11). For upgrades, include markers, per-section decisions, and rationale. Include the L11 fact map. Let user edit.
 
 ## 4. Write
 
 Pick file: if `CLAUDE.md` exists, edit it; else if `AGENTS.md` exists, edit it; if neither exists, ask which one to create. Never create one when the other already exists. If `## Agent skills` exists, update it in place without touching surrounding sections; if multiple or legacy blocks exist, ask which block to keep and remove/merge duplicates only after confirmation.
 
-Block shape (substitute Agent Setup Doc paths from the target project profile
-before writing; the default profile may resolve these placeholders to
-`docs/agents/...` paths):
+Block shape. Substitute each `<agent_setup_docs.*>` placeholder from the selected `project_profile.agent_setup_docs` values in the fact source (see L11) or live target-repo findings; never copy default `docs/agents/...` paths into a repo with a non-default Agent Setup Doc root:
 
 ```md
 ## Agent skills
@@ -109,14 +95,9 @@ before writing; the default profile may resolve these placeholders to
 [summary]. See `<agent_setup_docs.dev_workflows>`.
 ```
 
-Substitute each `<agent_setup_docs.*>` placeholder from the selected
-`project_profile.agent_setup_docs` values in the fact source (see L11)
-or from live target-repo findings. Do not copy the default `docs/agents/...`
-paths into repos with a non-default Agent Setup Doc root.
+Adapt this skill's neutral seed files from live inspection using `skill://setup-dev-skills/reference/project-profile-facts.json`. Reconcile older output without overwriting user additions. Generate the neutral Dev Workflow from `skill://setup-dev-skills/dev-workflows-generic.md`; add `/gitlab` pointers only for GitLab.
 
-Use this skill's neutral seed files with `skill://setup-dev-skills/reference/project-profile-facts.json`. Adapt provider/repository, paths, labels, gate, branch naming, CI, languages, auxiliary indexes, release/deploy, manual validation, and existing guidance from live inspection. Reconcile older output in place without overwriting user additions. Generate the provider-bound neutral Dev Workflow from `skill://setup-dev-skills/dev-workflows-generic.md`; add GitLab-only `/gitlab` transport pointers only when the selected provider is GitLab.
-
-Done only when every `<agent_setup_docs.*>` placeholder is substituted, no default `docs/agents/...` path remains in a non-default-root repo, and `triage-labels.md` carries no placeholder or default label unless the user chose to seed it.
+Done only when the substitution rule above is satisfied and `triage-labels.md` carries no placeholder or default label unless the user chose to seed it.
 
 ## 5. Done
 
