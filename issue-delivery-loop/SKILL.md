@@ -81,11 +81,10 @@ loading the `retro` skill.
 
 Project-profile hooks may specialize labels, branches, CI jobs, docs, gate,
 release/deploy, manual validation, language, or auxiliary indexes. They never
-weaken reviewed-commit binding, commit-bound CI, explicit authority provenance,
-independent review, child/reviewer/verifier boundaries, complete diff coverage,
-or provider-native post-read. No live mutation bodies or provider commands are
-copied here; `forge` owns transport selection and the provider reference owns
-native mechanics.
+weaken the
+[safety-floor litany](../docs/effort-scaling.md#hard-floors-never-scaled-away).
+No live mutation bodies or provider commands are copied here; `forge` owns
+transport selection and the provider reference owns native mechanics.
 
 Use only the exact paths in this delivery session's session-owned worktree ledger
 and follow the cleanup-order rules in
