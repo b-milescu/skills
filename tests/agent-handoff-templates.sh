@@ -17,10 +17,10 @@ for file in "$builder" "$reviewer"; do
   assert_file_contains "$file" evidence_ready_for_next_actor "$file evidence pointers"
   assert_file_not_contains "$file" gitlab.example.com "$file contains no live locator"
 done
-for field in status gate_owner_received gate_ownership gate_coverage changed_files safety_surfaces acceptance_surfaces decoupling reviewer_focus open_questions next_action blockers; do
+for field in status gate_owner_received gate_ownership gate_coverage changed_files safety_surfaces acceptance_surfaces decoupling reviewer_focus open_questions next_action blocker_detail blockers; do
   assert_file_contains "$builder" "  $field:" "builder top-level $field"
 done
-for field in review_verdict report_locator report_url reviewed_commit ci local_checks findings open_questions approval_authority approval_authority_source approval_action finish_authority finish_authority_source finish_action action_blocker next_action next_actor blockers; do
+for field in review_verdict report_locator report_url reviewed_commit ci local_checks findings open_questions approval_authority approval_authority_source approval_action finish_authority finish_authority_source finish_action action_blocker blocker_detail next_action next_actor blockers; do
   assert_file_contains "$reviewer" "  $field:" "reviewer top-level $field"
 done
 node --input-type=module - "$builder" "$reviewer" <<'NODE'
@@ -38,7 +38,7 @@ for (const file of process.argv.slice(2)) {
   }
   if (handoff.next_action && handoff.next_action !== contract.expected_next_action) throw new Error(`${file}: next action mismatch`);
   if (file.endsWith("reviewer-final-handoff.md")) {
-    for (const field of ["report_locator", "report_url", "reviewed_commit", "ci", "local_checks", "findings", "open_questions", "approval_authority", "approval_authority_source", "approval_action", "finish_authority", "finish_authority_source", "finish_action", "action_blocker", "next_action", "next_actor"]) {
+    for (const field of ["report_locator", "report_url", "reviewed_commit", "ci", "local_checks", "findings", "open_questions", "approval_authority", "approval_authority_source", "approval_action", "finish_authority", "finish_authority_source", "finish_action", "action_blocker", "blocker_detail", "next_action", "next_actor"]) {
       if (!(field in handoff)) throw new Error(`${file}: missing top-level ${field}`);
     }
     if (handoff.next_actor !== contract.expected_next_actor) throw new Error(`${file}: next actor mismatch`);

@@ -116,6 +116,7 @@ agent_handoff:
   reviewer_focus: ["path/one.md — boundary to inspect"]
   open_questions: []
   next_action: "parent-run-gate"
+  blocker_detail: ""
   blockers: []
 ```
 <!-- AGENT-HANDOFF:BUILDER-FINAL:END -->

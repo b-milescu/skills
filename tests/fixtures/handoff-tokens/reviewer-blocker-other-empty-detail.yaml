@@ -1,0 +1,9 @@
+agent_handoff:
+  kind: reviewer-final
+  delivery:
+    handoff_contract:
+      blocker_token: other
+  review_verdict: blocked
+  action_blocker: none
+  next_action: human-escalation
+  blocker_detail: "   "
