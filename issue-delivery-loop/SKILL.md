@@ -31,20 +31,22 @@ Default WIP: 1; serial by default.
      are at least moderate.
 4. Resolve the retained internal routes from the current dialect directory:
    `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`, and one
-   fresh `mr-reviewer-final`. Route basenames/model pins do not name a provider.
+   fresh `mr-reviewer-final`. Route basenames/model pins do not name a provider;
+   distinct routes preserve child/reviewer/verifier boundaries.
 5. Run the canonical parent loop from
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
    One issue/worktree/branch/Draft change request/Review Packet per child. Pass
    explicit `Gate owner`; runtime notices never become scope stop instructions.
 6. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
-   its compact claims from provider-native Tier 1 or repository Tier 2 evidence.
+   its compact claims from provider-native Tier 1 or repository Tier 2 evidence,
+   preserving reviewed-commit binding and explicit authority provenance.
    Parent-owned candidates route through the parent-owned Gate Receipt contract before ready.
-7. Launch independent review in parallel with CI as soon as the exact candidate
-   gate contract allows; do not block-watch CI before reviewer launch. A
-   failed/canceled bound CI run blocks pass/finish, never queues.
+7. Launch independent review in parallel with commit-bound CI as soon as the
+   exact candidate gate contract allows; do not block-watch CI before reviewer
+   launch. A failed/canceled bound CI run blocks pass/finish, never queues.
 8. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
-   `Finish owner: parent`. Every mutation uses one `forge act`.
+   `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
 9. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
    boundary without polling CI. Provider merge-event evidence advances the
