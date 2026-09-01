@@ -69,6 +69,11 @@ merged, queued, and blocked; total/max review rounds; CI failures; brief defects
 and follow-up issues created. Use `N/A — <why>` when unobservable. Queue counts
 as queued, never merged.
 
+**`other` tokens used** — per enum field (`action_blocker` / `blocker_token` /
+`not_run_reason`), the number of final handoffs (builder and reviewer) in the
+batch whose field carries `other`, over the total number of final handoffs. Use
+`N/A — <why>` when handoffs are unobservable.
+
 A *brief defect* is a defect in the issue as written — a wrong baseline
 observation, a stale premise, or an unsatisfiable acceptance criterion —
 discovered during delivery. Count it separately from the other three root-cause
