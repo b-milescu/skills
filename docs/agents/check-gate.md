@@ -57,7 +57,7 @@ These are the **non-test** operator commands worth running on their own.
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate uses a fabricated HOME; after install, run without `AGENT_SKILLS_CHECK_HOME` to detect real-HOME external-skill drift. Both forms check agent parity and workflow/prompt drift. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate uses a fabricated HOME; after install, run with no `AGENT_SKILLS_CHECK_HOME` override to detect real-HOME external-skill drift. Both forms check agent parity and workflow/prompt drift. |
 | Agent schema validation | `npm run check:agents-schema` | Validates Claude/OMP agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, retired bridge wording in Claude/OMP bodies, dialect-specific tool names, OMP MCP tool inventory, and canonical OMP multiword keys. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
