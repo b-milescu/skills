@@ -79,7 +79,7 @@ Copy the builder handoff, then verify it per the [Reviewer Lift guide](filling-g
 | Local gate | `<copy; verify N/A or parent-owned Gate Receipt per ../../start-build/reference/parent-owned-gate.md>` |
 | RED | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
-| Changed paths | `<copy; verify per reviewer-lift-schema.md>` |
+| Changed paths | `<copy command and measured output; verify with git diff --name-only <base>...HEAD>` |
 | Touched safety surfaces | `<copy; verify per reviewer-lift-schema.md>` |
 | Acceptance surfaces | `<copy; verify evidence per reviewer-lift-schema.md>` |
 | Decoupling proof | `<copy; verify per reviewer-lift-schema.md>` |
