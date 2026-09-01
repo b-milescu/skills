@@ -71,7 +71,7 @@ Copy the builder handoff, then verify it per the [Reviewer Lift guide](filling-g
 | Reviewed SHA | `<copy; verify per reviewer-lift-schema.md>` |
 | Finding bindings | `<copy; verify per reviewer-lift-schema.md>` |
 | Review gate | `<copy; verify per reviewer-lift-schema.md>` |
-| Transport | `<copy; verify per reviewer-lift-schema.md>` |
+| Transport | `<copy; verify mcp / glab-fallback / n/a per reviewer-lift-schema.md>` |
 | Gate owner | `<copy; verify per reviewer-lift-schema.md>` |
 | Gate coverage | `<copy; verify per reviewer-lift-schema.md>` |
 | Gate coverage rationale | `<copy; verify per reviewer-lift-schema.md>` |
