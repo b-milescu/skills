@@ -10,18 +10,8 @@ runtime's frontmatter schema.
 - `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
-- change request builder/reviewer route basenames are shared across runtime dirs:
-  `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`,
-  and `mr-reviewer-final`.
-- The current runtime resolves the basename in its dialect directory:
-  `agents/claude/<route>.md` or `agents/omp/<route>.md`.
-- Model pins live in frontmatter, not route names; provider pins live there too.
-  Route basenames stay distinct from role/mode labels such as
-  `child mr-builder` and `mr-reviewer`.
-- OMP routed change request agents pin `model: pi/task` (role alias), not a concrete provider/model id. OMP resolves the concrete model from `modelRoles.task` (else parent active / `modelRoles.default`) against available models at spawn; tier differentiation stays in `thinking-level` (`low`/`medium`/`high`/`xhigh`). Highest-priority optional local override: `task.agentModelOverrides.<agent-name>`.
-- Missing route has no fallback, shim, old-filename, or cross-runtime
-  substitute; treat it as route-unavailable. Any other agent still requires
-  counterpart in both dialects.
+- See [`start-build`'s parent-orchestrator route policy](../start-build/reference/parent-orchestrator.md#skill-only-tier-routing)
+  for shared route basenames, dialect resolution, model pins, and unavailable-route handling.
 
 ## Claude Code variant
 
@@ -75,31 +65,16 @@ runtime's native dialect.
 Current strategy: do not add a generator or shared-fragment system now. Keep
 manual Claude/OMP files so each runtime's dialect stays explicit and reviewable.
 
-Minimize duplicated operational bodies:
+Minimize duplicated operational bodies. Runtime-specific frontmatter, tool
+names, skill-loading wording, and live-agent coordination stay in each variant.
+See the repository [Doc ownership map](../CLAUDE.md#doc-ownership-map) for
+canonical workflow and transport owners; agent bodies only keep launch-critical
+role boundaries, short core checklists, reporting contracts, and
+runtime-specific wording.
+Batch coordination stays in [`issue-delivery-loop`](../issue-delivery-loop/SKILL.md).
 
-- Runtime dialect stays in the variant file: frontmatter schema, tool names,
-  skill-loading wording, and live-agent coordination are runtime-specific.
-- `start-build` owns builder workflow, Review Packet templates, TDD handoff,
-  and parent-owned review-gate policy.
-- `start-review` owns reviewer flow, Review Report format, authority handling,
-  and SHA/CI guard policy.
-- `gitlab` owns MCP-first GitLab transport contracts, guarded `glab`
-  fallback syntax, JSON flag caveats, snippets, and SHA-guarding. Agent files
-  should point to it instead of copying commands.
-- `issue-delivery-loop` owns batch delivery coordination, WIP limits, parent
-  spot-checks, revision routing, and batch metrics. Agent files should point
-  to it instead of copying coordinator-loop bodies.
-- Agent bodies may keep launch-critical role boundaries, short core checklists,
-  reporting contracts, and runtime-specific wording. Move long operational
-  procedure changes to the canonical skills first, then update agent pointers.
-
-Drift checks guard this manual strategy:
-
-- `npm run check:agents-schema` validates dialect frontmatter, tool naming, MCP
-  allowlists, and retired bridge wording.
-- `bash agents/check.sh` validates agent name parity, canonical
-  `start-build`/`start-review` and `gitlab` pointers, Reviewer Lift and
-  Review Report duplicate structures, and required external skill dependencies.
+See the [Check Gate's targeted agent checks](../docs/agents/check-gate.md#targeted-checks)
+for the commands guarding the manual dialect strategy.
 
 If generation or shared fragments become worth revisiting, open a dedicated
 issue or ADR with migration and check-gate changes instead of mixing it into a
@@ -111,13 +86,11 @@ routine agent edit.
 2. Write `agents/omp/<name>.md` with OMP task-agent schema.
 3. Keep body content shared in spirit, but keep runtime-specific coordination and
    frontmatter in the matching dialect file.
-4. Point operational procedure back to canonical skills such as `start-build`,
-   `start-review`, and `gitlab` rather than copying long bodies.
-5. Run `npm run check:agents-schema` to catch frontmatter/schema/tool-casing
-   drift before install or review.
-6. Run `bash agents/check.sh` to catch parity and canonical-pointer drift.
-7. Run `./install.sh` to surface the agent in installed runtimes.
-8. Expect `install.sh` to print a clear `skip:` line when a target runtime or
+4. Point operational procedure to the owners in the repository
+   [Doc ownership map](../CLAUDE.md#doc-ownership-map).
+5. Run the [targeted agent checks](../docs/agents/check-gate.md#targeted-checks).
+6. Run `./install.sh` to surface the agent in installed runtimes.
+7. Expect `install.sh` to print a clear `skip:` line when a target runtime or
    variant is missing.
 
 ## References
