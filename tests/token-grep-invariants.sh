@@ -899,7 +899,7 @@ fi
 
 # review-blocked-verdict enums
 normalize_enum() {
-  tr '/|' '\n' | sed -E 's/[[:space:]]+— canonical values:.*$//; s/[`"<>]//g; s/^[[:space:]]+//; s/[[:space:]]+$//' | sed '/^$/d'
+  sed -E 's/[[:space:]]+— canonical values:.*$//' | tr '/|' '\n' | sed -E 's/[`"<>]//g; s/^[[:space:]]+//; s/[[:space:]]+$//' | sed '/^$/d'
 }
 assert_enum() {
   local label=$1 actual=$2 expected=$3
