@@ -37,7 +37,7 @@ Fill every row per `reviewer-lift-schema.md`; parent-owned mode follows `../refe
 | Local gate | `<status + exact command per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#ci-decision-table; parent-owned: not-run per ../reference/parent-owned-gate.md>` |
 | RED | `<failing behavior check, or N/A with rationale; per reviewer-lift-schema.md>` |
 | GREEN | `<passing behavior check, or N/A with rationale; per reviewer-lift-schema.md>` |
-| Changed paths | `<merge-base diff command + measured output; per reviewer-lift-schema.md>` |
+| Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<paths separated with <br>>` |
 | Touched safety surfaces | `<none or schema-listed surfaces>` |
 | Acceptance surfaces | `<profile surface:evidence entries, or none; per reviewer-lift-schema.md>` |
 | Decoupling proof | `<single change request, or co-running changes + contract proof>` |
