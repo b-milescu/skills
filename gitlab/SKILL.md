@@ -9,49 +9,16 @@ description: >-
 
 # GitLab transport reference
 
-Use from the GitLab-backed worktree. GitLab API actions use this transport order:
+Use from the GitLab-backed worktree, in this order:
 
-1. **MCP first.** Use the gitlab-mcp tool(s) named by the stable snippet metadata (`skill://gitlab/reference/snippet-metadata.json`) and its human-readable contract in [`skill://gitlab/reference/snippet-transports.md`](skill://gitlab/reference/snippet-transports.md).
-2. **Guarded `glab` fallback second.** Use `glab` only when the snippet contract names an explicit fallback/helper/troubleshooting condition, after re-checking SHA, CI, authority, caller identity, and project binding as applicable.
-3. **Local `git` remains local.** Worktree, branch, fetch, rev-parse, and ls-remote safety checks stay in `git`; do not replace local git worktree safety with GitLab API calls.
+1. **MCP first.** Use the tools in [`snippet-metadata.json`](skill://gitlab/reference/snippet-metadata.json) and [`snippet-transports.md`](skill://gitlab/reference/snippet-transports.md).
+2. **Guarded `glab` fallback second.** Only for a named fallback/helper/troubleshooting condition, after applicable binding, SHA, CI, authority, and identity checks.
+3. **Local `git` remains local.** Keep worktree, branch, fetch, and ref checks in `git`.
 
-Known MCP gaps: `merge_merge_request` has an observed robustness/error-normalization gap for one `Branch cannot be merged` case where SHA-bound `glab` merge succeeded, and exposed `list_*` tools do not provide reliable pagination controls for exhaustive lists. Treat those as documented fallback conditions only; never weaken reviewed-SHA binding, exact-SHA CI, authority, caller-identity/token-stability, context-firewall, or content-byte safeguards to use a fallback.
-
-## Bounded metadata and body reads
-
-Guard-grade MR state/SHA reads default to
-`get_merge_request_workflow_snapshot`. Use
-`get_merge_request(include_description:false)` only when a required metadata
-field is absent from the snapshot. Do not couple a description read to a
-Mutation Guard or SHA guard.
-
-Request bodies separately through the dedicated MCP readers:
-
-- MR and issue descriptions: `get_merge_request_description` and
-  `get_issue_description`. Start with focused `description_grep` when a known
-  line or section is sufficient; otherwise use a bounded
-  `description_max_bytes`. Follow `descriptionTruncated`,
-  `descriptionBytesReturned`, `descriptionOffsetBytes`, and
-  `descriptionTotalBytes`; advance `description_offset_bytes` by the returned
-  byte count until recovery is complete. Request an unbounded/full description
-  only when the whole body is genuinely required.
-- Individual MR and issue notes: `get_merge_request_note` and `get_issue_note`.
-  Use `body_grep`, `body_max_bytes`, and `body_offset_bytes`, following the
-  corresponding `bodyTruncated`, `bodyBytesReturned`, `bodyOffsetBytes`, and
-  `bodyTotalBytes` metadata. An omitted `body_max_bytes` requests the full note,
-  so prefer a focused or bounded read when elision or body size is a concern.
-
-If a bounded response is still elided, retry with a smaller
-`description_max_bytes` or `body_max_bytes`, then recover losslessly with
-`description_offset_bytes` or `body_offset_bytes`. A help-first `glab api`
-body read is a guarded last resort only when the relevant dedicated MCP reader
-is unavailable or remains elided after that smaller/chunked attempt.
-`glab mr view` metadata projection is likewise last-resort fallback only when
-the snapshot and any field-required body-free `get_merge_request` read are
-unavailable. Before either fallback,
-preserve project binding and every applicable reviewed-SHA, exact-SHA CI,
-authority, caller-identity/context, and content-byte guard; fallback never
-weakens a safety floor.
+Known MCP gaps are owned by
+[`snippet-transports.md` §Known MCP gaps](skill://gitlab/reference/snippet-transports.md#known-mcp-gaps).
+Bounded metadata/body-read rules live in
+[`bounded-reads.md`](skill://gitlab/reference/bounded-reads.md).
 
 ## Guarded glab fallback and help-first rule
 
@@ -68,7 +35,7 @@ glab ci status --help; glab repo view --help; glab api --help
 
 Do not invent flags from memory or other CLIs. If help conflicts with this skill, use help and note skill drift.
 
-Project-profile hooks may specialize project policy, but they must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, child-builder boundaries, verifier read-only boundaries, MCP-first transport correctness plus help-first `glab` fallback correctness, this fallback help-first rule, or live `glab --help` verification. They also must not rename GitLab records in shared delivery blocks: keep `issue`, `MR`, `pipeline`, `source branch`, `target branch`, and `SHA` terminology.
+Project hooks may specialize policy but not reviewed-SHA or exact-SHA CI binding, explicit authority, independent review, role boundaries, MCP-first transport correctness plus help-first `glab` fallback correctness, or live help verification. Shared delivery blocks retain GitLab terms: `issue`, `MR`, `pipeline`, `source branch`, `target branch`, and `SHA`.
 
 ### Per-run help cache
 
@@ -91,42 +58,30 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
 - Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `validate_gitlab_text` before `glab`, never print bodies, and never receive secrets.
-- Paths passed to non-shell binaries must use a namespace that binary can resolve: prefer repo-relative paths, or drive-letter form when the binary requires it, rather than shell-only paths such as `/tmp/...`. When native invocation is unavailable, use the caller-local helper against caller-local paths instead of mixing path namespaces.
-- Treat only a comparison tool's exit status as the equality result. A comparison whose absence of output appears to mean equality must not suppress stderr: an unreadable input is an error, not a successful match.
-- Treat any `cd` failure as fatal; never continue a validation block in the previous directory.
+- Generic path, comparison, and directory-change hygiene lives in
+  [`bounded-reads.md` §Generic shell hygiene](skill://gitlab/reference/bounded-reads.md#generic-shell-hygiene).
 
 ## Safe multiline GitLab text
 
-Validate every MR/issue body before mutation. MCP-native flows use `validate_gitlab_text` directly or a safe mutation tool that embeds it (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`). The byte rule is invariant: reject NUL, non-whitespace C0 controls, and DEL; allow tab, newline, and carriage return; diagnostics name the body role and offending byte offset only, never the body or secrets.
+Validate every MR/issue body before mutation with `validate_gitlab_text` or a safe mutation tool that embeds it. Reject NUL, non-whitespace C0 controls, and DEL; allow tab, newline, and carriage return. Diagnostics name only the role and byte offset, never body content or secrets.
 
-Use temp/run-dir files plus quoted heredocs when drafting long Review Packets or Review Reports locally; then pass the resulting string/body to the MCP safe tool. File-backed `glab` fallback is allowed only under snippet fallback conditions and must enforce the same byte rule before submission. Detailed patterns: [`skill://gitlab/reference/safe-text.md`](skill://gitlab/reference/safe-text.md) and [`skill://gitlab/reference/multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
+Draft long text in temp/run-dir files with quoted heredocs. File-backed `glab` fallback is allowed only under snippet fallback conditions and enforces the same byte rule. See [`safe-text.md`](skill://gitlab/reference/safe-text.md) and [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
 
 ## Three issue-closure oracles
 
-Keep these distinct because they answer different questions and can disagree:
+Keep three distinct oracles:
 
-- `validate_closes_keyword` answers the authoring question,
-  "will this close X?" It requires plain supported syntax for the target but
-  cannot prove that the description closes nothing else.
-- The `closes_issues` endpoint is a preview for
-  "does this close nothing unintended?" It may list code-spanned pairs the
-  closer would not act on. Use keyword/reference non-adjacency for exclusions;
-  it satisfies all three oracles.
-- Observed post-merge issue state is authoritative for actual closure.
-  Verification stays read-only: report `issue_closure_pending` when the intended
-  issue remains open and never force-close it to compensate.
+- `validate_closes_keyword` answers whether authored syntax closes the target; it cannot prove nothing else closes.
+- `closes_issues` previews unintended closures but may include code-spanned pairs GitLab will not act on. Keyword/reference non-adjacency satisfies both checks.
+- Post-merge issue state is authoritative. Verification is read-only: report `issue_closure_pending` rather than force-closing an open target.
 
 ## GitLab Mutation Guard
 
-Every GitLab mutation uses the ordered **GitLab Mutation Guard** seam in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) (`skill://gitlab/reference/mutation-guard.md`) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`: project binding, current target re-read, reviewed SHA when relevant, exact-SHA CI when relevant, Authority Verification, caller identity/context, Safe GitLab Text when relevant, fallback eligibility, one mutation, and post-mutation MCP re-read with `via=mcp` / `via=glab-fallback` / `via=n/a` evidence. Fallback is never a bypass for stale head, red/missing/stale CI, missing authority, permission uncertainty, self-finish risk, or content-byte failure.
+Every GitLab mutation uses the ordered **GitLab Mutation Guard** in [`mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`. Fallback never bypasses stale-head, CI, authority, permission, self-finish, or content-byte guards.
 
 ## Canonical snippets
 
-Names below are stable API for workflow skills. The machine-actionable source of truth for snippet names, MCP primary tools, inputs, outputs, allowed mutations, guards, fallback conditions, post-mutation re-reads, and via evidence is `skill://gitlab/reference/snippet-metadata.json`; the human-readable table lives in [`skill://gitlab/reference/snippet-transports.md`](skill://gitlab/reference/snippet-transports.md) and is checked against that metadata. Inline shell blocks below are guarded `glab` fallback/helper examples, not the primary transport. Long helper bodies live in `scripts/` with tests; this skill keeps contracts, safety rules, and pointers authoritative.
-
-Build and review GitLab transport lives in this `SKILL.md` and [`skill://gitlab/reference/snippet-transports.md`](skill://gitlab/reference/snippet-transports.md). This `SKILL.md` remains the full owner for transport order, fallback help-first discipline, and flag drift.
-
-The shared mutation sequence lives in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md). CI/finish-specific mappings for `ci-watch-sha-pinned` and `finish-mr-authority-aware` live in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md); each snippet below links to that card and points verdict-classification/authority policy to the canonical owners in `skill://start-review/REVIEW-FLOW.md` and `skill://start-build/SAFETY.md`.
+Snippet names and contracts are stable API. [`snippet-metadata.json`](skill://gitlab/reference/snippet-metadata.json) is the machine source of truth; [`snippet-transports.md`](skill://gitlab/reference/snippet-transports.md) is its synchronized table. This skill owns transport order, help-first fallback, flag drift, and examples. Shared mutation and CI/finish rules live in [`mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) and [`ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md).
 
 ### Snippet: local-repo-preflight
 
