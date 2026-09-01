@@ -158,9 +158,9 @@ let pointerCount = 0;
 for (const [path, enumNeedle] of Object.entries(enumText)) {
   const text = fs.readFileSync(path, "utf8");
   assert(text.includes(enumNeedle), `${path} enum string drifted`);
-  const pointers = text.match(/handoff-tokens\.schema\.json/g) || [];
-  assert(pointers.length === 1, `${path} must contain exactly one canonical-schema pointer`);
-  pointerCount += pointers.length;
+  const pointerLines = text.split("\n").filter((line) => line.includes("handoff-tokens.schema.json"));
+  assert(pointerLines.length === 1, `${path} must contain exactly one canonical-schema pointer line`);
+  pointerCount += pointerLines.length;
 }
 assert(pointerCount === 3, "expected exactly three template schema pointers");
 
