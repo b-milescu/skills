@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Reconcile Agent Setup Docs for tracker, triage, project profile, domain, Check Gate, coding guardrails, and dev workflows. Human-confirmed flow: explore, present findings, confirm, write.
 
-Canonical project-profile facts live in `skill://setup-dev-skills/reference/project-profile-facts.json`. Use that file as the machine-readable source for Agent Setup Doc paths, provider/repository/default branch, tracker fields, Triage Role mapping, Check Gate and Dev Workflow refs, branch naming, CI requirements, release/deploy policy, manual validation, domain/ADR locations, languages, runtime skill-resource URIs, and auxiliary indexes; target repo findings instantiate or override those facts.
+Canonical project-profile facts live in `skill://setup-dev-skills/reference/project-profile-facts.json`. Use that file as the machine-readable source for Agent Setup Doc paths, provider/repository/default branch, tracker fields, Triage Role mapping, Check Gate refs and Dev Workflow refs, branch naming, CI requirements, release/deploy policy, manual validation, domain/ADR locations, languages, runtime skill-resource URIs, and auxiliary indexes; target repo findings instantiate or override those facts.
 
 ## Invocation mode
 
