@@ -46,7 +46,7 @@ Fill every row per `reviewer-lift-schema.md`; parent-owned mode follows `../refe
 | Decoupling proof | `<single change request, or co-running changes + contract proof>` |
 | Reviewer Focus | `<1-2 areas to read hardest, or "none">` |
 | Open Questions | `<count + list IDs (OQ-1, OQ-2, ...) or "none">` |
-| Approval authority | `<claim per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#finish-authority-source-precedence>` |
+| Approval authority | `<claim per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#approval-authority-policy>` |
 | Approval authority source | `<verifiable source per reviewer-lift-schema.md>` |
 | Finish authority | `<quoted claim per reviewer-lift-schema.md; default: none — requires explicit human/parent instruction>` |
 | Finish authority source | `<verifiable provenance per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#finish-authority-source-precedence>` |
