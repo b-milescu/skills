@@ -105,6 +105,7 @@ authority grants it; otherwise stop at the most permissive authorized action.
 4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence.
 
    Run `node skill://start-build/scripts/validate-handoff-gate-consistency.mjs --handoff <saved builder-final handoff>` before review. A contradiction blocks review and routes back to the builder; the validator's workflow-time status is canonical in [child-builder §Child checklist](child-builder.md#child-checklist).
+   Run `node skill://start-review/scripts/validate-handoff-tokens.mjs --handoff <saved builder-final handoff>` at the same saved-handoff review boundary. An absent, unknown, or unexplained `other` token blocks review; this is a workflow-time check, not a Check Gate or CI job.
 
    Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing issue classification.
 5. **Launch final review.** Launch the reviewer in parallel with CI once the build handoff lands; see [Reviewer launch timing](#reviewer-launch-timing). Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.

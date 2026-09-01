@@ -113,6 +113,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | `tests/setup-dev-skills-invocation.sh` | `setup-dev-skills` remains manual-invocation only and docs preserve ask-before-running guidance. |
 | `tests/start-build-mode-cards.sh` | Deleted `start-build` mode cards stay gone; `SKILL.md` points at canonical child-builder, parent-owned-gate, implementation-flow, and parent-orchestrator docs. |
 | `tests/start-review-mode-cards.sh` | Deleted `start-review` mode cards stay gone; `SKILL.md` points at REVIEW-FLOW, review-report, and reviewer-final-handoff instead of checklist cards. |
+| `tests/validate-handoff-tokens.sh` | Saved builder/reviewer final handoffs accept only canonical verdict, blocker, and next-action tokens; absent/unknown values, the reviewer template placeholder, and `other` without non-empty `blocker_detail` fail closed. |
 | `tests/token-grep-invariants.sh` | Table-driven collapse of the token-grep farm and five `*-invariants.sh` scripts: same needles via `tests/lib/assertions.sh`, fewer files. |
 
 

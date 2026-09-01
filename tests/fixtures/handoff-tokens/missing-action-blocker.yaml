@@ -1,0 +1,7 @@
+agent_handoff:
+  kind: reviewer-final
+  delivery:
+    handoff_contract:
+      blocker_token: none
+  review_verdict: blocked
+  next_action: fix-blocker

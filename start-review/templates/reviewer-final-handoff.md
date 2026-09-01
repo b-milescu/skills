@@ -99,6 +99,7 @@ agent_handoff:
   # Canonical action_blocker values: skill://start-review/reference/handoff-tokens.schema.json
   # request-changes uses none; other requires a blocker no listed token names and a one-line Action / Blocker reason.
   action_blocker: "none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other"
+  blocker_detail: ""
   next_action: "finish-by-authorized-actor"
   next_actor: "parent"
   blockers: []

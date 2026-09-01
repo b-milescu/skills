@@ -12,8 +12,10 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 - `review_verdict` is `pass / request-changes / reject / blocked`. `pass` is a review judgment only; it never means "looks good but no approval was taken". `approval_action`, `finish_action`, and `action_blocker` say what provider side effects happened or why none happened.
 - `delivery.repository.locator`, `delivery.repository.default_branch`, `delivery.change_request.locator`, `source`, `target`, and `delivery.commit.current/reviewed` record the provider-bound target used for verification and action routing.
 - Use `blocked` only when guard, authority, tooling, permission, partial-review, security, or human-decision state prevents safe approval/finish: `missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`. A `request-changes` verdict is ordinary revision routing, not a blocked state.
+- `blocker_detail` is optional unless `action_blocker` or `delivery.handoff_contract.blocker_token` is `other`; then it must be a non-empty one-line explanation of the unlisted blocker.
 - If usage limits or tooling failures stop completion before a review verdict, return prose explaining the blocker; a completed machine block should only claim verified values.
 - Never include secrets, raw private payloads, or unredacted logs. For suspected secret exposure, do not quote the secret or credential, do not copy the sensitive payload, and use `[REDACTED]` plus `secret-exposure-suspected` without secret values. Use synthetic URLs/SHAs in examples.
+- Before returning the final handoff, run `node skill://start-review/scripts/validate-handoff-tokens.mjs --handoff <saved reviewer-final handoff>`; this is a workflow-time check, not a Check Gate or CI job.
 - Consumers must tolerate absent blocks and fall back to the Review Report / human prose / Reviewer Lift.
 
 ## review-report.md
