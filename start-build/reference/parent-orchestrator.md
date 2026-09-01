@@ -98,7 +98,21 @@ authority grants it; otherwise stop at the most permissive authorized action.
 
 ## Parent loop
 
-1. **Resolve work item(s).** Follow the canonical [issue pickup flow](issue-pickup.md), including its required description-and-current-discussion read and contradiction handling, then read linked change requests, parent design docs, and the project rulebook. Confirm each work item carries the target repo's AFK-ready Triage Role label `project_profile.label_profile_ref` or other approved agent-work state. If multiple work items are in scope, prove [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) before parallel work; otherwise process serially in dependency order. Classify each work item/change request `trivial`, `moderate`, or `high-risk` per [Skill-only tier routing](#skill-only-tier-routing).
+1. **Resolve work item(s).** Follow the canonical [issue pickup flow](issue-pickup.md),
+   including its required description-and-current-discussion read and contradiction
+   handling, then read linked change requests, parent design docs, and the project
+   rulebook. Confirm each work item carries the target repo's AFK-ready Triage Role
+   label `project_profile.label_profile_ref` or other approved agent-work state. For
+   multiple work items, evaluate the
+   [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) per pair
+   before the first child launch, then automatically launch every provably decoupled
+   subset in parallel, one child per item and one isolated worktree/branch/Draft
+   change request/Review Packet per child. Coupled members serialize only within
+   their coupled cluster in dependency order; never serialize otherwise decoupled
+   items. Fall back to serial execution only when decoupling proof fails or is
+   unknown, or the caller explicitly bounds concurrency. Classify each work
+   item/change request `trivial`, `moderate`, or `high-risk` per
+   [Skill-only tier routing](#skill-only-tier-routing).
 2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
 3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Consume the bound tier and launch the exact shared builder route basename from the canonical table in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
