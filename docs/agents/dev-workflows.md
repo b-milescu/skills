@@ -70,9 +70,7 @@ This repo uses the default profile from `skill://setup-dev-skills/reference/proj
 Triage Role names map through this repo's live label vocabulary in `docs/agents/triage-labels.md`; reusable skills must read that mapping instead of assuming a global label string.
 
 Project-profile hooks may specialize this repo's policy, but they must not
-weaken reviewed-commit binding, commit-bound CI, explicit authority source,
-independent review, the child-builder boundary, verifier read-only behavior, or
-the selected provider's native transport/readback rules.
+weaken the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
 
 ### Acceptance-surface vocabulary
 

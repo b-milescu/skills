@@ -29,7 +29,7 @@ The ordered seam every GitLab-backed **Dev Workflow** mutation uses before and a
 _Avoid_: fallback checklist, merge guard
 
 **Safety floor**:
-A load-bearing safety/transport invariant that never scales away (for example reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, the child-builder and verifier boundaries, MCP-first transport correctness). Used as a shared additive leading word so a single canonical enumeration can be referenced by name ("the safety-floor litany") at non-canonical repeats instead of restating the full list. The canonical enumerations live in `start-build/docs/effort-scaling.md` (Hard floors) and the per-site "must not weaken" litany.
+A load-bearing safety/transport invariant that never scales away (for example reviewed-SHA binding, exact-SHA CI, explicit authority source, independent review, the child-builder and verifier boundaries, MCP-first transport correctness). Used as a shared additive leading word so a single canonical enumeration can be referenced by name ("the safety-floor litany") at non-canonical repeats instead of restating the full list. The canonical enumerations live in `docs/effort-scaling.md` (Hard floors) and the per-site "must not weaken" litany.
 _Avoid_: hard limit, guard rail (when the specific invariant set is meant)
 
 **Triage Role**:

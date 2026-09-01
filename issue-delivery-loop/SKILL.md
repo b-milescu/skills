@@ -31,20 +31,23 @@ Default WIP: 1; serial by default.
      are at least moderate.
 4. Resolve the retained internal routes from the current dialect directory:
    `mr-builder-trivial`, `mr-builder-moderate`, `mr-builder-high-risk`, and one
-   fresh `mr-reviewer-final`. Route basenames/model pins do not name a provider.
+   fresh `mr-reviewer-final`. Route basenames/model pins do not name a provider;
+   distinct routes preserve child/reviewer/verifier boundaries.
 5. Run the canonical parent loop from
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
    One issue/worktree/branch/Draft change request/Review Packet per child. Pass
    explicit `Gate owner`; runtime notices never become scope stop instructions.
 6. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
-   its compact claims from provider-native Tier 1 or repository Tier 2 evidence.
-   Parent-owned candidates route through the parent-owned Gate Receipt contract before ready.
+   its compact claims, including commit-bound CI, from provider-native Tier 1 or
+   repository Tier 2 evidence while preserving reviewed-commit binding.
+   Keep explicit authority provenance bound. Parent-owned candidates route
+   through the parent-owned Gate Receipt contract before ready.
 7. Launch independent review in parallel with CI as soon as the exact candidate
    gate contract allows; do not block-watch CI before reviewer launch. A
    failed/canceled bound CI run blocks pass/finish, never queues.
 8. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
-   `Finish owner: parent`. Every mutation uses one `forge act`.
+   `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
 9. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
    boundary without polling CI. Provider merge-event evidence advances the
@@ -81,11 +84,10 @@ loading the `retro` skill.
 
 Project-profile hooks may specialize labels, branches, CI jobs, docs, gate,
 release/deploy, manual validation, language, or auxiliary indexes. They never
-weaken reviewed-commit binding, commit-bound CI, explicit authority provenance,
-independent review, child/reviewer/verifier boundaries, complete diff coverage,
-or provider-native post-read. No live mutation bodies or provider commands are
-copied here; `forge` owns transport selection and the provider reference owns
-native mechanics.
+weaken the
+[safety-floor litany](<../docs/effort-scaling.md#hard-floors-never-scaled-away>).
+No live mutation bodies or provider commands are copied here; `forge` owns
+transport selection and the provider reference owns native mechanics.
 
 Use only the exact paths in this delivery session's session-owned worktree ledger
 and follow the cleanup-order rules in

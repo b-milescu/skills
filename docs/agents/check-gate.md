@@ -27,9 +27,7 @@ validation rules are in [Manual validation rules](#manual-validation-rules).
 This repo's Check Gate facts are verified against `setup-dev-skills/reference/project-profile-facts.json`: `gate_policy_ref`, `ci_jobs.ref`, `manual_validation_rules.ref`, command, runtime, and required CI jobs.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
-review, the child-builder boundary, the verifier read-only boundary, or
-MCP-first transport correctness plus help-first `glab` fallback correctness.
+the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Gate coverage for ready handoff
 
@@ -55,15 +53,9 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 ## Targeted checks
 
-These are the **non-test** operator commands worth running on their own: the gate's
-canonical entrypoints plus ad-hoc install smokes and inspection commands. Per-test
-rows are intentionally not duplicated here — the [Shipped shell regression
-inventory](#shipped-shell-regression-inventory) below is the single source of truth
-for every `tests/*.sh` script, and `npm run check` runs them all.
-
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate-invoked run is hermetic: `scripts/check.sh` sets `AGENT_SKILLS_CHECK_HOME` to a fabricated disposable HOME containing stub required external skills. It does not check the operator's installed runtimes. After `./install.sh`, run either command here with no `AGENT_SKILLS_CHECK_HOME` override; only that real-HOME operator run detects installed-runtime external-skill drift such as a missing `tdd`. Both forms also check Claude/OMP agent variant parity (including omp-only drift), canonical workflow / `gitlab` pointer drift, and Reviewer Lift / Review Report prompt drift. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate uses a fabricated HOME; after install, use no `AGENT_SKILLS_CHECK_HOME` override; only that real-HOME operator run detects installed-runtime external-skill drift. Both forms check agent parity and workflow/prompt drift. |
 | Agent schema validation | `npm run check:agents-schema` | Validates Claude/OMP agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, retired bridge wording in Claude/OMP bodies, dialect-specific tool names, OMP MCP tool inventory, and canonical OMP multiword keys. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
@@ -106,7 +98,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/installer-smoke-requirement.sh` | Installer smoke requirement docs stay present in `docs/agents/check-gate.md`: `install_surface` surface, `agents/`, `install.sh`, runtime routing triggers, temp-HOME installer smoke evidence, parent-owned gate evidence requirement, shared MR route symlink ownership in `install-symlink-ownership` inventory entry, `installer-smoke-requirement` self-entry. |
 | `tests/md-links.sh` | Markdown local-link checker diagnostics for broken files, anchors, image targets, allowed skill URIs, and external URL host allowlist behavior. |
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
-| `tests/omp-agent-loader-smoke.sh` | Temp-`HOME` `install.sh` exposes every `agents/omp/*.md` agent to the real OMP task-agent loader (`discoverAgents(...)` pointed at the temp runtime through `PI_CODING_AGENT_DIR`/`HOME`), asserting the shared `read,grep,glob,bash,edit,write,todo,irc` tool allowlist, the server-scoped `mcp__gitlab_mcp_*` / `mcp__wowtools_*` MCP wildcard selectors (rejecting bare/broad/Claude-style/old-exact MCP entries), `autoload-skills`, nonempty prompts, and routed model/thinking pins for every routed OMP agent; expected names derive from `agents/omp/*.md` and loader-absent runs report a clear N/A while still verifying installer exposure of all OMP agents. |
+| `tests/omp-agent-loader-smoke.sh` | See the coverage summary in the [test's header](../../tests/omp-agent-loader-smoke.sh). |
 | `tests/post-merge-verifier-read-only.sh` | Canonical post-merge verifier recipe read-only invariant keeps the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator), `issue_closure_pending` / `source_branch_cleanup_pending` report tokens, helper wiring, and removed top-level skill absence check, and keeps the post-#152 dropped "promised docs/ADR/follow-ups" check absent. |
 | `tests/project-profile-hooks.sh` | `project_profile` extension fields stay documented in the GitLab delivery schema and generated handoff copies; setup-dev-skills seeds/generated docs declare gate, labels, branch naming, CI jobs, domain/ADR, release/deploy, manual validation, language, and auxiliary index hooks; GitLab-specific schema names and safety invariants remain intact. |
 | `tests/project-profile-facts.sh` | `setup-dev-skills/reference/project-profile-facts.json` remains the canonical project-profile fact source for Agent Setup Doc paths, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, skill resource URIs, and a non-default docs/labels fixture; setup seeds/live docs and GitLab issue pickup avoid globally hardcoded labels. |
@@ -122,25 +114,6 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 | `tests/start-review-mode-cards.sh` | Deleted `start-review` mode cards stay gone; `SKILL.md` points at REVIEW-FLOW, review-report, and reviewer-final-handoff instead of checklist cards. |
 | `tests/token-grep-invariants.sh` | Table-driven collapse of the token-grep farm and five `*-invariants.sh` scripts: same needles via `tests/lib/assertions.sh`, fewer files. |
 
-## Workflow regression coverage map
-
-Issue #79 introduced the workflow guardrail scripts; they are all runnable through
-`npm run check` because `scripts/check.sh` executes every `tests/*.sh` script. The
-per-script focus for each guardrail lives in the [Shipped shell regression
-inventory](#shipped-shell-regression-inventory) above, which is the single source of
-truth for `tests/*.sh` coverage.
-
-## Discovery notes
-
-Commands were derived from:
-
-- `README.md` install instructions.
-- `install.sh` skill/agent symlink, read-only `--check`, and external dependency warning behavior.
-- `agents/check.sh` source parity, prompt drift, and installed external skill dependency checks.
-- Issue #53 agent schema validation requirements for Claude/OMP dialect-specific frontmatter and tool casing.
-- `scripts/check.sh` canonical wrapper wiring those checks, Markdown checks, and regression scripts behind one stable command.
-- Skill authoring guideline `SKILL.md` should stay near or under 100 lines where practical (`wc -l`); split distinct or advanced content into one-level references, and check triggers, examples, and reference depth.
-- No `Makefile` exists at time of writing.
 
 ## CI parity
 
