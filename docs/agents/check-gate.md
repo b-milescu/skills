@@ -10,7 +10,7 @@ Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines
 
 - `bash -n install.sh`
 - `npm run check:agents-schema`
-- `bash agents/check.sh`
+- `bash agents/check.sh` against a fabricated disposable HOME containing stub required external skills (not the operator's real HOME)
 - `npm run check:md`
 - `npm run check:links`
 - each `tests/*.sh` regression script
@@ -63,7 +63,7 @@ for every `tests/*.sh` script, and `npm run check` runs them all.
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only check for Claude/OMP agent variant parity (including omp-only drift), canonical workflow / `gitlab` pointer drift, Reviewer Lift / Review Report prompt drift, and missing required external skills such as `tdd` in installed agent runtimes. Set `AGENT_SKILLS_CHECK_HOME=<temp-home>` to inspect a disposable HOME. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate-invoked run is hermetic: `scripts/check.sh` sets `AGENT_SKILLS_CHECK_HOME` to a fabricated disposable HOME containing stub required external skills. It does not check the operator's installed runtimes. After `./install.sh`, run either command here with no `AGENT_SKILLS_CHECK_HOME` override; only that real-HOME operator run detects installed-runtime external-skill drift such as a missing `tdd`. Both forms also check Claude/OMP agent variant parity (including omp-only drift), canonical workflow / `gitlab` pointer drift, and Reviewer Lift / Review Report prompt drift. |
 | Agent schema validation | `npm run check:agents-schema` | Validates Claude/OMP agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, retired bridge wording in Claude/OMP bodies, dialect-specific tool names, OMP MCP tool inventory, and canonical OMP multiword keys. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
