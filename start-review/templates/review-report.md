@@ -4,13 +4,11 @@ Authority Verification uses the shared
 [`/forge` common guard](../../forge/reference/common-guard.md); the selected
 provider branch owns native approval and finish mechanics.
 
-<!-- Post this filled report as one durable non-blocking Review Report artifact through `forge publish`. Validate the full Review Report body with `safe body validation` (or use the safe note tool's embedded validation) before posting. Large reports must not use unsafe raw inline `provider-native raw publication` strings. Read back the published Review Report artifact and verify body matches this source report file/content before it counts as durable/posted; placeholder/partial/literal-expansion/body-mismatch notes fail closed: repost through the safe-body-validated note contract or record transport blocker. Do NOT post a discussion thread — Review Report informational notes must never leave unresolved threads that block merge. Only genuine change-request threads (Must Fix / Should Fix items builder must answer) should remain unresolved. -->
+<!-- Fill and publish this report per the [review-report filling guide](filling-guide.md#review-reportmd), including its safe-body, plain non-resolvable note, transport, and readback rules. -->
 
 ## Decision Summary
 
-Fill this first-screen summary before evidence detail so parent orchestrators can route the result without scanning the full report. `Review verdict` is the review judgment; provider side effects are recorded separately in the action fields. When the report is posted before provider actions, action fields must distinguish intended action from completed action; completed approval/merge/queue results belong in the final handoff or an action-result note after verification.
-
-Source-of-truth note: copy these values from the final `Context / Snapshot`, `Findings`, `Evidence`, and `Action / Blocker` sections. Do not maintain separate facts here.
+Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). Keep intended action distinct from completed action.
 
 | Field | Value |
 |---|---|
@@ -35,7 +33,7 @@ Source-of-truth note: copy these values from the final `Context / Snapshot`, `Fi
 
 ## Context / Snapshot
 
-Use this compact snapshot as the source of truth for repeated critical fields in the Decision Summary. Verify every row from Tier 1 evidence before relying on it for verdict or action.
+Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#review-reportmd).
 
 | Field | Value |
 |---|---|
@@ -55,7 +53,7 @@ Use this compact snapshot as the source of truth for repeated critical fields in
 
 ## Finding identities
 
-The tuple contract is canonical in `../reference/finding-identities.md`. Add one row for every real finding, using this report's single `Report locator` and exact `Reviewed SHA`; leave the table with no data rows when the report has no findings. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <this-report.md>`.
+Use the tuple contract and validator named in the [Finding identities guide](filling-guide.md#review-reportmd).
 
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |
@@ -65,43 +63,38 @@ The tuple contract is canonical in `../reference/finding-identities.md`. Add one
 
 ## Reviewer Lift (builder handoff)
 
-Copy these fields from the builder's `Reviewer Lift` block before reading the diff. Field names, order, and required semantics are canonical in `../../start-build/templates/reviewer-lift-schema.md`; authority verification is canonical in `../../forge/reference/common-guard.md`; parent-owned Gate Receipt verification is canonical in `../../start-build/reference/parent-owned-gate.md`. Treat copied values, Gate Receipt comments, and any compact `delivery.kind=change-delivery` fields as claims until the `Review Context Capsule` verifies them from Tier 1/Tier 2 evidence.
+Copy the builder handoff, then verify it per the [Reviewer Lift guide](filling-guide.md#review-reportmd) and canonical [`reviewer-lift-schema.md`](../../start-build/templates/reviewer-lift-schema.md). Reviewer Lift values are maps, not proof; safety-critical claims need verification and source evidence.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
 |---|---|
-| Reviewed SHA | `<copy from Reviewer Lift; must equal change request head sha at approve-time>` |
-| Finding bindings | `<copy from Reviewer Lift; verify every report locator + originating reviewed SHA + short ID tuple against the originating report, or none>` |
-| Review gate | `<copy from Reviewer Lift; verify mandatory or documented human bypass>` |
-| Transport | `<copy from Reviewer Lift; verify mcp / glab-fallback / n/a matches the finish-result transport enum and that any glab-fallback names its eligible MCP gap>` |
-| Gate owner | `<copy from Reviewer Lift; verify builder vs parent ownership and parent-owned child boundary when applicable>` |
-| Gate coverage | `<copy from Reviewer Lift; verify full-local / hybrid / ci-only; parent-owned is invalid coverage>` |
-| Gate coverage rationale | `<copy from Reviewer Lift; verify policy source, required CI mapping, unmapped CI-only jobs or none, and exact-SHA freshness>` |
-| CI pipeline | `<copy from Reviewer Lift; verify URL/ID/status/SHA against current pipeline>` |
-| Local gate | `<copy from Reviewer Lift; verify PASS, N/A with rationale, or not-run parent-owned with Gate Receipt per ../../start-build/reference/parent-owned-gate.md; hybrid/ci-only review may start with exact-SHA CI pending, but failed/canceled/skipped/missing/stale/wrong-SHA CI blocks pass and finish unless waived>` |
-| RED | `<copy from Reviewer Lift; evaluate behavior-touching implementation RED evidence or N/A with rationale; do not fake tests>` |
-| GREEN | `<copy from Reviewer Lift; evaluate behavior-touching implementation GREEN evidence or N/A with rationale; do not fake tests>` |
-| Changed paths | `<copy command and measured output from Reviewer Lift; verify with git diff --name-only <base>...HEAD>` |
-| Touched safety surfaces | `<copy from Reviewer Lift; verify against diff>` |
-| Acceptance surfaces | `<copy from Reviewer Lift; verify each declared surface has test, smoke, docs-read, ci, or documented N/A evidence; surfaces without evidence or undeclared touched surfaces are MF-N blockers before pass>` |
-| Decoupling proof | `<copy from Reviewer Lift; accept/re-check per Decoupling Contract>` |
-| Reviewer Focus | `<copy from Reviewer Lift; sweep before full diff>` |
-| Open Questions | `<copy from Reviewer Lift; answer every OQ-N>` |
-| Approval authority | `<copy approval policy claim; default-after-pass unless explicitly restricted; verify before approval>` |
-| Approval authority source | `<copy approval policy/restriction source; stable repo policy ref allowed; separate from finish authority>` |
-| Finish authority | `<copy quoted finish-authority claim from Reviewer Lift; explicit value required before merge/auto-merge/release/close>` |
-| Finish authority source | `<copy from Reviewer Lift; verify before finish action; missing/unverifiable blocks finish but does not override default approval authority>` |
-| Delta since last ready push | `<copy from Reviewer Lift / N/A; verify against comments>` |
+| Reviewed SHA | `<copy; verify per reviewer-lift-schema.md>` |
+| Finding bindings | `<copy; verify per reviewer-lift-schema.md>` |
+| Review gate | `<copy; verify per reviewer-lift-schema.md>` |
+| Transport | `<copy; verify mcp / glab-fallback / n/a per reviewer-lift-schema.md>` |
+| Gate owner | `<copy; verify per reviewer-lift-schema.md>` |
+| Gate coverage | `<copy; verify per reviewer-lift-schema.md>` |
+| Gate coverage rationale | `<copy; verify per reviewer-lift-schema.md>` |
+| CI pipeline | `<copy; verify per reviewer-lift-schema.md>` |
+| Local gate | `<copy; verify N/A or parent-owned Gate Receipt per ../../start-build/reference/parent-owned-gate.md>` |
+| RED | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
+| GREEN | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
+| Changed paths | `<copy command and measured output; verify with git diff --name-only <base>...HEAD>` |
+| Touched safety surfaces | `<copy; verify per reviewer-lift-schema.md>` |
+| Acceptance surfaces | `<copy; verify evidence per reviewer-lift-schema.md>` |
+| Decoupling proof | `<copy; verify per reviewer-lift-schema.md>` |
+| Reviewer Focus | `<copy; verify per reviewer-lift-schema.md>` |
+| Open Questions | `<copy; verify per reviewer-lift-schema.md>` |
+| Approval authority | `<copy; verify default-after-pass or restriction per reviewer-lift-schema.md>` |
+| Approval authority source | `<copy; verify per reviewer-lift-schema.md>` |
+| Finish authority | `<copy; verify per reviewer-lift-schema.md>` |
+| Finish authority source | `<copy; verify per reviewer-lift-schema.md>` |
+| Delta since last ready push | `<copy; verify per reviewer-lift-schema.md>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
 ## Review Context Capsule
 
-Use Reviewer Lift, Gate Receipt comments, and compact delivery fields as maps, not proof. Parent-owned Gate Receipt verification uses `../../start-build/reference/parent-owned-gate.md`. For every safety-critical field, record reviewer verification and source before relying on a claim for the verdict or any approval/finish action.
-
-For parent-owned gates, the parent must have run
-`skill://start-build/scripts/validate-gate-receipt.mjs` with
-`--gate-receipt-locator "<opaque current Gate Receipt locator>"` before ready-marking;
-the reviewer independently verifies its exact-SHA and exact-note inputs and evidence.
+Use the [Review Context Capsule guide](filling-guide.md#review-reportmd). Treat Reviewer Lift, Gate Receipt, and delivery claims as maps, not proof; record safety-critical verification and source evidence, including parent-owned Gate Receipt validation per `../../start-build/reference/parent-owned-gate.md`.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|
@@ -115,7 +108,7 @@ the reviewer independently verifies its exact-SHA and exact-note inputs and evid
 
 ## Findings
 
-Required. Use stable short IDs only for real findings and bind every one in the `Finding identities` table above so its canonical identity is `(Report locator, Reviewed SHA, Finding ID)` per `../reference/finding-identities.md`. Each `MF-N` must be revision-ready: exact path + line/range locator, concrete problem, and bounded remedy direction. If a human/product/security decision is still required, do not disguise it as a Must Fix; use `Review verdict: blocked`, `Action blocker: human-decision-needed`, and a specific actionable blocker question instead. For suspected credential exposure, do not quote the secret; write `[SECURITY] Potential secret exposure at path:line; value [REDACTED]` and use `Action blocker: secret-exposure-suspected`.
+Required. Follow the [Findings guide](filling-guide.md#review-reportmd) and canonical identity contract. Real findings use stable IDs; every MF-N must be revision-ready with an exact locator, concrete problem, and bounded remedy direction. If a human decision is required, do not disguise it as a Must Fix. Redact suspected secrets.
 
 ### Must Fix
 
@@ -131,13 +124,13 @@ Required. Use stable short IDs only for real findings and bind every one in the 
 
 ## Open Questions Addressed
 
-Required. Classify every `OQ-N` from the change request description with `../REVIEW-FLOW.md` [CI and Open Question decision tables](../REVIEW-FLOW.md#ci-and-open-question-decision-tables). Do not leave a default completion value.
+Required. Follow the [Open Questions Addressed guide](filling-guide.md#review-reportmd) and classify every `OQ-N`; do not leave a default completion value.
 
 <!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. Human/product/security decisions stay blocked routing (`human-decision-needed`) until the decision source exists. If verified no OQ-N exists, write `Verified: no OQ-N entries in the change request description after review.` -->
 
 ## Evidence
 
-Required. Keep this concise and evidence-first; put verbose checklists in the optional annex.
+Required. Fill this concise evidence hub per the [Evidence guide](filling-guide.md#review-reportmd); put verbose checklists in the optional annex.
 
 ### Tests / CI / Local Checks
 
@@ -171,9 +164,7 @@ execution ran, state `Not run — <rationale>`.
 
 ## Action / Blocker
 
-Required. State the `Review verdict`, bound change request URL/project, verified Approval authority / Approval authority source, verified Finish authority / Finish authority source, and the separate Approval action / Finish action / Action blocker / Next action values. Verify authority through `../../forge/reference/common-guard.md`: use `blocked` for guard, authority, permission, preflight, SHA, CI, partial-review, secret-exposure-suspected, project-binding mismatch, or human-decision blockers that prevent safe approval or finish without representing a code defect. Missing finish authority blocks finish actions; it does not revoke default approval authority after a pass unless an explicit approval restriction source says so. Parent-managed pass with `Finish owner: parent` is non-mutating for the reviewer and records `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, `Next action: finish-by-authorized-actor`. When a missing human/product/security decision is the blocker, keep it here with `human-decision-needed` instead of routing it as builder revision work.
-
-Record the chosen value for each field; the full enums are defined once in the [Decision Summary](#decision-summary) above (`Review verdict`, `Approval action`, `Finish action`, `Action blocker`, `Next action`). Keep the two copies in sync.
+Required. Fill and reconcile these values per the [Action / Blocker guide](filling-guide.md#review-reportmd). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here.
 
 | Field | Value |
 |---|---|
@@ -189,7 +180,7 @@ Record the chosen value for each field; the full enums are defined once in the [
 
 ## Optional Annex: Checklists
 
-Use these compact subsections only when they add evidence beyond the core report. Avoid forced praise or invented positive feedback; if no evidence-backed positive pattern matters, omit that subsection or write `No evidence-backed positive pattern called out.`
+Use the [Optional Annex guide](filling-guide.md#review-reportmd) only when it adds evidence beyond the core report.
 
 ### Safety / State / External-System Checklist
 
@@ -207,9 +198,7 @@ Use these compact subsections only when they add evidence beyond the core report
 
 ### Follow-ups for Other Tasks
 
-List linked follow-up issue URLs here for non-blocking findings that should survive after merge. Use the documented provider/local issue workflow and live label vocabulary only; do not widen current change request scope.
-
-Record brief-quality defects here too when the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals. Name the missing fields and any avoidable discovery or rework.
+Record linked non-blocking follow-up issues and brief-quality defects per the [Follow-ups guide](filling-guide.md#review-reportmd); do not widen this change request.
 
 ### Final Notes
 
