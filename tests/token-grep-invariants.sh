@@ -596,6 +596,8 @@ re|start-review/templates/filling-guide.md|Finish action
 re|start-review/SKILL.md|Finish action
 re|start-review/templates/filling-guide.md|Action blocker
 re|start-review/SKILL.md|Action blocker
+re|start-review/templates/filling-guide.md|request-changes.*Approval action: not-approved.*Finish action: none.*Action blocker: none.*Next action: revise
+re|start-review/templates/review-report.md|request-changes.*Approval action: not-approved.*Finish action: none.*Action blocker: none.*Next action: revise
 re|start-review/templates/filling-guide.md|Next action
 re|start-review/SKILL.md|Next action
 re|start-review/templates/filling-guide.md|Context / Snapshot

@@ -164,7 +164,7 @@ execution ran, state `Not run — <rationale>`.
 
 ## Action / Blocker
 
-Required. Fill and reconcile these values per the [Action / Blocker guide](filling-guide.md#review-reportmd). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here.
+Required. Fill and reconcile these values per the [Action / Blocker guide](filling-guide.md#review-reportmd). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here. For a `request-changes` verdict, record `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, and `Next action: revise`. Use `other` only for a blocker no listed token names, and add a one-line reason in this section.
 
 | Field | Value |
 |---|---|
