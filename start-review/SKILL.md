@@ -43,6 +43,9 @@ parent-orchestrated.
    and require byte-for-byte provider-native readback.
 6. Keep verdict, approval, finish, action blocker, and next action separate.
    `request-changes` and `blocked` never approve or finish. `reject` publishes the Review Report, then stops and escalates. `pass` permits approval only when authority, local gate, open questions, and reviewed-commit CI policy allow it.
+   For a `request-changes` verdict, record approval `not-approved`, finish `none`,
+   action blocker `none`, and next action `revise`; `other` is only for a blocker
+   no listed token names and requires a one-line Action / Blocker reason.
 7. Before any approval or finish, re-run `forge snapshot` and the ordered common
    guard through one `forge act`. Perform exactly one action, bound to the
    reviewed commit or provider-proven integration candidate, then require native

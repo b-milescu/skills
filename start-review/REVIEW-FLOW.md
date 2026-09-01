@@ -204,6 +204,11 @@ a documented expected-head binding, so an exact-commit queue request returns
 
 ## Publication and actions
 
+A `request-changes` verdict is not an action blocker: record approval
+`not-approved`, finish `none`, action blocker `none`, and next action `revise`.
+Use `other` only for a blocker no listed token names, and add a one-line reason
+in the Review Report's Action / Blocker section.
+
 1. Draft the Review Report with intended verdict, approval, and finish actions
    before final guards.
 2. Take the final provider-native change-request, reviewed-commit, CI, authority,
