@@ -77,7 +77,7 @@ Show before writing: `## Agent skills` plus `docs/agents/issue-tracker.md`, `tri
 
 Pick file: if `CLAUDE.md` exists, edit it; else if `AGENTS.md` exists, edit it; if neither exists, ask which one to create. Never create one when the other already exists. If `## Agent skills` exists, update it in place without touching surrounding sections; if multiple or legacy blocks exist, ask which block to keep and remove/merge duplicates only after confirmation.
 
-Block shape (substitute every `<agent_setup_docs.*>` placeholder from the selected `project_profile.agent_setup_docs` values in the fact source (see L11) or live target-repo findings; never copy default `docs/agents/...` paths into a repo with a non-default Agent Setup Doc root):
+Block shape. Substitute each `<agent_setup_docs.*>` placeholder from the selected `project_profile.agent_setup_docs` values in the fact source (see L11) or live target-repo findings; never copy default `docs/agents/...` paths into a repo with a non-default Agent Setup Doc root:
 
 ```md
 ## Agent skills
