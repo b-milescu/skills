@@ -20,7 +20,7 @@ The template ships the default sections only. Pre-edit discovery (rulebook read,
 
 ### Default sections
 
-- **Reviewer Lift** — Copy every row unchanged; fill it per `reviewer-lift-schema.md`, which owns field order and gate/authority claim/source semantics. `../../start-review/REVIEW-FLOW.md` owns CI and authority decisions. Parent-owned mode follows `../reference/parent-owned-gate.md`; the child records only the ownership contract and candidate.
+- **Reviewer Lift** — Copy every row unchanged; fill it per `reviewer-lift-schema.md`, which owns field order, gate, and Approval/Finish authority claim/source semantics. `../../start-review/REVIEW-FLOW.md` owns CI and authority decisions. Parent-owned mode follows `../reference/parent-owned-gate.md`; the child records only the ownership contract and candidate.
 - **Finding bindings** — Use `none` until a Review Report finding is in flight. Otherwise copy each originating `(Report locator, Reviewed commit, Finding ID)` exactly from the report and validate before publication or ready transition.
 - **Review gate** — Records whether the change request went through the mandatory review gate (`mandatory`) or a human explicitly bypassed it.
 - **Authority sources** — Record where each approval/finish claim came from. Do not write builder-local interpretation as authority; the reviewer/parent verifies provenance through the `/forge` common guard.
