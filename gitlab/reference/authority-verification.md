@@ -35,6 +35,15 @@ Authority claims are maps, never grants. Builders may quote them in Reviewer Lif
 
 The machine schema owns all required fields and enum values for `requested_action`, caller identity/context, `approval`, `merge`, and `source_evidence`. In particular, each approval/merge claim carries its value, source, source type, and verification state; approval also carries `restricted`.
 
+The human input shape keeps the source/grant relationship explicit (the schema owns the full record):
+
+```yaml
+source_evidence:
+  - grants_authority: true
+```
+
+Each entry also carries `source_type`, `source`, and `value`; `true` is valid only when that source grants the requested action.
+
 ### Source types and precedence
 
 | Source type | Can grant authority? | Handling |
