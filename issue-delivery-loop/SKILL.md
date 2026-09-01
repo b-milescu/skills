@@ -19,11 +19,11 @@ Default: fan out every provably decoupled subset.
    Ready selection respects dependency ordering.
 2. For a multi-item ready batch, evaluate the shared
    [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md)
-   per pair before the first child launch. Automatically launch every provably
-   decoupled subset in parallel, one child per item and one issue/worktree/branch/
-   Draft change request/Review Packet per child. Coupled members serialize only
-   within their coupled cluster in dependency order; never serialize otherwise
-   decoupled items. Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP.
+   per pair before the first child launch.
+   Automatically launch every provably decoupled subset in parallel. Use one child
+   per item and one issue/worktree/branch/Draft change request/Review Packet per
+   child. Coupled members serialize only within their coupled cluster in dependency order.
+   Never serialize otherwise decoupled items. Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP.
    Preserve coordinator checkout isolation;
    children must not copy auxiliary-index artifacts between worktrees.
 3. Classify every issue/change request before launch:
