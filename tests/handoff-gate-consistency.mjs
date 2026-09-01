@@ -9,6 +9,13 @@ const root = resolve(import.meta.dirname, "..");
 const validator = join(root, "start-build/scripts/validate-handoff-gate-consistency.mjs");
 const template = join(root, "start-build/templates/builder-final-handoff.md");
 const work = mkdtempSync(join(tmpdir(), "handoff-gate-"));
+const requiredContractFields = ["phase", "expected_next_actor", "expected_next_action", "blocked"];
+const validContract = {
+  phase: "parent-gate",
+  expected_next_actor: "parent",
+  expected_next_action: "parent-run-gate",
+  blocked: false,
+};
 
 function run(source) {
   const path = join(work, "handoff.md");
@@ -29,7 +36,7 @@ const validBuilderOwned = handoff({
     ready_transition_owner: "builder",
     builder_gate_status: { status: "pass" },
   },
-  delivery: { local_gate: { status: "pass" } },
+  delivery: { local_gate: { status: "pass" }, handoff_contract: validContract },
   next_action: "await-review",
 });
 
@@ -37,7 +44,7 @@ const validBuilderOwned = handoff({
 const observedContradiction = handoff({
   gate_owner_received: "builder",
   status: "candidate-for-parent-gate",
-  delivery: { local_gate: { not_run_reason: "parent-owned" } },
+  delivery: { local_gate: { not_run_reason: "parent-owned" }, handoff_contract: validContract },
   next_action: "parent-run-gate",
 });
 
@@ -49,6 +56,20 @@ const inverseContradiction = handoff({
     ready_transition_owner: "builder",
     builder_gate_status: { status: "pass" },
   },
+  delivery: { handoff_contract: validContract },
+});
+
+const missingContract = handoff({
+  gate_owner_received: "parent",
+  status: "candidate-for-parent-gate",
+  next_action: "parent-run-gate",
+});
+
+const wrongContractNesting = handoff({
+  gate_owner_received: "parent",
+  handoff_contract: { ...validContract, body_marker: "must-not-echo-handoff-body" },
+  status: "candidate-for-parent-gate",
+  next_action: "parent-run-gate",
 });
 
 try {
@@ -68,6 +89,40 @@ try {
 
   // A missing/invalid gate_owner_received fails closed rather than silently passing.
   assert.notEqual(run(handoff({ status: "ready-for-review" })).status, 0, "missing gate_owner_received fails");
+
+  const absent = run(missingContract);
+  assert.notEqual(absent.status, 0, "missing delivery.handoff_contract fails closed");
+  assert.match(absent.stderr, /agent_handoff\.delivery\.handoff_contract/, "missing-contract diagnostic names the required path");
+
+  const misplaced = run(wrongContractNesting);
+  assert.notEqual(misplaced.status, 0, "wrongly nested handoff_contract fails closed");
+  assert.match(misplaced.stderr, /agent_handoff\.handoff_contract/, "wrong-nesting diagnostic names the misplaced path");
+  assert.match(
+    misplaced.stderr,
+    /agent_handoff\.delivery\.handoff_contract/,
+    "wrong-nesting diagnostic names the required path",
+  );
+  assert.doesNotMatch(misplaced.stderr, /must-not-echo-handoff-body/, "diagnostic does not echo handoff body content");
+
+  for (const missingField of requiredContractFields) {
+    const incompleteContract = { ...validContract };
+    delete incompleteContract[missingField];
+    const result = run(
+      handoff({
+        gate_owner_received: "parent",
+        delivery: {
+          handoff_contract: { ...incompleteContract, body_marker: "must-not-echo-handoff-body" },
+        },
+      }),
+    );
+    assert.notEqual(result.status, 0, `missing ${missingField} fails closed`);
+    assert.match(
+      result.stderr,
+      new RegExp(`agent_handoff\\.delivery\\.handoff_contract\\.${missingField}`),
+      `diagnostic names missing ${missingField}`,
+    );
+    assert.doesNotMatch(result.stderr, /must-not-echo-handoff-body/, "diagnostic does not echo handoff body content");
+  }
 
   // Reference pin (issue #400): the validator must stay wired into workflow prose
   // with a runnable command line, following the sibling validators' pattern, so it

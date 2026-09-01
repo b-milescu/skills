@@ -21,6 +21,7 @@ const builderOwnedSignatures = [
   { path: "gate_ownership.ready_transition_owner", value: "builder" },
   { path: "gate_ownership.builder_gate_status.status", value: "pass" },
 ];
+const requiredContractFields = ["phase", "expected_next_actor", "expected_next_action", "blocked"];
 
 function fail(message) {
   console.error(`handoff gate-consistency validation failed: ${message}`);
@@ -85,6 +86,18 @@ if (contradicting.length > 0) {
   const pairs = contradicting.map((signature) => `gate_owner_received=${received} vs ${signature.path}=${signature.value}`).join("; ");
   const took = received === "builder" ? "parent-owned" : "builder-owned";
   fail(`gate_owner_received=${received} contradicts observed ${took} gate behaviour: ${pairs}`);
+}
+
+const contractPath = "agent_handoff.delivery.handoff_contract";
+const contract = get(handoff, "delivery.handoff_contract");
+if (contract === undefined) {
+  if (get(handoff, "handoff_contract") !== undefined) {
+    fail(`misplaced agent_handoff.handoff_contract; expected ${contractPath}`);
+  }
+  fail(`missing ${contractPath}`);
+}
+for (const field of requiredContractFields) {
+  if (get(contract, field) === undefined) fail(`missing ${contractPath}.${field}`);
 }
 
 console.log("handoff gate-consistency validation: PASS");
