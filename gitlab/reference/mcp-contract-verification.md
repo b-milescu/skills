@@ -47,7 +47,7 @@ The [GitLab Mutation Guard](mutation-guard.md) owns the only allowed `mcp_merge_
 
 ### List pagination limitations
 
-**Fact (`live-smoke`/tool-surface observation, issue #210).** Exposed `list_*` MCP tools do not provide reliably agent-visible pagination controls and broad calls can under-report.
+**Fact (`live-smoke`/tool-surface observation, issue #210).** Exposed `list_*` MCP tools do not show reliable pagination controls to the agent. Broad calls can under-report.
 
 Never treat a broad single `list_*` page as exhaustive. Treat this as `mcp_pagination_gap` only when exhaustive selection is required: narrow to a bounded candidate set, re-read each candidate with `get_issue`/`get_merge_request`, or use guarded fallback to find candidates. Lists remain candidate data; a single-record read decides before mutation.
 
