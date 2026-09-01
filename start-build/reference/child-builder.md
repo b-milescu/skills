@@ -8,12 +8,7 @@ The launch prompt's `Gate owner` line is the **sole binding source** of the gate
 
 The child builder implements one work item and opens/maintains one Draft change request. By default it may mark ready only after the local gate is green or explicitly N/A with rationale. When parent-owned gate mode is active, the child follows the ownership contract in [parent-owned-gate.md](parent-owned-gate.md#ownership-contract): open/update the Draft change request and final handoff, do not claim gate pass/fail, and do not mark ready unless explicit parent/human delegation is recorded first. The parent orchestrator owns the mandatory review gate and any approval, finish, source-ref cleanup, or post-merge verification allowed by policy; the child must not start a reviewer, approve, finish, clean source refs, or claim the review gate is complete unless explicitly delegated.
 
-Project-profile hooks may specialize gate policy, labels, branch naming, CI
-jobs, domain docs, release/deploy policy, manual validation, language families,
-and auxiliary indexes. They must not weaken reviewed-SHA binding, exact-SHA CI,
-explicit authority source, independent review, this child-builder boundary, the
-verifier read-only boundary, or provider-native transport correctness plus help-first
-provider-specific fallback correctness.
+Project-profile hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
 
 Auxiliary project-index policy defaults to parent/coordinator ownership. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child, and child worktrees must not copy index artifacts between worktrees.
 

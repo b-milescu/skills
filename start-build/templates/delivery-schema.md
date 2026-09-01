@@ -137,10 +137,7 @@ Authority Verification uses `skill://forge/reference/common-guard.md` on GitLab 
 
 ## Provider and repository binding
 
-`forge preflight` fills `provider` and `repository` once. Profile hooks specialize
-project policy but never weaken reviewed-commit binding, commit-bound CI,
-explicit authority provenance, independent review, child-builder boundaries,
-verifier read-only boundaries, or provider-native post-read verification.
+`forge preflight` fills `provider` and `repository` once. Profile hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Trust and evidence tiers
 

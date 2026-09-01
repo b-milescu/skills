@@ -34,12 +34,7 @@ Before marking ready or requesting review, validate the MR handoff:
   - are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
 
   `blocking_question` appears only when a specific actionable question is what blocks progress.
-- `delivery.project_profile` hooks may point to project gate policy, labels,
-  branch naming, CI jobs, domain docs, release/deploy policy, manual validation,
-  language families, and auxiliary indexes. They specialize policy only; they
-  must not weaken reviewed-SHA binding, exact-SHA CI, explicit authority source,
-  independent review, child-builder boundaries, verifier read-only boundaries, or
-  provider-native transport and fallback correctness.
+- `delivery.project_profile` hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
 - `Reviewed SHA` equals the MR head SHA at the time you mark ready; any push invalidates prior SHA-bound local/CI evidence until the MR description and Reviewer Lift are rebound to the new head.
 - `Gate owner` is `builder` or `parent`; `Gate coverage` is `full-local`, `hybrid`, or `ci-only` (never `parent-owned`); `Gate coverage rationale` cites the project gate policy, required CI mapping, locally covered jobs, and unmapped CI-only jobs or `none`.
 - CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
@@ -61,13 +56,7 @@ Detailed section-by-section instructions live next to the templates:
 - [Builder template filling guide](../templates/filling-guide.md)
 - [Shared ADR filling guide](../shared-templates/filling-guide.md)
 
-Safety-critical filling rules remain in the active flow:
-
-- Keep every field in the **Reviewer Lift** block current with every push according to `../templates/reviewer-lift-schema.md`, including Gate owner/coverage/rationale and both quoted `Finish authority` and `Finish authority source` provenance.
-- Treat CI evidence as valid only when the pipeline commit SHA, when GitLab exposes it, matches `Reviewed SHA`; failed, canceled, skipped, missing, red, stale, or wrong-SHA required CI blocks reviewer pass/approval and every finish action unless explicitly waived, but pending matching CI may overlap review.
-- Never paste secrets, credentials, auth headers, sensitive payloads, or unredacted logs into MR descriptions, comments, templates, or CI output.
-- Use stable `OQ-N` IDs for open questions; remove placeholder IDs before ready.
-- Preserve human-readable review item IDs (`MF-N`, `SF-N`, `C-N`) in revision-packet responses and commit subjects, but route them canonically with the originating stable Report locator and exact reviewed SHA per `../../start-review/reference/finding-identities.md`; a bare short ID is not a stable cross-round trace.
+Safety-critical filling follows the canonical [Reviewer Lift](../templates/reviewer-lift-schema.md), [CI](../../start-review/REVIEW-FLOW.md#ci-decision-table), [credential](../SAFETY.md#non-negotiables), and [finding-identity](../../start-review/reference/finding-identities.md) rules.
 
 ## Success metric
 

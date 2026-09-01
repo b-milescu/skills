@@ -31,7 +31,7 @@ This routing is enforced only for flows launched through the parent loop. Manual
 - `high-risk` applies when any trigger is present: auth/security/crypto/secrets; migrations/schema/data-loss; deploy/runtime/infra/CI semantics; concurrency/locking/state machines/queues; billing/permissions/access control; large diff (`>=20` files or `>=1000` diff lines); unclear acceptance criteria.
 - `moderate` is the default when work is neither `trivial` nor `high-risk`.
 
-Test surface alone does not lower tier: route by blast radius, not by runtime-vs-test surface. broad test-only refactor — many touched test files (objective signal: `>=10` test files) or shared test-harness / cross-file test-coupling change — **not** `trivial` even though test-only runs no runtime code; route it at least `moderate` so large semantic test refactor takes higher-effort build/review path instead bouncing through avoidable review rounds. (A broad test refactor also trips `high-risk` trigger above — example `>=20` touched files — still routes `high-risk`.) rule only refines tier classification; canonical table below names shared model-free route basenames.
+Test surface alone does not lower tier: a test-only refactor touching `>=10` test files or shared harness/cross-file coupling is at least `moderate`; the `>=20`-file `high-risk` trigger still applies.
 
 Route exact shared model-free route basenames by tier. The basename resolves inside the current runtime dialect directory: Claude Code loads `agents/claude/<route>.md`; OMP loads `agents/omp/<route>.md`. Model pins live in frontmatter; provider effort pins live too, never in route name. Route names are launch basenames, distinct from role/mode labels `child mr-builder` and `mr-reviewer`:
 
@@ -99,31 +99,14 @@ authority grants it; otherwise stop at the most permissive authorized action.
 ## Parent loop
 
 1. **Resolve work item(s).** Follow the canonical [issue pickup flow](issue-pickup.md), including its required description-and-current-discussion read and contradiction handling, then read linked change requests, parent design docs, and the project rulebook. Confirm each work item carries the target repo's AFK-ready Triage Role label `project_profile.label_profile_ref` or other approved agent-work state. If multiple work items are in scope, prove [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) before parallel work; otherwise process serially in dependency order. Classify each work item/change request `trivial`, `moderate`, or `high-risk` per [Skill-only tier routing](#skill-only-tier-routing).
-2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order): fetch origin immediately before each source branch/worktree, verify the exact `origin/<default_branch>` SHA, and create the source branch or isolated worktree from that verified SHA. The parent checkout remains coordinator-only during multi-issue runs. Child builders edit via absolute worktree paths — the harness `edit`/`write` tools resolve relative paths against the session cwd, not a bash `cd` (see [child-builder.md §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits)) — so record and reiterate the worktree's absolute path for the launch prompt.
+2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
 3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Consume the bound tier and launch the exact shared builder route basename from the canonical table in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
-4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Confirm:
-   - work-item and change-request identifiers/locators
-   - provider-native relationship/closure preview and publication readback
-   - source target branch
-   - pushed branch
-   - current change-request head commit
-   - builder head commit
-   - builder reviewed or candidate commit
-   - shared `delivery` claim indexes present
-   - `delivery.handoff_contract` (`phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, `evidence_ready_for_next_actor`; `blocking_question` only when specific/actionable)
-   - Reviewer Lift reviewed commit
-   - exact-commit CI status when exposed
-   - changed paths
-   - touched safety surfaces
-   - decoupling proof
-   - local gate result or canonical parent-owned/not-run contract
-   - approval authority with source
-   - finish authority with source
+4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence.
 
-   Then, before launching review, run the sibling handoff consistency validator against the child's saved [builder-final handoff](../templates/builder-final-handoff.md) with `node skill://start-build/scripts/validate-handoff-gate-consistency.mjs --handoff <saved builder-final handoff>`. Like the finding-binding and Gate Receipt validators this is a workflow-time check, not a Check Gate or CI job. It catches a child whose observed gate behaviour contradicts its echoed `gate_owner_received` selection — the verification `child-builder.md` already assigns to the parent — while the result is still actionable; a non-zero exit blocks the review launch, so route the contradiction back to the builder instead of proceeding to step 5.
+   Run `node skill://start-build/scripts/validate-handoff-gate-consistency.mjs --handoff <saved builder-final handoff>` before review. A contradiction blocks review and routes back to the builder; the validator's workflow-time status is canonical in [child-builder §Child checklist](child-builder.md#child-checklist).
 
-   If child returned early because of a runtime/tool/budget notice, do not relabel issue scope blocked or treat notice as a human stop instruction: resume same child/worktree when runtime recovered and checkout still safe, otherwise record a runtime/tool blocker or relaunch exact same assigned scope from same worktree state without changing issue classification.
+   Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing issue classification.
 5. **Launch final review.** Launch the reviewer in parallel with CI once the build handoff lands; see [Reviewer launch timing](#reviewer-launch-timing). Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
 6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. In `Finish owner: parent` mode the parent still runs fresh commit/CI/authority/identity/common-guard checks before any action. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
 7. **Enforce commit and CI guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and CI to bind that exact commit. Red, canceled, skipped, missing, stale, or wrong-commit CI blocks finish unless an authorized human records an explicit waiver.
@@ -133,14 +116,9 @@ authority grants it; otherwise stop at the most permissive authorized action.
 
 ## Reviewer launch timing
 
-Step 5 starts the final reviewer in parallel with CI as soon as the build handoff lands. This is parent-side launch sequencing only: it never substitutes for or relaxes the reviewer's own exact-SHA CI verification, its fail-closed CI guard, or its bounded CI wait, which all stay exactly as defined in `start-review`. The reviewer still independently re-derives CI evidence for the SHA it reviews; the parent does not hand its CI read to the reviewer as fact.
+Step 5 launches the final reviewer in parallel with CI for every tier as soon as the build handoff lands. This parent-side sequencing never substitutes for the reviewer's exact-SHA CI verification, bounded wait, or fail-closed policy: candidate-bound failed or canceled CI blocks finish, and the reviewer independently applies `start-review` policy to non-pass-eligible CI.
 
-- **Parallel launch is the default for every tier** (`trivial`, `moderate`, `high-risk`). The reviewer starts while CI runs; the parent does not block-watch the candidate commit to terminal-green before launch. Exact-commit CI and the default queued finish still guard completion.
-- **Fail-closed on red/canceled CI is unchanged.** If candidate-bound CI is already `failed`/`canceled`, do not finish; route the change request back to the builder or escalate.
-
-In every tier the reviewer's bounded CI wait and CI-pending review policy are unchanged: if the reviewer reaches a SHA whose CI is not yet pass-eligible, it applies its own `start-review` CI-pending/fail-closed policy. Parallel launch here only changes the parent's launch timing, not any reviewer guard.
-
-- Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; Do not start second reviewer while first run still active. no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
+- Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
 
 ## Minimal reviewer launch prompt
 
@@ -170,7 +148,7 @@ Finish authority grant (only when granted): <orchestrator/parent finish-authorit
 
 Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. Do not name or directly read a skill's internal reference files in the launch prompt; invoke the skill through the Skill tool so the subagent enters through its entry procedure. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
 
-The reviewer posts a durable durable Review Report artifact and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator parsing aid; the durable durable Review Report artifact stays the canonical record, and the returned handoff is a parsing aid only.
+The reviewer posts a durable Review Report artifact and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator aid; the Review Report stays canonical.
 
 A finish-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent finish-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [authority-verification.md](../../forge/reference/common-guard.md) — so the reviewer has a verifiable finish-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 
@@ -196,17 +174,7 @@ Gate handling by mode: when Gate owner is parent, leave the change request Draft
 Minimum evidence pointers: project rulebook path, repository Check Gate path, Change request locator if one exists, and narrowly relevant issue-linked docs/tests.
 ```
 
-The `Gate owner` line is the explicit gate-ownership selection. Set it once per
-batch so every identically-shaped issue routes to one gate mode, rather than
-letting each child infer the mode from finish-authority prose. The child reads
-this field and must not infer gate ownership from "finish authority" or other
-merge/finish-authority wording; those wordings govern who may finish, not who
-runs the local gate. When the line is omitted, the documented default is
-**builder (builder-owned)**: the child runs the local gate and marks ready per the
-standard flow. `parent` selects parent-owned gate mode, whose per-mode semantics
-(ownership contract, Gate Receipt, ready transition) remain owned by
-[parent-owned-gate.md](parent-owned-gate.md); this field only names the
-selection.
+The `Gate owner` line is the explicit gate-ownership selection; set it once per batch, and omit it only to select the documented `builder` default. Child interpretation and the finish-authority separation are canonical in [child-builder §Authority boundary](child-builder.md#authority-boundary); parent-owned semantics remain in [parent-owned-gate.md](parent-owned-gate.md).
 
 Do not include broad parent reasoning, cross-issue summaries, hidden hypotheses,
 or unrelated backlog context in the builder prompt. If a specific risk requires
