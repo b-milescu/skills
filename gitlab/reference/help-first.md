@@ -1,20 +1,14 @@
 # GitLab help-first reference
 
-This reference owns the detailed run-dir help-cache pattern for guarded `/gitlab` `glab` fallback paths. The main [`SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule) keeps the transport order, high-value fallback rule, compatibility headings, pitfalls, and canonical workflow snippets.
+This reference owns the run-dir help-cache pattern for guarded `/gitlab` `glab` fallbacks. [`SKILL.md`](../SKILL.md#guarded-glab-fallback-and-help-first-rule) owns transport order, fallback eligibility, compatibility headings, pitfalls, and workflow snippets.
 
 ## Help-first rule detail
 
-Before any flagged fallback `glab` command, run exact command help and verify every flag. Help output wins over memory, examples from another CLI, or stale skill text. If help conflicts with `SKILL.md`, use help and note skill drift in the MR or review artifact.
+Before a flagged fallback command, run help for its exact `glab` command words and verify every flag. Help overrides memory, other-CLI examples, or stale skill text; record any `SKILL.md` drift in the MR/review artifact. Failed help capture stops that command.
 
-A per-run cache may reduce repeated help-output noise, but it never removes the help-first requirement for fallback `glab`. Cache only help text captured during the current run and repo context.
+A cache is optional and valid only within the current run and repository context. Key it by exact command words, `glab` version, worktree root, remote/repository selector, and branch assumptions. Refresh when any key changes, keep it in a temp/run directory, and never commit it.
 
 ## Per-run help cache
-
-Help-first remains mandatory for fallback `glab`. A run-dir help cache may reduce repeated output noise only after the exact help text has been captured for this run and context. Keep the cache in a temp/run artifact directory and never commit it.
-
-The run-dir help cache records the exact `glab <command> --help` output in a command-specific file, plus a `verified.tsv` line with verification status. A cache entry is valid only for the current run, exact command words, `glab` version, repo root, and repo URL/project selector. If help fails, record the failure status and stop before running the flagged command.
-
-Refresh the cache whenever the command, `glab` version, or repo context changes. Repo context includes worktree root, remote/repo URL, `-R` project selector, default/target branch assumptions, and any host/project ambiguity. When in doubt, rerun help and overwrite the cache entry.
 
 ```bash
 run_dir="${run_dir:-}"
@@ -57,9 +51,4 @@ cache_glab_help mr view
 glab mr view "$mr_iid" -F json
 ```
 
-## Cache safety checklist
-
-- Store the cache under a temp or run artifact directory, never under tracked repo paths.
-- Treat failed help capture as a stop condition for the flagged command that needed that help.
-- Refresh on any command-word, `glab` version, worktree, remote URL, project selector, or branch-context change.
-- Use cached output only for the exact command words that produced the cached file.
+The cache is evidence only for the exact command that produced the file; it never relaxes help-first or any Mutation Guard condition.
