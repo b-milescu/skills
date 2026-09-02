@@ -85,6 +85,7 @@ Fallback is forbidden when any of these are present:
 - `project_binding_mismatch`
 - `target_reread_unavailable`
 - `head_changed` / `stale_head`
+- `stale_or_missing_gate_receipt`
 - `missing_authority` or `authority_source_mismatch`
 - `permission_uncertain`
 - `identity_unavailable` or `identity_changed`

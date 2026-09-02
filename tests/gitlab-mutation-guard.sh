@@ -181,6 +181,19 @@ for (const guard of ['current head equals reviewed SHA before action', 'passing 
 assert(shaBoundMerge.required_guards.some((guard) => guard.includes('advisory exact-SHA CI attribution') && guard.includes('non-blocking')), 'sha-bound-merge CI metadata must be advisory');
 assert(!shaBoundMerge.required_guards.some((guard) => /green CI|required CI/i.test(guard)), 'sha-bound-merge metadata must not require CI');
 assert(!shaBoundMerge.fallback_conditions.some((condition) => /stale\/red\/missing/i.test(condition)), 'sha-bound-merge fallback must not use CI blocker states');
+assert(metadata.mutation_guard.fallback_forbidden_when.includes('stale_or_missing_gate_receipt'), 'global metadata must forbid fallback on stale/missing Gate Receipt');
+assert(doc.includes('- `stale_or_missing_gate_receipt`'), 'human guard must forbid fallback on stale/missing Gate Receipt');
+
+const shaBoundApproval = metadata.snippets.find((snippet) => snippet.name === 'sha-bound-approval');
+assert(shaBoundApproval, 'top-level sha-bound-approval metadata missing');
+const finishProfile = schema.mutation_profiles.sha_bound_finish.required_steps;
+assert(finishProfile.includes('reviewed_sha_guard'), 'SHA-bound profile must require reviewed-head equality');
+assert(finishProfile.includes('exact_candidate_gate_receipt'), 'SHA-bound profile must require exact-candidate Gate Receipt');
+assert(shaBoundApproval.required_guards.includes('current MR head equals reviewed SHA before action'), 'approval metadata must implement reviewed_sha_guard');
+assert(shaBoundApproval.required_guards.includes('passing exact-candidate Gate Receipt bound to reviewed SHA'), 'approval metadata must implement exact_candidate_gate_receipt');
+assert(shaBoundApproval.markdown.required_guards.includes('current head equals reviewed SHA'), 'generated approval prose must state reviewed-head equality');
+assert(shaBoundApproval.markdown.required_guards.includes('passing exact-candidate Gate Receipt bound to reviewed SHA'), 'generated approval prose must state Gate Receipt guard');
+assert(!shaBoundApproval.required_guards.some((guard) => /CI/i.test(guard)), 'approval eligibility metadata must not contain a CI guard');
 
 const transportDoc = requireText('gitlab/reference/snippet-transports.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
 assert(transportDoc.includes(guardSchemaResource), 'snippet-transports.md must name guard schema skill URI');

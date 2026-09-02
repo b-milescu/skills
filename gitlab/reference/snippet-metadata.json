@@ -26,6 +26,7 @@
     ],
     "fallback_forbidden_when": [
       "head_changed",
+      "stale_or_missing_gate_receipt",
       "missing_authority",
       "authority_source_mismatch",
       "permission_uncertain",
@@ -683,6 +684,8 @@
       ],
       "required_guards": [
         "fresh MCP re-read of MR head before action",
+        "current MR head equals reviewed SHA before action",
+        "passing exact-candidate Gate Receipt bound to reviewed SHA",
         "approval authority before action",
         "caller identity/token-stability before action",
         "context-firewall eligibility before action",
@@ -691,7 +694,7 @@
       "fallback_conditions": [
         "glab mr approve --sha only when MCP approval unavailable",
         "help-first verification",
-        "same guards as MCP"
+        "same reviewed-head, Gate Receipt, authority, caller, context, and target guards as MCP"
       ],
       "post_mutation_reread": {
         "mode": "required",
@@ -707,10 +710,10 @@
       },
       "markdown": {
         "mcp_primary_tools": "`approve_merge_request(sha=reviewed_sha, confirm=true)`, then approval state/MR read.",
-        "inputs": "Bound MR, reviewed SHA, approval authority/source, caller identity.",
+        "inputs": "Bound MR, reviewed SHA, exact-candidate Gate Receipt, approval authority/source, caller identity.",
         "outputs": "Approval for reviewed SHA or blocked action result.",
-        "required_guards": "Fresh MCP re-read of MR head, approval authority, caller identity/token-stability, context-firewall eligibility, and exact target before action.",
-        "fallback_conditions": "`glab mr approve --sha` only when MCP approval unavailable; help-first and same guards.",
+        "required_guards": "Fresh MCP re-read proves current head equals reviewed SHA; passing exact-candidate Gate Receipt bound to reviewed SHA; approval authority; caller identity/token-stability; context-firewall eligibility; and exact target before action.",
+        "fallback_conditions": "`glab mr approve --sha` only when MCP approval unavailable; help-first and the same reviewed-head, Gate Receipt, authority, caller, context, and target guards.",
         "post_mutation_reread": "Required: re-read approval state/MR and record `via=mcp` or `via=glab-fallback`."
       }
     },
