@@ -346,7 +346,7 @@ MCP primary: `finish_merge_request` performs the authority-aware finish contract
 
 ```text
 
-finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?)
+finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?) -> finish_result with optional nullable advisory ci
 get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issue/branch cleanup and record via
 
 ```
