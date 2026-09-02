@@ -727,16 +727,19 @@
       ],
       "required_guards": [
         "fresh MCP re-read of head SHA before action",
-        "exact-SHA green CI before action",
+        "current head equals reviewed SHA before action",
+        "advisory exact-SHA CI attribution when available; every status and absence is non-blocking",
+        "passing exact-candidate Gate Receipt bound to reviewed SHA",
         "merge authority/source before action",
         "caller identity/token-stability before action",
         "context-firewall eligibility before action",
-        "project binding before action"
+        "project binding before action",
+        "provider-native post-mutation readback"
       ],
       "fallback_conditions": [
         "glab mr merge --sha --auto-merge=false only for documented MCP merge robustness gap",
         "glab mr merge --sha --auto-merge=false when MCP unavailable",
-        "do not fallback on stale/red/missing/authority uncertainty"
+        "do not fallback on stale head, stale or missing Gate Receipt, authority uncertainty, caller uncertainty, or native policy refusal"
       ],
       "post_mutation_reread": {
         "mode": "required",

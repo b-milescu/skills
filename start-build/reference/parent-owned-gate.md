@@ -74,8 +74,8 @@ node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> -
 4. Gate coverage is `exact-candidate-local`, never `parent-owned`. Provider CI,
    when observed, is advisory and attributed only when bound to the candidate or
    provider-proven integration commit.
-5. Tracked files remain unchanged after the gate. If they changed, commit them
-   and rerun on the new commit or record an explicit waiver.
+5. Tracked files remain unchanged after the gate. If they changed, the Receipt
+   fails: commit them, bind the new exact candidate, and rerun the full gate.
 6. Gate Receipt contains `result: "PASS"`, exact candidate, command, preflights,
    and evidence; publication readback is byte-for-byte.
 7. Reviewer Lift `Acceptance surfaces` all have test/smoke/docs-read/ci/N/A

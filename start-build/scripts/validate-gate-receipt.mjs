@@ -87,6 +87,7 @@ function validateReceipt(body, expected) {
   for (const [field, value] of Object.entries(exact)) {
     if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
   }
+  if (Object.keys(receipt).some((field) => /waiver/i.test(field))) fail("Gate Receipt cannot waive tracked-file changes");
 
   if (!isAbsolutePortable(requireString(receipt, "checkout_path"))) fail("gate_receipt.checkout_path must be absolute");
   requireString(receipt, "summary");

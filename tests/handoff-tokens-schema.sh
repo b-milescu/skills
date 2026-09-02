@@ -155,6 +155,13 @@ for (const [path, enumNeedle] of Object.entries(enumText)) {
   pointerCount += pointerLines.length;
 }
 assert(pointerCount === 3, "expected exactly three template schema pointers");
+const cataloguePath = "retro/reference/signal-catalogue.md";
+const catalogue = fs.readFileSync(cataloguePath, "utf8");
+const blockerSignal = catalogue.split("\n").find((line) => line.includes("Blocker tokens fired"));
+assert(blockerSignal, `${cataloguePath} blocker-token signal missing`);
+const catalogueTokens = [...blockerSignal.matchAll(/`([^`]+)`/g)].map((match) => match[1]).filter((token) => token !== "delivery.handoff_contract");
+assert(catalogueTokens.length > 0, `${cataloguePath} must name current blocker examples`);
+for (const token of catalogueTokens) assert(blockers.includes(token), `${cataloguePath} names retired or unknown blocker ${token}`);
 
 const invariantTest = fs.readFileSync("tests/token-grep-invariants.sh", "utf8");
 assert(invariantTest.includes(schemaPath), "token-grep-invariants.sh must read the handoff token schema");

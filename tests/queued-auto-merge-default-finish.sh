@@ -31,7 +31,7 @@ require "$REVIEW" 'Queued is non-terminal' 'queue is not merged'
 retired_modes="Gate coverage.*(hy""brid|ci""-only)"
 retired_tokens="CI wa""iver|wait""-ci|stale-or-missing-""ci|no_ci_""expected"
 retired_blockers="ci_not_""green|ci_""guard|stale_""ci|red_""ci|missing_""ci"
-tracked=(issue-delivery-loop start-build start-review forge gitlab setup-dev-skills docs CONTEXT.md)
+tracked=(issue-delivery-loop start-build start-review forge gitlab setup-dev-skills retro docs CONTEXT.md)
 if grep -R -n -E "$retired_modes|$retired_tokens|$retired_blockers" "${tracked[@]}"; then
   fail "retired CI mode/waiver/action/blocker vocabulary remains in active policy sources"
 fi

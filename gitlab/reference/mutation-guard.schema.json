@@ -45,41 +45,48 @@
     },
     {
       "order": 5,
+      "id": "exact_candidate_gate_receipt",
+      "requires": ["passing durable Gate Receipt bound to reviewed_sha for ready, approval, and finish actions"],
+      "blocks": ["stale_or_missing_gate_receipt"],
+      "output": "gate_receipt_verification is pass or n/a with exact candidate and durable receipt locator"
+    },
+    {
+      "order": 6,
       "id": "authority_verification",
       "requires": ["caller_role", "action", "authority value", "authority source", "skill://gitlab/reference/authority-verification.schema.json claim shape"],
       "blocks": ["missing_authority", "authority_source_mismatch", "permission_uncertain", "self_merge_risk"],
       "output": "Authority Verification verdict, decision routing, source provenance, conflicts/restrictions, and no-self result for exactly one requested action"
     },
     {
-      "order": 6,
+      "order": 7,
       "id": "caller_identity_and_context",
       "requires": ["entry caller identity", "pre-mutation caller identity re-check", "context-firewall role"],
       "blocks": ["identity_unavailable", "identity_changed", "self_merge_risk"],
       "output": "stable caller identity evidence and role/context eligibility"
     },
     {
-      "order": 7,
+      "order": 8,
       "id": "safe_gitlab_text",
       "requires": ["content-byte guard for body-bearing mutations"],
       "blocks": ["content_byte_failure"],
       "output": "safe_text_status is pass or n/a; diagnostics never include body bytes"
     },
     {
-      "order": 8,
+      "order": 9,
       "id": "fallback_eligibility",
       "requires": ["mcp_gap_state", "help-first evidence for flagged glab fallback", "all prior guards passed"],
       "blocks": ["fallback_forbidden", "mcp_unavailable"],
       "output": "transport plan is mcp, glab-fallback, or no-action handoff"
     },
     {
-      "order": 9,
+      "order": 10,
       "id": "single_mutation",
       "requires": ["one mutation action", "SHA/confirm binding when supported by the transport"],
       "blocks": ["permission_uncertain", "mutation_failed"],
       "output": "one attempted mutation or no-action handoff; never combined approve+merge or create+ready"
     },
     {
-      "order": 10,
+      "order": 11,
       "id": "post_mutation_mcp_reread",
       "requires": ["fresh MCP re-read of the mutated target or canonical confirmation endpoint"],
       "blocks": ["post_reread_unavailable", "description_lost", "target_state_mismatch", "stale_head", "merge_blocked"],
@@ -96,6 +103,7 @@
     "target_branch",
     "reviewed_sha",
     "ci_observation",
+    "gate_receipt",
     "authority_value",
     "authority_source",
     "caller_role",
@@ -115,6 +123,7 @@
     "target_state",
     "reviewed_sha_status",
     "ci_observation",
+    "gate_receipt_verification",
     "authority_verification",
     "caller_identity_verification",
     "safe_text_status",
@@ -127,6 +136,7 @@
     {"token": "target_reread_unavailable", "fallback_allowed": false, "meaning": "Decision-grade current target re-read failed."},
     {"token": "head_changed", "fallback_allowed": false, "meaning": "MR head SHA differs from reviewed_sha before mutation."},
     {"token": "stale_head", "fallback_allowed": false, "meaning": "Post-mutation re-read shows a different head than the guarded SHA."},
+    {"token": "stale_or_missing_gate_receipt", "fallback_allowed": false, "meaning": "A ready, approval, or finish action lacks a passing durable Gate Receipt bound to reviewed_sha."},
     {"token": "missing_authority", "fallback_allowed": false, "meaning": "Required approval/merge/ready/note authority or source is absent."},
     {"token": "authority_source_mismatch", "fallback_allowed": false, "meaning": "Declared authority source does not match the freshly verified source."},
     {"token": "permission_uncertain", "fallback_allowed": false, "meaning": "The actor's permission to take the action is unknown or contradicted."},
@@ -144,7 +154,7 @@
   "mcp_gap_states": [
     {"token": "none", "fallback_allowed": false, "meaning": "No MCP gap; use MCP primary transport."},
     {"token": "mcp_unavailable", "fallback_allowed": true, "meaning": "MCP tool/read is unavailable for the required action; fallback still requires all non-transport guards and post-mutation MCP re-read before success is trusted."},
-    {"token": "mcp_merge_robustness_gap", "fallback_allowed": true, "meaning": "Documented merge_merge_request robustness/error-normalization gap after all SHA/CI/authority/identity guards passed."},
+    {"token": "mcp_merge_robustness_gap", "fallback_allowed": true, "meaning": "Documented merge_merge_request robustness/error-normalization gap after all SHA/Gate Receipt/authority/identity guards passed."},
     {"token": "mcp_pagination_gap", "fallback_allowed": true, "meaning": "MCP list pagination is insufficient for exhaustive selection; fallback can only select candidates and single-record re-reads must decide before mutation."}
   ],
   "fallback_forbidden_when": [
@@ -152,6 +162,7 @@
     "target_reread_unavailable",
     "head_changed",
     "stale_head",
+    "stale_or_missing_gate_receipt",
     "missing_authority",
     "authority_source_mismatch",
     "permission_uncertain",
@@ -192,11 +203,11 @@
     },
     "sha_bound_finish": {
       "examples": ["sha-bound-approval", "sha-bound-merge", "sha-bound-auto-merge-queue", "finish-mr-authority-aware"],
-      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "authority_verification", "caller_identity_and_context", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
+      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "exact_candidate_gate_receipt", "authority_verification", "caller_identity_and_context", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
     },
     "ready_transition": {
       "examples": ["draft-mr-mark-ready"],
-      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "authority_verification", "caller_identity_and_context", "safe_gitlab_text", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
+      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "exact_candidate_gate_receipt", "authority_verification", "caller_identity_and_context", "safe_gitlab_text", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
     },
     "candidate_selection": {
       "examples": ["issue-pickup", "mr-pickup"],

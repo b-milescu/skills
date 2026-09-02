@@ -60,6 +60,7 @@ sameList('ordered guard steps', schema.ordered_steps.map((step) => step.id), [
   'current_target_reread',
   'reviewed_sha_guard',
   'exact_sha_ci_observation',
+  'exact_candidate_gate_receipt',
   'authority_verification',
   'caller_identity_and_context',
   'safe_gitlab_text',
@@ -86,6 +87,7 @@ const blockerByToken = new Map(schema.blocker_states.map((blocker) => [blocker.t
 for (const token of [
   'head_changed',
   'stale_head',
+  'stale_or_missing_gate_receipt',
   'missing_authority',
   'authority_source_mismatch',
   'permission_uncertain',
@@ -100,6 +102,14 @@ for (const token of [
 for (const token of ['stale_ci', 'red_ci', 'missing_ci']) {
   assert(!blockerByToken.has(token), `${token} must not remain a mutation blocker`);
   assert(!schema.fallback_forbidden_when.includes(token), `${token} must not affect fallback eligibility`);
+}
+assert(schema.input_fields.includes('gate_receipt'), 'Gate Receipt input must be machine-readable');
+assert(schema.output_fields.includes('gate_receipt_verification'), 'Gate Receipt verification output must be machine-readable');
+for (const profile of ['sha_bound_finish', 'ready_transition']) {
+  const steps = schema.mutation_profiles[profile].required_steps;
+  assert(steps.includes('exact_candidate_gate_receipt'), `${profile} must require exact-candidate Gate Receipt`);
+  assert(steps.indexOf('exact_sha_ci_observation') < steps.indexOf('exact_candidate_gate_receipt'), `${profile} Gate Receipt order drifted`);
+  assert(steps.indexOf('exact_candidate_gate_receipt') < steps.indexOf('authority_verification'), `${profile} Gate Receipt must precede authority`);
 }
 
 const gapTokens = schema.mcp_gap_states.map((gap) => gap.token);
@@ -163,6 +173,14 @@ assert(metadata.mutation_guard?.schema === guardSchemaResource, 'snippet metadat
 for (const token of ['mcp_unavailable', 'mcp_merge_robustness_gap', 'mcp_pagination_gap']) {
   assert(metadata.mutation_guard.gap_states.includes(token), `snippet metadata missing guard gap state ${token}`);
 }
+const shaBoundMerge = metadata.snippets.find((snippet) => snippet.name === 'sha-bound-merge');
+assert(shaBoundMerge, 'top-level sha-bound-merge metadata missing');
+for (const guard of ['current head equals reviewed SHA before action', 'passing exact-candidate Gate Receipt bound to reviewed SHA', 'merge authority/source before action', 'caller identity/token-stability before action', 'provider-native post-mutation readback']) {
+  assert(shaBoundMerge.required_guards.includes(guard), `sha-bound-merge top-level metadata missing ${guard}`);
+}
+assert(shaBoundMerge.required_guards.some((guard) => guard.includes('advisory exact-SHA CI attribution') && guard.includes('non-blocking')), 'sha-bound-merge CI metadata must be advisory');
+assert(!shaBoundMerge.required_guards.some((guard) => /green CI|required CI/i.test(guard)), 'sha-bound-merge metadata must not require CI');
+assert(!shaBoundMerge.fallback_conditions.some((condition) => /stale\/red\/missing/i.test(condition)), 'sha-bound-merge fallback must not use CI blocker states');
 
 const transportDoc = requireText('gitlab/reference/snippet-transports.md', /GitLab Mutation Guard/, 'Mutation Guard reference');
 assert(transportDoc.includes(guardSchemaResource), 'snippet-transports.md must name guard schema skill URI');

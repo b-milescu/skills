@@ -56,6 +56,7 @@ The schema names the machine fields. Human packets should carry the same facts:
 | `source_branch` / `target_branch` | Required for MR branch-sensitive actions. |
 | `reviewed_sha` | Required for review, ready, approval, merge, queue, and finish actions. |
 | `ci_observation` | Advisory exact-SHA CI locator/status/commit when available; absence or any status is non-blocking. |
+| `gate_receipt` | Durable passing exact-candidate local Gate Receipt bound to `reviewed_sha`; required for ready, approval, and finish actions. |
 | `authority_value` / `authority_source` | Approval, merge, ready, note, or label authority plus provenance; approval/finish actions use the [Authority Verification](authority-verification.md) claim shape and source precedence. |
 | `caller_role` / `caller_identity` | Role and token-stability evidence for the actor taking the action. |
 | `safe_text_role` | Description, note, or other body role for content-byte diagnostics. |
