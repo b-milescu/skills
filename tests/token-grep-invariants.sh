@@ -114,11 +114,11 @@ contain|start-build/reference/child-builder.md|must not start a reviewer
 absent|start-build/reference/child-builder.md|subagent({ action: "list" })
 contain|start-build/SKILL.md|- **Child `mr-builder`:**
 contain|start-build/SKILL.md|skill://start-build/reference/child-builder.md
-# handoff-token-validator-wiring
-re|start-build/reference/child-builder.md|validate-handoff-tokens\.mjs.*workflow-time
-re|start-build/reference/parent-orchestrator.md|validate-handoff-tokens\.mjs.*workflow-time
-re|start-review/templates/filling-guide.md|validate-handoff-tokens\.mjs.*workflow-time
-re|start-review/REVIEW-FLOW.md|validate-handoff-tokens\.mjs.*workflow-time
+# handoff-token-validator-wiring (retired scripts; parents read forge snapshot)
+contain|start-build/reference/child-builder.md|validate-finding-bindings.mjs
+contain|start-build/reference/parent-orchestrator.md|Lift `claims`
+contain|start-build/reference/parent-orchestrator.md|four head/author `bindings`
+contain|start-review/REVIEW-FLOW.md|two-line final handoff
 # start-build-context-read-matrix
 re|start-build/SKILL.md|^## Invocation modes$
 re|start-build/SKILL.md|\*\*Standalone:\*\*
@@ -303,11 +303,9 @@ re|start-review/REVIEW-FLOW.md|missing readback
 re|start-review/templates/review-report.md|^\| Change request \|
 re|start-review/templates/review-report.md|^\| Repository \|
 re|start-review/templates/review-report.md|^\| Reviewed commit \|
-re|start-review/templates/reviewer-final-handoff.md|repository:
-re|start-review/templates/reviewer-final-handoff.md|change_request:
-re|start-review/templates/reviewer-final-handoff.md|locator:
-re|start-review/templates/reviewer-final-handoff.md|current:
-re|start-review/templates/reviewer-final-handoff.md|reviewed:
+re|start-review/templates/reviewer-final-handoff.md|Change-request locator:
+re|start-review/templates/reviewer-final-handoff.md|Durable note id:
+re|start-review/templates/reviewer-final-handoff.md|Review Report note id
 re|start-review/templates/filling-guide.md|change-request locator, canonical repository, reviewed commit
 re|start-review/templates/filling-guide.md|delivery.repository.locator
 re|start-review/templates/filling-guide.md|delivery.change_request.locator
@@ -396,12 +394,8 @@ absent|start-build/templates/filling-guide.md|Merge authority
 contain|start-build/reference/child-builder.md|builders cannot grant authority
 contain|start-build/reference/context-and-planning.md|not a builder grant
 contain|start-build/templates/filling-guide.md|Do not write builder-local interpretation as authority
-contain|start-build/templates/builder-final-handoff.md|    authority:
-contain|start-build/templates/builder-final-handoff.md|      approval:
-contain|start-build/templates/builder-final-handoff.md|      finish:
-contain|start-review/templates/reviewer-final-handoff.md|    authority:
-contain|start-review/templates/reviewer-final-handoff.md|      approval:
-contain|start-review/templates/reviewer-final-handoff.md|      finish:
+contain|start-build/templates/builder-final-handoff.md|Authority Verification
+contain|start-review/templates/reviewer-final-handoff.md|Authority Verification
 # review-blocked-verdict tokens
 contain|start-review/SKILL.md|Keep verdict, approval, finish, action blocker, and next action separate
 contain|start-review/REVIEW-FLOW.md|human-decision-needed
@@ -410,11 +404,8 @@ contain|start-review/templates/review-report.md|revision-ready
 contain|start-review/templates/review-report.md|bounded remedy direction
 contain|start-review/templates/filling-guide.md|revision-ready
 contain|start-review/templates/filling-guide.md|bounded remedy direction
-contain|start-review/templates/reviewer-final-handoff.md|  review_verdict:
-contain|start-review/templates/reviewer-final-handoff.md|  approval_action:
-contain|start-review/templates/reviewer-final-handoff.md|  finish_action:
-contain|start-review/templates/reviewer-final-handoff.md|  action_blocker:
-contain|start-review/templates/reviewer-final-handoff.md|  next_action:
+contain|start-review/templates/reviewer-final-handoff.md|review_verdict:
+contain|start-review/templates/reviewer-final-handoff.md|action_blocker:
 contain|start-review/templates/review-report.md|| Review verdict |
 contain|start-review/templates/review-report.md|| Approval action |
 contain|start-review/templates/review-report.md|| Finish action |

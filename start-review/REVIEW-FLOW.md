@@ -222,7 +222,7 @@ in the Review Report's Action / Blocker section.
    approval and finish and record `stale-commit` in the action result and final
    handoff.
 6. Perform exactly one authorized `forge act`.
-7. Verify provider-native post-read, save the final reviewer handoff, and run `node skill://start-review/scripts/validate-handoff-tokens.mjs --handoff <saved reviewer-final handoff>` before returning it. This is a workflow-time check, not a Check Gate or CI job. Then emit the action result plus final handoff. `Finish owner: parent` keeps approval `not-approved` and finish `none`.
+7. Verify provider-native post-read, then emit the action result plus the two-line final handoff (change-request locator and Review Report note id). `Finish owner: parent` keeps approval `not-approved` and finish `none`.
 
 ## Review Report contract
 

@@ -1,9 +1,0 @@
-agent_handoff:
-  kind: reviewer-final
-  delivery:
-    handoff_contract:
-      blocker_token: other
-  review_verdict: blocked
-  action_blocker: other
-  next_action: human-escalation
-  blocker_detail: "provider returned a new blocked state"

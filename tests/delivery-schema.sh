@@ -13,11 +13,10 @@ for token in 'kind: "change-delivery"' provider repository issue change_request 
   assert_file_contains "$schema" "$token" "schema token $token"
 done
 for copy in start-build/templates/builder-final-handoff.md start-review/templates/reviewer-final-handoff.md; do
-  assert_file_contains "$copy" 'CHANGE-DELIVERY-SCHEMA:BEGIN' "generated-copy marker"
-  assert_file_contains "$copy" 'kind: "change-delivery"' "neutral delivery kind"
-  for token in provider: repository: issue: change_request: commit: ci: local_gate: tdd: authority: handoff_contract: evidence: blockers:; do
-    assert_file_contains "$copy" "$token" "$copy field $token"
-  done
+  assert_file_contains "$copy" "Change-request locator:" "$copy locator line"
+  assert_file_contains "$copy" "Durable note id:" "$copy note-id line"
+  assert_file_not_contains "$copy" 'CHANGE-DELIVERY-SCHEMA:BEGIN' "$copy has no generated-copy marker"
+  assert_file_not_contains "$copy" '```yaml' "$copy has no YAML fence"
 done
 if grep -R -n -E 'gitlab-delivery|gitlab-delivery-schema|GITLAB-DELIVERY-(SCHEMA|FIELDS)' \
   start-build start-review issue-delivery-loop setup-dev-skills docs/agents retro agents README.md; then
