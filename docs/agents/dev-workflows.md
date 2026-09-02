@@ -9,7 +9,7 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 - **`/plan-to-issues`** — plan-to-issues via `/plan-to-issues` after `/forge preflight`.
 - **`/start-build`** — implements issues with TDD and an early Draft change request.
 - **`/start-review`** — independently reviews one bound change request and exact commit/CI evidence.
-- **`/issue-delivery-loop`** — coordinates bounded batches using retained internal `mr-builder-*` and `mr-reviewer-final` routes.
+- **`/issue-delivery-loop`** — coordinates bounded batches using the internal `mr-builder` and `mr-reviewer-final` routes.
 - **`/retro`** — delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. See `skill://retro/SKILL.md`.
 
 ## Skill activation mechanism

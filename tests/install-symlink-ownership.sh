@@ -149,4 +149,23 @@ done
 assert_not_exists "$home_dir/.claude/skills/old-repo-skill"
 assert_not_exists "$home_dir/.claude/agents/old-repo-agent.md"
 
+# A user-managed route-name collision exercises link(), unlike custom-agent.md,
+# which is intentionally outside the repository's managed agent inventory.
+collision_home="$TMP_ROOT/collision-home"
+collision_output="$TMP_ROOT/collision-install.out"
+mkdir -p \
+  "$collision_home/.claude/agents" \
+  "$collision_home/.omp/agent/agents"
+ln -s "$external_dir/custom-agent.md" "$collision_home/.claude/agents/mr-builder.md"
+ln -s "$external_dir/omp-custom-agent.md" "$collision_home/.omp/agent/agents/mr-builder.md"
+
+HOME="$collision_home" "$REPO_ROOT/install.sh" >"$collision_output" 2>&1
+
+assert_symlink_target "$collision_home/.claude/agents/mr-builder.md" "$external_dir/custom-agent.md"
+assert_symlink_target "$collision_home/.omp/agent/agents/mr-builder.md" "$external_dir/omp-custom-agent.md"
+custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
+omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
+assert_contains "$collision_output" "$collision_home/.claude/agents/mr-builder.md (existing symlink points outside repo: $custom_agent_abs)"
+assert_contains "$collision_output" "$collision_home/.omp/agent/agents/mr-builder.md (existing symlink points outside repo: $omp_custom_agent_abs)"
+
 echo "install-symlink-ownership: PASS"

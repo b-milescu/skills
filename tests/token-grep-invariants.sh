@@ -775,6 +775,11 @@ contain|issue-delivery-loop/SKILL.md|**`other` tokens used**
 contain|retro/templates/retro-report.md|**`other` tokens used**
 absent|issue-delivery-loop/SKILL.md|skill://gitlab
 absent|issue-delivery-loop/SKILL.md|glab 
+# default-builder-route-invariants
+contain|docs/agents/dev-workflows.md|internal `mr-builder` and `mr-reviewer-final` routes
+absent|docs/agents/dev-workflows.md|mr-builder-*
+absent|issue-delivery-loop/SKILL.md|mr-builder-*
+absent|start-build/reference/parent-orchestrator.md|mr-builder-*
 contain|start-build/reference/parent-orchestrator.md|shared model-free `mr-builder` basename
 contain|start-build/reference/parent-orchestrator.md|mr-reviewer-final
 contain|start-build/reference/parent-orchestrator.md|Gate owner
