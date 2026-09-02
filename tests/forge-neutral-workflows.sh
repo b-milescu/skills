@@ -24,7 +24,8 @@ for phase in \
   "provider/repository binding" \
   "current target re-read" \
   "reviewed commit binding" \
-  "CI evidence" \
+  "advisory CI observation" \
+  "exact-candidate local Gate Receipt" \
   "action-specific authority" \
   "caller identity/context" \
   "safe body validation" \
@@ -36,8 +37,7 @@ done
 
 assert_file_contains forge/reference/gitlab.md "MCP first" "GitLab MCP-first rule"
 assert_file_contains forge/reference/gitlab.md "help-first" "GitLab guarded fallback rule"
-
-for token in headRefOid commit_id "Checks and classic statuses" expectedHeadOid "merge queue" "closingIssuesReferences" incomplete-pagination; do
+for token in headRefOid commit_id "Checks and classic statuses" expectedHeadOid "merge queue" "closingIssuesReferences" "incomplete diff/review pagination"; do
   assert_file_contains forge/reference/github.md "$token" "GitHub contract token $token"
 done
 for token in lastMergeSourceCommit lastMergeCommit "current PR iteration" "policy input" sha-bound-action-unsupported "state category"; do
