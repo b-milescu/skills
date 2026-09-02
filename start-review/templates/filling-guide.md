@@ -4,18 +4,16 @@ This guide holds instructional prose for reviewer templates. Read once per sessi
 
 ## reviewer-final-handoff.md
 
-- Emit this machine-readable block in `mr-reviewer` final responses after posting the durable Review Report and after any authorized approval/finish action attempt.
-- Keep the durable Review Report artifact as the durable review record; this block complements it as a parseable artifact for parent parsing.
-- Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
+- Emit the two-line contract in `mr-reviewer` final responses after posting the durable Review Report and after any authorized approval/finish action attempt: change-request locator and Review Report note id.
+- Keep the durable Review Report artifact as the durable review record; parents read `forge snapshot` `bindings` / `claims` instead of parsing YAML.
+- Run `bash tests/agent-handoff-templates.sh` after editing.
 - Make the first fields summary-first for parent orchestration: review verdict, change-request locator, canonical repository, reviewed commit, CI, local checks, findings, approval authority/source/action, finish authority/source/action, action blocker, next action, and report locator.
-- `delivery.handoff_contract` inside the final handoff must stay aligned with `review_verdict`, `approval_action`, `finish_action`, `action_blocker`, and `next_action`. Required routing fields are `phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and non-empty `evidence_ready_for_next_actor`; use `required_parent_decision: "none"` when no parent decision is still needed, and omit `blocking_question` unless a specific actionable blocker question truly remains.
 - `review_verdict` is `pass / request-changes / reject / blocked`. `pass` is a review judgment only; it never means "looks good but no approval was taken". `approval_action`, `finish_action`, and `action_blocker` say what provider side effects happened or why none happened.
 - `delivery.repository.locator`, `delivery.repository.default_branch`, `delivery.change_request.locator`, `source`, `target`, and `delivery.commit.current/reviewed` record the provider-bound target used for verification and action routing.
 - Use `blocked` only when guard, authority, tooling, permission, partial-review, security, or human-decision state prevents safe approval/finish: `missing-authority`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`. A `request-changes` verdict is ordinary revision routing, not a blocked state; CI status is advisory and never a blocker.
-- `blocker_detail` is optional unless `action_blocker` or `delivery.handoff_contract.blocker_token` is `other`; then it must be a non-empty one-line explanation of the unlisted blocker.
+- `blocker_detail` is optional unless `action_blocker` is `other`; then it must be a non-empty one-line explanation of the unlisted blocker.
 - If usage limits or tooling failures stop completion before a review verdict, return prose explaining the blocker; a completed machine block should only claim verified values.
 - Never include secrets, raw private payloads, or unredacted logs. For suspected secret exposure, do not quote the secret or credential, do not copy the sensitive payload, and use `[REDACTED]` plus `secret-exposure-suspected` without secret values. Use synthetic URLs/SHAs in examples.
-- Before returning the final handoff, run `node skill://start-review/scripts/validate-handoff-tokens.mjs --handoff <saved reviewer-final handoff>`; this is a workflow-time check, not a Check Gate or CI job.
 - Consumers must tolerate absent blocks and fall back to the Review Report / human prose / Reviewer Lift.
 
 ## review-report.md

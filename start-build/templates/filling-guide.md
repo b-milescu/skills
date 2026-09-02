@@ -46,15 +46,9 @@ Add the heading only when its trigger applies; the template lists triggers in a 
 
 ## builder-final-handoff.md
 
-- Emit this machine-readable block in child-builder final responses when a parent orchestrator owns the review gate.
-- Keep Reviewer Lift as the durable change-request-description handoff; this block complements it for parent parsing.
-- Preserve field names and top-level order. Run `bash tests/agent-handoff-templates.sh` after editing.
-- For ready handoffs, set head/reviewed/candidate commits to the same change-request head. Every push invalidates earlier commit-bound CI/local evidence until the published description and handoff are rebound.
-- In parent-owned gate mode, use `status: "candidate-for-parent-gate"`, keep the change request Draft, record the parent-owned/not-run contract, and route `next_action: "parent-run-gate"`.
-- Keep `delivery.handoff_contract` aligned with `status`, `next_action`, blockers, and parent-owned gate ownership. Required routing fields are `phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and non-empty `evidence_ready_for_next_actor`; use `required_parent_decision: "none"` when no extra parent choice is still needed, omit `blocking_question` unless a specific actionable question blocks progress. Do not use human-stop blocker vocabulary for runtime/tool/budget notices.
-- `blocker_detail` is optional unless `delivery.handoff_contract.blocker_token` is `other`; then it must be a non-empty one-line explanation of the unlisted blocker.
-- Use `status: "ready-for-review"`, `"candidate-for-parent-gate"`, `"blocked"`, or `"failed"`. `blocked` is for real issue/workflow blockers or explicit human stop instructions. If runtime budget notices, runtime interruption, or tooling failures stop completion, report `status: "failed"` plus `blockers`; parent owns retries/resume.
-- Preserve authority claims and their sources from Reviewer Lift. They are provenance for verification, not builder grants.
+- Emit the two-line contract in child-builder final responses: change-request locator and durable note id (Gate Receipt note for a parent-gated builder run).
+- Keep Reviewer Lift as the durable change-request-description handoff; parents read `forge snapshot` `bindings` / `claims` instead of parsing YAML.
+- Run `bash tests/agent-handoff-templates.sh` after editing.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Consumers must tolerate absent blocks and fall back to human prose / Reviewer Lift.
 

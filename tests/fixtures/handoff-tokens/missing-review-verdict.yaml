@@ -1,7 +1,0 @@
-agent_handoff:
-  kind: reviewer-final
-  delivery:
-    handoff_contract:
-      blocker_token: none
-  action_blocker: none
-  next_action: revise

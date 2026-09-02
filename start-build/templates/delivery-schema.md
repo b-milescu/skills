@@ -31,7 +31,7 @@ delivery record.
 | local_gate | Command, status, not-run reason, and summary. |
 | tdd | RED/GREEN commands and outcomes, or explicit N/A rationale. |
 | authority | Approval and finish claims, sources, verification, and conflicts. |
-| handoff_contract | Phase, next actor/action, blocker state, decision need, and evidence-ready pointers. |
+| handoff_contract | No longer emitted in builder-final or reviewer-final handoffs (parents read `forge snapshot` `bindings` / `claims` instead). Remaining compact delivery indexes may still carry phase, next actor/action, blocker state, decision need, and evidence-ready pointers. |
 | evidence | Tiered durable evidence indexes. |
 | blockers | Safe blocking tokens/descriptions. |
 <!-- CHANGE-DELIVERY-FIELDS:END -->
@@ -163,7 +163,6 @@ Authority Verification uses `skill://forge/reference/common-guard.md` on GitLab 
 
 ## Generated-copy contract
 
-Approved generated copies live in
-`start-build/templates/builder-final-handoff.md` and
-`start-review/templates/reviewer-final-handoff.md`. Run
-`bash tests/delivery-schema.sh` after changing this schema or either copy.
+This schema is not copied into builder-final or reviewer-final handoffs.
+Those templates emit the two-line locator/note-id contract. Run
+`bash tests/delivery-schema.sh` after changing this schema.

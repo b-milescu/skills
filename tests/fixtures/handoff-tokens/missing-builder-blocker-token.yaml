@@ -1,4 +1,0 @@
-agent_handoff:
-  kind: builder-final
-  delivery:
-    handoff_contract: {}

@@ -1,6 +1,0 @@
-agent_handoff:
-  kind: builder-final
-  delivery:
-    handoff_contract:
-      blocker_token: other
-  blocker_detail: "provider returned a new blocked state"
