@@ -10,8 +10,8 @@ runtime's frontmatter schema.
 - `omp/*.md` — OMP task-agent dialect for `~/.omp/agent/agents` and project `.omp/agents` discovery.
 - Match agent names across both dirs with the same `name:` and the same core
   procedure.
-- See [`start-build`'s parent-orchestrator route policy](../start-build/reference/parent-orchestrator.md#skill-only-tier-routing)
-  for shared route basenames, dialect resolution, model pins, and unavailable-route handling.
+- See [`start-build`'s parent-orchestrator route policy](../start-build/reference/parent-orchestrator.md#default-builder-routing)
+  for the shared builder/reviewer basenames, dialect resolution, model pins, and unavailable-route handling.
 
 ## Claude Code variant
 
