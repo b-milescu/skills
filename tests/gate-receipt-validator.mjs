@@ -40,8 +40,8 @@ function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: 
 | Field | Value |
 |---|---|
 | Reviewed SHA | \`${commit}\` |
-| Gate coverage rationale | ${expected.gatePolicy}; required CI jobs = check; locally covered jobs = check via ${expected.gateCommand}; unmapped CI-only jobs = none |
-| CI pipeline | N/A for ${commit} |
+| Gate coverage rationale | ${expected.gatePolicy}; exact-candidate-local; command ${expected.gateCommand}; candidate ${commit}; result PASS |
+| CI pipeline | advisory — unavailable |
 | Local gate | ${localGate} |
 | Delta since last ready push | N/A before ready |
 <!-- REVIEWER-LIFT-SCHEMA:END -->`;
@@ -67,6 +67,13 @@ try {
   assert.notEqual(run({ locatorValue: "github://owner/repo/pull/42/comment/9" }).status, 0, "wrong opaque locator fails");
   assert.notEqual(run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — Gate Receipt: ${locator} — https://gitlab.example/x`) }).status, 0, "multiple locators fail");
   assert.notEqual(run({ document: receipt({ change_id: "" }) }).status, 0, "empty opaque ID fails");
+  assert.notEqual(run({ document: receipt({
+    preflight_checks: [
+      { name: "clean-status-before", command: "git status --porcelain", result: "PASS", summary: "empty" },
+      { name: "tracked-files-unchanged-after", command: "git status --porcelain", result: "FAIL", summary: "tracked files changed" },
+    ],
+  }) }).status, 0, "tracked file changes fail the Receipt");
+  assert.notEqual(run({ document: receipt({ tracked_changes_waiver: "accepted" }) }).status, 0, "tracked file changes cannot be waived");
   console.log("gate-receipt-validator: PASS");
 } finally {
   rmSync(work, { recursive: true, force: true });

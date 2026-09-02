@@ -57,7 +57,7 @@ Explain domain-aware skills read project language and ADRs. Choices: **Single-co
 
 ### D — Check gate
 
-Explain build/review skills need exact local commands before claiming ready. Recommend from Makefiles, package scripts, language project files, CI config, and docs. If no full gate exists, document best available checks plus `N/A — no full local gate discovered`; ask user to confirm.
+Explain that build/review skills need exact local commands for the sole required exact-candidate quality gate. Provider CI is observed only as advisory evidence and never replaces or blocks that gate. Recommend commands from Makefiles, package scripts, language project files, CI config, and docs. If no full gate exists, document best available checks plus `N/A — no full local gate discovered`; ask user to confirm.
 
 ### E — Coding guardrails
 

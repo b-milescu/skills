@@ -35,13 +35,13 @@ Default: fan out every provably decoupled subset.
    One issue/worktree/branch/Draft change request/Review Packet per child. Pass
    explicit `Gate owner`; runtime notices never become scope stop instructions.
 5. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
-   its compact claims, including commit-bound CI, from provider-native Tier 1 or
-   repository Tier 2 evidence while preserving reviewed-commit binding.
-   Keep explicit authority provenance bound. Parent-owned candidates route
-   through the parent-owned Gate Receipt contract before ready.
-6. Launch independent review in parallel with CI as soon as the exact candidate
-   gate contract allows; do not block-watch CI before reviewer launch. A
-   failed/canceled bound CI run blocks pass/finish, never queues.
+   its compact claims from provider-native Tier 1 or repository Tier 2 evidence.
+   Preserve reviewed-commit binding, exact-candidate Gate Receipt, and authority
+   provenance. Record CI only as bounded advisory evidence, attributed to a
+   commit when its binding is proven.
+6. Launch independent review as soon as the exact-candidate gate contract
+   allows. Provider CI may run in parallel; no CI status changes verdict,
+   approval, or finish eligibility.
 7. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
    `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.

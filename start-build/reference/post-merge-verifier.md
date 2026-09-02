@@ -19,17 +19,19 @@ Require `post_merge_snapshot.kind=post-merge-snapshot` with:
 - default branch and observed commit;
 - reviewed commit and provider result commit;
 - explicit provider-native containment evidence;
-- result-commit CI status bound to the provider result commit (merge, squash, or
-  equivalent); missing, stale, or wrong-result-commit CI stays pending and is
-  never pass-eligible;
+- advisory result-commit CI observation attributed to the provider result commit
+  when bound; missing, red, stale, or wrong-result-commit CI is recorded and
+  never changes post-merge verification;
 - linked work-item state and closure evidence;
 - source-ref cleanup or retention state;
 - non-mutating post-merge validation result, or `not-run` with rationale;
 - pending items and provider readback evidence.
 
-Fail closed when evidence is missing, incomplete, stale, contradictory, or the
-provider reports an error. Report closure, containment, cleanup, or validation
-as pending with the observed evidence; never infer success or repair it.
+Fail closed when mandatory containment, linked-item, cleanup, validation, or
+provider readback evidence is missing, incomplete, stale, contradictory, or the
+provider reports an error. Advisory CI availability or status is never a
+post-merge failure. Report closure, containment, cleanup, or validation as
+pending with the observed evidence; never infer success or repair it.
 
 Forbidden actions:
 

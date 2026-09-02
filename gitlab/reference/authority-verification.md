@@ -27,7 +27,7 @@ This seam owns:
 
 In `Finish owner: parent` mode, reviewers hand off approval, merge, and auto-merge queue actions to the parent even when authority is otherwise verified.
 
-Project binding, current SHA, exact-SHA CI, local gate/Gate Receipt, safe-text, fallback eligibility, mutation, and post-read remain in the [GitLab Mutation Guard](mutation-guard.md). Authority Verification is one guard phase.
+Project binding, current SHA, exact-candidate local Gate Receipt, advisory CI observation, safe-text, fallback eligibility, mutation, and post-read remain in the [GitLab Mutation Guard](mutation-guard.md). Authority Verification is one guard phase.
 
 ## Claims and sources
 
@@ -71,7 +71,7 @@ The machine schema owns output fields and enums: one result for one requested ac
 
 Routing decisions mean:
 
-- `proceed` — authority is verified; SHA, CI, local-gate, and transport guards still apply.
+- `proceed` — authority is verified; reviewed-SHA, Gate Receipt, caller, and transport guards still apply. CI status is advisory.
 - `must-handoff` — this caller takes no approval/finish mutation and hands evidence to the named actor.
 - `ask-human` — source conflict or a human-only release path needs a parent/human decision.
 - `blocked` — fix the named blocker before the requested action.

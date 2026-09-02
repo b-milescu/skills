@@ -26,8 +26,8 @@ minimal prompt from
 Change request locator, Reviewer Lift pointer, project rulebook path, Context
 Firewall, stop condition, finish owner, and any sourced authority grant.
 Invoke `start-review` and `forge` through the Skill tool. The reviewer independently
-verifies current/reviewed commit, exact-commit CI, publication evidence, and the
-`/forge` common guard.
+verifies current/reviewed commit, exact-candidate local Gate Receipt, publication
+evidence, advisory CI attribution, and the `/forge` common guard.
 
 ## Timeout handling
 

@@ -19,8 +19,9 @@ They never load an unselected provider reference.
    readiness policy, authenticated identity, and optional bounded item discovery.
    Match the configured profile to normalized remotes. Unknown providers,
    ambiguous remotes, and profile/remote mismatches fail closed.
-2. **`snapshot`** — return only the decision-grade issue, change-request, complete
-   diff/discussion/review, and commit-bound CI evidence requested by the caller.
+2. **`snapshot`** — return only the decision-grade issue, change-request,
+   complete diff/discussion/review, exact-candidate Gate Receipt, and requested
+   commit-bound advisory CI evidence.
 3. **`publish`** — validate and publish one safe durable artifact, then require
    provider-native byte-for-byte readback before reporting success. A durable
    artifact may be a tracker issue or work item (create + readback), not only a
@@ -28,7 +29,7 @@ They never load an unselected provider reference.
 4. **`act`** — run the ordered [common guard](reference/common-guard.md), perform
    exactly one provider mutation, and classify its provider-native readback.
 5. **`post_merge_snapshot`** — return read-only merged state, linked-item state,
-   result commit, result-commit CI, and branch-cleanup evidence.
+   result commit, advisory result-commit CI, and branch-cleanup evidence.
 
 ## Provider disclosure
 
@@ -39,6 +40,7 @@ They never load an unselected provider reference.
 - Azure DevOps → [reference/azure-devops.md](reference/azure-devops.md)
 
 Provider references own native identifiers, status vocabularies, pagination,
-draft/ready mechanics, comments or threads, CI binding, approval or vote
-semantics, finish behavior, fallback eligibility, closure rules, and readback.
-The common workflow sees opaque identifiers and locators only.
+draft/ready mechanics, comments or threads, advisory CI binding, approval or
+vote semantics, native protection/refusal behavior, fallback eligibility,
+closure rules, and readback. User-level verdict and action eligibility remain
+provider-neutral. The common workflow sees opaque identifiers and locators only.

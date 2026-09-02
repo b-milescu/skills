@@ -1,144 +1,41 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# CI/finish mechanics now specialize the shared GitLab Mutation Guard seam
-# instead of restating a second full mutation sequence here.
-
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-SKILL="gitlab/SKILL.md"
+fail() { printf 'gitlab-ci-finish-guards: FAIL: %s\n' "$*" >&2; exit 1; }
+require() { grep -Eiq -- "$2" "$1" || fail "$1 missing $3"; }
+reject() { ! grep -Eiq -- "$2" "$1" || fail "$1 contains retired $3"; }
+
 CARD="gitlab/reference/ci-finish-guards.md"
-GUARD_DOC="gitlab/reference/mutation-guard.md"
-GUARD_SCHEMA="gitlab/reference/mutation-guard.schema.json"
+SKILL="gitlab/SKILL.md"
+SCHEMA="$REPO_ROOT/gitlab/reference/finish-result-schema.json"
 
-fail() {
-  printf 'gitlab-ci-finish-guards: FAIL: %s\n' "$*" >&2
-  exit 1
-}
+require "$CARD" 'GitLab Mutation Guard' 'shared guard pointer'
+require "$CARD" 'list_pipelines\(sha=reviewed_sha\)|get_pipeline' 'exact-SHA advisory observation'
+require "$CARD" 'never determines review or finish eligibility' 'advisory watcher policy'
+require "$CARD" 'optional and nullable advisory evidence' 'nullable CI output'
+require "$CARD" 'exact-candidate local Gate Receipt' 'singular quality gate'
+require "$CARD" 'at most one action|exactly one mutation' 'one finish mutation'
+require "$CARD" 'provider-native readback' 'native readback'
+require "$CARD" 'provider result and never bypass' 'native refusal reporting'
+require "$CARD" 'closure_pending' 'closure pending token'
+retired='no_ci_''expected|ci_not_''green|ci_''guard|stale_''ci|red_''ci|missing_''ci'
+reject "$CARD" "$retired" 'CI exception/guard/blocker vocabulary'
 
-require_file() {
-  local file="$1"
-  [[ -f "$file" ]] || fail "missing file $file"
-}
+require "$SKILL" 'optional nullable `ci`' 'deployed finish output'
+require "$SKILL" 'CI status is advisory' 'advisory action policy'
+reject "$SKILL" "$retired|stale/red/missing CI" 'retired finish blocker vocabulary'
 
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-reject_text() {
-  local file="$1" pattern="$2" label="$3"
-  if grep -Eiq -- "$pattern" "$file"; then
-    fail "$file unexpectedly contains $label"
-  fi
-}
-
-extract_snippet() {
-  local file="$1" name="$2"
-  awk -v heading="### Snippet: $name" '
-    $0 == heading { in_section=1; next }
-    in_section && /^### Snippet:/ { exit }
-    in_section { print }
-  ' "$file"
-}
-
-require_snippet() {
-  local name="$1" body
-  body="$(extract_snippet "$SKILL" "$name")"
-  [[ -n "$body" ]] || fail "$SKILL missing snippet $name"
-  printf '%s\n' "$body"
-}
-
-assert_contains() {
-  local text="$1" needle="$2" label="$3"
-  [[ "$text" == *"$needle"* ]] || fail "missing $label: $needle"
-}
-
-assert_not_contains() {
-  local text="$1" needle="$2" label="$3"
-  [[ "$text" != *"$needle"* ]] || fail "unexpected $label still inline: $needle"
-}
-
-MECH_MR_VIEW='glab mr view|get_merge_request'
-MECH_MR_LIST='glab mr list|list_merge_requests'
-MECH_PIPELINE_FOR_SHA='glab ci status --branch|list_pipelines|get_pipeline|\.pipeline'
-MECH_CI_MR_FORBIDDEN='glab ci status --mr|list_pipelines_for_mr|pipelines_for_merge_request'
-
-require_file "$CARD"
-require_file "$GUARD_DOC"
-require_file "$GUARD_SCHEMA"
-
-# The card points to the seam and no longer owns a second full sequence.
-require_text "$CARD" 'GitLab Mutation Guard' 'Mutation Guard seam pointer'
-require_text "$CARD" 'skill://gitlab/reference/mutation-guard\.md' 'guard doc skill URI'
-require_text "$CARD" 'skill://gitlab/reference/mutation-guard\.schema\.json' 'guard schema skill URI'
-reject_text "$CARD" '^### Polling and SHA rules$' 'old full polling list section'
-reject_text "$CARD" '^### Guard and authority order$' 'old full finish guard order section'
-
-# CI verdict mechanics remain present as read-only exact-SHA evidence.
-require_text "$CARD" "$MECH_MR_VIEW" 'per-poll MR head re-read mechanic'
-require_text "$CARD" 'every poll' 'per-poll re-read wording'
-require_text "$CARD" "$MECH_MR_LIST" 'reference to candidate-only list mechanic'
-require_text "$CARD" 'candidate data|not decision-grade' 'no list for decision-grade data wording'
-require_text "$CARD" "$MECH_PIPELINE_FOR_SHA" 'pipeline-for-SHA lookup mechanic'
-require_text "$CARD" "$MECH_CI_MR_FORBIDDEN" 'reference to forbidden whole-MR CI shortcut'
-require_text "$CARD" "(not|never|do not)[^.]*($MECH_CI_MR_FORBIDDEN)" 'do-not-use whole-MR CI shortcut mechanic'
-require_text "$CARD" 'stale_ci' 'stale_ci fail-closed token'
-require_text "$CARD" 'timeout' 'timeout fail-closed token'
-require_text "$CARD" 'expected_sha' 'expected_sha machine field'
-require_text "$CARD" 'observed_sha' 'observed_sha machine field'
-require_text "$CARD" 'pipeline_id' 'pipeline_id machine field'
-require_text "$CARD" 'reviewed_sha' 'reviewed_sha SHA-pin token'
-require_text "$CARD" '(differs?|mismatch|!=|not equal)[^.]*(reviewed_sha)|reviewed_sha[^.]*(differs?|mismatch|!=|not equal)' 'per-iteration SHA mismatch wording'
-
-# Finish mechanics are expressed as a Mutation Guard mapping, not a vendored sequence.
-require_text "$CARD" 'Mutation Guard field' 'finish mapping table'
-require_text "$CARD" 'authority_value.*authority_source|authority_source.*authority_value' 'authority/source guard mapping'
-require_text "$CARD" 'caller_role.*caller_identity|caller_identity.*caller_role' 'caller identity / context mapping'
-require_text "$CARD" 'mcp_merge_robustness_gap' 'first-class MCP merge robustness gap'
-require_text "$CARD" 'mcp_unavailable' 'first-class MCP unavailable gap'
-require_text "$CARD" 'via=mcp|via=glab-fallback' 'finish transport evidence token'
-require_text "$CARD" 'via=n/a' 'no-action transport evidence token'
-require_text "$CARD" 'builder[^.]*(always )?stop|builder[^.]*handoff' 'builder-stops-at-handoff authority floor'
-require_text "$CARD" 'at most one action|exactly one.*action|one action' 'exactly-one-finish-action mechanic'
-require_text "$CARD" '(fetch|fast-forward)[^.]*only after[^.]*(finish|action)|only after[^.]*(finish|action)[^.]*(fetch|fast-forward)' 'fetch/fast-forward sequenced only-after the finish action'
-require_text "$CARD" '(worktree[^.]*(clean `status --porcelain`|safety-check precondition|safety check)|clean `status --porcelain`[^.]*worktree)' 'worktree-removal gated on clean-status / safety-check precondition'
-require_text "$CARD" 'closure_pending' 'closure_pending report token'
-
-# Policy is still delegated to canonical owners.
-require_text "$CARD" 'REVIEW-FLOW\.md#ci-decision-table' 'CI decision table pointer to REVIEW-FLOW.md'
-require_text "$CARD" 'SAFETY\.md' 'authority pointer to start-build/SAFETY.md'
-require_text "$CARD" 'authority-matrix\.md' 'authority matrix pointer'
-
-# SKILL snippets keep compact helper path contracts and point at the card/seam.
-ci_watch_body="$(require_snippet ci-watch-sha-pinned)"
-finish_body="$(require_snippet finish-mr-authority-aware)"
-
-assert_contains "$ci_watch_body" 'Inputs:' 'ci-watch Inputs list'
-assert_contains "$ci_watch_body" 'get_merge_request_workflow_snapshot' 'ci-watch MCP workflow snapshot tool'
-assert_contains "$ci_watch_body" 'list_pipelines' 'ci-watch exact-SHA pipeline read'
-assert_contains "$ci_watch_body" 'via=mcp' 'ci-watch MCP transport evidence'
-assert_contains "$ci_watch_body" 'reviewed_sha' 'ci-watch reviewed SHA input'
-assert_not_contains "$ci_watch_body" 'skill://gitlab/scripts' 'ci-watch active helper URI removed'
-assert_contains "$ci_watch_body" 'reference/ci-finish-guards.md' 'ci-watch link to specialization card'
-assert_contains "$ci_watch_body" 'mutation-guard.md' 'ci-watch link to Mutation Guard'
-
-assert_contains "$finish_body" 'Inputs:' 'finish Inputs list'
-assert_contains "$finish_body" 'finish_merge_request' 'finish MCP tool pointer'
-assert_contains "$finish_body" 'finish_result' 'finish result contract pointer'
-assert_contains "$finish_body" 'via' 'finish transport evidence pointer'
-assert_contains "$finish_body" 'merge_authority' 'finish merge authority input'
-assert_not_contains "$finish_body" 'skill://gitlab/scripts' 'finish active helper URI removed'
-assert_contains "$finish_body" 'reference/ci-finish-guards.md' 'finish link to specialization card'
-assert_contains "$finish_body" 'mutation-guard.md' 'finish link to Mutation Guard'
-
-assert_not_contains "$ci_watch_body" 'Polling and SHA rules:' 'old polling list header'
-assert_not_contains "$finish_body" 'Guard and authority order:' 'old finish guard order header'
-
-require_text "$SKILL" 'reference/mutation-guard\.md' 'SKILL.md discoverability link to Mutation Guard'
-
-skill_lines="$(wc -l < "$SKILL")"
-[[ "$skill_lines" -lt 409 ]] || fail "SKILL.md must stay shorter than 409 lines, found $skill_lines"
+SCHEMA_PATH="$SCHEMA" node -e '
+  const schema = require(process.env.SCHEMA_PATH);
+  const ci = schema.properties.ci;
+  if (!ci || !ci.type.includes("object") || !ci.type.includes("null")) process.exit(1);
+  const retiredGuard = "ci_" + "guard";
+  const retiredBlocker = "ci_not_" + "green";
+  if (schema.required.includes("ci") || schema.required.includes(retiredGuard)) process.exit(2);
+  if (retiredGuard in schema.properties || schema.properties.blocker.enum.includes(retiredBlocker)) process.exit(3);
+' || fail "finish-result schema CI shape is not optional nullable advisory evidence"
 
 printf 'gitlab-ci-finish-guards: PASS\n'

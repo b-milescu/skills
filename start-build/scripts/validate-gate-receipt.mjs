@@ -87,6 +87,7 @@ function validateReceipt(body, expected) {
   for (const [field, value] of Object.entries(exact)) {
     if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
   }
+  if (Object.keys(receipt).some((field) => /waiver/i.test(field))) fail("Gate Receipt cannot waive tracked-file changes");
 
   if (!isAbsolutePortable(requireString(receipt, "checkout_path"))) fail("gate_receipt.checkout_path must be absolute");
   requireString(receipt, "summary");
@@ -153,11 +154,9 @@ function validateLift(body, expected) {
   if (rows.get("Reviewed SHA").trim() !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
   const rationale = rows.get("Gate coverage rationale");
-  for (const value of [expected.gatePolicy, expected.gateCommand, "required CI jobs", "locally covered jobs", "unmapped CI-only jobs"]) {
+  for (const value of [expected.gatePolicy, expected.gateCommand, expected.reviewedCommit, "exact-candidate-local"]) {
     if (!rationale.includes(value)) fail("Reviewer Lift gate coverage rationale is incomplete");
   }
-
-  if (!containsCommit(rows.get("CI pipeline"), expected.reviewedCommit)) fail("Reviewer Lift CI pointer is stale");
 
   const localGate = rows.get("Local gate");
   const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];

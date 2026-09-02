@@ -17,18 +17,18 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 | Repository | `<canonical repository locator and default branch>` |
 | Reviewed commit | `<commit reviewed; must equal current provider commit at decision time>` |
 | Report locator | `<stable report ID chosen before publication; never pending>` |
-| CI status / commit | `<green / pending / waived / blocked; bound commit or N/A>` |
+| CI status / commit | `<advisory native status + bound commit, unavailable, or unbound>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
 | Approval authority | `<verified default-after-pass or restricted: reason/source>` |
 | Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
 | Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
 | Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
-| Action blocker | `<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` — canonical values: [`handoff-tokens.schema.json`](../reference/handoff-tokens.schema.json) |
+| Action blocker | `<none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` — canonical values: [`handoff-tokens.schema.json`](../reference/handoff-tokens.schema.json) |
 | Finish authority | `<verified finish authority value or blocked: missing-authority>` |
 | Finish authority source | `<verified finish authority source or blocked: missing-authority>` |
 | Finish owner | `<parent for parent-managed dev-flow; otherwise reviewer / authorized actor / N/A>` |
-| Next action | `<finish-by-authorized-actor / revise / human-escalation / wait-ci / rerun-review / fix-blocker>` |
+| Next action | `<finish-by-authorized-actor / revise / human-escalation / rerun-review / fix-blocker>` |
 | Report link | `<this comment; final handoff contains URL when available>` |
 
 ## Context / Snapshot
@@ -43,8 +43,8 @@ Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#re
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | `<round or report number>` |
 | Report locator | `<same stable report ID used by every finding tuple and reviewer final handoff>` |
-| Reviewed commit | `<same commit used for diff, local checks, CI classification, and action guards>` |
-| CI snapshot | `<pipeline URL/ID/status/SHA or N/A with reason>` |
+| Reviewed commit | `<same commit used for diff, local checks, advisory CI attribution, and action guards>` |
+| CI snapshot | `<advisory pipeline URL/ID/status/SHA, unavailable, or unbound with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
 | Authority snapshot | `<Approval authority + source verification; Finish authority + source verification; Finish owner verification>` |
 | Decoupling verification | `<N/A / accepted as-stated / re-checked: result>` |
@@ -101,7 +101,7 @@ Use the [Review Context Capsule guide](filling-guide.md#review-reportmd). Treat 
 | Repository | `<claimed host/project/repository/default or target branch; cross-repository choice if any>` | `<verified preflight + repository binding result>` | `<provider snapshot / change request locator / rulebook path>` |
 | Change request | `<claimed locator/source/target/head/reviewed commit/readiness>` | `<verified change request metadata, reviewed-commit match, diff captured>` | `<provider snapshot / change request locator / diff artifact>` |
 | Authority | `<claimed Approval authority/source and Finish authority/source>` | `<verified through ../../forge/reference/common-guard.md: approval policy/restriction, merge source, precedence, conflicts/no-action result, and no-self context>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
-| CI | `<claimed pipeline/local gate/Gate Receipt>` | `<verified exact-SHA CI decision and local-gate or canonical Gate Receipt status>` | `<change request pipeline metadata / ci snapshot / Gate Receipt change request comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
+| CI | `<claimed advisory pipeline/local gate/Gate Receipt>` | `<verified exact-candidate local gate/Gate Receipt; CI status attributed only with exact commit binding>` | `<change request pipeline metadata / CI snapshot / Gate Receipt change request comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
 | Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / change request description / diff / rulebook>` |
 | Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<change request description/comment URL / artifact path / command transcript>` |
 | Context expansion | `<Tier 2 or Tier 3 context used/considered>` | `<verified trigger, bounded read, and Tier 3 human/necessity rationale>` | `<path:line / finding ID / CI log / human instruction / rulebook section>` |

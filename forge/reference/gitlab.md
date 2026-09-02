@@ -8,10 +8,13 @@ Map the neutral records to GitLab project, issue, merge request, commit SHA,
 pipeline/job, discussion/note, and branch values. GitLab validates numeric IIDs,
 URLs, close-keyword syntax, and note locators; generic workflow code does not.
 
-The GitLab branch owns draft/ready changes, exact-SHA pipelines, approvals,
-direct merge or queued auto-merge, closure previews, branch removal, and merged
-commit/squash containment. Use [`gitlab/SKILL.md`](../../gitlab/SKILL.md) as the
-provider-specific source of truth rather than copying those mechanics here.
+The GitLab branch owns draft/ready changes, exact-SHA advisory pipeline
+observations, approvals, direct merge or queued auto-merge, native protection
+refusals, closure previews, branch removal, and merged commit/squash containment.
+User-level verdict and action eligibility remain owned by the common guard and
+review flow; GitLab CI status never changes them. Use
+[`gitlab/SKILL.md`](../../gitlab/SKILL.md) as the provider-specific mechanics
+source rather than copying those mechanics here.
 
 ## Provider transport
 

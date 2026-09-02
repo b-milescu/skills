@@ -104,17 +104,13 @@ if grep -Fq -- "$command" "$malformed"; then
   fail "malformed separator fixture retained literal Changed paths command"
 fi
 
-# The CI pipeline row must frame the recorded status as an as-of-ready-marking
-# snapshot while the pipeline identity/bound commit are authoritative, and it must
-# name the finisher's re-derivation of terminal CI as a required step. This pins
-# the row against silently regressing to an unqualified status claim (#401).
-require_text_case_sensitive "$schema" 'as[ -]of[ -]ready-marking snapshot' 'CI pipeline as-of-ready-marking snapshot framing'
-require_text_case_sensitive "$schema" 'authoritative' 'CI pipeline authoritative pipeline identity framing'
-require_text_case_sensitive "$schema" 're-derive' 'CI pipeline finisher re-derivation as a required step'
+# The CI row is explicitly advisory and commit-attributed; every provider state
+# is non-blocking. The local gate row owns the singular quality predicate.
+require_text_case_sensitive "$schema" 'Advisory pipeline' 'CI pipeline advisory framing'
+require_text_case_sensitive "$schema" 'matches `Reviewed SHA`' 'CI pipeline exact-commit attribution'
+require_text_case_sensitive "$schema" 'never changes verdict or action eligibility' 'CI pipeline non-blocking policy'
 
-# Byte-identity guard for the Local gate row's safety floor: the as-of framing
-# sits beside this blocking rule, never in place of it (#401 AC).
-local_gate_row='| Local gate | `PASS`, `FAIL`, `N/A`, or `not-run` plus the exact command. A completed local gate or parent-owned Gate Receipt permits review launch for every coverage class; `hybrid`/`ci-only` review may start while exact-SHA CI is pending. Failed, canceled, skipped, missing, stale, or wrong-SHA required CI blocks pass eligibility and every finish action unless an authorized CI waiver is recorded. In parent-owned gate mode use the ownership contract and Gate Receipt pointer from `start-build/reference/parent-owned-gate.md`; child builders must not claim gate pass/fail. |'
+local_gate_row='| Local gate | `PASS`, `FAIL`, `N/A`, or `not-run` plus the exact command. `PASS` on the exact candidate is the required quality gate. `N/A` requires a rationale that no local gate can run. In parent-owned mode use the ownership contract and exact-candidate Gate Receipt pointer from `start-build/reference/parent-owned-gate.md`; child builders must not claim gate pass/fail. |'
 require_exact_line "$schema" "$local_gate_row" 'Local gate safety-floor row byte-identity'
 
 require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'

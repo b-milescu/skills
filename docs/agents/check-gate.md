@@ -20,30 +20,30 @@ Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 ## Project-profile refs
 
 Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
-and `manual_validation_rules.ref` for this repo. The full local gate is
-`npm run check`; the CI job requirements are in [CI parity](#ci-parity); manual
-validation rules are in [Manual validation rules](#manual-validation-rules).
+and `manual_validation_rules.ref` for this repo. The exact-candidate full local
+gate is `npm run check`; configured advisory CI jobs are described in
+[CI parity](#ci-parity); manual validation rules are in
+[Manual validation rules](#manual-validation-rules).
 
-This repo's Check Gate facts are verified against `setup-dev-skills/reference/project-profile-facts.json`: `gate_policy_ref`, `ci_jobs.ref`, `manual_validation_rules.ref`, command, runtime, and required CI jobs.
+These facts are verified against `setup-dev-skills/reference/project-profile-facts.json`: refs, command, runtime, and observed CI jobs.
 
 Project-profile hooks may specialize project policy, but they must not weaken
 the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Gate coverage for ready handoff
 
-This repo's default `Gate coverage` is `full-local` when `npm run check` passes
-on the exact MR head SHA. Required CI mapping:
+This repo's `Gate coverage` is `exact-candidate-local`. `npm run check` must pass
+on the exact MR head SHA; in parent-owned mode the durable Gate Receipt records
+that command, candidate, and PASS result. This singular local gate is the
+required quality evidence for ready, review, approval, and finish.
 
-| Required CI job | Local coverage | Notes |
-| --- | --- | --- |
-| `check` | `npm run check` | CI adds `npm ci` first, then runs the same canonical local Check Gate. Dependency-install failures are CI evidence, not a separate local gate command. |
-
-`Gate coverage rationale` should cite this section and
-[`CI parity`](#ci-parity): required CI jobs = `check`; locally covered jobs =
-`check`; unmapped CI-only jobs = `none`. If a future MR changes CI so required
-jobs are no longer locally covered, classify that MR as `hybrid` or `ci-only`
-and record the current exact-SHA CI status before ready/review handoff.
-Pending/running CI may overlap review; failed, canceled, skipped, missing, stale, or wrong-SHA CI blocks pass eligibility and every finish action unless an authorized CI waiver is recorded.
+The `check` provider job runs the same command after `npm ci`. It is an advisory
+parity signal, not another delivery gate. Record its locator, status, and SHA
+when available, and attribute the status only when its SHA matches the reviewed
+candidate or provider-proven integration commit. Pending, failed, canceled,
+skipped, missing, stale, wrong-SHA, or unavailable CI never changes verdict or
+action eligibility. Native GitLab protection may still refuse a merge; report
+that provider outcome and never bypass it.
 
 ## Executable-bit policy
 
@@ -80,13 +80,13 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | `tests/check-gate-inventory.sh` | Check Gate shipped shell regression inventory stays synchronized with tracked `tests/*.sh` files. |
 | `tests/executable-bit-policy.sh` | Executable-bit policy enforcement: reads `git ls-files -s` index modes (not filesystem perms) and fails closed when any tracked `100755` file falls outside the documented allowlist (`install.sh`, `scripts/check.sh`); fixture self-tests prove a stray executable test, a non-allowlisted top-level script, and an executable non-allowlisted helper all FAIL while the two documented entrypoints PASS. |
 | `tests/finding-identity-bindings.sh` | Pure-local canonical finding identity validator: two Review Reports may both define `MF-5` while `(Report locator, Reviewed SHA, Finding ID)` tuples remain distinct; valid Revision Packet and Reviewer Lift bindings pass; bare/missing/stale/contradictory bindings fail before publication/ready; LF and CRLF inputs produce the same result through platform-neutral Node path handling and no network calls. |
-| `tests/finish-result-schema.sh` | `gitlab/reference/finish-result-schema.json` carries every `finish_result` field/enum from #195 plus #210 transport evidence (`transport=mcp/glab-fallback/n/a`, reported as `via=mcp` / `via=glab-fallback`): result/action/sha/blocker incl. `identity_*`/`description_lost`/`cleanup_failed`, ci_guard, issue_state, worktree/branch cleanup, authority + caller-id verification sources, cleanup_verified/cleanup_failure_reason, override_recorded, conflict_type, retry_count. |
-| `tests/gitlab-ci-finish-guards.sh` | `ci-watch-sha-pinned` and `finish-mr-authority-aware` specialize the shared GitLab Mutation Guard instead of restating a second full sequence; preserves per-poll MR head re-read, exact-SHA CI, no `ci status --mr`, first-class MCP gap tokens, exactly-one-finish-action, builder handoff, fetch-after-finish, worktree cleanup precondition, `closure_pending`, canonical policy pointers, and compact SKILL.md helper links. |
-| `tests/gate-receipt-validator.sh` | Cross-platform pure-local Gate Receipt validator: accepts the canonical exact-SHA receipt, rejects missing/malformed/stale/prose-only/unsafe receipt and Reviewer Lift evidence without body leakage, proves Windows/UNC path plus CRLF handling, enforces pre-ready ordering, and keeps build/review cards and generated templates pointed at the canonical helper. |
+| `tests/finish-result-schema.sh` | `gitlab/reference/finish-result-schema.json` carries the finish result/action/SHA/blocker, optional nullable advisory `ci`, issue state, cleanup, authority/caller evidence, transport, conflict, and retry vocabulary. |
+| `tests/gitlab-ci-finish-guards.sh` | `ci-watch-sha-pinned` remains read-only advisory evidence; `finish-mr-authority-aware` requires exact candidate, Gate Receipt, authority/caller, exactly one mutation/readback, nullable advisory CI, and native policy refusal reporting. |
+| `tests/gate-receipt-validator.sh` | Cross-platform pure-local Gate Receipt validator: accepts the canonical exact-SHA receipt; rejects missing/malformed/stale/prose-only/unsafe receipt and Reviewer Lift evidence without body leakage; rejects changed tracked files and any tracked-change waiver; proves Windows/UNC path plus CRLF handling; enforces pre-ready ordering; and keeps build/review cards and generated templates pointed at the canonical helper. |
 | `tests/handoff-gate-consistency.sh` | Pure-local sibling validator that fails a builder-final handoff closed when `gate_owner_received` contradicts the gate behaviour the child actually took: builder selection carrying any parent-owned signature (`local_gate`/`builder_gate_status` `not-run-reason: parent-owned`, `local_gate_owner`/`ready_transition_owner: parent`, `status: candidate-for-parent-gate`, `next_action: parent-run-gate`) and the symmetric parent selection carrying a builder-owned signature (`status: ready-for-review`, `ready_transition_owner: builder`, `builder_gate_status.status: pass`); names the contradicting field pair, keeps both handoff modes' valid shapes passing (including the shipped template example), and rejects a missing/invalid selection. |
-| `tests/handoff-tokens-schema.sh` | Canonical forge-neutral reviewer-handoff token arrays and ten-entry action-blocker crosswalk stay exact; every crosswalk target exists in the mutation-guard or finish-result schema; the three template pointers and schema-derived token grep invariants stay synchronized. |
+| `tests/handoff-tokens-schema.sh` | Canonical forge-neutral reviewer-handoff token arrays and nine-entry action-blocker crosswalk stay exact; every crosswalk target exists in the mutation-guard or finish-result schema; installed token consumers, the three template pointers, and schema-derived token grep invariants stay synchronized. |
 | `tests/gitlab-mcp-first-workflows.sh` | GitLab workflow docs/prompts stay MCP-first for GitLab API actions, preserve stable `/gitlab` snippet names, allow `glab` only as documented fallback/helper/troubleshooting/test coverage, require per-snippet transport contracts, preserve safe-text/content-byte rules for MCP bodies, and record known MCP merge/list gaps. |
-| `tests/gitlab-mutation-guard.sh` | `gitlab/reference/mutation-guard.md` and `mutation-guard.schema.json` define the canonical GitLab Mutation Guard seam with ordered steps, blocker/gap/transport evidence tokens, fallback-forbidden states, first-class MCP gap states (`mcp_unavailable`, `mcp_merge_robustness_gap`, `mcp_pagination_gap`), examples for stale head, stale/red CI, missing authority, self-merge risk, merge robustness fallback, successful post-mutation re-read classification, and cross-project `skill://gitlab/...` guard resource guidance. |
+| `tests/gitlab-mutation-guard.sh` | `gitlab/reference/mutation-guard.md` and `mutation-guard.schema.json` define the canonical GitLab Mutation Guard seam with ordered exact-candidate Gate Receipt and advisory CI phases, blocker/gap/transport evidence tokens, fallback-forbidden states, approval/finish profiles, top-level merge metadata, successful post-mutation readback classification, and cross-project `skill://gitlab/...` guard resource guidance. |
 | `tests/gitlab-snippet-metadata.sh` | `gitlab/reference/snippet-metadata.json` remains the machine-readable source of truth for all 20 stable GitLab workflow snippets; verifies required metadata fields, unchanged snippet names, `skill://gitlab/reference/...` resource references, via evidence tokens, and exact sync between the Markdown transport table and metadata. |
 | `tests/delivery-schema.sh` | Neutral `delivery.kind=change-delivery` field order and generated builder/reviewer handoff copies, with provider/repository binding and opaque issue/change-request/commit/CI identifiers. |
 | `tests/forge-neutral-workflows.sh` | Shared build/review/delivery workflows bind one provider through the five-operation `/forge` seam; common guard ordering, provider-native GitLab/GitHub/Azure DevOps constraints, neutral delivery schema, routed agents, and setup generation remain forge-neutral. |
@@ -103,7 +103,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | `tests/post-merge-verifier-read-only.sh` | Canonical post-merge verifier recipe read-only invariant keeps the forbidden-action tokens (approve/merge/queue, force-close, delete-branch, release/deploy/operator), `issue_closure_pending` / `source_branch_cleanup_pending` report tokens, helper wiring, and removed top-level skill absence check, and keeps the post-#152 dropped "promised docs/ADR/follow-ups" check absent. |
 | `tests/project-profile-hooks.sh` | `project_profile` extension fields stay documented in the GitLab delivery schema and generated handoff copies; setup-dev-skills seeds/generated docs declare gate, labels, branch naming, CI jobs, domain/ADR, release/deploy, manual validation, language, and auxiliary index hooks; GitLab-specific schema names and safety invariants remain intact. |
 | `tests/project-profile-facts.sh` | `setup-dev-skills/reference/project-profile-facts.json` remains the canonical project-profile fact source for Agent Setup Doc paths, Triage Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch naming, CI parity, skill resource URIs, and a non-default docs/labels fixture; setup seeds/live docs and GitLab issue pickup avoid globally hardcoded labels. |
-| `tests/queued-auto-merge-default-finish.sh` | Default delivery/review finish stays queued auto-merge on pass + merge authority with review launched in parallel with CI for every tier: pins the canonical `## Default finish: queued auto-merge` wording, the exact-SHA CI floor ("pipeline must succeed", queue only on pending/running/success), and the fail-closed guard (failed/canceled reviewed-SHA pipeline blocks, not queues) across `start-review/REVIEW-FLOW.md`, `start-build/reference/parent-orchestrator.md`, `issue-delivery-loop/SKILL.md`, `start-build/reference/post-merge-verifier.md`, and `start-build/docs/effort-scaling.md`, and refutes the retired block-watch / trivial-tier terminal-green-wait instructions. |
+| `tests/queued-auto-merge-default-finish.sh` | Advisory-CI policy graph invariant: exact-candidate local Gate Receipt is the singular quality gate; review, authority, mutation/readback, queue non-terminality, post-merge containment/closure/cleanup, and native policy refusal remain mandatory. |
 | `tests/regression-harness.sh` | Shared regression harness self-check for shell assertion primitives, command-output capture, marked-section extraction, and schema-sync field extraction. |
 | `tests/reviewer-prompt-dedupe.sh` | Claude/OMP reviewer prompts stay frontmatter plus invoke `start-review` below the tiny route-pin body cap, and shared ADR template ownership/drift stays enforced. |
 | `tests/reviewer-lift-schema.sh` | Reviewer Lift generated-copy blocks match the canonical schema and stale duplicate field-list tables are rejected. |
@@ -123,7 +123,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 - The repo-local runtime contract is Node.js 22.x (`.nvmrc` and `package.json` `engines.node`).
 - GitLab CI uses the Node 22 image.
-- Required GitLab CI job name: `check` (stage `validate`).
+- Advisory GitLab CI job name: `check` (stage `validate`).
 - The `check` job runs `npm ci` so dependencies come from `package-lock.json`.
 - The `check` job then runs `npm run check`, the same canonical command used locally.
 - Pipeline workflow rules create pipelines for merge requests, the default branch, and tags.

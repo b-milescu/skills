@@ -35,7 +35,7 @@ glab ci status --help; glab repo view --help; glab api --help
 
 Do not invent flags from memory or other CLIs. If help conflicts with this skill, use help and note skill drift.
 
-Project hooks may specialize policy but not reviewed-SHA or exact-SHA CI binding, explicit authority, independent review, role boundaries, MCP-first transport correctness plus help-first `glab` fallback correctness, or live help verification. Shared delivery blocks retain GitLab terms: `issue`, `MR`, `pipeline`, `source branch`, `target branch`, and `SHA`.
+Project hooks may specialize policy but not exact-candidate Gate Receipt, reviewed-SHA binding, explicit authority, independent review, role boundaries, MCP-first transport correctness plus help-first `glab` fallback correctness, or live help verification. CI is advisory evidence whose status is attributed only with exact-SHA binding. Shared delivery blocks retain GitLab terms: `issue`, `MR`, `pipeline`, `source branch`, `target branch`, and `SHA`.
 
 ### Per-run help cache
 
@@ -186,7 +186,7 @@ glab ci status --branch "$source_branch" -F json
 
 ### Snippet: ci-watch-sha-pinned
 
-Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned).
+Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned).
 
 Inputs:
 
@@ -196,17 +196,21 @@ Inputs:
 - `timeout_seconds` and `poll_seconds`: caller-selected wait budget.
 - Optional output mode: human summary or machine-readable YAML.
 
-MCP primary: poll `get_merge_request_workflow_snapshot` and exact-SHA `list_pipelines(sha=reviewed_sha)` / `get_pipeline`. Every poll fails closed if MR head differs from `reviewed_sha`, if pipeline SHA is stale, or if reviewed-SHA pipeline is failed/canceled/skipped/missing past timeout. Record `via=mcp`; guarded `glab` fallback is only for unavailable MCP snapshot/pipeline reads and must preserve the same exact-SHA rules.
+MCP primary: poll `get_merge_request_workflow_snapshot` and exact-SHA
+`list_pipelines(sha=reviewed_sha)` / `get_pipeline`. A changed MR head stops
+attribution to `reviewed_sha`; every pipeline state, including missing, failed,
+canceled, skipped, pending, stale, and timeout, is advisory progress evidence.
+Record `via=mcp`; guarded `glab` fallback is only for unavailable MCP reads.
 
 ```text
 
 get_merge_request_workflow_snapshot(project_path, mr_iid)
 list_pipelines(project_path, sha=reviewed_sha) or get_pipeline(project_path, pipeline_id)
-verdict -> success / pending / failed / canceled / stale-head / stale-ci / timeout
+observation -> bound-success / bound-pending / bound-failure / unavailable / unbound
 
 ```
 
-For raw-command fallback adaptation (keeping per-poll SHA rules as read-only evidence for the Mutation Guard), see [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#ci-verdict-mechanics-ci-watch-sha-pinned) and [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
+For raw-command fallback adaptation, see [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned) and [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
 
 ### Snippet: mr-note-create
 
@@ -254,7 +258,7 @@ get_project(project_path) -> verify binding
 
 ### Snippet: auto-merge-api-fallback
 
-Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer `finish_merge_request(action="queue-auto-merge", sha=reviewed_sha)` or MCP `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after all SHA/CI/authority/caller/context guards pass.
+Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer `finish_merge_request(action="queue-auto-merge", sha=reviewed_sha)` or MCP `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after reviewed-SHA, Gate Receipt, authority, caller/context, and fallback guards pass.
 
 ```text
 
@@ -275,7 +279,7 @@ current_sha="$(glab mr view <id> -F json | jq -r '.sha')"
 
 ```
 
-Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the [GitLab Mutation Guard](#gitlab-mutation-guard) above (canonical owner: [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md)); it stops on stale head, red/missing/stale CI, missing authority, permission uncertainty, identity drift, same-session/self-finish risk, or fallback-ineligible states.
+Approval, direct merge, auto-merge queueing, and approval confirmation are separate actions. Choose exactly one action snippet for the authority you have. Never run a combined approval/merge block or paste multiple action snippets as one executable sequence. Before any approval/merge action or fallback, run the [GitLab Mutation Guard](#gitlab-mutation-guard) above (canonical owner: [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md)); it stops on stale head, missing/stale Gate Receipt, missing authority, permission uncertainty, identity drift, same-session/self-finish risk, or fallback-ineligible states. CI status is advisory.
 
 ### Snippet: sha-bound-approval
 
@@ -291,7 +295,7 @@ glab mr approve "$mr_iid" --sha "$reviewed_sha"
 
 ### Snippet: sha-bound-merge
 
-Use only when the reviewed SHA is current, CI/merge guards pass, and explicit authority permits direct merge.
+Use only when the reviewed SHA is current, the exact-candidate Gate Receipt and authority guards pass, and explicit authority permits direct merge. Native GitLab policy may refuse the mutation; report it and never bypass it.
 
 ```bash
 
@@ -338,11 +342,11 @@ Inputs:
 - `source_branch`, `default_branch`, and optional `worktree_path`.
 - Optional `issue_iid` when not obvious from `Closes #...`.
 
-MCP primary: `finish_merge_request` performs the authority-aware finish contract after fresh `get_merge_request`, exact-SHA pipeline read, caller identity, and authority validation. It returns a `finish_result` / handoff with action, blocker, SHA, CI, issue, cleanup, identity, and `via`. Builder role always stops at handoff. Stop on stale head, stale/red/missing CI, missing authority/source, identity drift, same-session review/finish, unsupported action, or dirty worktree cleanup. Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps after MCP re-read and all guards pass.
+MCP primary: `finish_merge_request` performs the authority-aware finish contract after fresh MR, reviewed-SHA, exact-candidate Gate Receipt, caller identity, and authority validation. Its optional nullable `ci` value is advisory: a reviewed-SHA pipeline object when observed, `null` when none exists, and absent only for an already-merged no-mutation result. Builder role always stops at handoff. Stop on stale head, missing/stale Gate Receipt, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup, or native GitLab policy refusal. Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps after MCP re-read and all mandatory guards pass.
 
 ```text
 
-finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?)
+finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?) -> finish_result with optional nullable advisory ci
 get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issue/branch cleanup and record via
 
 ```

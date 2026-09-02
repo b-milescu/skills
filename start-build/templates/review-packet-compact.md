@@ -31,10 +31,10 @@ Fill every row per `reviewer-lift-schema.md`; parent-owned mode follows `../refe
 | Review gate | `<mandatory / bypassed (human override)>` |
 | Transport | `<mcp / eligible glab-fallback gap / n/a; per reviewer-lift-schema.md>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
-| Gate coverage | `<full-local / hybrid / ci-only; never parent-owned>` |
-| Gate coverage rationale | `<policy + required/local/unmapped CI mapping; refresh after push>` |
-| CI pipeline | `<provider-native CI locator + ID + status + commit when available, or N/A — why>` |
-| Local gate | `<status + exact command per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#ci-decision-table; parent-owned: not-run per ../reference/parent-owned-gate.md>` |
+| Gate coverage | `<exact-candidate-local>` |
+| Gate coverage rationale | `<policy + exact local command + candidate commit + result; refresh after push>` |
+| CI pipeline | `<advisory provider-native CI locator + ID + status + commit when available, or N/A — why>` |
+| Local gate | `<status + exact command per reviewer-lift-schema.md; parent-owned: not-run until Gate Receipt per ../reference/parent-owned-gate.md>` |
 | RED | `<behavior-touching implementation: failing check; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
 | GREEN | `<passing behavior check, or N/A with rationale; per reviewer-lift-schema.md>` |
 | Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<paths separated with <br>>` |

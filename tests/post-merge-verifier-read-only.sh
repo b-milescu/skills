@@ -33,8 +33,8 @@ require_text "$verifier_recipe" 'top-level skill discovery' 'recipe demoted-skil
 require_text "$verifier_recipe" 'read-only confirmation|read-only.*post-merge' 'recipe read-only invariant token'
 require_text "$verifier_recipe" 'forge post_merge_snapshot' 'recipe forge snapshot pointer'
 require_text "$verifier_recipe" 'post_merge_snapshot\.kind=post-merge-snapshot' 'recipe snapshot schema anchor'
-require_text "$verifier_recipe" 'result-commit CI status bound to the provider result commit' 'result-commit CI binding'
-require_text "$verifier_recipe" 'wrong-result-commit CI stays pending' 'wrong-result CI fail-closed guard'
+require_text "$verifier_recipe" 'advisory result-commit CI observation attributed to the provider result commit' 'result-commit CI attribution'
+require_text "$verifier_recipe" 'wrong-result-commit CI is recorded' 'wrong-result CI advisory handling'
 
 for forbidden in '/gitlab' 'get_post_merge_snapshot' 'Closes #' 'MR IID' 'issue-note'; do
   if grep -Fqi -- "$forbidden" "$verifier_recipe"; then

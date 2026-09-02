@@ -74,8 +74,8 @@ assert(defaultProfile.check_gate.command === 'npm run check', 'default Check Gat
 assert(defaultProfile.dev_workflows.path === 'docs/agents/dev-workflows.md', 'default Dev Workflow path drifted');
 assert(defaultProfile.dev_workflows.acceptance_surfaces_ref === 'docs/agents/dev-workflows.md#acceptance-surface-vocabulary', 'default acceptance_surfaces_ref drifted');
 assert(defaultProfile.branch_naming.pattern === 'issue-<iid>-<slug>', 'default branch naming drifted');
-assert(defaultProfile.ci_parity.required_jobs.includes('check'), 'default CI required jobs missing check');
-assert(!defaultProfile.ci_parity.required_jobs.includes('validation'), 'default CI required jobs must name the check job, not the validate stage');
+assert(defaultProfile.ci_parity.observed_jobs.includes('check'), 'default observed CI jobs missing check');
+assert(!defaultProfile.ci_parity.observed_jobs.includes('validation'), 'default observed CI jobs must name the check job, not the validate stage');
 allRepoRelative(defaultProfile.agent_setup_docs, 'default_profile.agent_setup_docs');
 
 for (const [key, value] of Object.entries(facts.skill_resources)) {

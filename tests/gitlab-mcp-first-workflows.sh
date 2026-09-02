@@ -83,11 +83,11 @@ for name in \
   require_text "$contract" "\`$name\`" "transport contract for $name"
 done
 
-require_text gitlab/reference/ci-finish-guards.md 'fresh MCP re-read|Re-read `get_merge_request`|re-read through MCP' 'fresh MCP re-read before finish/fallback'
-require_text gitlab/reference/ci-finish-guards.md 'exact-SHA CI|list_pipelines\(sha=reviewed_sha\)|get_pipeline' 'exact-SHA CI guard'
-require_text gitlab/reference/ci-finish-guards.md 'authority.*source|authority/source' 'authority/source guard'
-require_text gitlab/reference/ci-finish-guards.md 'caller identity|caller_user_id|token-stability|context-firewall' 'caller identity / context guard'
-require_text gitlab/reference/ci-finish-guards.md 'via=mcp|via=glab-fallback' 'finish transport evidence'
+require_text gitlab/reference/ci-finish-guards.md 'current head equals `reviewed_sha`' 'fresh reviewed-head guard before finish'
+require_text gitlab/reference/ci-finish-guards.md 'list_pipelines\(sha=reviewed_sha\).*get_pipeline' 'SHA-attributed advisory CI observation'
+require_text gitlab/reference/ci-finish-guards.md 'authority and caller/context eligibility' 'authority/source and caller guard'
+require_text gitlab/reference/ci-finish-guards.md 'exactly one mutation and provider-native readback' 'one-mutation/readback guard'
+require_text gitlab/reference/ci-finish-guards.md 'authority/caller evidence, and transport' 'finish transport evidence'
 require_text gitlab/reference/finish-result-schema.json '"transport"' 'finish_result transport field'
 require_text gitlab/reference/finish-result-schema.json 'glab-fallback' 'finish_result fallback transport enum'
 

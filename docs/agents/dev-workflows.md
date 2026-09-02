@@ -58,12 +58,12 @@ This repo uses the default profile from `skill://setup-dev-skills/reference/proj
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
 | `profile_id` / `profile_path` | `default` / this section. |
-| `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) full local gate, Gate coverage for ready handoff, CI parity, and when-gate-cannot-run sections. |
+| `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) exact-candidate full local gate, ready handoff, CI parity, and when-gate-cannot-run sections. |
 | `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
 | `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
 | `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
 | `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
-| `ci_jobs` | [`docs/agents/check-gate.md`](check-gate.md) CI parity / required jobs section. |
+| `ci_jobs` | [`docs/agents/check-gate.md`](check-gate.md) configured advisory CI parity jobs. |
 | `domain_docs` | [`docs/agents/domain.md`](domain.md) context and ADR layout. |
 | `release_deploy_policy` | This doc's [Release/deploy policy](#releasedeploy-policy) section. |
 | `manual_validation_rules` | [`docs/agents/check-gate.md`](check-gate.md) manual validation rules section. |

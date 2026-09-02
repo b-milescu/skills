@@ -15,7 +15,6 @@
   "action_blocker": [
     "none",
     "missing-authority",
-    "stale-or-missing-ci",
     "changed-head-sha",
     "merge-conflict",
     "sha-bound-action-unsupported",
@@ -30,14 +29,12 @@
     "finish-by-authorized-actor",
     "revise",
     "human-escalation",
-    "wait-ci",
     "rerun-review",
     "fix-blocker"
   ],
   "blocker_token": [
     "none",
     "missing-authority",
-    "stale-or-missing-ci",
     "changed-head-sha",
     "merge-conflict",
     "sha-bound-action-unsupported",
@@ -55,15 +52,6 @@
       "mutation_guard_blocker_states": ["missing_authority", "authority_source_mismatch"],
       "finish_result_blocker": ["authority"],
       "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "stale-or-missing-ci",
-      "meaning": "Required exact-commit CI is stale, red, or missing.",
-      "mutation_guard_blocker_states": ["stale_ci", "red_ci", "missing_ci"],
-      "finish_result_blocker": ["ci_not_green"],
-      "finish_result_conflict_type": [],
-      "mcp_codes": ["ci_stale"],
-      "note": "The reviewer vocabulary has no distinct red-CI token; red_ci is grouped under stale-or-missing-ci."
     },
     {
       "action_blocker": "changed-head-sha",

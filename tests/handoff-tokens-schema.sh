@@ -36,7 +36,6 @@ const verdicts = ["pass", "request-changes", "reject", "blocked"];
 const blockers = [
   "none",
   "missing-authority",
-  "stale-or-missing-ci",
   "changed-head-sha",
   "merge-conflict",
   "sha-bound-action-unsupported",
@@ -51,7 +50,6 @@ const nextActions = [
   "finish-by-authorized-actor",
   "revise",
   "human-escalation",
-  "wait-ci",
   "rerun-review",
   "fix-blocker"
 ];
@@ -59,11 +57,6 @@ const expectedCrosswalk = {
   "missing-authority": {
     mutation_guard_blocker_states: ["missing_authority", "authority_source_mismatch"],
     finish_result_blocker: ["authority"],
-    finish_result_conflict_type: []
-  },
-  "stale-or-missing-ci": {
-    mutation_guard_blocker_states: ["stale_ci", "red_ci", "missing_ci"],
-    finish_result_blocker: ["ci_not_green"],
     finish_result_conflict_type: []
   },
   "changed-head-sha": {
@@ -124,7 +117,7 @@ sameList("next_action", schema.next_action, nextActions);
 sameList("blocker_token", schema.blocker_token, blockers);
 
 assert(Array.isArray(schema.crosswalk), "crosswalk must be an array");
-assert(schema.crosswalk.length === 10, `crosswalk must have 10 entries, found ${schema.crosswalk.length}`);
+assert(schema.crosswalk.length === 9, `crosswalk must have 9 entries, found ${schema.crosswalk.length}`);
 const crosswalk = new Map(schema.crosswalk.map((entry) => [entry.action_blocker, entry]));
 sameList("crosswalk action blockers", [...crosswalk.keys()], blockers.slice(1, -1));
 assert(crosswalk.size === schema.crosswalk.length, "crosswalk action_blocker values must be unique");
@@ -147,12 +140,11 @@ for (const [token, expected] of Object.entries(expectedCrosswalk)) {
     for (const code of entry.mcp_codes) assert(allowedMcpCodes.has(code), `${token} references unsupported informational MCP code ${code}`);
   }
 }
-assert(crosswalk.get("stale-or-missing-ci").note === "The reviewer vocabulary has no distinct red-CI token; red_ci is grouped under stale-or-missing-ci.", "red_ci taxonomy-gap note drifted");
 
 const enumText = {
-  "start-review/templates/filling-guide.md": "`missing-authority`, `stale-or-missing-ci`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`",
-  "start-review/templates/review-report.md": "<none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>",
-  "start-review/templates/reviewer-final-handoff.md": "action_blocker: \"none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other\""
+  "start-review/templates/filling-guide.md": "`missing-authority`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`",
+  "start-review/templates/review-report.md": "<none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>",
+  "start-review/templates/reviewer-final-handoff.md": "action_blocker: \"none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other\""
 };
 let pointerCount = 0;
 for (const [path, enumNeedle] of Object.entries(enumText)) {
@@ -163,6 +155,13 @@ for (const [path, enumNeedle] of Object.entries(enumText)) {
   pointerCount += pointerLines.length;
 }
 assert(pointerCount === 3, "expected exactly three template schema pointers");
+const cataloguePath = "retro/reference/signal-catalogue.md";
+const catalogue = fs.readFileSync(cataloguePath, "utf8");
+const blockerSignal = catalogue.split("\n").find((line) => line.includes("Blocker tokens fired"));
+assert(blockerSignal, `${cataloguePath} blocker-token signal missing`);
+const catalogueTokens = [...blockerSignal.matchAll(/`([^`]+)`/g)].map((match) => match[1]).filter((token) => token !== "delivery.handoff_contract");
+assert(catalogueTokens.length > 0, `${cataloguePath} must name current blocker examples`);
+for (const token of catalogueTokens) assert(blockers.includes(token), `${cataloguePath} names retired or unknown blocker ${token}`);
 
 const invariantTest = fs.readFileSync("tests/token-grep-invariants.sh", "utf8");
 assert(invariantTest.includes(schemaPath), "token-grep-invariants.sh must read the handoff token schema");
