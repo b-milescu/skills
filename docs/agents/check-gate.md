@@ -95,8 +95,8 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | `tests/gitlab-review-cards.sh` | Deleted GitLab review/CI cards stay gone; `/forge` GitLab branch points at `gitlab/SKILL.md` while generic `/start-review` owns no direct GitLab card links. |
 | `tests/gitlab-split-snippets.sh` | GitLab workflow snippets remain split into Draft MR create, MR description update, Draft MR mark-ready, SHA-bound approval, merge, auto-merge, MR-note, issue-note, label-reconcile, safe-mr-json, auto-merge-api-fallback, CI watch, and finish MCP tool guidance. |
 | `tests/install-external-deps.sh` | `install.sh` warnings for missing required/optional external skills and silence when dependencies exist under a temporary `HOME`. |
-| `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks, replaces stale in-repo symlinks, and keeps shared routed MR agents installed in each runtime dialect without treating model pins as route names — all under temporary `HOME`. |
-| `tests/installer-smoke-requirement.sh` | Installer smoke requirement docs stay present in `docs/agents/check-gate.md`: `install_surface` surface, `agents/`, `install.sh`, runtime routing triggers, temp-HOME installer smoke evidence, parent-owned gate evidence requirement, shared MR route symlink ownership in `install-symlink-ownership` inventory entry, `installer-smoke-requirement` self-entry. |
+| `tests/install-symlink-ownership.sh` | `install.sh` preserves out-of-repo symlinks, replaces stale in-repo symlinks, and keeps the default builder plus final reviewer installed in each runtime dialect without treating model pins as route names — all under temporary `HOME`. |
+| `tests/installer-smoke-requirement.sh` | Installer smoke requirement docs stay present in `docs/agents/check-gate.md`: `install_surface` surface, `agents/`, `install.sh`, runtime routing triggers, temp-HOME installer smoke evidence, parent-owned gate evidence requirement, default MR route symlink ownership in `install-symlink-ownership` inventory entry, `installer-smoke-requirement` self-entry. |
 | `tests/md-links.sh` | Markdown local-link checker diagnostics for broken files, anchors, image targets, allowed skill URIs, and external URL host allowlist behavior. |
 | `tests/parent-subagent-placement.sh` | Parent-only subagent discovery guidance stays in the parent-orchestrator recipe and out of child builder prompts. |
 | `tests/omp-agent-loader-smoke.sh` | See the coverage summary in the [test's header](../../tests/omp-agent-loader-smoke.sh). |
@@ -154,7 +154,7 @@ Required evidence: run `HOME=<tmpdir> ./install.sh` and verify that expected age
 
 For parent-owned gate evidence, name `./install.sh` or a temp-HOME installer smoke as the expected confirmation when `install_surface` is present.
 
-`tests/install-symlink-ownership.sh` regression covers symlink ownership including shared routed MR agents in both runtime dialects under `npm run check`. A live temp-HOME installer smoke supplements rather than replaces it.
+`tests/install-symlink-ownership.sh` regression covers default MR route symlink ownership in both runtime dialects under `npm run check`. A live temp-HOME installer smoke supplements rather than replaces it.
 
 **Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 

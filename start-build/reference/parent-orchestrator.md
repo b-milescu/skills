@@ -23,25 +23,18 @@ Use this mode when the parent coordinator, not the child builder, owns the final
 
 Before marking ready, follow the [parent verification checklist](parent-owned-gate.md#parent-verification-checklist): bind the exact candidate commit from the child and change request, run the target-repo Check Gate on that checkout, publish a Gate Receipt through `forge publish`, require provider-native readback, and verify the change-request head still matches before `forge act`.
 
-## Skill-only tier routing
+## Default builder routing
 
-This routing is enforced only for flows launched through the parent loop. Manual direct agent selection outside enforcement surface; selected route frontmatter owns model pins, provider pins, and effort pins. The parent consumes delivery tier classified by `skill://issue-delivery-loop/SKILL.md`, classifies with the same criteria when called directly, and resolves route basenames only at the child/reviewer launch seam in the current runtime dialect directory.
+Parent-loop deliveries use the shared model-free `mr-builder` basename. It
+resolves in the current runtime dialect directory: Claude Code loads
+`agents/claude/mr-builder.md`; OMP loads `agents/omp/mr-builder.md`. Model and
+effort pins live in frontmatter, never in route names. The mandatory independent
+final reviewer remains `mr-reviewer-final`.
 
-- `trivial` requires all criteria to be true: docs/prose/templates/labels/inventory/checklist or other mechanical no-runtime work; no runtime behavior; no security/auth/permissions/billing; no schema/migration/persistence; no deploy/runtime/CI semantic change; no concurrency/state-machine/locking impact; no broad architecture/cross-file coupling; no broad multi-file or shared-harness test refactor; clear acceptance criteria.
-- `high-risk` applies when any trigger is present: auth/security/crypto/secrets; migrations/schema/data-loss; deploy/runtime/infra/CI semantics; concurrency/locking/state machines/queues; billing/permissions/access control; large diff (`>=20` files or `>=1000` diff lines); unclear acceptance criteria.
-- `moderate` is the default when work is neither `trivial` nor `high-risk`.
-
-Test surface alone does not lower tier: a test-only refactor touching `>=10` test files or shared harness/cross-file coupling is at least `moderate`; the `>=20`-file `high-risk` trigger still applies.
-
-Route exact shared model-free route basenames by tier. The basename resolves inside the current runtime dialect directory: Claude Code loads `agents/claude/<route>.md`; OMP loads `agents/omp/<route>.md`. Model pins live in frontmatter; provider effort pins live too, never in route name. Route names are launch basenames, distinct from role/mode labels `child mr-builder` and `mr-reviewer`:
-
-| Tier | Builder route | Final-reviewer route |
-| --- | --- | --- |
-| `trivial` | `mr-builder-trivial` | `mr-reviewer-final` |
-| `moderate` | `mr-builder-moderate` | `mr-reviewer-final` |
-| `high-risk` | `mr-builder-high-risk` | `mr-reviewer-final` |
-
-The mandatory independent final reviewer route is `mr-reviewer-final` for every tier. There is no review scout or generic fallback builder/reviewer: when exact routed agent file unavailable in current dialect directory, stop with a route-unavailable blocker and explicit parent/operator decision rather than selecting a substitute route; never select a shim, old filename, cross-runtime route, lower-effort substitute, or cost downgrade.
+When either exact route is unavailable in the current dialect directory, stop
+with a route-unavailable blocker and explicit parent/operator decision. Never
+select a generic specialist, shim, old filename, cross-runtime route, or cost
+downgrade.
 
 ## Fresh default and cleanup order
 
@@ -110,18 +103,16 @@ authority grants it; otherwise stop at the most permissive authorized action.
    change request/Review Packet per child. Coupled members serialize only within
    their coupled cluster in dependency order; never serialize otherwise decoupled
    items. Fall back to serial execution only when decoupling proof fails or is
-   unknown, or the caller explicitly bounds concurrency. Classify each work
-   item/change request `trivial`, `moderate`, or `high-risk` per
-   [Skill-only tier routing](#skill-only-tier-routing).
+   unknown, or the caller explicitly bounds concurrency.
 2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
-3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Consume the bound tier and launch the exact shared builder route basename from the canonical table in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
+3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Launch the exact shared `mr-builder` route basename in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
 4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence.
 
    Run `node skill://start-build/scripts/validate-handoff-gate-consistency.mjs --handoff <saved builder-final handoff>` before review. A contradiction blocks review and routes back to the builder; the validator's workflow-time status is canonical in [child-builder §Child checklist](child-builder.md#child-checklist).
    Run `node skill://start-review/scripts/validate-handoff-tokens.mjs --handoff <saved builder-final handoff>` at the same saved-handoff review boundary. An absent, unknown, or unexplained `other` token blocks review; this is a workflow-time check, not a Check Gate or CI job.
 
-   Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing issue classification.
+   Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing its route.
 5. **Launch final review.** Launch the reviewer in parallel with CI once the build handoff lands; see [Reviewer launch timing](#reviewer-launch-timing). Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
 6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. In `Finish owner: parent` mode the parent still runs fresh commit/CI/authority/identity/common-guard checks before any action. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
 7. **Enforce commit and CI guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and CI to bind that exact commit. Red, canceled, skipped, missing, stale, or wrong-commit CI blocks finish unless an authorized human records an explicit waiver.
@@ -131,7 +122,7 @@ authority grants it; otherwise stop at the most permissive authorized action.
 
 ## Reviewer launch timing
 
-Parallel launch is the default for every tier: step 5 starts the final reviewer with CI as soon as the build handoff lands. This parent-side sequencing never substitutes for the reviewer's exact-SHA CI verification, bounded wait, or fail-closed policy. For candidate-bound failed/canceled CI, do not finish; the reviewer independently applies `start-review` policy to non-pass-eligible CI.
+Parallel launch is the default: step 5 starts the final reviewer with CI as soon as the build handoff lands. This parent-side sequencing never substitutes for the reviewer's exact-SHA CI verification, bounded wait, or fail-closed policy. For candidate-bound failed/canceled CI, do not finish; the reviewer independently applies `start-review` policy to non-pass-eligible CI.
 
 - Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
 
@@ -173,8 +164,7 @@ When the parent starts a child builder, pass only the issue-specific routing fac
 
 ```text
 Build issue: <provider-native issue locator>
-Delivery tier: <trivial | moderate | high-risk>
-Agent: <trivial: mr-builder-trivial | moderate: mr-builder-moderate | high-risk: mr-builder-high-risk> (resolve basename in current dialect directory: agents/claude/<route>.md or agents/omp/<route>.md)
+Agent: mr-builder (resolve basename in current dialect directory: agents/claude/mr-builder.md or agents/omp/mr-builder.md)
 Worktree: <absolute worktree path>
 Target branch: <default branch>
 Mode: child mr-builder

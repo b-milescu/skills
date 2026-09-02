@@ -79,20 +79,17 @@ require_text "$GITLAB_ACTIONS" 'protected auto-merge' 'GitLab protected-check qu
 require_text "$GITLAB_CI_FINISH" 'exact-SHA green CI for merge' 'GitLab merge CI policy'
 
 # ---------------------------------------------------------------------------
-# parent-orchestrator.md — parallel launch default; trivial-tier wait retired.
+# parent-orchestrator.md — parallel launch default; pre-review CI wait retired.
 # ---------------------------------------------------------------------------
 require_text "$PARENT" '^## Reviewer launch timing$' \
   'renamed Reviewer launch timing section'
-require_text "$PARENT" 'Parallel launch is the default for every tier' \
-  'parallel launch default for every tier'
+require_text "$PARENT" 'Parallel launch is the default' \
+  'parallel launch default'
 require_text "$PARENT" 'default finish[^.]*queue auto-merge|approve SHA-bound and queue auto-merge' \
   'parent default finish is queued auto-merge'
-# The retired block-wait rule must be gone as an ACTIVE instruction: no tier
-# should be told to wait for terminal-green CI before launching the reviewer.
+# No delivery should wait for terminal-green CI before launching the reviewer.
 refute_text "$PARENT" 'launch the reviewer only once that exact SHA is terminal-green' \
-  'retired trivial-tier terminal-green wait instruction'
-refute_text "$PARENT" '`trivial`-tier deliveries with non-terminal CI wait for exact-SHA terminal-green CI first' \
-  'retired step-5 trivial CI-wait instruction'
+  'retired terminal-green wait instruction'
 # Fail-closed on red/canceled CI survives the retirement.
 require_text "$PARENT" '(failed./.canceled|failed/canceled)[^.]*do not finish|do not finish[^.]*(failed./.canceled|failed/canceled)' \
   'fail-closed red/canceled CI guard preserved'

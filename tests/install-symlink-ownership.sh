@@ -102,21 +102,19 @@ touch \
   "$external_dir/omp-custom-agent.md"
 
 ln -s "$external_dir/custom-skill" "$home_dir/.claude/skills/start-build"
-ln -s "$external_dir/custom-agent.md" "$home_dir/.claude/agents/mr-builder-high-risk.md"
+ln -s "$external_dir/custom-agent.md" "$home_dir/.claude/agents/custom-agent.md"
 ln -s "$external_dir/omp-custom-skill" "$home_dir/.omp/agent/skills/start-build"
-ln -s "$external_dir/omp-custom-agent.md" "$home_dir/.omp/agent/agents/mr-builder-high-risk.md"
+ln -s "$external_dir/omp-custom-agent.md" "$home_dir/.omp/agent/agents/custom-agent.md"
 
 custom_skill_abs="$("$REALPATH" -m "$external_dir/custom-skill")"
-custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
 omp_custom_skill_abs="$("$REALPATH" -m "$external_dir/omp-custom-skill")"
-omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
 
 ln -s "$REPO_ROOT/gitlab" "$home_dir/.claude/skills/start-review"
-ln -s "$REPO_ROOT/agents/claude/mr-builder-moderate.md" "$home_dir/.claude/agents/mr-reviewer.md"
+ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/mr-reviewer.md"
 ln -s "$REPO_ROOT/start-build" "$home_dir/.claude/skills/old-repo-skill"
-ln -s "$REPO_ROOT/agents/claude/mr-builder-moderate.md" "$home_dir/.claude/agents/old-repo-agent.md"
+ln -s "$REPO_ROOT/agents/claude/mr-builder.md" "$home_dir/.claude/agents/old-repo-agent.md"
 ln -s "$REPO_ROOT/agents/omp/mr-reviewer-final.md" "$home_dir/.claude/agents/mr-reviewer-final.md"
-ln -s "$REPO_ROOT/agents/omp/mr-builder-moderate.md" "$home_dir/.claude/agents/mr-builder-moderate.md"
+ln -s "$REPO_ROOT/agents/omp/mr-builder.md" "$home_dir/.claude/agents/mr-builder.md"
 
 # Older installers linked shared resource dirs into runtime skill roots. They are
 # repo-owned but not skills, so a rerun must prune them instead of preserving the
@@ -129,21 +127,19 @@ ln -s "$REPO_ROOT/templates" "$home_dir/.omp/agent/skills/templates"
 HOME="$home_dir" "$REPO_ROOT/install.sh" >"$output_file" 2>&1
 
 assert_symlink_target "$home_dir/.claude/skills/start-build" "$external_dir/custom-skill"
-assert_symlink_target "$home_dir/.claude/agents/mr-builder-high-risk.md" "$external_dir/custom-agent.md"
+assert_symlink_target "$home_dir/.claude/agents/custom-agent.md" "$external_dir/custom-agent.md"
 assert_symlink_target "$home_dir/.omp/agent/skills/start-build" "$external_dir/omp-custom-skill"
-assert_symlink_target "$home_dir/.omp/agent/agents/mr-builder-high-risk.md" "$external_dir/omp-custom-agent.md"
+assert_symlink_target "$home_dir/.omp/agent/agents/custom-agent.md" "$external_dir/omp-custom-agent.md"
 
 assert_contains "$output_file" "$home_dir/.claude/skills/start-build (existing symlink points outside repo: $custom_skill_abs)"
-assert_contains "$output_file" "$home_dir/.claude/agents/mr-builder-high-risk.md (existing symlink points outside repo: $custom_agent_abs)"
 assert_contains "$output_file" "$home_dir/.omp/agent/skills/start-build (existing symlink points outside repo: $omp_custom_skill_abs)"
-assert_contains "$output_file" "$home_dir/.omp/agent/agents/mr-builder-high-risk.md (existing symlink points outside repo: $omp_custom_agent_abs)"
 
 assert_skill_resolves_to_source "$home_dir/.claude/skills/start-review" "$REPO_ROOT/start-review"
 assert_not_exists "$home_dir/.claude/agents/mr-reviewer.md"
 assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-reviewer-final.md" "$REPO_ROOT/agents/omp/mr-reviewer-final.md"
-assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-builder-moderate.md" "$REPO_ROOT/agents/omp/mr-builder-moderate.md"
+assert_symlink_resolves_to "$home_dir/.omp/agent/agents/mr-builder.md" "$REPO_ROOT/agents/omp/mr-builder.md"
 assert_symlink_resolves_to "$home_dir/.claude/agents/mr-reviewer-final.md" "$REPO_ROOT/agents/claude/mr-reviewer-final.md"
-assert_symlink_resolves_to "$home_dir/.claude/agents/mr-builder-moderate.md" "$REPO_ROOT/agents/claude/mr-builder-moderate.md"
+assert_symlink_resolves_to "$home_dir/.claude/agents/mr-builder.md" "$REPO_ROOT/agents/claude/mr-builder.md"
 for runtime in \
   "$home_dir/.claude/skills" \
   "$home_dir/.omp/agent/skills"; do

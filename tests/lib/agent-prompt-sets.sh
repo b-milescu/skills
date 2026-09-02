@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
-# Shared agent prompt role map for regression tests. Keep routed variants in one
+# Shared agent prompt role map for regression tests. Keep routed agents in one
 # place so prompt-drift, authority, handoff, and transport checks cover the same
 # files without duplicating path inventories across scripts.
 #
-# Routed MR route inventory (#301): route basenames are shared and model-free.
-# Claude/OMP dialects use the same names; model/provider pins live only in
-# frontmatter/body pin prose. No generic fallback builder/reviewer or review
-# scout remains.
+# Route basenames are shared and model-free. Claude/OMP dialects use the same
+# names; model/provider pins live only in frontmatter/body pin prose. No generic
+# fallback builder/reviewer or review scout remains.
 
 agent_prompt_dialects=(claude omp)
 
 builder_prompt_names=(
-  mr-builder-trivial
-  mr-builder-moderate
-  mr-builder-high-risk
+  mr-builder
 )
 claude_builder_prompt_names=( "${builder_prompt_names[@]}" )
 omp_builder_prompt_names=( "${builder_prompt_names[@]}" )

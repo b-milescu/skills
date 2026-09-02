@@ -50,7 +50,7 @@ prepare_installed_agents() {
     "$home_dir/.omp/agent/agents" \
     "$home_dir/.omp/agent/skills"
 
-  for agent in mr-builder-trivial mr-builder-moderate mr-builder-high-risk mr-reviewer-final; do
+  for agent in mr-builder mr-reviewer-final; do
     ln -s "$repo/agents/claude/$agent.md" "$home_dir/.claude/agents/$agent.md"
     ln -s "$repo/agents/omp/$agent.md" "$home_dir/.omp/agent/agents/$agent.md"
   done
@@ -92,7 +92,7 @@ run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
 # Shared routed inventory has identical model-free basenames in both dialects;
 # agents/check.sh must treat any missing counterpart as a parity error.
-for agent in mr-builder-trivial mr-builder-moderate mr-builder-high-risk mr-reviewer-final; do
+for agent in mr-builder mr-reviewer-final; do
   assert_not_contains "$clean_output" "agents/claude/$agent.md has no agents/omp/$agent.md"
   assert_not_contains "$clean_output" "agents/omp/$agent.md has no agents/claude/$agent.md"
 done
@@ -354,10 +354,10 @@ prompt_strategy_repo="$TMP_ROOT/prompt-strategy-repo"
 prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
 prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
 copy_repo "$prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder-moderate.md"
+perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder.md"
 prepare_installed_agents "$prompt_strategy_repo" "$prompt_strategy_home" yes
 run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
-assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder-moderate.md"
+assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder.md"
 
 
 routed_prompt_strategy_repo="$TMP_ROOT/routed-prompt-strategy-repo"
@@ -373,7 +373,7 @@ lift_drift_repo="$TMP_ROOT/lift-drift-repo"
 lift_drift_home="$TMP_ROOT/lift-drift-home"
 lift_drift_output="$TMP_ROOT/lift-drift.out"
 copy_repo "$lift_drift_repo"
-cat >> "$lift_drift_repo/agents/omp/mr-builder-moderate.md" <<'DRIFT'
+cat >> "$lift_drift_repo/agents/omp/mr-builder.md" <<'DRIFT'
 
 | Field | Value |
 |---|---|
@@ -463,7 +463,7 @@ tracked_violation_repo="$TMP_ROOT/tracked-violation-repo"
 tracked_violation_home="$TMP_ROOT/tracked-violation-home"
 tracked_violation_output="$TMP_ROOT/tracked-violation.out"
 copy_repo "$tracked_violation_repo"
-cat >> "$tracked_violation_repo/agents/omp/mr-builder-moderate.md" <<'DRIFT'
+cat >> "$tracked_violation_repo/agents/omp/mr-builder.md" <<'DRIFT'
 
 | Field | Value |
 |---|---|
@@ -479,6 +479,6 @@ git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=ch
 prepare_installed_agents "$tracked_violation_repo" "$tracked_violation_home" yes
 run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
 assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
-assert_contains "$tracked_violation_output" "agents/omp/mr-builder-moderate.md"
+assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"
 
 echo "agent-check: PASS"

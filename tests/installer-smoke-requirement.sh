@@ -50,9 +50,9 @@ require_text "$check_gate_doc" 'parent-owned gate evidence' \
 require_text "$check_gate_doc" 'install_surface.*present|present.*install_surface' \
   'install_surface presence condition for parent-owned gate evidence'
 
-# Shared MR route symlink ownership must be stated in install-symlink-ownership description
-require_text "$check_gate_doc" 'install-symlink-ownership.*shared MR route|shared MR route.*install-symlink-ownership' \
-  'shared MR route symlink ownership coverage in install-symlink-ownership inventory entry'
+# Default MR route symlink ownership must be stated in install-symlink-ownership description
+require_text "$check_gate_doc" 'install-symlink-ownership.*default MR route|default MR route.*install-symlink-ownership' \
+  'default MR route symlink ownership coverage in install-symlink-ownership inventory entry'
 
 # installer-smoke-requirement test must itself be in the check-gate inventory
 require_text "$check_gate_doc" 'tests/installer-smoke-requirement\.sh' \

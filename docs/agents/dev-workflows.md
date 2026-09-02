@@ -35,13 +35,15 @@ Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch pr
 - `skill://start-build/reference/parent-owned-gate.md` — parent Gate Receipt and exact-candidate ready seam.
 - `skill://gitlab/SKILL.md` — selected GitLab transport branch only.
 
-## Skill-only tier routing
+## Default MR routes
 
-Tier routing enforced only flows launched through `/issue-delivery-loop` parent loop. Manual direct agent selection outside enforcement surface. skill docs choose exact route basenames. Model pins live in frontmatter; provider effort pins live too.
+`/issue-delivery-loop` launches the shared model-free `mr-builder` basename,
+resolved in the current dialect directory (`agents/claude/mr-builder.md` or
+`agents/omp/mr-builder.md`). Model and effort pins live in frontmatter.
 
-Before child launch, `/issue-delivery-loop` classifies target issue/MR `trivial`, `moderate`, or `high-risk` (tier criteria live in [`skill://issue-delivery-loop/SKILL.md`](skill://issue-delivery-loop/SKILL.md)). The single canonical tier→builder route table is owned by [`skill://start-build/reference/parent-orchestrator.md`](skill://start-build/reference/parent-orchestrator.md), names shared model-free route basenames, and resolves each basename in the current dialect directory (`agents/claude/<route>.md` or `agents/omp/<route>.md`); this doc does not restate per-tier builder route rows. Route basenames are distinct from role/mode labels such as `child mr-builder` and `mr-reviewer`.
-
-Independent-review floors hold every tier: mandatory final-reviewer route is `mr-reviewer-final`, resolved from current dialect directory. Missing route remains route-unavailable blocker; no review scout, generic fallback, shim, old filename, cross-runtime substitute is allowed.
+Mandatory independent review uses `mr-reviewer-final` from the same dialect
+directory. A missing route remains a route-unavailable blocker; no review scout,
+generic fallback, shim, old filename, or cross-runtime substitute is allowed.
 
 ## Project-profile hooks
 
