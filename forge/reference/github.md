@@ -5,11 +5,11 @@ Use native REST/GraphQL or `gh`; add no SDK. Bind a pull request to `headRefOid`
 
 ## Snapshot
 
-- Read every paginated file, review, review thread, and required CI context.
-  Missing pages, GitHub's 3,000-file REST cap, or incomplete-pagination evidence
-  fail closed.
-- Read Checks and classic statuses for the exact `headRefOid`; null, missing,
-  incomplete, or wrong-commit contexts are not green.
+- Read every paginated file, review, and review thread. Missing pages, GitHub's
+  3,000-file REST cap, or incomplete diff/review pagination fails closed.
+- Read configured Checks and classic statuses for the exact `headRefOid` when
+  available. Classify null, missing, incomplete, or wrong-commit contexts as
+  unavailable/unbound advisory observations; no CI state changes eligibility.
 - Treat `reviewDecision`, unresolved required threads, `mergeable: null`, and
   closingIssuesReferences as provider-native facts, not inferred booleans.
 
@@ -33,7 +33,8 @@ Fail closed if this branch cannot name a native create.
 ## Post-merge
 
 Verify the provider-reported result commit for merge, squash, rebase, or indirect
-merge; its CI; source-branch cleanup; and linked issue state. Closing keywords
+merge; advisory result-commit CI when bound; source-branch cleanup; and linked
+issue state. Closing keywords
 only act when the pull request targets the default branch, and repository
 auto-close may be disabled, so `closingIssuesReferences` is a preview rather
 than proof of closure.

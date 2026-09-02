@@ -12,14 +12,14 @@ Match the ceremony of a change to its **risk × blast radius**. Spend tokens, ag
 
 **Design phase = the analyst/refuter fan-out** (parallel agents exploring approaches or adversarially refuting a proposal). It is *not* keyed to how many files change: a one-line edit with an obvious form is trivial even when it touches a load-bearing file. Run a panel only at the high-risk tier *and* only when the solution space is genuinely wide (multiple viable approaches, unclear tradeoffs). For trivial/moderate work, reason it through in a single pass; a panel on a settled one-line change is the most common discretionary waste.
 
-**Reviewer-launch timing is parallel with CI for every tier.** When a parent orchestrator launches the final reviewer, it launches in parallel with CI as soon as the build handoff lands — no tier block-watches the CI run to terminal-green before launching. The exact-SHA CI merge floor is enforced by the default queued auto-merge finish, not by a pre-launch CI watch. See the canonical rule in [parent-orchestrator §Reviewer launch timing](skill://start-build/reference/parent-orchestrator.md#reviewer-launch-timing); it is parent-side sequencing only and does not change the mandatory review gate or any reviewer CI guard below.
+**Reviewer-launch timing is parallel with advisory CI for every tier.** A parent launches the final reviewer as soon as the exact-candidate local Check Gate and Gate Receipt allow; no tier waits for provider CI. See [parent-orchestrator §Reviewer launch timing](skill://start-build/reference/parent-orchestrator.md#reviewer-launch-timing).
 
 ## Hard floors (never scaled away)
 
 This list is the canonical safety-floor enumeration for the repo: consuming docs name this set rather than redefining it, and nothing below may be scaled away by any tier.
 
 - The **mandatory independent review gate** applies to every behavior-touching change regardless of tier; only discovery, packet, design, and verification *depth* scale.
-- TDD for behavior-touching work, the safety non-negotiables, and the SHA/CI/authority guards hold at every tier.
+- TDD for behavior-touching work, the safety non-negotiables, exact-candidate local Check Gate/Gate Receipt, reviewed-SHA binding, and authority guards hold at every tier. Provider CI is advisory evidence and never a quality or finish gate.
 - The role and finish boundaries hold at every tier: the builder/context-firewall finish boundary, the child-builder boundary, the verifier read-only boundary, and provider-native / MCP-first transport correctness.
 - Scaling down is a claim, not a default: record the chosen tier and why in the packet so a reviewer can challenge it.
 

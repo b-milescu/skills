@@ -22,10 +22,11 @@ Canonical resources:
 - `skill://start-review/REVIEW-FLOW.md`
 
 This profile declares the target Check Gate, label/readiness policy, branch
-naming, required CI jobs, domain/ADR paths, release/deploy authority, manual
-validation, language families, acceptance surfaces, and auxiliary-index policy.
-These hooks never weaken reviewed-commit binding, CI binding, authority,
-independent review, complete diff coverage, or provider-native readback.
+naming, observed advisory CI jobs, domain/ADR paths, release/deploy authority,
+manual validation, language families, acceptance surfaces, and auxiliary-index
+policy. These hooks never weaken the exact-candidate local Gate Receipt,
+reviewed-commit binding, authority, independent review, complete diff coverage,
+or provider-native readback. CI remains advisory.
 
 `/plan-to-issues` is the shared publisher for GitLab, GitHub, and Azure DevOps
 after `/forge preflight`. `/gitlab` remains GitLab-only transport. GitHub uses

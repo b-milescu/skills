@@ -2,7 +2,7 @@
 name: start-review
 description: >-
   Reviews one GitLab, GitHub, or Azure DevOps change request against project
-  rules, safety invariants, complete diff/discussions, bound CI, and TDD evidence.
+  rules, safety invariants, complete diff/discussions, local Gate Receipt, advisory CI, and TDD evidence.
 ---
 
 # Start Review
@@ -22,10 +22,11 @@ parent-orchestrated.
    action. Ambiguity, profile mismatch, or a bare cross-repository identifier
    fails closed.
 2. Use `forge snapshot` for the linked issue, current change-request commit,
-   complete paginated diff/files, every discussion/thread/review, and required
-   CI evidence. Bind the checkout and every decision to the lifted `Reviewed
-   SHA`. Missing pages, unresolved required discussion, stale head, or incomplete
-   evidence blocks review.
+   complete paginated diff/files, every discussion/thread/review, the
+   exact-candidate Gate Receipt, and available advisory CI evidence. Bind the
+   checkout and every decision to the lifted `Reviewed SHA`. Missing pages,
+   unresolved required discussion, stale head, or incomplete mandatory evidence
+   blocks review; absent or incomplete CI does not.
 3. Copy every Reviewer Lift row into the Review Report as a claim. Verify scope,
    issue acceptance, Gate Receipt/local gate, changed paths, safety and
    acceptance surfaces, TDD evidence, open questions, and authority provenance.
@@ -42,7 +43,7 @@ parent-orchestrated.
    Report, use `forge publish` to create one durable non-blocking report artifact,
    and require byte-for-byte provider-native readback.
 6. Keep verdict, approval, finish, action blocker, and next action separate.
-   `request-changes` and `blocked` never approve or finish. `reject` publishes the Review Report, then stops and escalates. `pass` permits approval only when authority, local gate, open questions, and reviewed-commit CI policy allow it.
+   `request-changes` and `blocked` never approve or finish. `reject` publishes the Review Report, then stops and escalates. `pass` permits approval only when authority, exact-candidate local gate/Gate Receipt, and open-question policy allow it.
    For a `request-changes` verdict, record approval `not-approved`, finish `none`,
    action blocker `none`, and next action `revise`; `other` is only for a blocker
    no listed token names and requires a one-line Action / Blocker reason.
@@ -57,9 +58,9 @@ parent-orchestrated.
 
 - Single-change-request review is the default and preferred mode: one change
   request per fresh reviewer session, full-diff coverage, and no grouped approval.
-- Matching pending/running CI may overlap review. Failed, canceled, skipped,
-  missing, stale, wrong-commit, or incomplete required CI blocks pass/approval/
-  finish absent an authorized waiver.
+- Provider CI is advisory. Record a status only with its commit binding; pending,
+  failed, canceled, skipped, missing, stale, wrong-commit, or incomplete CI
+  never changes review, approval, or finish eligibility.
 - Approval authority is `default-after-pass` only with a stable repository policy source.
   Finish authority is separate, affirmative, action-specific, and never inferred;
   missing Finish authority blocks only finish.

@@ -40,8 +40,8 @@ function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: 
 | Field | Value |
 |---|---|
 | Reviewed SHA | \`${commit}\` |
-| Gate coverage rationale | ${expected.gatePolicy}; required CI jobs = check; locally covered jobs = check via ${expected.gateCommand}; unmapped CI-only jobs = none |
-| CI pipeline | N/A for ${commit} |
+| Gate coverage rationale | ${expected.gatePolicy}; exact-candidate-local; command ${expected.gateCommand}; candidate ${commit}; result PASS |
+| CI pipeline | advisory — unavailable |
 | Local gate | ${localGate} |
 | Delta since last ready push | N/A before ready |
 <!-- REVIEWER-LIFT-SCHEMA:END -->`;

@@ -10,9 +10,10 @@ native REST only for a required guarded operation they do not expose. Add no SDK
   `sourceRefCommit.commitId`; require it to equal `lastMergeSourceCommit`.
 - Read the complete iteration diff, every thread/comment, linked work-item
   revisions, required policy evaluations, and build evidence.
-- Azure Pipelines validates the synthetic `lastMergeCommit`: accept CI only when
-  the iteration source binding above holds and the build `sourceVersion` equals
-  that merge commit.
+- Azure Pipelines is advisory. Attribute an observation to the synthetic
+  `lastMergeCommit` only when the iteration source binding above holds and the
+  build `sourceVersion` equals that merge commit; every status and absence leave
+  verdict and action eligibility unchanged.
 - Reviewer votes are policy input, not standalone approval. Require the current
   blocking policy evaluations to be approved.
 
@@ -24,6 +25,8 @@ native REST only for a required guarded operation they do not expose. Add no SDK
 - `autoCompleteSetBy` has no documented expected-head binding. An exact-commit
   queue request returns `sha-bound-action-unsupported` instead of approximating
   success.
+- Native branch or repository protection may refuse completion. Report the
+  provider result and never bypass it.
 - `transitionWorkItems` is best effort and never normalized to closure.
 
 ## Issue publish
@@ -35,6 +38,7 @@ name a native create.
 
 ## Post-merge
 
-Verify reviewed-source binding, `lastMergeCommit` result identity and CI,
+Verify reviewed-source binding, `lastMergeCommit` result identity,
 repository refs/cleanup, and every linked work item's observed state category.
+Any CI observation remains advisory and cannot change the post-merge result.
 Only the provider-observed Completed state category counts as closed.

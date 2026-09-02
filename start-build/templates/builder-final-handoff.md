@@ -36,7 +36,7 @@ agent_handoff:
         child_worktree_mode: "read-only-unless-assigned"
         copy_between_worktrees: "forbidden"
       branch_naming: { pattern: "issue-<id>-<slug>" }
-      ci_jobs: { required: ["check"] }
+      ci_jobs: { observed: ["check"] }
       domain_docs: { context: "CONTEXT.md", adr: "docs/adr/" }
       release_deploy_policy: { policy: "project docs define authority" }
       manual_validation_rules: { required: [] }
@@ -107,7 +107,7 @@ agent_handoff:
     builder_gate_status: { status: "not-run", not_run_reason: "parent-owned" }
     ready_transition_owner: "parent"
   gate_coverage:
-    coverage: "full-local"
+    coverage: "exact-candidate-local"
     rationale: "policy mapping; parent verification pending"
   changed_files: ["path/one.md"]
   safety_surfaces: ["none"]

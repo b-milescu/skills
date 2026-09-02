@@ -29,10 +29,10 @@ body read is a guarded last resort only when the relevant dedicated MCP reader
 is unavailable or remains elided after that smaller/chunked attempt.
 `glab mr view` metadata projection is likewise last-resort fallback only when
 the snapshot and any field-required body-free `get_merge_request` read are
-unavailable. Before either fallback,
-preserve project binding and every applicable reviewed-SHA, exact-SHA CI,
-authority, caller-identity/context, and content-byte guard; fallback never
-weakens a safety floor.
+unavailable. Before either fallback, preserve project binding and every
+applicable reviewed-SHA, exact-candidate Gate Receipt, authority,
+caller-identity/context, and content-byte guard; advisory CI state never changes
+fallback eligibility.
 
 ## Generic shell hygiene
 

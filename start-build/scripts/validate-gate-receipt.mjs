@@ -153,11 +153,9 @@ function validateLift(body, expected) {
   if (rows.get("Reviewed SHA").trim() !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
   const rationale = rows.get("Gate coverage rationale");
-  for (const value of [expected.gatePolicy, expected.gateCommand, "required CI jobs", "locally covered jobs", "unmapped CI-only jobs"]) {
+  for (const value of [expected.gatePolicy, expected.gateCommand, expected.reviewedCommit, "exact-candidate-local"]) {
     if (!rationale.includes(value)) fail("Reviewer Lift gate coverage rationale is incomplete");
   }
-
-  if (!containsCommit(rows.get("CI pipeline"), expected.reviewedCommit)) fail("Reviewer Lift CI pointer is stale");
 
   const localGate = rows.get("Local gate");
   const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];

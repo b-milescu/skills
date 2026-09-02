@@ -71,10 +71,9 @@ node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> -
    Reviewer Lift, provider current commit, and remote source all identify the
    same exact candidate.
 3. Checkout is clean and at that commit before the full project Check Gate.
-4. Gate coverage is `full-local`, `hybrid`, or `ci-only`, never `parent-owned`.
-   Required uncovered CI is bound to the candidate or provider-proven
-   integration commit; failed/canceled/skipped/missing/stale/wrong-commit CI
-   blocks pass/finish absent an authorized waiver.
+4. Gate coverage is `exact-candidate-local`, never `parent-owned`. Provider CI,
+   when observed, is advisory and attributed only when bound to the candidate or
+   provider-proven integration commit.
 5. Tracked files remain unchanged after the gate. If they changed, commit them
    and rerun on the new commit or record an explicit waiver.
 6. Gate Receipt contains `result: "PASS"`, exact candidate, command, preflights,
@@ -86,9 +85,9 @@ node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> -
 9. Provider-native post-read confirms ready and unchanged current commit.
 
 The exact candidate plus a passing parent Gate Receipt is sufficient to mark
-ready and launch independent review while correctly bound required CI is
-pending. Failed, canceled, skipped, missing, stale, or wrong-commit required CI
-still blocks pass eligibility and every finish action.
+ready and launch independent review. Provider CI is advisory: pending, failed,
+canceled, skipped, missing, stale, wrong-commit, or unavailable status never
+changes pass or finish eligibility.
 
 Literal byte-for-byte acceptance strings receive targeted exact-string evidence;
 do not expand this into broad ceremony. Such evidence does not substitute for

@@ -4,7 +4,7 @@ Local commands agents should run before claiming a change is ready.
 
 ## Full local gate
 
-Run the repo's full local gate before marking work ready:
+Run the repo's full local gate against the exact candidate before marking work ready:
 
 ```bash
 <command>
@@ -12,9 +12,9 @@ Run the repo's full local gate before marking work ready:
 
 Expected result: exit code `0`.
 
-If no full local gate exists, write:
-
-> No full local gate discovered. Use the targeted checks below and rely on CI for the remaining coverage.
+If no full local gate exists, record `N/A — no full local gate discovered` with
+the best targeted checks and obtain project-owner confirmation. Provider CI does
+not replace the local quality gate.
 
 ## Project-profile refs
 
@@ -22,12 +22,13 @@ Use this file, or the target-specific replacement path recorded in
 `setup-dev-skills/reference/project-profile-facts.json`, as the
 `project_profile.gate_policy_ref`, `ci_jobs.ref`, and
 `manual_validation_rules.ref`. Record the exact full local gate, targeted
-checks, CI job requirements, and allowed manual validation evidence here.
+checks, configured advisory CI jobs, and allowed manual validation evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-reviewed-SHA binding, exact-SHA CI, explicit authority source, independent
-review, the child-builder boundary, the verifier read-only boundary, or
-MCP-first transport correctness plus help-first `glab` fallback correctness.
+exact-candidate local Gate Receipt, reviewed-SHA binding, explicit authority
+source, independent review, the child-builder boundary, the verifier read-only
+boundary, or MCP-first transport correctness plus help-first provider fallback
+correctness.
 
 ## Targeted checks
 
@@ -44,11 +45,12 @@ Use the smallest relevant checks during development, then run the full local gat
 
 Record where these commands came from: `README.md`, `CONTRIBUTING.md`, `Makefile`, `package.json`, language project files, CI config, or local scripts.
 
-## CI job requirements
+## Advisory CI parity
 
-Describe which CI jobs the local gate mirrors. If CI has jobs that cannot run
-locally, name them and explain why. Green CI counts only when the pipeline/job
-SHA exactly matches the reviewed SHA.
+Describe which configured CI jobs mirror the local gate. Record an observed
+status only with its pipeline/job commit. Pending, failed, canceled, skipped,
+missing, stale, wrong-commit, or unavailable CI is advisory and never replaces
+or changes eligibility derived from the exact-candidate local gate.
 
 ## Manual validation rules
 

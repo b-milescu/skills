@@ -26,7 +26,7 @@ schema_assert() {
   done
 }
 
-for required_field in result action transport sha blocker ci_guard issue_state \
+for required_field in result action transport sha blocker issue_state \
   worktree_cleanup branch_cleanup authority_verification_source \
   caller_user_id_verification_source cleanup_verified cleanup_failure_reason \
   override_recorded conflict_type retry_count; do
@@ -40,8 +40,16 @@ schema_assert result merged auto_merge_queued handoff held escalated
 schema_assert action approve merge auto_merge none
 schema_assert transport mcp glab-fallback n/a
 schema_assert blocker none mcp_unavailable identity_unavailable identity_changed \
-  authority head_changed ci_not_green not_mergeable description_lost cleanup_failed
-schema_assert ci_guard green pending stale missing
+  authority head_changed not_mergeable description_lost cleanup_failed
+SCHEMA_PATH="$SCHEMA" node -e '
+  const s = require(process.env.SCHEMA_PATH);
+  const ci = s.properties.ci;
+  if (!ci || !Array.isArray(ci.type) || !ci.type.includes("object") || !ci.type.includes("null")) process.exit(1);
+  const retiredGuard = "ci_" + "guard";
+  const retiredBlocker = "ci_not_" + "green";
+  if (s.required.includes("ci") || s.required.includes(retiredGuard)) process.exit(2);
+  if (retiredGuard in s.properties || s.properties.blocker.enum.includes(retiredBlocker)) process.exit(3);
+' || fail "CI must be optional nullable advisory evidence with no eligibility guard/blocker"
 schema_assert issue_state closed closure_pending n/a
 schema_assert worktree_cleanup done pending n/a
 schema_assert branch_cleanup done pending retained_by_policy
@@ -56,8 +64,8 @@ example_count="$(SCHEMA_PATH="$SCHEMA" node -e '
   const s = require(process.env.SCHEMA_PATH);
   process.stdout.write(String((s.examples || []).length));
 ')"
-[[ "$example_count" -ge 12 ]] || \
-  fail "expected at least 12 schema examples (success + handoff + each blocker), found $example_count"
+[[ "$example_count" -ge 11 ]] || \
+  fail "expected at least 11 schema examples (success + handoff + each non-CI blocker), found $example_count"
 
 covered_results="$(SCHEMA_PATH="$SCHEMA" node -e '
   const s = require(process.env.SCHEMA_PATH);
@@ -71,7 +79,7 @@ covered_blockers="$(SCHEMA_PATH="$SCHEMA" node -e '
   process.stdout.write([...new Set(s.examples.map((e) => e.blocker))].sort().join(","));
 ')"
 for b in none mcp_unavailable identity_unavailable identity_changed authority \
-  head_changed ci_not_green not_mergeable description_lost cleanup_failed; do
+  head_changed not_mergeable description_lost cleanup_failed; do
   [[ ",$covered_blockers," == *",$b,"* ]] || fail "examples do not cover blocker=$b"
 done
 covered_transports="$(SCHEMA_PATH="$SCHEMA" node -e '

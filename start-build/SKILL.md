@@ -61,8 +61,8 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    **Complete when:** every issue acceptance criterion is covered by a landed
    slice with a passing targeted check or marked `N/A — <why>`.
 6. Before handoff, update every affected caller/test/doc/generated copy. Bind
-   Reviewer Lift `Reviewed SHA`, CI run, local gate, changed paths, surfaces,
-   authorities, and delta to the current commit. Validate non-`none` finding
+   Reviewer Lift `Reviewed SHA`, any quoted CI observation, local gate, changed
+   paths, surfaces, authorities, and delta to the current commit. Validate
    bindings and provider-specific issue closure syntax.
 7. Push the final candidate and require local HEAD, remote source ref, `forge
    snapshot` current commit, Review Packet, and final handoff to agree.
@@ -73,19 +73,20 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    approval, finish, and post-merge verification remain separate decisions.
 
 Every `forge act` runs the ordered common guard: provider/repository binding,
-current target re-read, reviewed-commit binding, bound CI, authority provenance,
-caller context, safe body, provider fallback eligibility, exactly one mutation,
-and provider-native post-read. A failed phase never tries another transport.
+current target re-read, reviewed-commit binding, exact-candidate Gate Receipt,
+advisory CI observation, authority provenance, caller context, safe body,
+provider fallback eligibility, exactly one mutation, and provider-native
+post-read. A failed mandatory phase never tries another transport.
 
 ## Safety floors
 
 [SAFETY.md](skill://start-build/SAFETY.md) is the single owner of this pair's
 safety floors — read them there rather than re-deriving them here. Its
-non-negotiables and done-criteria tiers hold the line on exact-commit CI,
-independent review, and child/parent/reviewer/verifier boundaries, plus
-authority guards; queued finish is non-terminal and Post-merge
-verification is read-only. Keep scope tight and prefer the smallest direct
-change.
+non-negotiables and done-criteria tiers hold the line on the exact-candidate
+local Gate Receipt, independent review, child/parent/reviewer/verifier
+boundaries, and authority guards. Provider CI is advisory; queued finish is
+non-terminal and Post-merge verification is read-only. Keep scope tight and
+prefer the smallest direct change.
 
 ## Templates
 

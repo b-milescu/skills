@@ -35,10 +35,10 @@ Before marking ready or requesting review, validate the MR handoff:
 
   `blocking_question` appears only when a specific actionable question is what blocks progress.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
-- `Reviewed SHA` equals the MR head SHA at the time you mark ready; any push invalidates prior SHA-bound local/CI evidence until the MR description and Reviewer Lift are rebound to the new head.
-- `Gate owner` is `builder` or `parent`; `Gate coverage` is `full-local`, `hybrid`, or `ci-only` (never `parent-owned`); `Gate coverage rationale` cites the project gate policy, required CI mapping, locally covered jobs, and unmapped CI-only jobs or `none`.
-- CI pipeline evidence includes pipeline URL/ID, status, and commit SHA when available; pipeline SHA must match `Reviewed SHA` before treating green CI as evidence.
-- Local gate command/result is present. Review launch requires completed locally owned gate evidence; `hybrid`/`ci-only` review may start while candidate-bound exact-SHA CI is pending. `N/A` explains why only CI can provide the gate, or parent-owned gate mode records the ownership contract from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
+- `Reviewed SHA` equals the MR head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
+- `Gate owner` is `builder` or `parent`; `Gate coverage` is `exact-candidate-local`. `Gate coverage rationale` cites the project gate policy, exact local command, candidate commit, and result.
+- CI pipeline evidence is explicitly advisory and includes locator/ID, status, and commit when available. Attribute a status only when the pipeline commit matches `Reviewed SHA` or a provider-proven integration candidate; otherwise record the binding limitation.
+- Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.

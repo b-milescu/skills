@@ -54,12 +54,12 @@ while IFS='|' read -r kind file needle; do
 done <<'TABLE'
 # safety-floor-tokens
 re|forge/reference/common-guard.md|reviewed commit binding
-re|forge/reference/common-guard.md|CI evidence bound to that commit or a provider-proven integration candidate
+re|forge/reference/common-guard.md|advisory CI observation.*absence, failure, or a binding mismatch is recorded and does not fail the guard
 re|forge/reference/common-guard.md|action-specific authority and provenance
 re|forge/reference/common-guard.md|exactly one mutation
 re|forge/reference/common-guard.md|provider-native post-mutation re-read
 re|forge/reference/common-guard.md|blocks without transport fallback
-re|start-build/SKILL.md|exact-commit CI
+re|start-build/SKILL.md|advisory CI observation
 re|start-build/SKILL.md|fresh independent reviewer
 re|start-build/SKILL.md|child/parent/reviewer/verifier
 re|start-build/SKILL.md|authority guards
@@ -67,15 +67,15 @@ re|start-build/SKILL.md|Post-merge
 re|start-build/SKILL.md|verification is read-only
 re|start-review/REVIEW-FLOW.md|gate-eligible reviewer is fresh
 re|start-review/REVIEW-FLOW.md|exact reviewed commit
-re|start-review/REVIEW-FLOW.md|CI[^.]*bound to the reviewed commit
+re|start-review/REVIEW-FLOW.md|commit-bound CI observation
 re|start-review/SKILL.md|verdict, approval, finish, action blocker, and next action separate
 re|start-review/REVIEW-FLOW.md|Fail-closed review coverage
 re|start-review/SKILL.md|Post-merge verification is a
 re|start-review/SKILL.md|separate read-only actor
 re|issue-delivery-loop/SKILL.md|skill://start-build/reference/parent-orchestrator.md
 re|issue-delivery-loop/SKILL.md|reviewed-commit binding
-re|issue-delivery-loop/SKILL.md|commit-bound CI
-re|issue-delivery-loop/SKILL.md|explicit authority provenance
+re|issue-delivery-loop/SKILL.md|bounded advisory evidence
+re|issue-delivery-loop/SKILL.md|Preserve reviewed-commit binding, exact-candidate Gate Receipt, and authority
 re|issue-delivery-loop/SKILL.md|independent review
 re|issue-delivery-loop/SKILL.md|child/reviewer/verifier boundaries
 re|issue-delivery-loop/SKILL.md|provider-native post-read
@@ -229,34 +229,28 @@ contain|start-build/SAFETY.md|An assertion whose subject cannot be changed by an
 contain|start-build/SAFETY.md|A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result.
 contain|start-build/SAFETY.md|The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.
 # start-build-ready-gate-push-semantics
-contain|start-build/SAFETY.md|Project's full check gate green before marking ready/requesting review, with exact-SHA Gate coverage classified
+contain|start-build/SAFETY.md|The exact-candidate local Check Gate is the quality gate before ready/review.
 contain|start-build/reference/implementation-flow.md|**Early Draft change-request push.**
 contain|start-build/reference/implementation-flow.md|**Implementation pushes before ready.**
 contain|start-build/reference/implementation-flow.md|**Ready-marking gate.**
-contain|start-build/reference/implementation-flow.md|**Gate coverage classification.**
-contain|start-build/reference/implementation-flow.md|**Full-local coverage.**
-contain|start-build/reference/implementation-flow.md|**Hybrid or CI-only coverage.**
+contain|start-build/reference/implementation-flow.md|**Exact-candidate local coverage.**
+contain|start-build/reference/implementation-flow.md|**Builder-owned gate mode.**
 contain|start-build/reference/implementation-flow.md|**Parent-owned gate mode.**
+contain|start-build/reference/implementation-flow.md|**Advisory CI observation.**
 contain|start-build/reference/implementation-flow.md|**Post-ready push protocol.**
-contain|start-build/reference/implementation-flow.md|does not require the full local gate
 contain|start-build/reference/implementation-flow.md|does not apply to early Draft change-request creation or pre-ready implementation pushes
-contain|start-build/reference/implementation-flow.md|Gate coverage` to exactly one of `full-local`, `hybrid`, or `ci-only`
-contain|issue-delivery-loop/SKILL.md|in parallel with CI
-contain|start-build/reference/parent-orchestrator.md|in parallel with CI
-contain|start-build/reference/implementation-flow.md|Review launch does not wait for terminal-success exact-commit CI
-contain|start-build/reference/implementation-flow.md|Failed, canceled, skipped, missing, stale, or wrong-commit required CI blocks pass eligibility and every finish action
-absent|start-build/reference/implementation-flow.md|wait for exact-SHA CI success for each uncovered required job before marking ready/requesting review
+contain|start-build/reference/implementation-flow.md|`Gate coverage` to `exact-candidate-local`
+contain|issue-delivery-loop/SKILL.md|Provider CI may run in parallel
+contain|start-build/reference/parent-orchestrator.md|Provider CI may run in parallel
+contain|start-build/reference/implementation-flow.md|never changes review, approval, or finish eligibility
 contain|start-build/reference/parent-owned-gate.md|exact candidate plus a passing parent Gate Receipt is sufficient to mark
-contain|start-build/reference/parent-owned-gate.md|launch independent review while correctly bound required CI is
-contain|start-build/reference/parent-owned-gate.md|wrong-commit required CI
-contain|start-build/reference/parent-owned-gate.md|blocks pass eligibility and every finish action
+contain|start-build/reference/parent-owned-gate.md|Provider CI is advisory
 contain|start-build/reference/implementation-flow.md|re-bind evidence after every push
-contain|start-build/reference/implementation-flow.md|child records `Gate owner: parent`, the parent-owned/not-run local gate contract, and the candidate commit only as gate evidence
+contain|start-build/reference/implementation-flow.md|child records `Gate owner: parent`, the parent-owned/not-run contract, and candidate commit only
 contain|start-build/templates/reviewer-lift-schema.md|| Gate owner |
 contain|start-build/templates/reviewer-lift-schema.md|| Gate coverage |
 contain|start-build/templates/reviewer-lift-schema.md|| Gate coverage rationale |
-contain|start-build/templates/reviewer-lift-schema.md|`hybrid`/`ci-only` review may start while exact-SHA CI is pending
-contain|start-build/templates/reviewer-lift-schema.md|After every push, stale or wrong-SHA CI/local evidence is invalid
+contain|start-build/templates/reviewer-lift-schema.md|never changes verdict or action eligibility
 contain|start-build/templates/reviewer-lift-schema.md|after any post-ready push, include old SHA → new SHA, reason, changed files, gate rerun, and whether the change is substantive
 # start-review-command-ownership
 re|start-review/SKILL.md|forge preflight
@@ -274,7 +268,7 @@ re|start-review/REVIEW-FLOW.md|reviewed commit|reviewed-commit
 re|start-review/SKILL.md|ordered common
 re|start-review/SKILL.md|forge post_merge_snapshot
 re|start-review/SKILL.md|separate read-only actor
-re|start-review/REVIEW-FLOW.md|provider-proven[[:space:]]*integration candidate
+re|start-review/REVIEW-FLOW.md|provider-proven
 re|start-review/REVIEW-FLOW.md|selected `/forge`
 re|start-review/REVIEW-FLOW.md|provider reference
 # start-review-project-binding
@@ -302,9 +296,9 @@ re|start-review/SKILL.md|before snapshot, publication, or
 re|start-review/SKILL.md|action
 re|start-review/SKILL.md|Ambiguity, profile mismatch, or a bare cross-repository identifier
 re|start-review/SKILL.md|fail(s|ed) closed|blocks
-re|start-review/REVIEW-FLOW.md|Local checkout, remote source, Reviewer Lift reviewed commit, and current
-re|start-review/REVIEW-FLOW.md|provider commit must agree
-re|start-review/REVIEW-FLOW.md|wrong-commit CI
+re|start-review/REVIEW-FLOW.md|Local checkout, remote source, Reviewer Lift reviewed commit
+re|start-review/REVIEW-FLOW.md|Gate Receipt candidate must agree
+re|start-review/REVIEW-FLOW.md|Missing, stale, wrong-commit
 re|start-review/REVIEW-FLOW.md|missing readback
 re|start-review/templates/review-report.md|^\| Change request \|
 re|start-review/templates/review-report.md|^\| Repository \|
@@ -428,26 +422,19 @@ contain|start-review/templates/review-report.md|| Action blocker |
 contain|start-review/templates/review-report.md|| Next action |
 # review-ci-oq-decision-tables
 contain|start-review/REVIEW-FLOW.md|## CI and Open Question decision tables
-contain|start-review/REVIEW-FLOW.md|success on the exact reviewed commit or provider-proven integration candidate
-contain|start-review/REVIEW-FLOW.md|pass/approval eligible when every other guard passes
-contain|start-review/REVIEW-FLOW.md|pending/running
-contain|start-review/REVIEW-FLOW.md|selected-provider proof of protected policy and exact binding
-contain|start-review/REVIEW-FLOW.md|conditionally required job absent
-contain|start-review/REVIEW-FLOW.md|target-repo Check Gate or `project_profile` declares it not applicable
-contain|start-review/REVIEW-FLOW.md|rules-omitted is absent, not skipped
-contain|start-review/REVIEW-FLOW.md|every applicable required job succeeds
-contain|start-review/REVIEW-FLOW.md|Absent conditionally required CI for any other reason blocks
-contain|start-review/REVIEW-FLOW.md|failed/canceled/skipped applicable CI
-contain|start-review/REVIEW-FLOW.md|missing/incomplete/unknown/wrong binding
-contain|start-review/REVIEW-FLOW.md|authorized written waiver
-contain|start-review/REVIEW-FLOW.md|recorded scope/provenance
-contain|start-review/REVIEW-FLOW.md|reviewer cannot self-waive
-contain|start-review/REVIEW-FLOW.md|documented no-CI project with a wholly-absent pipeline
-contain|start-review/REVIEW-FLOW.md|no pipeline has ever run on any ref
-contain|start-review/REVIEW-FLOW.md|any pipeline history returns it to the missing/unknown-binding row and blocks
-contain|start-review/REVIEW-FLOW.md|the only case where an absent pipeline is the expected state
-contain|start-review/REVIEW-FLOW.md|never substitutes for CI
-contain|start-review/REVIEW-FLOW.md|never grants approval
+contain|start-review/REVIEW-FLOW.md|Observed CI classification
+contain|start-review/REVIEW-FLOW.md|bound success
+contain|start-review/REVIEW-FLOW.md|bound pending/running
+contain|start-review/REVIEW-FLOW.md|bound failed/canceled/skipped
+contain|start-review/REVIEW-FLOW.md|unavailable or missing
+contain|start-review/REVIEW-FLOW.md|stale, wrong-commit, incomplete, or unknown binding
+contain|start-review/REVIEW-FLOW.md|Every classification is advisory.
+contain|start-review/REVIEW-FLOW.md|No provider CI status changes the review
+contain|start-review/REVIEW-FLOW.md|required quality predicate is a passing exact-candidate local Check Gate
+contain|start-review/REVIEW-FLOW.md|Independent review
+contain|start-review/REVIEW-FLOW.md|authority/caller guards
+contain|start-review/REVIEW-FLOW.md|exactly one mutation
+contain|start-review/REVIEW-FLOW.md|Native provider protection may refuse a mutation
 contain|start-review/REVIEW-FLOW.md|answered from evidence
 contain|start-review/REVIEW-FLOW.md|no blocker
 contain|start-review/REVIEW-FLOW.md|builder evidence gap
@@ -727,8 +714,8 @@ contain|start-build/reference/parent-owned-gate.md|preflight_checks
 contain|start-build/reference/parent-owned-gate.md|evidence
 contain|start-build/reference/parent-owned-gate.md|observed_at
 contain|start-build/reference/parent-owned-gate.md|Parent verification checklist
-contain|start-build/reference/parent-owned-gate.md|Gate coverage is `full-local`, `hybrid`, or `ci-only`
-contain|start-build/reference/parent-owned-gate.md|waiver
+contain|start-build/reference/parent-owned-gate.md|Gate coverage is `exact-candidate-local`
+contain|start-build/reference/parent-owned-gate.md|Provider CI
 contain|start-build/reference/parent-owned-gate.md|byte-for-byte
 contain|start-build/reference/parent-owned-gate.md|delta-only
 contain|start-build/reference/parent-owned-gate.md|stale evidence
@@ -740,7 +727,6 @@ contain|start-build/templates/builder-final-handoff.md|parent-owned-gate.md
 contain|start-build/templates/review-packet.md|parent-owned-gate.md
 contain|start-build/templates/review-packet-compact.md|parent-owned-gate.md
 contain|start-review/templates/review-report.md|parent-owned-gate.md
-contain|issue-delivery-loop/SKILL.md|parent-owned
 contain|docs/agents/check-gate.md|tests/token-grep-invariants.sh
 # check-gate-fabricated-home-doc
 contain|docs/agents/check-gate.md|fabricated disposable HOME containing stub required external skills
@@ -764,10 +750,10 @@ contain|issue-delivery-loop/SKILL.md|must not copy auxiliary-index artifacts
 contain|issue-delivery-loop/SKILL.md|one default `mr-builder`
 contain|issue-delivery-loop/SKILL.md|mr-reviewer-final
 contain|issue-delivery-loop/SKILL.md|parent-orchestrator.md
-contain|issue-delivery-loop/SKILL.md|parent-owned Gate Receipt
+contain|issue-delivery-loop/SKILL.md|exact-candidate Gate Receipt
 contain|issue-delivery-loop/SKILL.md|runtime notices never become scope stop instructions
 contain|issue-delivery-loop/SKILL.md|Event-driven waiting only
-contain|issue-delivery-loop/SKILL.md|failed/canceled bound CI run blocks pass/finish
+contain|issue-delivery-loop/SKILL.md|no CI status changes verdict
 contain|issue-delivery-loop/SKILL.md|keep verdict, approval, and finish separate
 contain|issue-delivery-loop/SKILL.md|auto-merge queued
 contain|issue-delivery-loop/SKILL.md|Provider merge-event evidence
@@ -922,14 +908,12 @@ for needle in builder-ready review-gate-complete finish-merge post-merge-verifie
   printf '%s\n' "$done_section" | grep -Fq "$needle" || fail "Done criteria missing $needle"
 done
 
-# ready-gate: no full-gate-before-push; coverage enum must not include parent-owned
+# ready-gate: no full-gate-before-push; ownership stays separate from coverage
 if grep -qiE 'Run the (full )?(local )?gate locally before pushing|full Check Gate[^\n]*before pushing|full local gate[^\n]*before pushing' start-build/SAFETY.md; then
   fail "start-build/SAFETY.md still requires the full gate before pushing"
 fi
-if grep -Eq 'Gate coverage.*full-local.*/.*hybrid.*/.*ci-only.*/.*parent-owned' \
-  start-build/reference/implementation-flow.md start-build/templates/reviewer-lift-schema.md; then
-  fail "Gate coverage enum includes parent-owned; ownership must be separate"
-fi
+grep -Fq 'Gate coverage | `exact-candidate-local`' start-build/templates/reviewer-lift-schema.md \
+  || fail "Reviewer Lift exact-candidate local coverage missing"
 
 # review-blocked-verdict enums
 normalize_enum() {
@@ -969,22 +953,17 @@ for file in start-review/SKILL.md start-review/templates/filling-guide.md; do
   fi
 done
 
-# review-ci-oq-no-ci-row (#392): a wholly-absent pipeline in a documented no-CI
-# project has its own dedicated, forge-neutral row inside the extracted CI
-# decision table section (Reading B, dedicated-row form). The row must live
-# inside the #396-hardened sed range and must not name a provider mechanic.
-no_ci_section=$(sed -n '/^## CI and Open Question decision tables$/,/^## Finish authority source precedence$/p' start-review/REVIEW-FLOW.md)
-[[ -n "$no_ci_section" ]] || fail "REVIEW-FLOW.md CI decision table section is empty; no-CI row guard cannot fire"
-grep -Eq '^\|[[:space:]]*documented no-CI project with a wholly-absent pipeline[[:space:]]*\|' <<<"$no_ci_section" \
-  || fail "REVIEW-FLOW.md CI decision table missing the dedicated documented no-CI project row (#392)"
-grep -Fq 'no pipeline has ever run on any ref' <<<"$no_ci_section" \
-  || fail "REVIEW-FLOW.md no-CI row missing the pipeline-history carve-out (#392)"
-if grep -Eiq 'no_ci_expected|GitLab|glab' <<<"$no_ci_section"; then
-  fail "REVIEW-FLOW.md CI decision table names a provider mechanic; the no-CI row must stay forge-neutral (#392)"
+# review-ci-oq: advisory classifications stay provider-neutral.
+ci_section=$(sed -n '/^## CI and Open Question decision tables$/,/^## Finish authority source precedence$/p' start-review/REVIEW-FLOW.md)
+[[ -n "$ci_section" ]] || fail "REVIEW-FLOW.md CI decision table section is empty"
+if grep -Eq 'headRefOid|lastMergeCommit|GitLab|glab' <<<"$ci_section"; then
+  fail "provider mapping in generic advisory table"
 fi
-# ci-finish-guards.md must agree with the canonical table and keep its pointer.
-require_text gitlab/reference/ci-finish-guards.md 'REVIEW-FLOW\.md#ci-decision-table' 'ci-finish-guards CI decision table pointer (#392)'
-require_text gitlab/reference/ci-finish-guards.md 'dedicated forge-neutral row' 'ci-finish-guards agreement with the dedicated no-CI row (#392)'
+for needle in 'Every classification is advisory' 'No provider CI status changes the review' \
+  'passing exact-candidate local Check Gate' 'Native provider protection may refuse'; do
+  grep -Fq "$needle" <<<"$ci_section" || fail "REVIEW-FLOW.md advisory table missing $needle"
+done
+require_text gitlab/reference/ci-finish-guards.md 'REVIEW-FLOW\.md#ci-decision-table' 'CI observation table pointer'
 
 # review-context-policy capsule rows + launch prompts
 for file in start-review/REVIEW-FLOW.md start-review/templates/review-report.md; do

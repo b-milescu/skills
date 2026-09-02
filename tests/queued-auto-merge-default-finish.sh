@@ -1,158 +1,39 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Issue #276: default delivery/review finish to queued auto-merge.
-#
-# Maintainer-decided policy change: on a `pass` verdict with merge authority,
-# the default finish is approve-SHA-bound + queue auto-merge (instead of
-# block-watch-then-direct-merge), and the parent/reviewer launch review in
-# PARALLEL with CI for every tier instead of block-watching the pipeline to
-# terminal-green first. The exact-SHA CI gate and the fail-closed guard
-# (reviewed-SHA pipeline failed/canceled => block, not queue) MUST survive.
-#
-# These assertions pin the new default-finish wording and the retirement of the
-# trivial-tier CI-wait rule so a silent revert to block-watch-by-default fails
-# `npm run check`. They are tokens, not whole sentences.
-
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
-REVIEW_FLOW="start-review/REVIEW-FLOW.md"
+fail() { printf 'advisory-ci-policy: FAIL: %s\n' "$*" >&2; exit 1; }
+require() { grep -Eiq -- "$2" "$1" || fail "$1 missing $3"; }
+
+REVIEW="start-review/REVIEW-FLOW.md"
+SAFETY="start-build/SAFETY.md"
 PARENT="start-build/reference/parent-orchestrator.md"
-DELIVERY="issue-delivery-loop/SKILL.md"
-VERIFIER="start-build/reference/post-merge-verifier.md"
-EFFORT="start-build/docs/effort-scaling.md"
-GITLAB_FORGE="forge/reference/gitlab.md"
-GITLAB_SKILL="gitlab/SKILL.md"
-GITLAB_ACTIONS="gitlab/SKILL.md"
-GITLAB_CI_FINISH="gitlab/reference/ci-finish-guards.md"
+RECEIPT="start-build/reference/parent-owned-gate.md"
+COMMON="forge/reference/common-guard.md"
+GITLAB="gitlab/reference/ci-finish-guards.md"
+POST="start-build/reference/post-merge-verifier.md"
 
-failures=0
+require "$SAFETY" 'exact-candidate local Check Gate.*quality gate' 'singular local quality gate'
+require "$RECEIPT" 'exact candidate plus a passing parent Gate Receipt is sufficient' 'Gate Receipt sufficiency'
+require "$REVIEW" 'Every classification is advisory' 'advisory CI classifications'
+require "$REVIEW" 'No provider CI status changes the review' 'red/missing/stale non-blocking policy'
+require "$REVIEW" 'Independent review' 'preserved review floor'
+require "$REVIEW" 'authority/caller guards' 'preserved authority/caller floor'
+require "$REVIEW" 'exactly one mutation' 'preserved one-mutation floor'
+require "$COMMON" 'CI status never blocks' 'common guard advisory CI'
+require "$PARENT" 'CI state never changes eligibility' 'parent finish advisory CI'
+require "$GITLAB" 'provider result and never bypass' 'native protection refusal'
+require "$POST" 'post-merge failure' 'post-merge advisory CI'
+require "$REVIEW" 'Queued is non-terminal' 'queue is not merged'
 
-fail() {
-  printf 'queued-auto-merge-default-finish: FAIL: %s\n' "$*" >&2
-  failures=$((failures + 1))
-}
-
-require_text() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
-refute_text() {
-  local file="$1" pattern="$2" label="$3"
-  if grep -Eiq -- "$pattern" "$file"; then
-    fail "$file unexpectedly still contains $label"
-  fi
-}
-
-# ---------------------------------------------------------------------------
-# start-review/REVIEW-FLOW.md — canonical default-finish + floor + fail-closed.
-# ---------------------------------------------------------------------------
-require_text "$REVIEW_FLOW" '^## Default finish: queued auto-merge$' \
-  'canonical Default finish section'
-# Neutral policy: default finish, exact-reviewed-commit protected queue, intact
-# CI floor, fail-closed states, non-terminal queue, capability/authority, and
-# parent finish ownership.
-require_text "$REVIEW_FLOW" 'default finish[^.]*queue auto-merge|queue auto-merge[^.]*default finish' \
-  'queued auto-merge is the default finish'
-require_text "$REVIEW_FLOW" 'exact-reviewed-commit protected' \
-  'exact-reviewed-commit protected queue'
-require_text "$REVIEW_FLOW" 'floor is intact|floor[^.]*intact' \
-  'CI floor restated as intact'
-require_text "$REVIEW_FLOW" '(failed./.canceled./.missing./.stale|failed/canceled/missing/stale)[^.]*block|block[^.]*(failed./.canceled./.missing./.stale|failed/canceled/missing/stale)' \
-  'fail-closed CI blocks'
-require_text "$REVIEW_FLOW" 'not a CI waiver' 'queued finish is not a CI waiver'
-require_text "$REVIEW_FLOW" 'provider.*capability|provider offers' 'provider capability requirement'
-require_text "$REVIEW_FLOW" 'authority' 'finish authority requirement'
-require_text "$REVIEW_FLOW" 'queued is non-terminal|queue is non-terminal|never reported as merged' 'queue is not merged'
-
-# GitLab mechanics stay behind the selected provider entry point.
-require_text "$GITLAB_FORGE" 'gitlab/SKILL.md' 'GitLab skill entry point'
-require_text "$GITLAB_FORGE" 'gitlab/reference/ci-finish-guards.md' 'CI/finish guard link'
-require_text "$GITLAB_SKILL" 'sha-bound-auto-merge-queue' 'GitLab SHA-bound queue snippet'
-require_text "$GITLAB_SKILL" 'protected auto-merge' 'GitLab protected auto-merge'
-require_text "$GITLAB_SKILL" 'auto-merge-api-fallback' 'GitLab fallback snippet'
-require_text "$GITLAB_SKILL" 'approval-only' 'GitLab approval-only mapping'
-require_text "$GITLAB_SKILL" 'human release' 'GitLab human-release mapping'
-require_text "$GITLAB_ACTIONS" 'protected auto-merge' 'GitLab protected-check queue requirement'
-require_text "$GITLAB_CI_FINISH" 'exact-SHA green CI for merge' 'GitLab merge CI policy'
-
-# ---------------------------------------------------------------------------
-# parent-orchestrator.md — parallel launch default; pre-review CI wait retired.
-# ---------------------------------------------------------------------------
-require_text "$PARENT" '^## Reviewer launch timing$' \
-  'renamed Reviewer launch timing section'
-require_text "$PARENT" 'Parallel launch is the default' \
-  'parallel launch default'
-require_text "$PARENT" 'default finish[^.]*queue auto-merge|approve SHA-bound and queue auto-merge' \
-  'parent default finish is queued auto-merge'
-# No delivery should wait for terminal-green CI before launching the reviewer.
-refute_text "$PARENT" 'launch the reviewer only once that exact SHA is terminal-green' \
-  'retired terminal-green wait instruction'
-# Fail-closed on red/canceled CI survives the retirement.
-require_text "$PARENT" '(failed./.canceled|failed/canceled)[^.]*do not finish|do not finish[^.]*(failed./.canceled|failed/canceled)' \
-  'fail-closed red/canceled CI guard preserved'
-
-# ---------------------------------------------------------------------------
-# issue-delivery-loop/SKILL.md — parallel launch + queued auto-merge default.
-# ---------------------------------------------------------------------------
-require_text "$DELIVERY" 'in parallel with CI' \
-  'delivery loop launches review in parallel with CI'
-require_text "$DELIVERY" 'do not block-watch' \
-  'delivery loop drops block-watch before reviewer launch'
-require_text "$DELIVERY" 'queue auto-merge' \
-  'delivery loop default finish queues auto-merge'
-require_text "$DELIVERY" '(failed./.canceled|failed/canceled)[^.]*block|block[^.]*(failed./.canceled|failed/canceled)' \
-  'delivery loop restates the fail-closed guard'
-
-# #374: queueing is pending, not a terminal delivery result. The delivery loop
-# returns to its existing event-driven boundary without a CI/MR watcher, then
-# routes an observed merge through the existing handoff and verifier snapshot.
-require_text "$DELIVERY" 'Treat `auto-merge queued` as pending' \
-  'queued auto-merge remains a pending delivery'
-require_text "$DELIVERY" 'does not count as \*\*MRs merged\*\*' \
-  'queue action is distinct from merge-event evidence'
-require_text "$DELIVERY" 'without polling CI' \
-  'queued delivery returns without a CI poller'
-require_text "$DELIVERY" 'phase: `post-merge-verify`' \
-  'observed merge advances the existing post-merge phase'
-require_text "$DELIVERY" 'expected_next_actor: `verifier`' \
-  'observed merge routes to the verifier'
-require_text "$DELIVERY" 'expected_next_action: `post-merge-verify`' \
-  'observed merge routes the existing verifier action'
-require_text "$DELIVERY" 'post_merge_snapshot\.kind=post-merge-snapshot' \
-  'clean completion requires the verifier snapshot'
-require_text "$DELIVERY" 'cannot satisfy clean delivery or batch completion' \
-  'queueing alone cannot satisfy completion'
-refute_text "$DELIVERY" '`wait-merge-event`' \
-  'no new wait-merge-event token'
-
-# ---------------------------------------------------------------------------
-# post-merge-verifier.md — triggers off the merge event, not a CI watcher.
-# ---------------------------------------------------------------------------
-require_text "$VERIFIER" 'Trigger off the[^.]*merge event' \
-  'verifier triggers off the merge event'
-require_text "$VERIFIER" 'not a CI watcher|not from a foreground/background CI watcher' \
-  'verifier does not trigger from a CI watcher'
-require_text "$VERIFIER" 'completes asynchronously' \
-  'verifier notes queued auto-merge completes asynchronously'
-
-# ---------------------------------------------------------------------------
-# effort-scaling.md — reviewer-launch timing is parallel for every tier.
-# ---------------------------------------------------------------------------
-require_text "$EFFORT" 'parallel with CI for every tier' \
-  'effort-scaling reviewer-launch timing parallel for every tier'
-refute_text "$EFFORT" 'the `trivial` tier waits for exact-SHA terminal-green CI before launch' \
-  'retired effort-scaling trivial-tier wait instruction'
-
-require_text "$REVIEW_FLOW" 'Finish owner: parent'   'parent-managed finish owner exception documented'
-require_text "$PARENT" 'Finish owner: parent'   'parent orchestrator finish owner literal'
-require_text "$DELIVERY" 'Finish owner: parent'   'delivery loop passes parent finish owner'
-
-if [[ "$failures" -ne 0 ]]; then
-  echo "queued-auto-merge-default-finish: FAIL: $failures violation(s)" >&2
-  exit 1
+retired_modes="Gate coverage.*(hy""brid|ci""-only)"
+retired_tokens="CI wa""iver|wait""-ci|stale-or-missing-""ci|no_ci_""expected"
+retired_blockers="ci_not_""green|ci_""guard|stale_""ci|red_""ci|missing_""ci"
+tracked=(issue-delivery-loop start-build start-review forge gitlab setup-dev-skills docs CONTEXT.md)
+if grep -R -n -E "$retired_modes|$retired_tokens|$retired_blockers" "${tracked[@]}"; then
+  fail "retired CI mode/waiver/action/blocker vocabulary remains in active policy sources"
 fi
 
-echo "queued-auto-merge-default-finish: PASS"
+printf 'advisory-ci-policy: PASS\n'

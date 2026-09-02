@@ -38,10 +38,10 @@
     },
     {
       "order": 4,
-      "id": "exact_sha_ci_guard",
-      "requires": ["list_pipelines(sha=reviewed_sha) or get_pipeline when CI is relevant"],
-      "blocks": ["stale_ci", "red_ci", "missing_ci"],
-      "output": "pipeline id, URL, status, and SHA bound to reviewed_sha; n/a only when CI is not relevant"
+      "id": "exact_sha_ci_observation",
+      "requires": ["list_pipelines(sha=reviewed_sha) or get_pipeline when CI is available"],
+      "blocks": [],
+      "output": "advisory pipeline id, URL, status, and SHA; unavailable or unbound observations are non-blocking"
     },
     {
       "order": 5,
@@ -95,7 +95,7 @@
     "source_branch",
     "target_branch",
     "reviewed_sha",
-    "ci_policy",
+    "ci_observation",
     "authority_value",
     "authority_source",
     "caller_role",
@@ -114,7 +114,7 @@
     "project_binding",
     "target_state",
     "reviewed_sha_status",
-    "ci_guard",
+    "ci_observation",
     "authority_verification",
     "caller_identity_verification",
     "safe_text_status",
@@ -127,9 +127,6 @@
     {"token": "target_reread_unavailable", "fallback_allowed": false, "meaning": "Decision-grade current target re-read failed."},
     {"token": "head_changed", "fallback_allowed": false, "meaning": "MR head SHA differs from reviewed_sha before mutation."},
     {"token": "stale_head", "fallback_allowed": false, "meaning": "Post-mutation re-read shows a different head than the guarded SHA."},
-    {"token": "stale_ci", "fallback_allowed": false, "meaning": "Pipeline evidence is for a different SHA than reviewed_sha."},
-    {"token": "red_ci", "fallback_allowed": false, "meaning": "Exact-SHA CI is failed, canceled, skipped, or otherwise non-pass."},
-    {"token": "missing_ci", "fallback_allowed": false, "meaning": "Required exact-SHA CI evidence is missing."},
     {"token": "missing_authority", "fallback_allowed": false, "meaning": "Required approval/merge/ready/note authority or source is absent."},
     {"token": "authority_source_mismatch", "fallback_allowed": false, "meaning": "Declared authority source does not match the freshly verified source."},
     {"token": "permission_uncertain", "fallback_allowed": false, "meaning": "The actor's permission to take the action is unknown or contradicted."},
@@ -155,9 +152,6 @@
     "target_reread_unavailable",
     "head_changed",
     "stale_head",
-    "stale_ci",
-    "red_ci",
-    "missing_ci",
     "missing_authority",
     "authority_source_mismatch",
     "permission_uncertain",
@@ -198,11 +192,11 @@
     },
     "sha_bound_finish": {
       "examples": ["sha-bound-approval", "sha-bound-merge", "sha-bound-auto-merge-queue", "finish-mr-authority-aware"],
-      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_guard", "authority_verification", "caller_identity_and_context", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
+      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "authority_verification", "caller_identity_and_context", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
     },
     "ready_transition": {
       "examples": ["draft-mr-mark-ready"],
-      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_guard", "authority_verification", "caller_identity_and_context", "safe_gitlab_text", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
+      "required_steps": ["project_binding", "current_target_reread", "reviewed_sha_guard", "exact_sha_ci_observation", "authority_verification", "caller_identity_and_context", "safe_gitlab_text", "fallback_eligibility", "single_mutation", "post_mutation_mcp_reread"]
     },
     "candidate_selection": {
       "examples": ["issue-pickup", "mr-pickup"],
@@ -216,28 +210,6 @@
       "mcp_gap_state": "none",
       "result": "blocked",
       "blocker": "head_changed",
-      "transport_evidence": "via=n/a",
-      "mutation_performed": false,
-      "fallback_allowed": false,
-      "post_mutation_reread": {"required": false, "classification": "n/a"}
-    },
-    {
-      "label": "blocked: stale CI",
-      "mutation_kind": "sha-bound-merge",
-      "mcp_gap_state": "none",
-      "result": "blocked",
-      "blocker": "stale_ci",
-      "transport_evidence": "via=n/a",
-      "mutation_performed": false,
-      "fallback_allowed": false,
-      "post_mutation_reread": {"required": false, "classification": "n/a"}
-    },
-    {
-      "label": "blocked: red CI",
-      "mutation_kind": "sha-bound-merge",
-      "mcp_gap_state": "none",
-      "result": "blocked",
-      "blocker": "red_ci",
       "transport_evidence": "via=n/a",
       "mutation_performed": false,
       "fallback_allowed": false,

@@ -2,8 +2,8 @@
 
 Canonical mandatory independent review policy for one bound GitLab, GitHub, or
 Azure DevOps change request. Provider mechanics live behind `/forge`; this file
-owns review judgment, evidence, severity, CI/Open Question decisions, authority,
-and action separation.
+owns review judgment, evidence, severity, advisory CI/Open Question classifications,
+authority, and action separation.
 On missing mechanics or provider drift, fall back to the selected `/forge`
 provider reference; never copy provider commands into this policy.
 
@@ -26,7 +26,7 @@ Tier 2 source before relying on it:
 | Repository | `<claimed repository/default branch>` | `<verified provider binding>` | `<Tier 1 or Tier 2 locator>` |
 | Change request | `<claimed locator/source/target/commit>` | `<verified provider snapshot and diff>` | `<Tier 1 locator>` |
 | Authority | `<claimed approval/finish authority and provenance>` | `<verified authority guard result>` | `<Tier 1 or Tier 2 locator>` |
-| CI | `<claimed CI/local gate>` | `<verified commit-bound status>` | `<Tier 1 or Tier 2 locator>` |
+| CI | `<claimed advisory CI/local gate>` | `<verified local Gate Receipt and commit-bound CI observation>` | `<Tier 1 or Tier 2 locator>` |
 | Scope | `<claimed issue scope and changed surfaces>` | `<verified issue-to-diff coverage>` | `<Tier 1 or Tier 2 locator>` |
 | Artifacts | `<claimed packet/lift/receipt/report>` | `<verified source and readback>` | `<Tier 1 or Tier 2 locator>` |
 | Context expansion | `<additional context requested>` | `<verified trigger and bounded read>` | `<finding, policy, or human instruction>` |
@@ -47,7 +47,7 @@ human/security path.
 
 ## Fail-closed review coverage
 
-Complete provider-native files, diffs, discussions, reviews, and CI contexts are required; truncation, pagination uncertainty, or stale bindings block.
+Complete provider-native files, diffs, discussions, reviews, and required policy inputs are required; truncation, pagination uncertainty, or stale bindings block. CI absence or incomplete CI pagination is recorded as an advisory observation and does not make review coverage incomplete.
 If the reviewer cannot inspect all behavior-affecting changed surfaces, return
 `blocked` with `partial-review`; never partially approve. Fail-closed triggers
 are: diff unavailable; too large for bounded review; binary/generated artifact without provenance; hidden dependencies; missing linked issue/context affecting behavior; or tool limits before decision. Request a split when bounded complete review cannot otherwise be restored.
@@ -70,15 +70,16 @@ Use `forge snapshot` to obtain:
 - current change-request state and exact commit;
 - complete paginated files/diff with provider truncation limits proven absent;
 - every review, thread/discussion, resolution, and required policy input;
-- required CI contexts bound to the reviewed commit or provider-proven
-  integration candidate;
-- local Gate Receipt and authority provenance locators.
+- configured CI contexts observed for the reviewed commit or provider-proven
+  integration candidate, when available;
+- exact-candidate local Gate Receipt and authority provenance locators.
 
-Local checkout, remote source, Reviewer Lift reviewed commit, and current
-provider commit must agree. A push invalidates prior review, CI, gate, and action
-evidence until rebound. Incomplete files/contexts, unresolved required review,
-stale head, wrong-commit CI, missing readback, or a provider `unknown/null`
-native state fails closed.
+Local checkout, remote source, Reviewer Lift reviewed commit, current provider
+commit, and Gate Receipt candidate must agree. A push invalidates prior review,
+gate, action, and reported CI pointers until rebound. Incomplete files/contexts,
+unresolved required review, stale head, missing readback, or a provider
+`unknown/null` native action state fails closed. Missing, stale, wrong-commit, or
+red CI is classified as advisory evidence, not a review or action blocker.
 
 ## Single-change request checkout mode
 
@@ -140,22 +141,21 @@ taste, naming, and formatting remain non-blocking `C-N`.
 
 ### CI decision table
 
-| Bound CI state | Observable review/action policy |
+| Observed CI classification | Evidence treatment |
 |---|---|
-| success on the exact reviewed commit or provider-proven integration candidate | pass/approval eligible when every other guard passes |
-| pending/running | review may proceed; automatic or queued finish requires selected-provider proof of protected policy and exact binding |
-| conditionally required job absent | allowed only when target-repo Check Gate or `project_profile` declares it not applicable and every applicable required job succeeds; rules-omitted is absent, not skipped |
-| failed/canceled/skipped applicable CI | blocks pass, approval, and finish |
-| missing/incomplete/unknown/wrong binding | blocks pass, approval, and finish |
-| documented no-CI project with a wholly-absent pipeline | pass/approval/finish eligible only when the target-repo Check Gate or `project_profile` declares no CI is configured and its required-job set is empty and no pipeline has ever run on any ref; any pipeline history returns it to the missing/unknown-binding row and blocks |
-| authorized written waiver | applies only to its recorded scope/provenance; reviewer cannot self-waive |
+| bound success | record provider locator, status, and exact reviewed/integration commit |
+| bound pending/running | record as an as-of observation |
+| bound failed/canceled/skipped | record as an as-of observation; investigate only when it reveals an actual in-scope defect |
+| unavailable or missing | record that no provider status was available |
+| stale, wrong-commit, incomplete, or unknown binding | do not attribute the status to the reviewed candidate; record the binding limitation |
 
-Absent conditionally required CI for any other reason blocks. A wholly-absent
-pipeline otherwise counts as a missing binding and blocks; the documented no-CI
-project row is the only case where an absent pipeline is the expected state
-rather than a blocker, and it never rests on the empty-set success of row 3.
-Local Gate PASS, readiness, or Gate coverage never substitutes for CI and
-never grants approval or finish.
+Every classification is advisory. No provider CI status changes the review
+verdict or approval, merge, queued-finish, or post-merge eligibility. The
+required quality predicate is a passing exact-candidate local Check Gate and,
+in parent-owned mode, its durable Gate Receipt. Independent review, reviewed-SHA
+binding, authority/caller guards, exactly one mutation, and native readback are
+separate mandatory predicates. Native provider protection may refuse a mutation;
+report the refusal without bypassing it.
 
 ### Open Question decision table
 
@@ -191,12 +191,12 @@ parent with approval `not-approved`, finish `none`, and next action
 
 ## Default finish: queued auto-merge
 
-When verdict is pass, finish authority affirmatively allows it, caller context is
-eligible, and the selected provider offers an exact-reviewed-commit protected
-queue, the default finish is queue auto-merge through one guarded `forge act`.
-The commit-bound CI floor is intact: pending/running/success may queue only under
-provider policy; failed/canceled/missing/stale CI blocks. Queue is not a CI waiver
-and is never reported as merged.
+When verdict is pass, the exact-candidate Gate Receipt is valid, finish authority
+affirmatively allows it, caller context is eligible, and the selected provider
+offers an exact-reviewed-commit protected queue, the default finish is queue
+auto-merge through one guarded `forge act`. Provider CI remains advisory.
+Native protection may hold or refuse the request; report that provider outcome.
+Queued is non-terminal and is never reported as merged.
 
 GitHub auto-merge and merge queue are distinct. Azure DevOps auto-complete lacks
 a documented expected-head binding, so an exact-commit queue request returns
@@ -211,10 +211,10 @@ in the Review Report's Action / Blocker section.
 
 1. Draft the Review Report with intended verdict, approval, and finish actions
    before final guards.
-2. Take the final provider-native change-request, reviewed-commit, CI, authority,
-   and caller snapshot.
-3. If any guard fails, convert the verdict to `blocked` and update the draft
-   before publication.
+2. Take the final provider-native change-request, reviewed-commit, local Gate
+   Receipt, advisory CI, authority, and caller snapshot.
+3. If a mandatory guard fails, convert the verdict to `blocked` and update the
+   draft before publication. An advisory CI classification is not a guard.
 4. Use `forge publish` to create one durable non-blocking report with safe-body
    validation and byte-for-byte provider-native readback.
 5. Immediately before an allowed action, take a fresh `forge snapshot` and run

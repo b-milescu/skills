@@ -59,7 +59,7 @@ sameList('ordered guard steps', schema.ordered_steps.map((step) => step.id), [
   'project_binding',
   'current_target_reread',
   'reviewed_sha_guard',
-  'exact_sha_ci_guard',
+  'exact_sha_ci_observation',
   'authority_verification',
   'caller_identity_and_context',
   'safe_gitlab_text',
@@ -69,7 +69,9 @@ sameList('ordered guard steps', schema.ordered_steps.map((step) => step.id), [
 ]);
 for (const [index, step] of schema.ordered_steps.entries()) {
   assert(step.order === index + 1, `${step.id} order must be ${index + 1}`);
-  assert(Array.isArray(step.blocks) && step.blocks.length > 0, `${step.id} must name blocker states`);
+  assert(Array.isArray(step.blocks), `${step.id} blocks must be an array`);
+  if (step.id === 'exact_sha_ci_observation') assert(step.blocks.length === 0, 'advisory CI observation must not block');
+  else assert(step.blocks.length > 0, `${step.id} must name blocker states`);
 }
 
 const currentTargetReread = schema.ordered_steps.find((step) => step.id === 'current_target_reread');
@@ -84,9 +86,6 @@ const blockerByToken = new Map(schema.blocker_states.map((blocker) => [blocker.t
 for (const token of [
   'head_changed',
   'stale_head',
-  'stale_ci',
-  'red_ci',
-  'missing_ci',
   'missing_authority',
   'authority_source_mismatch',
   'permission_uncertain',
@@ -97,6 +96,10 @@ for (const token of [
   assert(blockerByToken.has(token), `missing blocker token ${token}`);
   assert(blockerByToken.get(token).fallback_allowed === false, `${token} must forbid fallback`);
   assert(schema.fallback_forbidden_when.includes(token), `${token} missing from fallback_forbidden_when`);
+}
+for (const token of ['stale_ci', 'red_ci', 'missing_ci']) {
+  assert(!blockerByToken.has(token), `${token} must not remain a mutation blocker`);
+  assert(!schema.fallback_forbidden_when.includes(token), `${token} must not affect fallback eligibility`);
 }
 
 const gapTokens = schema.mcp_gap_states.map((gap) => gap.token);
@@ -123,8 +126,6 @@ function requireExample(label, expected) {
 
 for (const [label, blocker] of [
   ['blocked: stale head', 'head_changed'],
-  ['blocked: stale CI', 'stale_ci'],
-  ['blocked: red CI', 'red_ci'],
   ['blocked: missing authority', 'missing_authority'],
   ['blocked: self-merge risk', 'self_merge_risk']
 ]) {

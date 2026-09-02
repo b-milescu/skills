@@ -34,7 +34,7 @@ agent_handoff:
         child_worktree_mode: "read-only-unless-assigned"
         copy_between_worktrees: "forbidden"
       branch_naming: { pattern: "issue-<id>-<slug>" }
-      ci_jobs: { required: ["check"] }
+      ci_jobs: { observed: ["check"] }
       domain_docs: { context: "CONTEXT.md", adr: "docs/adr/" }
       release_deploy_policy: { policy: "project docs define authority" }
       manual_validation_rules: { required: [] }
@@ -98,7 +98,7 @@ agent_handoff:
   finish_action: "none"
   # Canonical action_blocker values: skill://start-review/reference/handoff-tokens.schema.json
   # request-changes uses none; other requires a blocker no listed token names and a one-line Action / Blocker reason.
-  action_blocker: "none / missing-authority / stale-or-missing-ci / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other"
+  action_blocker: "none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other"
   blocker_detail: ""
   next_action: "finish-by-authorized-actor"
   next_actor: "parent"

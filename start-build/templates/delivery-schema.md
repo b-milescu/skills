@@ -64,7 +64,7 @@ delivery:
     branch_naming:
       pattern: "issue-<id>-<slug>"
     ci_jobs:
-      required: ["check"]
+      observed: ["check"]
     domain_docs:
       context: "CONTEXT.md"
       adr: "docs/adr/"
@@ -157,10 +157,9 @@ Authority Verification uses `skill://forge/reference/common-guard.md` on GitLab 
   `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or
   an affirmatively granted project default.
 - Handoff actions include `parent-run-gate`, `spawn-reviewer`, `rerun-review`,
-  `wait-ci`, `approve`, `finish`, `verify-post-merge`, `human-decision`, and
-  `fix-blocker`.
+  `approve`, `finish`, `verify-post-merge`, `human-decision`, and `fix-blocker`.
 - Queued finish is non-terminal; only `post_merge_snapshot` may establish the
-  merged result, linked-item state, result-commit CI, and branch cleanup.
+  merged result, linked-item state, advisory result-commit CI, and branch cleanup.
 
 ## Generated-copy contract
 
