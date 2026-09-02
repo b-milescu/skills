@@ -16,6 +16,13 @@ require_row() {
   grep -Eq -- "^\|[[:space:]]*${row}[[:space:]]*\|" "$file" || fail "$file missing capsule row: $row"
 }
 
+assert_fixed_absent() {
+  local file="$1" needle="$2"
+  if grep -Fq -- "$needle" "$file"; then
+    fail "$file contains forbidden: $needle"
+  fi
+}
+
 offset_of() {
   local file="$1" pattern="$2" label="$3" offset
   offset="$(LC_ALL=C grep -Eibom1 -- "$pattern" "$file" | cut -d: -f1 || true)"
@@ -39,7 +46,7 @@ while IFS='|' read -r kind file needle; do
   [[ -n "${kind:-}" && "$kind" != \#* ]] || continue
   case "$kind" in
     contain) assert_file_contains "$file" "$needle" ;;
-    absent) if grep -Fq -- "$needle" "$file"; then fail "$file contains forbidden: $needle"; fi ;;
+    absent) assert_fixed_absent "$file" "$needle" ;;
     re) require_text "$file" "$needle" "$needle" ;;
     nre) reject_text "$file" "$needle" "$needle" ;;
     *) fail "unknown table kind: $kind" ;;
@@ -777,8 +784,17 @@ absent|issue-delivery-loop/SKILL.md|skill://gitlab
 absent|issue-delivery-loop/SKILL.md|glab 
 # default-builder-route-invariants
 contain|docs/agents/dev-workflows.md|internal `mr-builder` and `mr-reviewer-final` routes
+absent|docs/agents/dev-workflows.md|mr-builder-trivial
+absent|docs/agents/dev-workflows.md|mr-builder-moderate
+absent|docs/agents/dev-workflows.md|mr-builder-high-risk
 absent|docs/agents/dev-workflows.md|mr-builder-*
+absent|issue-delivery-loop/SKILL.md|mr-builder-trivial
+absent|issue-delivery-loop/SKILL.md|mr-builder-moderate
+absent|issue-delivery-loop/SKILL.md|mr-builder-high-risk
 absent|issue-delivery-loop/SKILL.md|mr-builder-*
+absent|start-build/reference/parent-orchestrator.md|mr-builder-trivial
+absent|start-build/reference/parent-orchestrator.md|mr-builder-moderate
+absent|start-build/reference/parent-orchestrator.md|mr-builder-high-risk
 absent|start-build/reference/parent-orchestrator.md|mr-builder-*
 contain|start-build/reference/parent-orchestrator.md|shared model-free `mr-builder` basename
 contain|start-build/reference/parent-orchestrator.md|mr-reviewer-final
@@ -811,6 +827,17 @@ rc=0
 grep -Fq -- 'memory-retrospective' "$planted" && rc=1
 rm -f "$planted"
 [[ "$rc" -eq 1 ]] || fail "planted memory-retrospective in retro/SKILL.md copy did not fail"
+
+# Default-route mutation: the same fixed-string invariant must reject a
+# representative retired concrete route planted in an active routing surface.
+planted="$(mktemp)"
+cp docs/agents/dev-workflows.md "$planted"
+printf '\n%s\n' 'mr-builder-trivial' >> "$planted"
+if (assert_fixed_absent "$planted" 'mr-builder-trivial') >/dev/null 2>&1; then
+  rm -f "$planted"
+  fail "planted retired builder route did not fail"
+fi
+rm -f "$planted"
 
 # terraform-tofu reject needles (regex, must stay out of the file)
 reject_text terraform-tofu/reference/native-testing.md 'default plan-mode|plan-mode default|defaults? to plan' 'wording that implies plan is the native engine default'
