@@ -7,7 +7,7 @@
   "description": "Machine-readable source of truth for stable GitLab workflow snippet transport contracts. The human-readable Markdown table in gitlab/reference/snippet-transports.md is checked against this metadata.",
   "machine_resource": "skill://gitlab/reference/snippet-metadata.json",
   "markdown_contract": "gitlab/reference/snippet-transports.md",
-  "stable_snippet_count": 20,
+  "stable_snippet_count": 21,
   "via_evidence_requirement": {
     "required": true,
     "mcp_token": "via=mcp",
@@ -895,6 +895,42 @@
         "required_guards": "Builder always stops at handoff; stop on stale head, missing/stale Gate Receipt, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup, or native policy refusal.",
         "fallback_conditions": "Raw `glab` fallback only under snippet-specific documented MCP gaps after MCP re-read and all reviewed-SHA, Gate Receipt, authority, caller, and readback guards pass; no helper-script finish path is active workflow and advisory CI status never affects fallback eligibility.",
         "post_mutation_reread": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
+      }
+    },
+    {
+      "name": "mr-handoff-evidence",
+      "mcp_primary_tools": [
+        "get_merge_request_handoff_evidence"
+      ],
+      "input_category": "mr-handoff-evidence-read",
+      "output_category": "handoff-evidence-claims-and-bindings",
+      "allowed_mutations": [],
+      "required_guards": [
+        "stop on unbound MR or project mismatch",
+        "never treat the YAML handoff block as evidence"
+      ],
+      "fallback_conditions": [
+        "not a named MCP gap and not the YAML handoff block: caller reassembles safe-mr-json, bounded description read, single-note read by id, and approvals read"
+      ],
+      "post_mutation_reread": {
+        "mode": "none",
+        "expectation": "N/A — read-only."
+      },
+      "via_evidence": {
+        "required": true,
+        "tokens": [
+          "via=mcp",
+          "via=glab-fallback"
+        ],
+        "requirement": "Record via=mcp for the dedicated tool; composite fallback records the via of the reassembled snippets."
+      },
+      "markdown": {
+        "mcp_primary_tools": "`get_merge_request_handoff_evidence` with optional `reviewed_sha`, `review_report_note_id`, and `gate_receipt_note_id`.",
+        "inputs": "Bound MR IID, project path; optional reviewed SHA, Review Report note id, and Gate Receipt note id.",
+        "outputs": "Handoff evidence that splits `claims` from verified `bindings`; Reviewer Lift, Review Report, and Gate Receipt remain the canonical artifacts.",
+        "required_guards": "Stop on unbound MR or project mismatch; never treat the YAML handoff block as evidence.",
+        "fallback_conditions": "Not a named MCP gap and not the YAML handoff block: the caller reassembles `safe-mr-json`, bounded description read, single-note read by id, and approvals read.",
+        "post_mutation_reread": "N/A — read-only."
       }
     }
   ]

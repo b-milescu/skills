@@ -17,6 +17,19 @@ native REST only for a required guarded operation they do not expose. Add no SDK
 - Reviewer votes are policy input, not standalone approval. Require the current
   blocking policy evaluations to be approved.
 
+Handoff evidence has no dedicated Azure DevOps tool. Satisfy the snapshot shape
+from existing reads, or record the field `unavailable` and keep those reads as
+the fallback:
+
+- change-request author id: pull request created-by identity;
+- Lift `claims` and missing rows: parse Reviewer Lift markers in the PR
+  description;
+- note-bound Review Report and Gate Receipt `claims` with author identity:
+  thread/comment by the explicit id the caller already holds; otherwise
+  `unavailable`;
+- four head/author `bindings`: compare those claims to the iteration
+  `sourceRefCommit.commitId` and the PR author id.
+
 ## Publish and act
 
 - Draft state is `isDraft`; drafts may not receive build validation.

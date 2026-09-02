@@ -13,6 +13,18 @@ Use native REST/GraphQL or `gh`; add no SDK. Bind a pull request to `headRefOid`
 - Treat `reviewDecision`, unresolved required threads, `mergeable: null`, and
   closingIssuesReferences as provider-native facts, not inferred booleans.
 
+Handoff evidence has no dedicated GitHub tool. Satisfy the snapshot shape from
+existing reads, or record the field `unavailable` and keep those reads as the
+fallback:
+
+- change-request author id: pull request author;
+- Lift `claims` and missing rows: parse Reviewer Lift markers in the PR body;
+- note-bound Review Report and Gate Receipt `claims` with author identity:
+  pull request comment or review by the explicit id the caller already holds;
+  otherwise `unavailable`;
+- four head/author `bindings`: compare those claims to `headRefOid` and the PR
+  author id.
+
 ## Publish and act
 
 - Submit a review with `commit_id=headRefOid`; direct merge uses `sha`.

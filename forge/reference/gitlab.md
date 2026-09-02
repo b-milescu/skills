@@ -16,6 +16,8 @@ review flow; GitLab CI status never changes them. Use
 [`gitlab/SKILL.md`](../../gitlab/SKILL.md) as the provider-specific mechanics
 source rather than copying those mechanics here.
 
+Handoff evidence on `snapshot` maps to `/gitlab` snippet `mr-handoff-evidence`.
+
 ## Provider transport
 
 - [GitLab skill](../../gitlab/SKILL.md)
