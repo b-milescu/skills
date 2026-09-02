@@ -31,7 +31,8 @@ const expectedNames = [
   'sha-bound-merge',
   'sha-bound-auto-merge-queue',
   'approval-confirmation',
-  'finish-mr-authority-aware'
+  'finish-mr-authority-aware',
+  'mr-handoff-evidence'
 ];
 
 function fail(message) {

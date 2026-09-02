@@ -351,6 +351,18 @@ get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issu
 
 ```
 
+### Snippet: mr-handoff-evidence
+
+Read-only handoff evidence for one MR. MCP primary is `get_merge_request_handoff_evidence` with optional `reviewed_sha`, `review_report_note_id`, and `gate_receipt_note_id`. Output splits `claims` from verified `bindings`. The Reviewer Lift, Review Report, and Gate Receipt remain the canonical artifacts.
+
+Fallback is not a named MCP gap and is not the YAML handoff block: the caller reassembles `safe-mr-json`, bounded description read, single-note read by id, and approvals read.
+
+```text
+
+get_merge_request_handoff_evidence(project, merge_request_iid, reviewed_sha?, review_report_note_id?, gate_receipt_note_id?)
+
+```
+
 ## Optional helper scripts
 
 MCP is the only shipped GitLab transport and validator. Documented help-first `glab` remains inline fallback text only. Do not invoke `gitlab/scripts/*`.

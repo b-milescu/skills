@@ -14,7 +14,7 @@ set -euo pipefail
 #   Per-snippet MCP primary tool/input/output/fail-closed/fallback details live
 #   in gitlab/reference/snippet-transports.md; inline SKILL shell blocks
 #   are accepted MCP/fallback examples.
-#     - the 20 snippet NAMES are stable (transport-independent API),
+#     - the 21 snippet NAMES are stable (transport-independent API),
 #     - one action per snippet (no snippet mixes two mutating verbs),
 #     - no combined approve+merge in any generic snippet (only the
 #       finish-mr-authority-aware facade may carry conditional approve+merge),
@@ -139,7 +139,7 @@ label_reconcile_body="$(require_snippet label-reconcile)"
 safe_mr_json_body="$(require_snippet safe-mr-json)"
 auto_merge_api_body="$(require_snippet auto-merge-api-fallback)"
 
-# --- Snippet-name stability: the 20 stable snippet names exist ----------------
+# --- Snippet-name stability: the 21 stable snippet names exist ----------------
 # The names are the transport-independent API workflow skills depend on; they
 # must remain stable across MCP primary and fallback/helper implementations.
 for name in \
@@ -148,11 +148,11 @@ for name in \
   ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
-  finish-mr-authority-aware; do
+  finish-mr-authority-aware mr-handoff-evidence; do
   require_exact_line "$SKILL" "### Snippet: $name" "stable snippet name $name"
 done
 snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
-[[ "$snippet_count" -eq 20 ]] || fail "expected exactly 20 snippet names, found $snippet_count"
+[[ "$snippet_count" -eq 21 ]] || fail "expected exactly 21 snippet names, found $snippet_count"
 
 # --- Snippet terminator: a body stops at the next heading of ANY level (#388) ---
 # extract_snippet must terminate a snippet body on the next heading of any level,
@@ -179,7 +179,7 @@ for name in \
   ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
-  finish-mr-authority-aware; do
+  finish-mr-authority-aware mr-handoff-evidence; do
   require_text "$CONTRACT" "\`$name\`" "transport contract for $name"
 done
 # --- Local preflight: canonical metadata pointer, no duplicate shell recipe ----

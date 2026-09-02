@@ -71,14 +71,14 @@ require_text gitlab/reference/mutation-guard.md 'GitLab Mutation Guard' 'canonic
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_merge_robustness_gap' 'Mutation Guard MCP merge robustness gap token'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_pagination_gap' 'Mutation Guard MCP pagination gap token'
 snippet_count="$(grep -cE '^### Snippet:' gitlab/SKILL.md)"
-[[ "$snippet_count" -eq 20 ]] || fail "expected 20 stable snippet names, found $snippet_count"
+[[ "$snippet_count" -eq 21 ]] || fail "expected 21 stable snippet names, found $snippet_count"
 for name in \
   local-repo-preflight issue-pickup draft-mr-create mr-description-update \
   draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
   ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
-  finish-mr-authority-aware; do
+  finish-mr-authority-aware mr-handoff-evidence; do
   require_exact_line gitlab/SKILL.md "### Snippet: $name" "stable snippet $name"
   require_text "$contract" "\`$name\`" "transport contract for $name"
 done

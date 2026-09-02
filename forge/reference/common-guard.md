@@ -26,6 +26,23 @@ failed post-read blocks without transport fallback. CI status never blocks.
 Provider branches validate native identifier and locator shapes. Shared callers
 and validators preserve their values as opaque strings.
 
+## Snapshot evidence
+
+`forge snapshot` is evidence-only. It enumerates, when available:
+
+- decision-grade issue and change-request metadata, complete
+  diff/discussion/review, exact-candidate Gate Receipt, and requested
+  commit-bound advisory CI;
+- change-request author id;
+- Lift `claims` and missing rows;
+- note-bound Review Report and Gate Receipt `claims` with author identity;
+- the four head/author `bindings`: Lift reviewed SHA equals head, report
+  reviewed SHA equals head, receipt commit equals head, and finding bindings
+  match the report.
+
+No routing field is added. `claims` and `bindings` are labelled as such;
+snapshot never turns them into a decision.
+
 ## Authority Verification
 
 Authority is action-specific and separate from transport evidence. Verify the

@@ -20,8 +20,11 @@ They never load an unselected provider reference.
    Match the configured profile to normalized remotes. Unknown providers,
    ambiguous remotes, and profile/remote mismatches fail closed.
 2. **`snapshot`** — return only the decision-grade issue, change-request,
-   complete diff/discussion/review, exact-candidate Gate Receipt, and requested
-   commit-bound advisory CI evidence.
+   complete diff/discussion/review, exact-candidate Gate Receipt, requested
+   commit-bound advisory CI evidence, change-request author id, Lift `claims`
+   and missing rows, note-bound Review Report and Gate Receipt `claims` with
+   author identity, and the four head/author `bindings`. Snapshot stays
+   evidence-only; no routing field is added.
 3. **`publish`** — validate and publish one safe durable artifact, then require
    provider-native byte-for-byte readback before reporting success. A durable
    artifact may be a tracker issue or work item (create + readback), not only a
