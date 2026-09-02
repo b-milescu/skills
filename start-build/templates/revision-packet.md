@@ -23,7 +23,7 @@
 Repeat the canonical tuple from each originating Review Report for every short ID addressed below. The contract and marker format are owned by `../../start-review/reference/finding-identities.md`. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --packet <this-revision-packet.md>`; missing, stale, ambiguous, or contradictory bindings fail closed.
 
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
-| Report locator | Reviewed commit | Finding ID |
+| Report locator | Reviewed SHA | Finding ID |
 |---|---|---|
 | `<stable originating report locator>` | `<exact originating reviewed commit>` | `<MF-N / SF-N / C-N>` |
 <!-- FINDING-IDENTITY-SCHEMA:END -->
