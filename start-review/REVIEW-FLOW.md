@@ -75,11 +75,14 @@ Use `forge snapshot` to obtain:
 - exact-candidate local Gate Receipt and authority provenance locators.
 
 Local checkout, remote source, Reviewer Lift reviewed commit, current provider
-commit, and Gate Receipt candidate must agree. A push invalidates prior review,
-gate, action, and reported CI pointers until rebound. Incomplete files/contexts,
-unresolved required review, stale head, missing readback, or a provider
-`unknown/null` native action state fails closed. Missing, stale, wrong-commit, or
-red CI is classified as advisory evidence, not a review or action blocker.
+commit, and Gate Receipt candidate must agree before publishing a current pass.
+A push invalidates prior review, gate, action, and reported CI pointers for the
+new head; it never rewrites the historical report's reviewed commit or finding
+identities. Incomplete files/contexts, unresolved required review, stale head,
+or missing required evidence readback prevents pass. A provider `unknown/null`
+native action state denies that action, not an otherwise valid judgment.
+Missing, stale, wrong-commit, or red CI is advisory evidence, not a review or
+action blocker.
 
 ## Single-change request checkout mode
 
@@ -185,9 +188,33 @@ grants or exercises approval.
 Finish authority is one affirmative action-specific claim: `approval-only`,
 `reviewer may merge`, `queue auto-merge`, `human release`, or an expressly
 permitted project default. Silence never becomes `approval-only` and never
-grants finish. `Finish owner: parent` always returns verdict/evidence to the
-parent with approval `not-approved`, finish `none`, and next action
-`finish-by-authorized-actor`.
+grants finish. `Finish owner: parent` is an intentional no-action route, not
+missing authority: return verdict/evidence to the parent with approval
+`not-approved`, finish `none`, action blocker `none`, and next action
+`finish-by-authorized-actor` when review is valid. Review blockers still apply.
+
+Classify the failed predicate, not the blocker token alone:
+
+| Failed predicate | Review judgment | Action and routing |
+|---|---|---|
+| Incomplete coverage or missing required policy/context | `blocked`; no pass | No approval/finish; `partial-review`, `rerun-review` with the builder/parent restoring missing inputs |
+| Wrong/ambiguous repository or unverified target binding | `blocked`; no pass | No approval/finish; `preflight-failure`, `fix-blocker` with the parent restoring binding |
+| Head changed before publication | `blocked`; no current pass | No approval/finish; `changed-head-sha`, `rerun-review` by a fresh reviewer on the new head |
+| Missing, invalid, or wrong-commit required local gate/Gate Receipt | No pass; `request-changes` for a builder evidence gap, otherwise `blocked` | No approval/finish; for revision use `none`, `revise`; otherwise `other` with the gate failure reason, `fix-blocker` with the gate owner |
+| Compromised reviewer independence | `blocked`; no pass | No approval/finish; `human-decision-needed`, `rerun-review` from a fresh context |
+| Authority/provenance absent, contradictory, or restricted only for the requested action | Retain the complete current review's judgment | Deny that action; `missing-authority`, `finish-by-authorized-actor` to the parent/authorized actor; a non-inferable authority decision uses `human-decision-needed`, `human-escalation` |
+| Permission unknown or denied only for the requested action | Retain the complete current review's judgment | Deny that action; `permission-failure`, `finish-by-authorized-actor` to an actor with verified permission |
+| Provider cannot bind the requested action to the reviewed commit | Retain the complete current review's judgment | Deny that action; `sha-bound-action-unsupported`, `fix-blocker` to the parent; no unbound substitute |
+
+An action-only classification requires all review-validity predicates to hold.
+For example, permission loss that prevents full diff access is incomplete review,
+not merely action denial; caller/context uncertainty that compromises
+independence cannot preserve pass. Security and human-decision review blockers
+remain governed by the coverage, Context Firewall, and Open Question policies.
+Every action guard remains mandatory, including for independently permitted
+approval when finish is denied. Use existing
+[`handoff-tokens.schema.json`](reference/handoff-tokens.schema.json) tokens and
+align next action with the handoff's expected next actor/action.
 
 ## Default finish: queued auto-merge
 
@@ -213,15 +240,24 @@ in the Review Report's Action / Blocker section.
    before final guards.
 2. Take the final provider-native change-request, reviewed-commit, local Gate
    Receipt, advisory CI, authority, and caller snapshot.
-3. If a mandatory guard fails, convert the verdict to `blocked` and update the
-   draft before publication. An advisory CI classification is not a guard.
+3. Classify failed predicates using [Approval-authority policy](#approval-authority-policy).
+   Review-invalidating failures prevent pass; update the draft verdict and
+   evidence gaps before publication. Action-only failures retain the valid
+   judgment but deny the affected action with its blocker and next actor/action.
+   An advisory CI classification is not a guard.
 4. Use `forge publish` to create one durable non-blocking report with safe-body
    validation and byte-for-byte provider-native readback.
 5. Immediately before an allowed action, take a fresh `forge snapshot` and run
    the common reviewed-commit guard. If the head changed after publication, skip
-   approval and finish and record `stale-commit` in the action result and final
-   handoff.
-6. Perform exactly one authorized `forge act`.
+   approval and finish and record `changed-head-sha` with `rerun-review` for a
+   fresh reviewer in the action result and final handoff. Preserve the published
+   judgment, original reviewed commit, and finding identities as historical
+   evidence, not a pass for the new head.
+6. Perform exactly one authorized `forge act` only when its guards pass and the
+   finish owner permits it; otherwise emit the no-action result. An action-only
+   failure after publication does not change the valid historical judgment;
+   newly discovered invalid review evidence must be reported, not masked as
+   action-only.
 7. Verify provider-native post-read, then emit the action result plus the two-line final handoff (change-request locator and Review Report note id). `Finish owner: parent` keeps approval `not-approved` and finish `none`.
 
 ## Review Report contract
