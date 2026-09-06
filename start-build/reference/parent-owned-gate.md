@@ -26,6 +26,29 @@ ready_transition_owner: "parent"
 The parent posts the Gate Receipt and marks ready only after verifying the same
 candidate through `forge snapshot` and the target repository Check Gate.
 
+## Stage-correct handoff verification
+
+Consume the [two-line builder handoff](../templates/builder-final-handoff.md) or
+[reviewer handoff](../../start-review/templates/reviewer-final-handoff.md) as
+locators. Use `forge snapshot` for native claims, author identities, and bindings;
+omit optional receipt/report locators until those artifacts exist. A missing
+future artifact is not a failed binding. An absent/malformed locator handoff
+requires recovery from the bound change request and durable packet, not a guessed
+ID, ceremonial note, or retired final delivery block.
+
+| Stage | Required evidence and outcome |
+|---|---|
+| Before parent gate | Verify issue/change/source/target, pushed candidate and current Lift, required rows, launch-bound Gate owner and `gate_owner_received`, parent-owned/not-run contract, and feasibility. `not-created` is valid; route the candidate to the parent gate without requiring a receipt or independent report. |
+| Before ready/review | Require the published/read-back passing exact-candidate Gate Receipt and current Lift; verify receipt identity, authorship/provenance, command, execution evidence, and commit. Missing receipt blocks ready/review. A future independent report is not required to launch its reviewer. |
+| Before approval/finish | Additionally require the published independent Review Report for the exact current head, verified author/context, complete review and eligible verdict. Check original finding bindings against their originating reports and apply the authority/caller/common guards separately. Missing report blocks approval/finish. |
+| Revision candidate | Rebind candidate/Lift, retain original report/commit/finding tuples, and label old receipt/review artifacts historical. Return to parent gate with `not-created` for the new receipt, even if the change request is already ready; ready state alone cannot authorize re-review or finish. |
+| Stale or contradictory claims | An old receipt/report claimed as current, wrong candidate or author, conflicting owner, fabricated ID, or publication/readback mismatch fails closed at the affected transition. Resolve the contradiction; do not treat it as absent future evidence. Historical artifacts cannot satisfy current gate/review eligibility. |
+
+Check every existing artifact presented as current even at pre-gate entry.
+Native snapshots remain evidence-only; the parent derives the next stage.
+Provider CI remains advisory. None of these routing outcomes changes receipt
+validation, authoritative ownership selection, or approval/finish authority.
+
 ## Gate Receipt schema
 
 Anchor: `gate_receipt.kind=gate-receipt`. Shared fields use opaque strings; the
@@ -114,8 +137,10 @@ before another ready/review handoff.
 - `gate-receipt-exact-commit-pass`
 - `ready-transition-post-reread`
 
-With feasibility established, before the receipt route `phase: parent-gate`,
-next actor `parent`, next action `parent-run-gate`, with no extra decision.
+With feasibility established, before the receipt the two-line final uses
+`not-created`; the parent derives `phase: parent-gate`, next actor `parent`, next
+action `parent-run-gate`, with no extra decision. These routing fields remain
+available in other supported compact indexes, not builder/reviewer finals.
 An unresolved prerequisite instead requires a precise blocked report to the
 parent; neither the ownership contract nor an N/A result is a passing receipt.
 A Gate Receipt is canonical gate evidence; later description updates are delta-only.

@@ -34,11 +34,14 @@ Default: fan out every provably decoupled subset.
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
    One issue/worktree/branch/Draft change request/Review Packet per child. Pass
    explicit `Gate owner`; runtime notices never become scope stop instructions.
-5. Event-driven waiting only. Read `delivery.handoff_contract` first, then verify
-   its compact claims from provider-native Tier 1 or repository Tier 2 evidence.
-   Preserve reviewed-commit binding, exact-candidate Gate Receipt, and authority
-   provenance. Record CI only as bounded advisory evidence, attributed to a
-   commit when its binding is proven.
+5. Event-driven waiting only. Consume builder/reviewer two-line native locator
+   handoffs, then apply [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification):
+   candidate/Lift before parent gating, exact receipt before ready/review,
+   independent exact-head report before approval/finish. Pre-gate `not-created`
+   is valid; stale or contradictory current claims fail closed. Other compact
+   delivery indexes retain `handoff_contract`, but finals need no delivery block.
+   Derive routing from verified native evidence; preserve authority provenance
+   and treat commit-bound CI only as advisory.
 6. Launch independent review as soon as the exact-candidate gate contract
    allows. Provider CI may run in parallel; no CI status changes verdict,
    approval, or finish eligibility.

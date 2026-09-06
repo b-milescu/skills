@@ -116,8 +116,6 @@ contain|start-build/SKILL.md|- **Child `mr-builder`:**
 contain|start-build/SKILL.md|skill://start-build/reference/child-builder.md
 # handoff-token-validator-wiring (retired scripts; parents read forge snapshot)
 contain|start-build/reference/child-builder.md|validate-finding-bindings.mjs
-contain|start-build/reference/parent-orchestrator.md|Lift `claims`
-contain|start-build/reference/parent-orchestrator.md|four head/author `bindings`
 contain|start-review/REVIEW-FLOW.md|two-line final handoff
 # start-build-context-read-matrix
 re|start-build/SKILL.md|^## Invocation modes$
@@ -304,10 +302,6 @@ re|start-review/templates/review-report.md|^\| Reviewed commit \|
 re|start-review/templates/reviewer-final-handoff.md|Change-request locator:
 re|start-review/templates/reviewer-final-handoff.md|Durable note id:
 re|start-review/templates/reviewer-final-handoff.md|Review Report note id
-re|start-review/templates/filling-guide.md|change-request locator, canonical repository, reviewed commit
-re|start-review/templates/filling-guide.md|delivery.repository.locator
-re|start-review/templates/filling-guide.md|delivery.change_request.locator
-re|start-review/templates/filling-guide.md|delivery.commit.current/reviewed
 nre|start-review/REVIEW-FLOW.md|(glab|gh)[[:space:]]+(mr|pr|issue)[[:space:]]+(view|comment|approve|merge|close)[[:space:]]+<id>([[:space:]`]|$)
 nre|start-review/SKILL.md|(glab|gh)[[:space:]]+(mr|pr|issue)[[:space:]]+(view|comment|approve|merge|close)[[:space:]]+<id>([[:space:]`]|$)
 nre|start-review/templates/filling-guide.md|(glab|gh)[[:space:]]+(mr|pr|issue)[[:space:]]+(view|comment|approve|merge|close)[[:space:]]+<id>([[:space:]`]|$)

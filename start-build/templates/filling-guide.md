@@ -46,11 +46,11 @@ Add the heading only when its trigger applies; the template lists triggers in a 
 
 ## builder-final-handoff.md
 
-- Emit the two-line contract in child-builder final responses: change-request locator and durable note id (Gate Receipt note for a parent-gated builder run).
-- Keep Reviewer Lift as the durable change-request-description handoff; parents read `forge snapshot` `bindings` / `claims` instead of parsing YAML.
+- Emit exactly the [two-line contract](builder-final-handoff.md), using `not-created` before a receipt exists for this candidate; no extra note is needed.
+- Keep Reviewer Lift and `gate_owner_received` in the durable Review Packet. Parents verify native evidence at the [applicable stage](../reference/parent-owned-gate.md#stage-correct-handoff-verification), not a final YAML block.
 - Run `bash tests/agent-handoff-templates.sh` after editing.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
-- Consumers must tolerate absent blocks and fall back to human prose / Reviewer Lift.
+- Recover absent/malformed handoffs from the bound change request and durable Review Packet; prose is a locator hint, not verified evidence.
 
 ## review-packet-compact.md
 
