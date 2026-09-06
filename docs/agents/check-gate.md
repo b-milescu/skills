@@ -17,6 +17,16 @@ Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines
 
 Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 
+For parent-owned gate selection, this policy and the bootstrap route above
+already support an exact-candidate `npm run check` receipt. A fresh worktree
+without `node_modules` needs bootstrap; it does not lack gate policy. Record
+the parent as the bootstrap/gate executor without requiring a full gate pass
+before implementation. If Node 22 or dependency installation cannot be
+provided, report that specific prerequisite, not an N/A parent receipt or an
+automatic ownership change. These are selection rules, not a report of an
+observed local failure. Generic cases, including issues that add a gate, are
+owned by [Check gate discovery](../../start-build/reference/context-and-planning.md#check-gate-discovery).
+
 ## Project-profile refs
 
 Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,

@@ -7,6 +7,14 @@ must not claim local gate PASS/FAIL or Gate Receipt success.
 
 ## Ownership contract
 
+Select this mode only after [Check gate discovery](context-and-planning.md#check-gate-discovery)
+identifies the policy, exact command, and bootstrap route supporting a passing
+exact-candidate receipt. That section owns the existing-gate, missing-dependency,
+absent-policy, and gate-creation cases; selection does not require the full gate
+to pass before implementation. The child preserves the launch prompt's explicit
+`Gate owner` assignment and reports any unresolved feasibility prerequisite to
+the parent rather than changing ownership.
+
 ```yaml
 local_gate_owner: "parent"
 builder_gate_status:
@@ -106,6 +114,8 @@ before another ready/review handoff.
 - `gate-receipt-exact-commit-pass`
 - `ready-transition-post-reread`
 
-Before the receipt, route `phase: parent-gate`, next actor `parent`, next action
-`parent-run-gate`, with no extra decision. A Gate Receipt is canonical gate
-evidence; later description updates are delta-only.
+With feasibility established, before the receipt route `phase: parent-gate`,
+next actor `parent`, next action `parent-run-gate`, with no extra decision.
+An unresolved prerequisite instead requires a precise blocked report to the
+parent; neither the ownership contract nor an N/A result is a passing receipt.
+A Gate Receipt is canonical gate evidence; later description updates are delta-only.
