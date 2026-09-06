@@ -109,7 +109,6 @@ contain|start-build/SAFETY.md|self-approval
 contain|start-build/reference/child-builder.md|parent orchestrator owns the mandatory review gate
 contain|start-build/reference/child-builder.md|must not start a reviewer
 absent|start-build/reference/child-builder.md|subagent({ action: "list" })
-contain|start-build/SKILL.md|- **Child `mr-builder`:**
 contain|start-build/SKILL.md|skill://start-build/reference/child-builder.md
 # handoff-token-validator-wiring (retired scripts; parents read forge snapshot)
 contain|start-build/reference/child-builder.md|validate-finding-bindings.mjs
@@ -137,8 +136,6 @@ re|start-build/reference/child-builder.md|must not start a reviewer
 # start-build-discovery-budget pointers
 contain|start-build/SKILL.md|skill://start-build/reference/context-and-planning.md
 contain|start-build/SKILL.md|skill://start-build/templates/build-plan-packet.md
-contain|start-build/SKILL.md|- **Standalone:**
-contain|start-build/SKILL.md|- **Child `mr-builder`:**
 contain|start-build/SKILL.md|parent owns Gate Receipt and ready
 contain|start-build/templates/build-plan-packet.md|## Issue
 contain|start-build/templates/build-plan-packet.md|## Intended behavior
