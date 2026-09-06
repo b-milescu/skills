@@ -47,10 +47,13 @@ parent-orchestrated.
    For a `request-changes` verdict, record approval `not-approved`, finish `none`,
    action blocker `none`, and next action `revise`; `other` is only for a blocker
    no listed token names and requires a one-line Action / Blocker reason.
-7. Before any approval or finish, re-run `forge snapshot` and the ordered common
-   guard through one `forge act`. Perform exactly one action, bound to the
-   reviewed commit or provider-proven integration candidate, then require native
-   readback. A queue result is non-terminal and routes to later verification.
+7. `Finish owner: parent` returns after report publication without acting or
+   waiting. Otherwise, before any approval or finish, re-run `forge snapshot`
+   and the ordered common guard through one `forge act`. Perform exactly one
+   authorized action bound to the reviewed commit or provider-proven integration
+   candidate. The actor owns native readback and any required backlinking note
+   under [Post-report action evidence](skill://start-review/REVIEW-FLOW.md#post-report-action-evidence).
+   A changed head denies action and routes fresh review; queued is not merged.
 8. Emit the complete reviewer-final handoff. Post-merge verification is a
    separate read-only actor using `forge post_merge_snapshot`.
 

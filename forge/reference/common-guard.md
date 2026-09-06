@@ -43,6 +43,13 @@ and validators preserve their values as opaque strings.
 No routing field is added. `claims` and `bindings` are labelled as such;
 snapshot never turns them into a decision.
 
+Later action explanations are discovered through existing native notes/discussions,
+not an added snapshot field or a future link in the immutable Review Report.
+Consumers follow [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence)
+to verify report identity, exact reviewed commit, actor, and native outcome
+evidence. Missing or mismatched action notes are evidence gaps, not proof that
+an action succeeded or did not run; snapshot claims never replace native post-read.
+
 ## Authority Verification
 
 Authority is action-specific and separate from transport evidence. Verify the

@@ -547,9 +547,6 @@ absent|start-review/REVIEW-FLOW.md|cursor/plugins
 absent|start-review/REVIEW-FLOW.md|Measure twice, cut once.
 absent|start-review/SKILL.md|cursor/plugins
 absent|start-review/SKILL.md|Measure twice, cut once.
-# review-action-order leftover tokens (order checked below)
-contain|start-review/templates/review-report.md|intended action
-contain|start-review/templates/review-report.md|completed action
 # review-report-summary-first headings/prompts
 re|start-review/templates/filling-guide.md|Decision Summary
 re|start-review/SKILL.md|Decision Summary

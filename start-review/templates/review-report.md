@@ -8,7 +8,7 @@ provider branch owns native approval and finish mechanics.
 
 ## Decision Summary
 
-Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). Keep intended action distinct from completed action.
+Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). This is the immutable pre-action judgment; record intended or no-action state only.
 
 | Field | Value |
 |---|---|
@@ -22,8 +22,8 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
 | Approval authority | `<verified default-after-pass or restricted: reason/source>` |
 | Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
-| Approval action | `<intended: approve / approved only after verified / not-approved / blocked: reason / N/A>` |
-| Finish action | `<intended: direct merge / intended: queue auto-merge / merged only after verified / auto-merge queued only after verified / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
+| Approval action | `<intended: approve / not-approved / blocked: reason / N/A>` |
+| Finish action | `<intended: direct merge / intended: queue auto-merge / approval-only stop / human-release stop / none / blocked: reason / N/A>` |
 | Action blocker | `<none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>` — canonical values: [`handoff-tokens.schema.json`](../reference/handoff-tokens.schema.json) |
 | Finish authority | `<verified finish authority value or blocked: missing-authority>` |
 | Finish authority source | `<verified finish authority source or blocked: missing-authority>` |
@@ -176,7 +176,9 @@ Required. Fill and reconcile these values per the [Action / Blocker guide](filli
 | Finish action | `<chosen value>` |
 | Action blocker | `<chosen value>` |
 | Next action | `<chosen value>` |
-| Post-report action note | `<N/A, or URL/summary for approval/finish failure, changed-head-sha, or completed action result>` |
+| Post-report action evidence | `Later actor-owned notes backlink here; discover and verify through native notes/discussions per the action-evidence contract below. Parent-owned reviewer no-action requires no extra note.` |
+
+Later outcomes belong to [Post-report action evidence](../REVIEW-FLOW.md#post-report-action-evidence), not this report. The authorized actor publishes any required explanation with this report's stable identity, published locator, and exact reviewed commit. The next actor discovers and verifies that backlink through native notes/discussions; this report does not predict a future URL.
 
 ## Optional Annex: Checklists
 
