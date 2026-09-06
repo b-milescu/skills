@@ -255,8 +255,8 @@ A `request-changes` verdict is not an action blocker: record approval
 Use `other` only for a blocker no listed token names, and add a one-line reason
 in the Review Report's Action / Blocker section.
 
-1. Draft the Review Report with intended verdict, approval, and finish actions
-   before final guards.
+1. Draft the Review Report with its verdict and intended or no-action approval
+   and finish state before final guards; completed effects belong to later evidence.
 2. Take the final provider-native change-request, reviewed-commit, local Gate
    Receipt, advisory CI, authority, and caller snapshot.
 3. Classify failed predicates using [Approval-authority policy](#approval-authority-policy).
@@ -266,18 +266,24 @@ in the Review Report's Action / Blocker section.
    An advisory CI classification is not a guard.
 4. Use `forge publish` to create one durable non-blocking report with safe-body
    validation and byte-for-byte provider-native readback.
+   `Finish owner: parent` reviewers return the two-line final handoff now,
+   with approval `not-approved` and finish `none`; they neither act nor wait
+   for the parent's action records.
 5. Immediately before an allowed action, take a fresh `forge snapshot` and run
    the common reviewed-commit guard. If the head changed after publication, skip
    approval and finish and record `changed-head-sha` with `rerun-review` for a
-   fresh reviewer in the action result and final handoff. Preserve the published
-   judgment, original reviewed commit, and finding identities as historical
-   evidence, not a pass for the new head.
+   fresh reviewer in a [post-report action note](#post-report-action-evidence).
+   Preserve the published judgment, original reviewed commit, and finding
+   identities as historical evidence, not a pass for the new head.
 6. Perform exactly one authorized `forge act` only when its guards pass and the
    finish owner permits it; otherwise emit the no-action result. An action-only
    failure after publication does not change the valid historical judgment;
    newly discovered invalid review evidence must be reported, not masked as
    action-only.
-7. Verify provider-native post-read, then emit the action result plus the two-line final handoff (change-request locator and Review Report note id). `Finish owner: parent` keeps approval `not-approved` and finish `none`.
+7. The authorized actor owns provider-native post-read and any required
+   [action explanation](#post-report-action-evidence). Emit the two-line final
+   handoff (change-request locator and Review Report note id); later action
+   evidence stays in native notes, not extra final-response fields.
 
 ## Review Report contract
 
@@ -285,5 +291,43 @@ The durable report contains provider/repository/change-request binding, stable
 report locator, reviewed commit, complete-diff/discussion evidence, local gate,
 CI commit/status, context capsule, Reviewer Lift verification, acceptance and
 safety surfaces, findings, targeted checks, open questions, verdict, intended
-and completed approval/finish actions, blocker/next action, and readback proof.
-Never claim an action until provider-native post-read verifies it.
+or no-action approval/finish state, and publication-time blocker/next action.
+Publication readback establishes durability. Keep that report immutable:
+later effects, blockers, or evidence corrections use a backlinking note,
+not a regenerated verdict, changed reviewed commit, or renumbered findings.
+The original report needs no unknown future action-note URL.
+
+## Post-report action evidence
+
+The authorized actor owns the action's native post-read. An action attempt,
+provider refusal, or post-publication guard failure requires a compact plain
+non-blocking action explanation note on the same change request. Intentional
+parent-owned reviewer no-action needs no extra note.
+
+Publish through `forge publish`, with safe-body validation and byte-for-byte
+native readback. Include the original report's stable identity and published
+locator, exact reviewed commit, actor and authority source, action attempted
+or denied, whether a mutation ran, verified outcome or explicit unverified
+state, blocker/reason, next actor/action, and native evidence locators with
+as-of observations. A changed head records both reviewed and observed commits.
+Use existing blocker tokens; `other` requires a one-line explanation.
+Never claim success from a mutation response alone; queued is not merged.
+This note explains the action, not a second review verdict or authority grant.
+
+The next actor discovers the note through existing provider-native
+change-request notes/discussions, following pagination through the relevant
+post-report records. Match the backlink to the retrieved report's stable
+identity, published locator, repository/change request, and exact reviewed
+commit; verify the note author/authority and cited native outcome evidence.
+Read the complete note and relevant replies, not a search snippet or latest-note
+guess. Historical outcomes do not authorize a new action: re-read current head,
+Gate Receipt, and authority through the common guard.
+
+A missing required note, incomplete discovery, failed publication readback,
+or mismatched backlink/evidence leaves the action record unverified. Preserve
+any independently verified native effect, report the evidence gap, and route
+the authorized actor to restore durable evidence; do not infer success from
+report intent or repeat a possibly completed mutation to repair a note.
+If publication is unavailable, return the explicit transport blocker rather
+than a fabricated note ID. Parent-owned reviewer completion never depends on
+the later actor producing this note.

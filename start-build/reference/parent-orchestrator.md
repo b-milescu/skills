@@ -88,6 +88,12 @@ per-branch invariant, not a one-time batch preflight:
 `Finish owner: parent` is the literal parent-managed dev-flow contract. Reviewers publish only Review Report verdict/evidence. They do not approve or finish in that mode; the parent/authorized finisher uses `forge snapshot` plus the `/forge` common guard to re-read current change-request identity, current/reviewed commits, the exact-candidate Gate Receipt, advisory CI, and authority provenance before `forge act`.
 The default finish is to queue auto-merge through `forge act` when verified
 authority grants it; otherwise stop at the most permissive authorized action.
+Reviewers return without waiting for parent action evidence. The authorized
+finisher owns native post-read and any required compact action explanation;
+next actors discover and verify that backlink through native notes/discussions
+per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence).
+The historical Review Report stays immutable; a changed head routes new-head
+review rather than rebinding its judgment or findings.
 
 ## Parent loop
 
