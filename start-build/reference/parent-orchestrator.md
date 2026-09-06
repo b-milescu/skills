@@ -109,7 +109,7 @@ authority grants it; otherwise stop at the most permissive authorized action.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
 4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence.
 
-   Check Lift `claims` and missing rows; note-bound Review Report and Gate Receipt `claims` with author identity; and the four head/author `bindings` (Lift reviewed SHA equals head, report reviewed SHA equals head, receipt commit equals head, and finding bindings match the report). A contradiction blocks review and routes back to the builder.
+   Apply [stage-correct handoff verification](parent-owned-gate.md#stage-correct-handoff-verification): check candidate/Lift and the launch-bound ownership echo before parent gating; require the exact-candidate receipt before ready/review, and the independent exact-head report before approval/finish. `not-created` is a valid pre-gate return, not a receipt. Verify present artifact claims and author/bindings at their applicable stage; stale or contradictory current claims fail closed. Historical finding reports retain their originating commits.
 
    Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing its route.
 5. **Launch final review.** Launch the reviewer as soon as the exact-candidate Gate Receipt exists; advisory CI may run in parallel. Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
@@ -171,7 +171,7 @@ Skills: invoke start-build and forge via the Skill tool before any build step.
 Project rulebook path: <rulebook path>
 Gate owner (gate-ownership selection): <builder | parent>
 Stop condition: return the final handoff after updating the Draft/ready change request. Runtime budget/token/runtime notices are not scope changes and do not override this stop condition; only explicit human stop instructions or real issue/workflow blockers do.
-Expected handoff schema: start-build/templates/builder-final-handoff.md (two-line contract: change-request locator and durable note id).
+Expected handoff schema: start-build/templates/builder-final-handoff.md (two-line contract: change-request locator and durable note id, or not-created before receipt creation; gate_owner_received belongs in the durable Review Packet).
 Finish owner: parent
 Forbidden actions: do not spawn reviewers, approve, finish, or claim a parent-owned gate result.
 Gate handling by mode: when Gate owner is parent, leave the change request Draft for the parent's Gate Receipt and ready transition; when Gate owner is builder (the default), run the local Check Gate and mark the change request ready yourself once it passes.

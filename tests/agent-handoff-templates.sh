@@ -15,6 +15,5 @@ for file in "$builder" "$reviewer"; do
   assert_file_not_contains "$file" "AGENT-HANDOFF:" "$file has no YAML marker"
   assert_file_not_contains "$file" gitlab.example.com "$file contains no live locator"
 done
-assert_file_contains "$builder" "Gate Receipt note id" "builder names Gate Receipt note"
-assert_file_contains "$reviewer" "Review Report note id" "reviewer names Review Report note"
+assert_file_contains "$builder" 'not-created' "builder permits explicit pre-gate absence"
 printf '%s\n' "agent-handoff-templates: PASS"

@@ -23,6 +23,9 @@ Publication, closure/readback, and finding-binding checks are canonical in
 
 Fill every row per `reviewer-lift-schema.md`; parent-owned mode follows `../reference/parent-owned-gate.md`.
 
+Child runs: `gate_owner_received: <literal launch value, or absent>` per
+[builder-final-handoff.md](builder-final-handoff.md).
+
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|

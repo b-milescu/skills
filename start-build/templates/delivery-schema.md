@@ -14,6 +14,12 @@ Gate Receipt fields and parent-owned ready behavior are canonical in
 `gate_receipt.kind=gate-receipt` is a durable workflow artifact, not a compact
 delivery record.
 
+Final handoffs follow [builder-final-handoff.md](builder-final-handoff.md) and
+the [reviewer contract](../../start-review/templates/reviewer-final-handoff.md),
+including the builder's explicit `not-created` value before receipt creation.
+Apply [stage-correct verification](../reference/parent-owned-gate.md#stage-correct-handoff-verification);
+absence of future evidence is distinct from contradictory current claims.
+
 ## Canonical field order
 
 <!-- CHANGE-DELIVERY-FIELDS:BEGIN -->
@@ -31,7 +37,7 @@ delivery record.
 | local_gate | Command, status, not-run reason, and summary. |
 | tdd | RED/GREEN commands and outcomes, or explicit N/A rationale. |
 | authority | Approval and finish claims, sources, verification, and conflicts. |
-| handoff_contract | No longer emitted in builder-final or reviewer-final handoffs (parents read `forge snapshot` `bindings` / `claims` instead). Remaining compact delivery indexes may still carry phase, next actor/action, blocker state, decision need, and evidence-ready pointers. |
+| handoff_contract | Required in supported compact delivery indexes: phase, next actor/action, blocker state, decision need, and evidence-ready pointers. Builder-final and reviewer-final handoffs use only the two-line locator contract; parents derive routing from native evidence instead. |
 | evidence | Tiered durable evidence indexes. |
 | blockers | Safe blocking tokens/descriptions. |
 <!-- CHANGE-DELIVERY-FIELDS:END -->

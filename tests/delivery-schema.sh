@@ -18,6 +18,7 @@ for copy in start-build/templates/builder-final-handoff.md start-review/template
   assert_file_not_contains "$copy" 'CHANGE-DELIVERY-SCHEMA:BEGIN' "$copy has no generated-copy marker"
   assert_file_not_contains "$copy" '```yaml' "$copy has no YAML fence"
 done
+assert_file_contains start-build/templates/builder-final-handoff.md 'not-created' "pre-gate final needs no future receipt"
 if grep -R -n -E 'gitlab-delivery|gitlab-delivery-schema|GITLAB-DELIVERY-(SCHEMA|FIELDS)' \
   start-build start-review issue-delivery-loop setup-dev-skills docs/agents retro agents README.md; then
   fail "retired schema name or marker remains"
