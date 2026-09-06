@@ -73,9 +73,6 @@ re|start-review/REVIEW-FLOW.md|Fail-closed review coverage
 re|start-review/SKILL.md|Post-merge verification is a
 re|start-review/SKILL.md|separate read-only actor
 re|issue-delivery-loop/SKILL.md|skill://start-build/reference/parent-orchestrator.md
-re|issue-delivery-loop/SKILL.md|reviewed-commit binding
-re|issue-delivery-loop/SKILL.md|bounded advisory evidence
-re|issue-delivery-loop/SKILL.md|Preserve reviewed-commit binding, exact-candidate Gate Receipt, and authority
 re|issue-delivery-loop/SKILL.md|independent review
 re|issue-delivery-loop/SKILL.md|child/reviewer/verifier boundaries
 re|issue-delivery-loop/SKILL.md|provider-native post-read
@@ -731,7 +728,6 @@ contain|issue-delivery-loop/SKILL.md|must not copy auxiliary-index artifacts
 contain|issue-delivery-loop/SKILL.md|one default `mr-builder`
 contain|issue-delivery-loop/SKILL.md|mr-reviewer-final
 contain|issue-delivery-loop/SKILL.md|parent-orchestrator.md
-contain|issue-delivery-loop/SKILL.md|exact-candidate Gate Receipt
 contain|issue-delivery-loop/SKILL.md|runtime notices never become scope stop instructions
 contain|issue-delivery-loop/SKILL.md|Event-driven waiting only
 contain|issue-delivery-loop/SKILL.md|no CI status changes verdict
