@@ -2,18 +2,48 @@
 
 Detailed common implementation sequence for `start-build` builders. This file is the canonical owner of the implementation flow; [check gate discovery](context-and-planning.md#check-gate-discovery) and the [stuck protocol](stuck-protocol.md) own their own sections. Child builders may use the smaller [child-builder path](child-builder.md) unless this full flow is needed.
 
+## Source lifecycle
+
+Select the source lifecycle independently of standalone/child mode. Revision
+does not change gate, ready, review-launch, or finish ownership.
+
+| Entry | Source and change request |
+|---|---|
+| New standalone | Initialize a new source from the verified current remote default; push and open its early Draft once. |
+| Allocated child, initial run | Reuse the parent's absolute worktree, source branch, and current head. Allocation already performed initialization; open the early Draft only if this new source has no change request. |
+| Standalone revision | Bind the existing change request and clean source checkout at its current head; append fixes and update that change request. |
+| Delegated revision | Reuse the allocated absolute worktree and current source head, bind the existing change request, and append fixes under the child's assigned ownership. |
+
+For every entry, require a clean working checkout (`git status --porcelain`
+empty), verified repository/source binding, and freshly read work-item and
+change-request state/ownership before editing. If dirty or bindings conflict,
+stop and reconcile with the owner; never auto-stash, reset, or clean. Preserve
+unrelated coordinator work. On reuse/revision, compare local HEAD, remote
+source (when published), and provider current commit (when a change request
+exists); reconcile mismatches before editing rather than overwriting a head.
+
+Only creation of a new source initializes from default: fetch origin, check out
+the provider-bound default branch, pull `--ff-only`, confirm HEAD equals
+`origin/<default>`, then create the project-named issue branch. Stop on a
+failed fast-forward. A parent's verified allocation satisfies this step.
+Later remote-default advancement does not invalidate that allocation or an
+existing revision source; do not recreate/reset the branch or automatically
+rebase it to make HEAD equal the new default. Source reuse still requires
+clean-state, ownership, exact-candidate checks and fresh independent re-review
+after revisions; existing gate and post-ready-push rules remain in force.
+
+For revisions, read the originating Review Reports and retain every
+`(Report locator, originating Reviewed SHA, Finding ID)` tuple. The current
+candidate SHA belongs in Reviewer Lift `Reviewed SHA` and refreshed gate/CI
+evidence, never in place of a finding's historical SHA. Continue through the
+revision publication and fresh-review handoff in Procedure step 10.
+
 ## Procedure
 
 1. Resolve the work item(s) first: supplied or via [issue pickup](issue-pickup.md). If multiple, enter [Multiple issue worktree mode](multiple-worktrees.md) and run the rest independently per worktree.
-2. For a single work item, start clean from latest default branch:
-   - `git status --porcelain` empty. If dirty, stop and ask — never auto-stash, reset, or clean.
-   - `git fetch origin`.
-   - `git checkout <default>` using `default_branch` from `forge preflight` when not `main`.
-   - `git pull --ff-only origin <default>`. If FF fails, stop and ask; do not force.
-   - Confirm `git rev-parse HEAD` matches `origin/<default>` before branching.
-   - Branch using the project's naming convention; reference the work item.
+2. Follow [source lifecycle](#source-lifecycle) before touching the checkout: initialize only a new source, reuse parent allocations and revision sources, and retain the selected mode's ownership.
 3. Load narrow context, not the whole repo or conversation: rulebook index, work item, and affected docs/source/tests first. Expand to architecture docs, ADRs, domain docs, or `CONTEXT.md` only from evidence triggers listed in [context and planning](context-and-planning.md#discovery-budget). Record each non-obvious source and relevance reason in the Build Plan Packet or Review Packet.
-4. Open a **Draft change request** early against the default branch after the source branch exists remotely. Use `forge publish` with `../templates/review-packet.md` or `../templates/review-packet-compact.md`; the selected provider owns work-item relationship/closure preview validation, publication, and provider-native readback. Do not mark ready in this step. Fill **Builder** metadata when exposed; omit unknown values instead of guessing. Initialize the **Reviewer Lift** block from `../templates/reviewer-lift-schema.md`; fields may be pending, but the block exists on day one. Fill approval and finish authority claims with their verifiable sources.
+4. For a new source without a change request (including a parent allocation), open a **Draft change request** early against the default branch after the source exists remotely; for reuse/revision, update the existing change request instead. Use `forge publish` with `../templates/review-packet.md` or `../templates/review-packet-compact.md`; the selected provider owns work-item relationship/closure preview validation, publication, and provider-native readback. Do not mark ready in this step. Fill **Builder** metadata when exposed; omit unknown values instead of guessing. Initialize or refresh the complete **Reviewer Lift** block from `../templates/reviewer-lift-schema.md`; pending fields are allowed on day one. Preserve approval and finish authority claims with their verifiable sources.
    - **Early Draft change-request push.** This push creates the remote source ref and/or Draft handoff. It does not require the full local gate; use Draft status and pending/N/A Reviewer Lift values until evidence exists.
    - **Implementation pushes before ready.** Pre-ready pushes may publish incremental work or refreshed draft evidence. Run targeted checks during the red-green loop, keep Reviewer Lift current with the facts available, and do not request review from Draft state.
 5. Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the change request. Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger. Exception categories require a recorded rationale and must not allow fake tests or meaningless checks. Work-item-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice. Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions. Commit coherent green slices referencing the work item/slice; revision commits cite review items such as `MF-1: <fix>`. For docs-only/config-only/mechanical work, state `TDD: N/A` and why — do not fake tests.

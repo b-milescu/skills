@@ -21,9 +21,10 @@ worktrees, and one Review Packet/gate/handoff per change request.
 - **Child `mr-builder`:** build and maintain one Draft change request, then stop
   at the final handoff. When `Gate owner: parent`, record the parent-owned/not-run
   contract and candidate commit; the parent owns Gate Receipt and ready.
-- **Revision:** bind every finding to its stable Review Report locator,
-  originating reviewed commit, and finding ID; any push invalidates prior
-  commit/CI/gate evidence.
+- **Revision (standalone or child):** reuse the existing source and change
+  request; preserve the active mode's gate/finish ownership. Bind every finding
+  to its stable report locator, originating reviewed commit, and finding ID;
+  any push invalidates prior candidate-bound commit/CI/gate evidence.
 
 Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
 Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
@@ -46,14 +47,14 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    code does not branch on provider after this point.
 3. Read the supplied issue description and all current notes through `forge
    snapshot`; reconcile contradictions before planning. Re-read state/ownership
-   immediately before work. Start from a clean branch at the current remote
-   default commit.
+   immediately before work. Select [source lifecycle](skill://start-build/reference/implementation-flow.md#source-lifecycle):
+   initialize only a new source; reuse allocated worktrees and revision heads.
 4. Write a compact [Build Plan Packet](skill://start-build/templates/build-plan-packet.md):
-   behavior, surfaces, test plan, risks, non-goals, and loaded context. Push the
-   branch and use `forge publish` to open
-   one early Draft change request with a Review Packet, initialized complete
-   Reviewer Lift, provider-native closure link, and quoted approval/finish
-   authority provenance. Require provider-native readback.
+   behavior, surfaces, test plan, risks, non-goals, and loaded context. For a new
+   source (including a parent allocation), push and use `forge publish` to open
+   its early Draft once; for reuse/revision, update the existing change request.
+   Include a Review Packet, complete Reviewer Lift, provider-native closure
+   link, and quoted approval/finish provenance. Require native readback.
 5. Implement vertical TDD slices. Use provider fixtures or fakes; never use live
    product/operator mutation as test evidence. Run only targeted checks during
    implementation and keep the Draft packet current.
