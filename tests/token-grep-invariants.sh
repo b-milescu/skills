@@ -123,7 +123,6 @@ contain|start-review/REVIEW-FLOW.md|two-line final handoff
 re|start-build/SKILL.md|^## Invocation modes$
 re|start-build/SKILL.md|\*\*Standalone:\*\*
 re|start-build/SKILL.md|\*\*Child `mr-builder`:\*\*
-re|start-build/SKILL.md|\*\*Revision:\*\*
 re|start-build/SKILL.md|active mode reference
 re|start-build/SKILL.md|skill://start-build/reference/child-builder.md
 re|start-build/reference/context-and-planning.md|Read the issue and project rulebook index first
