@@ -24,7 +24,7 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 | CI failures | <n> |
 | Brief defects | <n> |
 | Follow-up issues created | <n> |
-| **`other` tokens used** — per enum field (`action_blocker` / `blocker_token` / `not_run_reason`), the number of final handoffs (builder and reviewer) in the batch whose field carries `other`, over the total number of final handoffs. Use `N/A — <why>` when handoffs are unobservable. | `action_blocker`: <n> / <total>; `blocker_token`: <n> / <total>; `not_run_reason`: <n> / <total> |
+| **`other` tokens used** — evidence sources, counting and N/A rules: [delivery-loop Metrics](skill://issue-delivery-loop/SKILL.md#metrics) | `action_blocker`: <n> / <total> or N/A — <why>; `blocker_token`: <n> / <total> or N/A — <why>; `not_run_reason`: <n> / <total> or N/A — <why> |
 
 ## What went well
 
