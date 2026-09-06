@@ -52,7 +52,7 @@ parent-orchestrated.
    and the ordered common guard through one `forge act`. Perform exactly one
    authorized action bound to the reviewed commit or provider-proven integration
    candidate. The actor owns native readback and any required backlinking note
-   under [Post-report action evidence](REVIEW-FLOW.md#post-report-action-evidence).
+   under [Post-report action evidence](skill://start-review/REVIEW-FLOW.md#post-report-action-evidence).
    A changed head denies action and routes fresh review; queued is not merged.
 8. Emit the complete reviewer-final handoff. Post-merge verification is a
    separate read-only actor using `forge post_merge_snapshot`.
