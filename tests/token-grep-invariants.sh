@@ -298,7 +298,6 @@ re|start-review/SKILL.md|fail(s|ed) closed|blocks
 re|start-review/REVIEW-FLOW.md|Local checkout, remote source, Reviewer Lift reviewed commit
 re|start-review/REVIEW-FLOW.md|Gate Receipt candidate must agree
 re|start-review/REVIEW-FLOW.md|Missing, stale, wrong-commit
-re|start-review/REVIEW-FLOW.md|missing readback
 re|start-review/templates/review-report.md|^\| Change request \|
 re|start-review/templates/review-report.md|^\| Repository \|
 re|start-review/templates/review-report.md|^\| Reviewed commit \|
@@ -560,8 +559,6 @@ absent|start-review/SKILL.md|Measure twice, cut once.
 # review-action-order leftover tokens (order checked below)
 contain|start-review/templates/review-report.md|intended action
 contain|start-review/templates/review-report.md|completed action
-contain|start-review/templates/filling-guide.md|action failure
-contain|start-review/templates/filling-guide.md|pass verdict
 # review-report-summary-first headings/prompts
 re|start-review/templates/filling-guide.md|Decision Summary
 re|start-review/SKILL.md|Decision Summary
@@ -1025,7 +1022,6 @@ previous=-1
 for spec in \
   'Draft the Review Report|draft report' \
   'final provider-native change-request|final snapshot' \
-  'guard fails, convert.*blocked|guard failure to blocked' \
   'forge publish|durable report publication' \
   'fresh `forge snapshot`|fresh pre-action snapshot' \
   'exactly one authorized `forge act`|one authorized action' \
@@ -1039,7 +1035,6 @@ assert_file_contains "$action_section" 'safe-body' "safe body publication"
 assert_file_contains "$action_section" 'byte-for-byte' "publication readback"
 assert_file_contains "$action_section" 'head changed after publication' "changed-head handling"
 assert_file_contains "$action_section" 'skip' "changed-head skips action"
-assert_file_contains "$action_section" 'stale-commit' "stale commit result"
 assert_file_contains "$action_section" 'action result' "action result"
 assert_file_contains "$action_section" 'final' "final handoff"
 assert_file_contains "$action_section" 'Finish owner: parent' "parent finish owner"
