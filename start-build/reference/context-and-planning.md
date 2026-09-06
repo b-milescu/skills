@@ -16,12 +16,31 @@ This packet is pre-edit planning only; builder and reviewer authority boundaries
 
 ## Check gate discovery
 
-Before you claim the full local gate is green, discover it in this order:
+Discover the full local gate before claiming it is green.
+Before selecting parent-owned gate mode or promising a parent Gate Receipt,
+identify the required exact-candidate gate policy, exact command, and documented
+bootstrap route (including runtime and dependencies). Discover them in this order:
 
 1. Project rulebook / contributor docs (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README).
 2. Build scripts (`Makefile`, `package.json`, task runner config, language-specific project files).
 3. CI configuration (`.gitlab-ci.yml`, included pipeline files) to mirror the project gate locally where practical.
 4. If still ambiguous, ask the user or state the limitation in the MR before requesting review.
+
+For parent-mode selection, record the applicable case in the Build Plan Packet:
+
+| Discovered case | Selection and prerequisite |
+|---|---|
+| Existing gate and bootstrap route | Parent ownership is supported; record policy, command, and bootstrap steps. |
+| Existing gate, unbootstrapped checkout | Missing dependencies or the required runtime are bootstrap prerequisites, not missing gate policy. Record the documented setup route and who will execute it before the final gate. If setup is unavailable or unauthorized, name that precise prerequisite. |
+| No gate policy or ambiguous command/bootstrap route | Parent receipt feasibility is unresolved. Name the missing policy decision, command, or setup instructions and route that question to the parent/human before promising a receipt. |
+| Issue deliverable adds the gate | Parent ownership can be planned when the issue defines the gate policy, intended command, bootstrap route, and acceptance criteria. Implement those first, then run the gate on the final candidate; unresolved definitions require a policy decision, not a preimplementation pass. |
+
+This is a feasibility check, not a demand for successful full-gate execution
+before implementation. Unsupported parent-mode selection blocks only the
+affected item: report its exact prerequisite or policy decision, preserve the
+explicit `Gate owner` assignment, and continue unrelated supported work. Do not
+silently fall back to builder ownership or substitute an N/A parent receipt.
+Builder-owned evidence policy is outside this parent-mode selection rule.
 
 ## Handoff integrity checklist
 
