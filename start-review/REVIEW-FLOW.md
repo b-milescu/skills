@@ -116,12 +116,31 @@ reviewer. Serialized review never batches decisions, comments, or actions.
   decomposition defect with concrete risk.
 `Reject` publishes the Review Report, takes no approval or finish action, then stops and escalates to the human/parent.
 - `SF-N` — non-blocking suggestion.
-- `C-N` — clarification required for a decision.
+- `C-N` — non-blocking consideration. Decision prerequisites use the existing
+  [Open Question classification](#open-question-decision-table), not `C-N`.
 
 Each finding records stable Review Report locator, originating 40-hex reviewed
-commit, short ID, location, observable impact, evidence, and required outcome.
+commit, short ID, location, observable impact, evidence, and bounded remedy
+(required for `MF-N`, optional for `SF-N`/`C-N`).
 Style alone is non-blocking. Be direct and demanding on substance without
 performative language.
+
+Publish new optional `SF-N`/`C-N` findings in the plain, non-resolvable Review
+Report or an explicitly non-blocking comment lifecycle. Reserve unresolved
+change-request threads for actual requirements, including required Open
+Questions; optional findings alone never require changes before pass.
+
+Before resolving any existing thread, including an accidentally resolvable
+report, inspect its full content and replies for outstanding requirements or
+decisions. An `SF-N`/`C-N` identifier alone never authorizes resolution or bulk
+resolution. Keep mixed-content threads unresolved until their requirements are
+satisfied; classify decision prerequisites through the Open Question table.
+Respect native resolution permissions and merge protections; report refusals
+without bypassing them.
+
+Lifecycle changes preserve the original `(Report locator, Reviewed SHA,
+Finding ID)` tuple and applicable follow-up obligations for surviving `SF-N`
+findings. Non-blocking severity does not waive finish bookkeeping.
 
 ## Structural maintainability sweep
 
