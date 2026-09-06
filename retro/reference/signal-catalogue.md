@@ -16,6 +16,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 | Signal | Where to look | Usual category |
 |---|---|---|
 | Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, memory-plugin observations if present, `/forge` helper output | tooling |
+| MCP call failures, contract-inconsistent output, or documented unavailability of a required tool | scoped session calls/outputs/unavailability; implicated local evidence only under SKILL.md's session-first contract | tooling |
 | Review rounds > 1 on any change request — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
 | Blocker tokens fired (`missing-authority`, `changed-head-sha`, `merge-conflict`, `partial-review`, ...) — was the blocker avoidable upstream? | reviewer final handoffs, `delivery.handoff_contract`, action-result notes | flow |
 | `Action blocker: other` or `not_run_reason: other` used — the enum lacked a real value | `other` tokens used metric in the delivery-loop batch report / Retro Report §Batch metrics | taxonomy |
@@ -32,15 +33,31 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 
 ## Recurrence check
 
-Before classifying a `tooling` or `flow` finding as `adopt`, check whether it already recurred: search the active memory skill/MCP (when available) and recent issues on the bound tracker for the same error signature or workaround. A first occurrence with a clean recovery may stay `monitor`; a second occurrence is a pattern that earns a fix proposal naming the owner doc.
+Before classifying a `tooling` or `flow` finding as `adopt`, check whether it already recurred: search the active memory skill/MCP (when available) and recent issues on the bound tracker for the same error signature or workaround. A first occurrence with a clean recovery may stay `monitor`; a second occurrence is a pattern that earns a fix proposal naming the evidenced Owner when the cause supports a bounded fix. Recurrence alone does not establish a cause.
 
-## Owner-doc mapping hints
+## Ownership mapping hints
 
-Route proposals at the doc that owns the behavior, not the doc where the symptom appeared:
+**Attribution needs causal evidence.** Separate observed friction from established root cause. Schema-valid input, repeated retries, and successful CLI recovery do not independently establish a server defect; unresolved cause stays `monitor`, with Owner `unknown` when not evidenced. Caller misuse does not automatically justify changing skill instructions: establish that incorrect instructions caused the misuse before routing a proposal there.
 
-- GitLab transport mechanics, snippet/fallback syntax, helper behavior → the `gitlab` skill only when that branch is bound; generic collection is forge.
+Route proposals to the implementation, configuration, documentation, or skill that owns the cause, not where the symptom appeared. Record the repository and component/file locator when evidenced:
+
+- MCP server-contract violation causally tied to responsible implementation → that implementation repository/component, not a skill workaround.
+- Configuration or upstream-service cause → the evidenced configuration owner or upstream repository/component; if evidence cannot resolve ownership, retain `unknown`.
+- Incorrect skill instructions causing caller misuse → the owning instructions, not the server.
+- GitLab transport instructions, snippet/fallback syntax, workflow helper guidance → the `gitlab` skill only when that branch is bound and the instructions are causal; generic collection is forge.
 - Build behavior, TDD/safety policy, builder handoffs → `start-build` (mode reference docs own mode detail).
 - Review behavior, verdict/CI/OQ policy, reviewer handoffs → `start-review`.
 - Batch coordination, tier routing, batch metrics → `issue-delivery-loop`.
 - Target-repo policy (labels, Check Gate, branch naming, workflows) → that repo's Agent Setup Docs (`docs/agents/...`).
 - Shared contracts (effort scaling, decoupling) → the shared docs both flows point at.
+
+### MCP scenario outcomes
+
+These examples guide recognition in both scopes, not additional per-tool investigations. Apply the existing categories, dispositions, recurrence check, and user-approved filing:
+
+| Evidence | Outcome |
+|---|---|
+| Recurring friction with a server-contract violation tied to responsible implementation | One root-cause finding routed to that implementation repository/component; disposition follows the existing rules. |
+| Schema-valid failures followed by CLI recovery, cause unresolved | Retain observed friction as `monitor`; invent neither a server defect nor an Owner. |
+| Incorrect skill instructions shown to cause caller misuse | Route to the owning instructions, not the server. |
+| No observed MCP friction | No additional local-tooling investigation. |
