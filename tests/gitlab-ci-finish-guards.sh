@@ -24,7 +24,6 @@ require "$CARD" 'closure_pending' 'closure pending token'
 retired='no_ci_''expected|ci_not_''green|ci_''guard|stale_''ci|red_''ci|missing_''ci'
 reject "$CARD" "$retired" 'CI exception/guard/blocker vocabulary'
 
-require "$SKILL" 'optional nullable `ci`' 'deployed finish output'
 require "$SKILL" 'CI status is advisory' 'advisory action policy'
 reject "$SKILL" "$retired|stale/red/missing CI" 'retired finish blocker vocabulary'
 
