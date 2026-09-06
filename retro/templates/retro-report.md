@@ -36,10 +36,10 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 
 - **Category:** <flow | process | context | taxonomy | tooling | docs-drift>
 - **Disposition:** <adopt | experiment | monitor | human-decision>
-- **Claim:** <what friction happened, or what should improve>
-- **Evidence + source:** <change request/issue/report URL, command output locator, observation ID — smallest excerpt that backs the claim; never secrets>
-- **Owner doc:** <the canonical doc/skill that owns the behavior>
-- **Proposal:** <bounded change; for human-decision, the question to escalate instead of a fix>
+- **Claim:** <observed friction; distinguish established cause from unresolved attribution>
+- **Evidence + source:** <change request/issue/report URL, command output locator, observation ID — smallest safe excerpt; state unavailable evidence and uncertain local-source/running-server correspondence>
+- **Owner:** <evidenced implementation, configuration, documentation, or skill owner with repository and component/file locator; unknown when unresolved>
+- **Proposal:** <bounded change supported by causal evidence; for monitor, what evidence to watch for; for human-decision, the question to escalate instead of a fix>
 - **Expected effect:** <what gets better and for whom>
 - **Metric to watch:** <how the next retro can tell whether it worked>
 - **Refutation:** <the strongest counter-argument the refuter raised, and why this finding survives it>
@@ -73,6 +73,7 @@ list). List any finding escalated to human-decision by this check, or state
 - **Summary first.** The finding counts and scope line lead the report so a maintainer can triage it without reading every finding.
 - **One root cause per `RF-N`.** Merge symptoms that share a cause; split findings that need different owners or routes.
 - **Evidence is mandatory.** A finding with no citable evidence is not a finding; either gather the evidence or drop it.
+- **Attribution and Owner.** Follow [ownership guidance](../reference/signal-catalogue.md#ownership-mapping-hints): observed friction can survive as `monitor` without a proven cause or forced Owner. Evidence collection stays within [SKILL.md](../SKILL.md)'s session-first and privacy bounds.
 - **Survivors carry their counter-argument.** Every finding the user reads has already been argued against; the `Refutation` field shows the argument it beat, so triage sees both sides.
 - **Dropped findings stay visible.** Log every dropped and merged `RF-N` with the reason so the next retro does not re-raise it.
 - **Stable IDs.** Number `RF-N` in report order and keep IDs stable when follow-up issues cite them.
