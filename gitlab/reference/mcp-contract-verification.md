@@ -45,17 +45,28 @@ Evidence here is read-only or schema-level unless marked `live-smoke`; do not in
 
 The [GitLab Mutation Guard](mutation-guard.md) owns the only allowed `mcp_merge_robustness_gap` fallback, its full preconditions, single-action limit, MCP post-read, and `via=glab-fallback` evidence. This gap never excuses a failed non-transport guard.
 
-### List pagination limitations
+### Selected list traversal
 
-**Fact (`live-smoke`/tool-surface observation, issue #210).** Exposed `list_*` MCP tools do not show reliable pagination controls to the agent. Broad calls can under-report.
-
-Never treat a broad single `list_*` page as exhaustive. Treat this as `mcp_pagination_gap` only when exhaustive selection is required: narrow to a bounded candidate set, re-read each candidate with `get_issue`/`get_merge_request`, or use guarded fallback to find candidates. Lists remain candidate data; a single-record read decides before mutation.
+**Fact (`schema`).** Current exposed issue/MR list tools return
+`pagination.complete` and optional `nextCursor`. Follow
+[`bounded-reads.md` §Selected list traversal](bounded-reads.md#selected-list-traversal)
+for cursor recovery, inherited selection, partial versus exhaustive results,
+page-suffix scope, and the lack of snapshot guarantees. An incomplete first
+page is not an MCP gap; `mcp_pagination_gap` requires actual inability to
+complete/recover the traversal needed by the decision.
 
 ## 5. Idempotency and partial failures
 
 After every mutation, immediately re-read the applicable record through MCP and re-check the expected SHA before trusting local state. Report `via=mcp` or, for an eligible guarded fallback, `via=glab-fallback`.
 
 The [Mutation Guard outputs](mutation-guard.md#outputs) and its schema own blocker/gap tokens and post-read classifications, including `already_merged`, `stale_head`, and `merge_blocked`. Classify before retrying: `already_merged` is success-equivalent; stale or blocked state fails closed. Any retry loop has a small fixed bound and reports its last classification.
+
+Issue creation instead follows the no-automatic-repeat
+[Issue publication contract](../SKILL.md#issue-publication), including the four
+creation outcomes and known-IID GET-only recovery. Preserve other actions'
+verified recovery contracts: for finish timeouts, freshly read MR/approval/merge
+state before considering another action; do not assume failure or repeat until
+state proves the first mutation did not land.
 
 ## 6. Project-path and default-branch validation
 

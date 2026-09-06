@@ -57,7 +57,7 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 - `glab ci status --mr` is unreliable; prefer MCP `get_merge_request`/`list_pipelines` exact-SHA reads, or fallback branch CI / MR `.pipeline` only as contract allows.
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
-- Use file-backed long descriptions/messages through documented wrappers; they validate text files for NUL/control-character corruption by delegating to `validate_gitlab_text` before `glab`, never print bodies, and never receive secrets.
+- Use file-backed long descriptions/messages: the caller reads the file and submits its text to `validate_gitlab_text` before eligible inline `glab` fallback, or to an MCP safe mutation tool. No shipped wrapper reads or validates files for the caller; never print bodies or receive secrets.
 - Generic path, comparison, and directory-change hygiene lives in
   [`bounded-reads.md` §Generic shell hygiene](skill://gitlab/reference/bounded-reads.md#generic-shell-hygiene).
 
@@ -66,6 +66,38 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 Validate every MR/issue body before mutation with `validate_gitlab_text` or a safe mutation tool that embeds it. Reject NUL, non-whitespace C0 controls, and DEL; allow tab, newline, and carriage return. Diagnostics name only the role and byte offset, never body content or secrets.
 
 Draft long text in temp/run-dir files with quoted heredocs. File-backed `glab` fallback is allowed only under snippet fallback conditions and enforces the same byte rule. See [`safe-text.md`](skill://gitlab/reference/safe-text.md) and [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
+
+## Issue publication
+
+Use `create_issue` with required native arguments `project`, `expected_api_url`,
+`expected_project_id`, `expected_user_id`, and `title`. Bind project/user IDs
+through fresh `get_project` / `get_current_user` reads; use exact existing label
+names and preserve every submitted field, including authored Markdown.
+
+`expected_api_url` is an expectation checked against the server-owned API root,
+not a destination selector. Obtain the complete non-secret root, including any
+installation subpath, from explicitly available trusted configuration or an
+operator binding. The current profile, `get_project`, and `get_current_user`
+do not establish automatic API-root discovery. If absent, stop before POST and
+request that specific non-secret value. Do not derive host plus `/api/v4`,
+probe creation with intentionally wrong expectations, inspect credentials,
+invent a discovery tool, or migrate the profile.
+
+The native tool validates bindings/text, POSTs once, and compares submitted
+intent against raw GET. Classify its body-free receipt before continuing:
+
+| Outcome | Caller response |
+|---|---|
+| `verified_created` | Record the verified IID/locator and submitted-field evidence. |
+| `not_created` | No creation established; report the failure and resolve its prerequisite before any separately authorized new attempt. |
+| `creation_unknown` | Do not repeat POST. Reconcile with bounded native reads; ambiguous or absent matches require a human decision. |
+| `created_unverified` | Preserve the known IID; recover with GET-only reads and compare every submitted field, recovering authored body losslessly. |
+
+Never automatically repeat creation, including after timeout or failed
+readback. A known IID always takes GET-only recovery; without one, use bounded
+reconciliation, not a guessed IID. Later label reconciliation is a separately
+authorized mutation, never silent repair of failed publication. Other actions
+retain their own verified recovery contracts.
 
 ## Three issue-closure oracles
 
@@ -121,7 +153,7 @@ Open the early Draft MR only after the source branch exists remotely. MCP primar
 
 ```text
 
-validate_gitlab_text(role="merge request description", body=review_packet)
+validate_gitlab_text(role="review_packet", content=review_packet)
 create_merge_request(project_path, source_branch, target_branch, title, description=review_packet, draft=true)
 get_merge_request(project_path, mr_iid, include_description:false) -> verify draft=true, source/target/head
 get_merge_request_description(project_path, mr_iid, description_max_bytes, description_offset_bytes) -> recover and verify review_packet byte-for-byte
@@ -218,10 +250,15 @@ Post MR comments only. MCP primary: `safe_create_merge_request_note` validates b
 
 ```text
 
-safe_create_merge_request_note(project_path, mr_iid, body=report_body, resolvable=false)
+safe_create_merge_request_note(project=project_path, merge_request_iid=mr_iid, body=report_body)
 merge_request_notes_or_discussions(project_path, mr_iid) -> verify created note exists; for Review Reports, body matches source without printing body
 
 ```
+
+Use exact-note content or lossless bounded recovery when verifying source
+equality. The tool's canonical-body digest and `verify_merge_request_note_digest`
+prove stored-body equality, not equality to the authored report; neither
+replaces the source comparison.
 
 ### Snippet: issue-note-create
 
@@ -258,11 +295,11 @@ get_project(project_path) -> verify binding
 
 ### Snippet: auto-merge-api-fallback
 
-Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer `finish_merge_request(action="queue-auto-merge", sha=reviewed_sha)` or MCP `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after reviewed-SHA, Gate Receipt, authority, caller/context, and fallback guards pass.
+Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer the native finish call below, or lower-level `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after caller-owned reviewed-SHA, Gate Receipt, independent review, authority, caller/context, and fallback guards pass. Native success is not proof of those workflow checks.
 
 ```text
 
-finish_merge_request(project_path, mr_iid, reviewed_sha, action="queue-auto-merge", source_branch, target_branch, authority_source, caller_role)
+finish_merge_request(project=project_path, merge_request_iid=mr_iid, reviewed_sha=reviewed_sha, action="queue-auto-merge", source_branch=source_branch, target_branch=target_branch, caller_role=caller_role, authority="queue auto-merge", authority_source=authority_source, should_remove_source_branch=true)
 get_merge_request(project_path, mr_iid) -> verify queue state and record via=mcp or via=glab-fallback
 
 ```
@@ -321,6 +358,12 @@ glab mr merge "$mr_iid" --auto-merge --yes --sha "$reviewed_sha" --remove-source
 
 Use after `sha-bound-approval` when approval status must be verified through the approvals endpoint. `approved_by` in MR JSON can lag.
 
+MCP primary: `get_merge_request_approvals(project=project_path, merge_request_iid=mr_iid)`,
+plus a fresh MR head/caller binding. An approval record is not independent
+exact-SHA review evidence. A tier-unavailable `not_available` response leaves
+approval unverified and fails closed; fallback cannot bypass native tier policy.
+Use the help-first read below only for an eligible unavailable MCP transport.
+
 ```bash
 
 mr_iid="<id>"
@@ -333,23 +376,37 @@ glab api "projects/${project_path}/merge_requests/${mr_iid}/approvals"
 
 Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#finish-specialization-finish-mr-authority-aware), authority claim/source semantics live in [`skill://gitlab/reference/authority-verification.md`](skill://gitlab/reference/authority-verification.md), and the shared mutation sequence lives in [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
 
-Inputs:
+Workflow inputs include the exact-candidate Gate Receipt, independent review,
+authority provenance, caller identity/context, default branch, and optional
+issue/worktree. These are caller evidence, not additional native arguments.
+Use the actual MR `target_branch`, even when it differs from the default.
+Native inputs are shown below; `should_remove_source_branch` is optional.
+`action` is exactly `approval-only`, `direct-merge`, or `queue-auto-merge`.
+`authority="human release"` is a no-mutation human handoff, not a fourth action.
+Unlike lower-level approve/merge tools (which retain `sha` and `confirm=true`),
+finish takes `reviewed_sha` and no `confirm`.
 
-- `mr_iid`: merge request IID.
-- `reviewed_sha`: SHA approved by the reviewer and guarded with exact-SHA reads.
-- `merge_authority`: `approval-only`, `reviewer may merge`, `queue auto-merge`, or `human release`.
-- `caller_role`: `builder`, `reviewer`, `authorized-parent`, or `human`.
-- `source_branch`, `default_branch`, and optional `worktree_path`.
-- Optional `issue_iid` when not obvious from `Closes #...`.
-
-MCP primary: `finish_merge_request` performs the authority-aware finish contract after fresh MR, reviewed-SHA, exact-candidate Gate Receipt, caller identity, and authority validation. Its optional nullable `ci` value is advisory: a reviewed-SHA pipeline object when observed, `null` when none exists, and absent only for an already-merged no-mutation result. Builder role always stops at handoff. Stop on stale head, missing/stale Gate Receipt, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup, or native GitLab policy refusal. Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps after MCP re-read and all mandatory guards pass.
+The caller verifies the Gate Receipt, independent exact-SHA review, authority
+provenance, and identity/context eligibility before invoking native finish.
+The tool freshly checks project/MR/SHA/branches and supplied role/authority,
+performs at most one action, and returns native readback with optional nullable
+advisory `ci`; success does not establish the caller's workflow proofs.
+Builder role always stops at handoff. Stop on stale head, missing/stale Gate
+Receipt, missing authority/source, identity drift, same-session review/finish,
+unsupported action, dirty worktree cleanup, or native GitLab policy refusal.
+Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps
+after MCP re-read and all mandatory guards pass.
 
 ```text
 
-finish_merge_request(project_path, mr_iid, reviewed_sha, merge_authority, authority_source, caller_role, source_branch, default_branch, issue_iid?) -> finish_result with optional nullable advisory ci
-get_merge_request(project_path, mr_iid) -> after any mutation, verify state/issue/branch cleanup and record via
+finish_merge_request(project=project_path, merge_request_iid=mr_iid, reviewed_sha=reviewed_sha, action=action, source_branch=source_branch, target_branch=target_branch, caller_role=caller_role, authority=merge_authority, authority_source=authority_source) -> native action/readback and advisory ci
+get_merge_request(project_path, mr_iid) -> verify post-action MR state and record via
 
 ```
+
+The caller separately gathers post-merge issue/branch and local-cleanup
+evidence for the workflow `finish_result`; follow the cleanup ordering in
+[`ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md).
 
 ### Snippet: mr-handoff-evidence
 

@@ -68,32 +68,6 @@ assert_not_performs() {
   fi
 }
 
-require_text_flat() {
-  local file="$1" pattern="$2" label="$3" content
-  content="$(LC_ALL=C tr '\n' ' ' <"$file")"
-  grep -Eiq -- "$pattern" <<<"$content" || fail "$file missing $label"
-}
-
-require_review_report_posting_contract() {
-  local file="$1" label="${2:-Review Report posting contract}"
-
-  require_text "$file" 'Snippet: mr-note-create' "$label canonical mr-note-create pointer"
-  require_text_flat "$file" 'top-level.{0,120}(MR )?note|(MR )?note.{0,120}top-level' "$label top-level MR note"
-  require_text_flat "$file" 'plain.{0,120}(MR )?note|(MR )?note.{0,120}plain' "$label plain MR note"
-  require_text_flat "$file" 'non-resolvable' "$label non-resolvable note"
-  require_text_flat "$file" 'safe_create_merge_request_note' "$label MCP safe MR note tool"
-  require_text_flat "$file" 'validate_gitlab_text|safe GitLab text|Safe GitLab Text' "$label safe text validation"
-  require_text_flat "$file" 'create_merge_request_note.{0,200}(inline|unsafe|raw)|inline.{0,200}create_merge_request_note' "$label unsafe inline MCP create_merge_request_note warning"
-  require_text_flat "$file" '(^|[^[:alpha:]])(MUST NOT|never|do not|not)[^[:alpha:]].{0,200}(unsafe inline|raw inline|create_merge_request_note)' "$label unsafe inline posting prohibition"
-  require_text_flat "$file" 'read[- ]back|read back|read( the)? created note' "$label read-back verification"
-  require_text_flat "$file" '(created )?note.{0,120}(body|content)|(body|content).{0,120}(created )?note' "$label created note body check"
-  require_text_flat "$file" '(match|matches|same|equal).{0,160}(source|report file|report content|source report)|(source|report file|report content|source report).{0,160}(match|matches|same|equal)' "$label source report body match"
-  require_text_flat "$file" 'fail[- ]closed|fails closed|fail closed' "$label fail-closed mismatch handling"
-  require_text_flat "$file" 'placeholder.{0,160}(note|body|Review Report)|(note|body|Review Report).{0,160}placeholder' "$label placeholder note failure"
-  require_text_flat "$file" 'partial.{0,160}(note|body|Review Report)|(note|body|Review Report).{0,160}partial' "$label partial note failure"
-  require_text_flat "$file" 'literal[- ]expansion|literal expansion' "$label literal-expansion note failure"
-  require_text_flat "$file" 'body[- ]mismatch|body mismatch' "$label body-mismatch note failure"
-}
 
 # SHA-pin invariant (transport-independent): the action line that performs the
 # mutating verb must bind reviewed_sha ON THE SAME LINE, so the action is pinned
@@ -119,7 +93,7 @@ VERB_DESCRIPTION='--description|description'
 VERB_APPROVE='glab mr approve|approve_merge_request'
 VERB_MERGE='glab mr merge|merge_merge_request'
 VERB_AUTO_MERGE='--auto-merge|auto[_-]?merge'
-VERB_APPROVALS_ENDPOINT='/approvals|get_merge_request_approval|approval_state'
+VERB_APPROVALS_ENDPOINT='/approvals|get_merge_request_approvals'
 VERB_MR_NOTE='glab mr note|create_note|mr_note_create'
 VERB_ISSUE_NOTE='glab issue note|create_issue_note|issue_note_create'
 
@@ -272,7 +246,6 @@ assert_contains "$mr_note_body" 'safe_create_merge_request_note' 'MR note safe M
 assert_contains "$mr_note_body" 'non-resolvable' 'MR note non-resolvable MCP behavior'
 assert_contains "$mr_note_body" 'mr_iid' 'explicit MR target'
 assert_contains "$mr_note_body" 'body=report_body' 'MR note body input'
-assert_contains "$mr_note_body" 'non-resolvable' 'MR note non-resolvable helper behavior'
 assert_not_performs "$mr_note_body" "$VERB_ISSUE_NOTE" 'an issue-note action in the MR-note snippet'
 
 # --- Issue note: posts an issue note via helper, file-backed, not an MR note ---
@@ -297,7 +270,6 @@ require_text "gitlab/reference/snippet-transports.md" 'safe_update_merge_request
 
 # --- File-backed multiline + help-first guidance survive ----------------------
 require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
-require_text "$SKILL" 'validate text files for NUL/control-character corruption' 'control-character validation guidance'
 require_text "gitlab/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
 require_text "$SKILL" 'Before any flagged fallback `glab` command, run exact command help' 'fallback help-first rule'
 
