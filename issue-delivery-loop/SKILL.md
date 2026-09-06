@@ -71,8 +71,16 @@ as queued, never merged.
 
 **`other` tokens used** — per enum field (`action_blocker` / `blocker_token` /
 `not_run_reason`), the number of final handoffs (builder and reviewer) in the
-batch whose field carries `other`, over the total number of final handoffs. Use
-`N/A — <why>` when handoffs are unobservable.
+batch whose field carries `other`, over the total number of final handoffs.
+Resolve field values from verified durable Review Report / Review Packet
+evidence or a supported compact delivery index, matched to that handoff and
+its candidate; compact-index claims require native evidence verification.
+Count repeated handoffs separately, not unique changes or evidence artifacts;
+multiple sources for one handoff do not add counts. Locator-only finals locate
+evidence: their absent enum fields never imply zero. For each field, use
+`N/A — <why>` when handoffs or matching field evidence are genuinely unavailable,
+unverified, or incomplete; do not shrink the denominator to observable values.
+No handoffs also yields `N/A`, not `0/0`.
 
 A *brief defect* is a defect in the issue as written — a wrong baseline
 observation, a stale premise, or an unsatisfiable acceptance criterion —
