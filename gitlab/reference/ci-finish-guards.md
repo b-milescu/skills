@@ -48,7 +48,8 @@ Successful finish results carry no CI eligibility field. Any returned CI status 
 non-blocking for approval-only, direct merge, and queue-auto-merge.
 
 Approval, direct merge, and auto-merge queueing are separate Mutation Guard
-actions. Finish performs at most one action after these mandatory guards pass:
+actions. The caller owns the workflow proof and invokes native finish only
+after these mandatory guards pass, including independent exact-SHA review:
 
 1. project, MR, source, and target binding;
 2. current head equals `reviewed_sha`;
@@ -57,10 +58,15 @@ actions. Finish performs at most one action after these mandatory guards pass:
 5. fallback eligibility when applicable;
 6. exactly one mutation and provider-native readback.
 
-The finish response records action/result, SHA, nullable advisory `ci`, issue and
-cleanup state, authority/caller evidence, and transport. Native GitLab branch
-protection or merge policy may refuse the mutation; report the refusal as the
-provider result and never bypass it. Builder callers always stop at handoff.
+The caller assembles the workflow finish result from native action/result, SHA,
+nullable advisory `ci`, separately gathered post-merge issue/branch and local
+cleanup state, authority/caller evidence, and transport. Native finish checks
+fresh project/MR/SHA/branches and supplied role/authority, then returns action
+readback; its success does not prove the exact-candidate Gate Receipt,
+independent review, authority provenance, or caller identity/context eligibility.
+Native GitLab branch protection or merge policy may refuse the mutation;
+report the refusal as the provider result and never bypass it. Builder callers
+always stop at handoff.
 
 Local default-branch fetch/fast-forward and source/worktree cleanup happen only
 after the finish action completes or is reported as no-action. Worktree removal

@@ -2,7 +2,7 @@
 
 Transport-agnostic safety rules for any text body submitted to GitLab — MR/issue
 descriptions and notes — regardless of whether the body reaches GitLab through a
-file-backed `glab` wrapper, an MCP `body`/`description` string, or another
+file-backed eligible inline `glab` fallback, an MCP `body`/`description` string, or another
 transport. This reference owns two durable concerns:
 
 1. The **content-byte rule** that every GitLab write must satisfy.
@@ -21,7 +21,7 @@ them. Reject the body before any GitLab write when it violates this rule.
 
 The MCP validator `validate_gitlab_text` owns the active workflow contract for this rule. Body-bearing MCP mutation helpers (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`) apply the same rule before sending text to GitLab. Historical local guards may exist for fallback/regression fixtures, but active workflow docs must name the MCP validator/tool contract.
 
-`validate_gitlab_text` accepts a body plus body role, returns success when body is safe, and fails closed on NUL, non-whitespace C0 controls, or DEL. Diagnostics name the role and offending byte offset and **never print body**, so malformed secret-bearing payload is not echoed back.
+`validate_gitlab_text` accepts `content` plus an optional `role` (`body`, `description`, `note`, `review_packet`, or `reviewer_lift`), returns success when text is safe, and fails closed on NUL, non-whitespace C0 controls, DEL, or malformed UTF-16. Diagnostics name the role and offending offset and **never print body**, so malformed secret-bearing payload is not echoed back.
 
 ## MR body issue-reference intent
 
@@ -41,17 +41,17 @@ Keep the real auto-close trailer deliberate and unique: use a plain standalone
 
 
 ```text
-validate_gitlab_text(role="merge request description", body=body)
+validate_gitlab_text(role="description", content=body)
 # PASS: no NUL, non-whitespace C0 controls, or DEL
 # FAIL: role + byte offset only; body is not printed
 ```
 
-`MCP safe GitLab text tools` delegates file-backed fallback
-validation to `validate_gitlab_text` before `glab mr create`, `glab mr
-update`, and note submission. MCP callers that pass a `body` or `description`
-string must run `validate_gitlab_text` (or the exact same byte rule in
-process) before the MCP mutation, so every GitLab text mutation shares the same
-role/offset-only diagnostic contract.
+The caller reads file-backed text without losing authored bytes, including
+trailing newlines, and submits `content` to `validate_gitlab_text` before
+eligible inline `glab` fallback. No shipped wrapper performs this step.
+MCP callers that pass a `body` or `description` string use the MCP validator
+before mutation or a safe mutation tool embedding it; validation is not a
+substitute for authored-source readback equality.
 
 ## Inline heredoc command-substitution hazard
 
@@ -92,6 +92,6 @@ EOF
   at write time, not after submission.
 - **Keep text files local and uncommitted.** Keep generated text files under
   temp/run directories and never commit review artifacts.
-- **Diagnostics never print the body.** Guard and wrapper diagnostics name the
-  failing role and byte offset only; they do not echo the body, so a malformed or
+- **Diagnostics never print the body.** Caller and MCP validation diagnostics name the
+  failing role and offset only; they do not echo the body, so a malformed or
   secret-bearing payload is never surfaced in logs.

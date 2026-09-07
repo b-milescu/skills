@@ -15,7 +15,7 @@ Keep generated text under temp/run directories, never commit review artifacts, a
 ```bash
 run_dir="$(mktemp -d "${TMPDIR:-/tmp}/gitlab-text.XXXXXX")"
 text_file="$run_dir/body.md"
-text_role="merge request description"
+text_role="description"
 cat > "$text_file" <<'EOF'
 ## Review Packet
 
@@ -23,19 +23,24 @@ cat > "$text_file" <<'EOF'
 - Literal example: `echo "$EXAMPLE_VAR"` not executed.
 EOF
 
-text_body="$(<"$text_file")"
-validate_gitlab_text(role="$text_role", body="$text_body")
+```
+
+The caller reads the complete file, preserving trailing newlines, into
+`text_body`, then invokes the MCP validator (not a shell command):
+
+```text
+validate_gitlab_text(role="description", content=text_body)
 ```
 
 Choose the role, payload field, and safe mutation for the destination:
 
 | Destination | `text_role` | Payload / mutation |
 | --- | --- | --- |
-| MR note | `merge request note` | `body`; `safe_create_merge_request_note(..., body=text_body, resolvable=false)` |
-| Issue note | `issue note` | `body`; `safe_create_issue_note(..., body=text_body)` |
-| MR description | `merge request description` | `description`; `create_merge_request(..., description=text_body, draft=true)` or `safe_update_merge_request_description(..., description=text_body)` |
+| MR note | `note` | `body`; `safe_create_merge_request_note(project=project_path, merge_request_iid=mr_iid, body=text_body)` creates a plain top-level non-resolvable note |
+| Issue note | `note` | `body`; `safe_create_issue_note(..., body=text_body)` |
+| MR description | `description` | `description`; `create_merge_request(..., description=text_body, draft=true)` or `safe_update_merge_request_description(..., description=text_body)` |
 
-Re-read a created note before treating it as durable Review Report evidence. Re-read an MR after creation/update before trusting its description or state.
+Re-read a created note before treating it as durable Review Report evidence. Compare exact-note content (or losslessly recovered chunks) with the authored source; canonical stored-body digest equality alone does not establish source equality. Re-read an MR after creation/update before trusting its description or state.
 
 ## Shell-safety owner
 

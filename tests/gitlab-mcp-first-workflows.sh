@@ -102,7 +102,5 @@ require_text gitlab/reference/safe-text.md 'never print body' 'diagnostics do no
 require_text gitlab/reference/safe-text.md 'malformed secret-bearing payload is not echoed back' 'sensitive-body redaction invariant'
 
 require_text gitlab/reference/mcp-contract-verification.md 'Merge robustness' 'known MCP merge robustness gap'
-require_text gitlab/reference/mcp-contract-verification.md 'List pagination limitations' 'known MCP list pagination gap'
-require_text gitlab/reference/mcp-contract-verification.md 'list_\*.*do not show reliable pagination controls|do not show reliable pagination controls.*list_\*' 'list pagination limitation wording'
 
 printf 'gitlab-mcp-first-workflows: PASS\n'

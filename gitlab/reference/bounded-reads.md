@@ -34,6 +34,25 @@ applicable reviewed-SHA, exact-candidate Gate Receipt, authority,
 caller-identity/context, and content-byte guard; advisory CI state never changes
 fallback eligibility.
 
+## Selected list traversal
+
+Use cursor-first traversal for exposed `list_*` tools. On an incomplete result,
+resume with `pagination.nextCursor`; omitted filters and `limit` inherit the
+selected traversal, while conflicting explicit values are rejected. Follow the
+current tool schema rather than assuming every list supports `page`.
+
+Exhaust the selected traversal to `pagination.complete:true` only when the
+decision requires completeness. Otherwise retain an explicitly partial candidate
+set. Completeness is not a snapshot guarantee: changing server state can affect
+later reads. Where `page` is supported, it selects a native page suffix, not the
+earlier pages or the entire project, and cannot be combined with `cursor`.
+
+An incomplete first page does not authorize fallback. Use `mcp_pagination_gap`
+only for actual inability to complete or recover a required traversal after
+native cursor recovery; then apply existing help-first guarded fallback.
+Re-read actionable issues/MRs by IID before mutation regardless of traversal
+completeness.
+
 ## Generic shell hygiene
 
 - Paths passed to non-shell binaries must use a namespace that binary can resolve: prefer repo-relative paths, or drive-letter form when the binary requires it, rather than shell-only paths such as `/tmp/...`. When native invocation is unavailable, use the caller-local helper against caller-local paths instead of mixing path namespaces.

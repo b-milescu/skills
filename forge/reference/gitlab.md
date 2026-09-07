@@ -31,8 +31,7 @@ documented conditions.
 
 ## Issue publish
 
-Create one issue through disclosed `/gitlab` MCP-first `create_issue` (labels on
-create, or `update_issue` label-reconcile), then native `get_issue` /
-`get_issue_description` readback of title, labels, and body. Fallback only when
-`/gitlab` already names that condition. Fail closed if this branch cannot name
-a native create.
+Follow the GitLab-owned [Issue publication contract](../../gitlab/SKILL.md#issue-publication)
+for required native bindings, exact submitted-field preservation, creation
+outcomes, and GET-only/bounded recovery. Fail closed when its trusted API-root
+binding is absent; use only fallback conditions already named by `/gitlab`.

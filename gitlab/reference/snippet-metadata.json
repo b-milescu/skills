@@ -106,14 +106,14 @@
         "issue_label_update"
       ],
       "required_guards": [
-        "list results are candidate data unless narrowly scoped",
+        "retain partial candidate status unless required selected traversal is complete; re-read actionable IID",
         "stop on confidential issue ambiguity",
         "stop on blocked issue ambiguity",
         "stop on wrong-project ambiguity",
         "maintenance mutations require an owning workflow step"
       ],
       "fallback_conditions": [
-        "glab issue list/view when MCP list pagination blocks selection",
+        "glab issue list/view only when required traversal cannot complete/recover with native cursors",
         "glab issue list/view when MCP read is unavailable",
         "exact glab help must be verified first"
       ],
@@ -133,8 +133,8 @@
         "mcp_primary_tools": "`list_issues`, `get_issue`, issue notes/list discussions tool when comments are required.",
         "inputs": "Issue IID/URL or selection filters (target repo AFK-ready label from `project_profile.label_profile_ref`, assignee, state); project path.",
         "outputs": "Issue IID/title/state/labels/assignees/URL/description and comments.",
-        "required_guards": "Treat list results as candidate data; do not assume exhaustive lists when a list page may be truncated. Stop on confidential/blocked/wrong-project ambiguity.",
-        "fallback_conditions": "`glab issue list/view` fallback when MCP list pagination gap blocks selection or MCP read is unavailable; use exact help.",
+        "required_guards": "Use cursor-first selected traversal; retain partial candidate status unless completeness is required and established. Re-read actionable IID; stop on confidential/blocked/wrong-project ambiguity.",
+        "fallback_conditions": "`glab issue list/view` only when required native cursor traversal cannot complete/recover or MCP read is unavailable; use exact help.",
         "post_mutation_reread": "N/A for reads; after issue update/close fallback, re-read `get_issue`."
       }
     },
@@ -281,7 +281,7 @@
       ],
       "fallback_conditions": [
         "glab mr view/list when MCP read is unavailable",
-        "glab mr view/list when list pagination blocks selection",
+        "glab mr view/list only when required traversal cannot complete/recover with native cursors",
         "help-first verification"
       ],
       "post_mutation_reread": {
@@ -300,8 +300,8 @@
         "mcp_primary_tools": "`get_merge_request`; `list_merge_requests` only for candidate selection; MR notes/discussions tool for comments.",
         "inputs": "MR IID/full URL/current branch filters, project path.",
         "outputs": "Decision-grade MR metadata: IID, state, draft, branches, author id, URL, head SHA, pipeline, merge status.",
-        "required_guards": "Do not approve/finish from list-only data; bind host/project/path before action.",
-        "fallback_conditions": "`glab mr view/list` fallback when MCP read is unavailable or list pagination gap blocks selection; help-first.",
+        "required_guards": "Use cursor-first selected traversal; retain partial candidate status unless completeness is required and established. Do not approve/finish from list-only data; bind host/project/path and re-read actionable IID.",
+        "fallback_conditions": "`glab mr view/list` only when MCP read is unavailable or required native cursor traversal cannot complete/recover; help-first.",
         "post_mutation_reread": "N/A — read-only."
       }
     },
@@ -602,6 +602,7 @@
       "required_guards": [
         "fresh MCP re-read of SHA before action",
         "exact-candidate Gate Receipt before action",
+        "caller verifies independent exact-SHA review before action",
         "authority/source before action",
         "caller identity/token-stability before action",
         "context-firewall eligibility before action"
@@ -623,10 +624,10 @@
         "requirement": "Record via=mcp or via=glab-fallback for the auto-merge queue mutation."
       },
       "markdown": {
-        "mcp_primary_tools": "Prefer `finish_merge_request(action=queue-auto-merge)` or `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`, then `get_merge_request`.",
+        "mcp_primary_tools": "Prefer `finish_merge_request` with the native arguments in `finish-mr-authority-aware` and action `queue-auto-merge`, or `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`, then `get_merge_request`.",
         "inputs": "Bound MR, reviewed SHA, source/target branches, queue authority/source, caller role/identity.",
         "outputs": "Auto-merge queued or blocked handoff.",
-        "required_guards": "Fresh MCP re-read of SHA, exact-candidate Gate Receipt, authority/source, caller identity/token-stability, and context-firewall eligibility before action.",
+        "required_guards": "Caller verifies fresh MCP SHA, exact-candidate Gate Receipt, independent review, authority provenance, caller identity/token-stability, and context-firewall eligibility; native success does not prove these.",
         "fallback_conditions": "Known `glab mr merge --auto-merge` 405 path only after `finish_merge_request` / `merge_merge_request` is unavailable or blocked by a documented MCP gap and all reviewed-SHA, Gate Receipt, authority, caller, and readback guards pass; advisory CI status never affects fallback eligibility.",
         "post_mutation_reread": "Required: re-read MR and record `via=mcp` or `via=glab-fallback`."
       }
@@ -810,19 +811,18 @@
     {
       "name": "approval-confirmation",
       "mcp_primary_tools": [
-        "get_merge_request_approval",
-        "approval_state",
+        "get_merge_request_approvals",
         "get_merge_request"
       ],
       "input_category": "approval-confirmation-read",
       "output_category": "approval-record",
       "allowed_mutations": [],
       "required_guards": [
-        "do not claim approval from laggy MR metadata alone",
-        "stop if endpoint/read unavailable"
+        "bind fresh MR head and caller; approval record is not independent exact-SHA review evidence",
+        "do not claim approval from laggy MR metadata alone; fail closed on tier-unavailable or unverified read"
       ],
       "fallback_conditions": [
-        "glab api approvals fallback when MCP approval-state read unavailable"
+        "help-first glab api approvals only for unavailable MCP transport; never bypass native tier policy"
       ],
       "post_mutation_reread": {
         "mode": "none",
@@ -837,11 +837,11 @@
         "requirement": "Record the transport used when approval confirmation evidence is reported."
       },
       "markdown": {
-        "mcp_primary_tools": "Approval state tool (`get_merge_request_approval` / `approval_state`) plus `get_merge_request`.",
+        "mcp_primary_tools": "`get_merge_request_approvals` plus `get_merge_request`.",
         "inputs": "Bound MR IID/project path, approved/reviewed SHA.",
         "outputs": "Approval record tied to MR and caller.",
-        "required_guards": "Do not claim approval from laggy MR metadata alone; stop if endpoint/read unavailable.",
-        "fallback_conditions": "`glab api .../approvals` fallback when MCP approval-state read unavailable.",
+        "required_guards": "Bind fresh MR head/caller; approval is not independent exact-SHA review evidence. Do not trust laggy MR metadata alone; fail closed on unavailable or unverified approval reads.",
+        "fallback_conditions": "Help-first `glab api .../approvals` only for unavailable MCP transport, never native tier-policy bypass.",
         "post_mutation_reread": "N/A — read-only confirmation."
       }
     },
@@ -865,6 +865,7 @@
         "builder always stops at handoff",
         "stop on stale head",
         "stop on missing/stale exact-candidate Gate Receipt",
+        "caller verifies independent exact-SHA review, authority provenance, and identity/context; native success is not proof",
         "stop on missing authority/source",
         "stop on identity drift",
         "stop on same-session review/finish",
@@ -877,7 +878,7 @@
       ],
       "post_mutation_reread": {
         "mode": "required",
-        "expectation": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
+        "expectation": "Required after any mutation: caller re-reads MR and separately gathers post-merge issue/branch and local-cleanup evidence in policy order; record `via=...`."
       },
       "via_evidence": {
         "required": true,
@@ -889,12 +890,12 @@
         "requirement": "Record via=mcp or via=glab-fallback for any finish mutation; via=n/a is allowed only for no-action handoff/held results."
       },
       "markdown": {
-        "mcp_primary_tools": "`finish_merge_request` after fresh MR, reviewed-SHA, exact-candidate Gate Receipt, caller identity, and authority validation; tool performs at most one approval/merge/auto-merge action as authorized and returns optional nullable advisory `ci`.",
-        "inputs": "MR IID, reviewed SHA, exact-candidate Gate Receipt, merge authority/source, caller role/id, source/target branch, default branch, optional issue/worktree.",
-        "outputs": "`finish_result`/handoff with action, blocker, sha, optional nullable advisory CI, issue, cleanup, identity, and `via`.",
-        "required_guards": "Builder always stops at handoff; stop on stale head, missing/stale Gate Receipt, missing authority/source, identity drift, same-session review/finish, unsupported action, dirty worktree cleanup, or native policy refusal.",
+        "mcp_primary_tools": "`finish_merge_request` checks native project/MR/SHA/branches and supplied role/authority, performs at most one action, and returns native readback plus optional nullable advisory `ci`.",
+        "inputs": "Native: `project`, `merge_request_iid`, `reviewed_sha`, `action`, `source_branch`, actual `target_branch`, `caller_role`, `authority`, `authority_source`; optional `should_remove_source_branch`. Gate/review proof, default branch, issue/worktree are caller inputs only.",
+        "outputs": "Native action/readback and advisory CI; caller assembles workflow `finish_result`/handoff with separate issue, branch, cleanup, identity, and `via` evidence.",
+        "required_guards": "Caller verifies exact-candidate Gate Receipt, independent review, authority provenance and identity/context; native success is not proof. Builder stops at handoff; fail closed on stale head, missing proof, same-session review/finish, unsupported action, dirty cleanup, or native refusal. Human release is no-mutation handoff.",
         "fallback_conditions": "Raw `glab` fallback only under snippet-specific documented MCP gaps after MCP re-read and all reviewed-SHA, Gate Receipt, authority, caller, and readback guards pass; no helper-script finish path is active workflow and advisory CI status never affects fallback eligibility.",
-        "post_mutation_reread": "Required after any mutation: re-read MR; verify state/issue/branch cleanup; record `via=...`."
+        "post_mutation_reread": "Required after any mutation: caller re-reads MR and separately gathers post-merge issue/branch and local-cleanup evidence in policy order; record `via=...`."
       }
     },
     {
