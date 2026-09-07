@@ -48,6 +48,10 @@ Default: fan out every provably decoupled subset.
 7. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
    `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
+   Before that finish: the source branch's `issue-<iid>` must resolve to an open item
+   that the description's `Closes`/`Refs` trailer names, and a `pass` whose Review
+   Report lists surviving `SF` findings gets one filed follow-up issue per finding,
+   referenced from the finish note, before the merge is queued.
 8. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
    boundary without polling CI. Provider merge-event evidence advances the
