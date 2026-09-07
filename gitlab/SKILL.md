@@ -69,19 +69,32 @@ Draft long text in temp/run-dir files with quoted heredocs. File-backed `glab` f
 
 ## Issue publication
 
-Use `create_issue` with required native arguments `project`, `expected_api_url`,
-`expected_project_id`, `expected_user_id`, and `title`. Bind project/user IDs
-through fresh `get_project` / `get_current_user` reads; use exact existing label
-names and preserve every submitted field, including authored Markdown.
+Use `create_issue` with required native arguments `project`,
+`expected_project_id`, `expected_user_id`, and `title`, plus the intended
+publication fields. The bound MCP connection owns the API destination; no
+caller API URL or replacement API-configuration argument is needed.
 
-`expected_api_url` is an expectation checked against the server-owned API root,
-not a destination selector. Obtain the complete non-secret root, including any
-installation subpath, from explicitly available trusted configuration or an
-operator binding. The current profile, `get_project`, and `get_current_user`
-do not establish automatic API-root discovery. If absent, stop before POST and
-request that specific non-secret value. Do not derive host plus `/api/v4`,
-probe creation with intentionally wrong expectations, inspect credentials,
-invent a discovery tool, or migrate the profile.
+Before publication, compare a fresh successful `get_project` response's
+canonical project/clone metadata with the independently intended repository
+from preflight. Bind `expected_project_id` to that verified project and
+`expected_user_id` through a fresh authenticated `get_current_user` read.
+Missing/conflicting repository evidence, a wrong repository, or identity drift
+blocks publication. Instance-local project/user IDs alone are not cross-instance
+identity proof. Use exact existing label names and preserve every submitted
+field, including authored Markdown.
+
+Inspect the refreshed mounted `create_issue` schema read-only before adopting
+this contract. If it still requires `expected_api_url`, stop before POST with a
+server/client contract-version blocker; resume only with the URL-free schema.
+Do not request an operator URL, derive an API root, discover/echo one through
+`get_project`, probe creation, or retain a legacy-call branch. No new discovery
+tool, cache, parser, fallback transport, or credential access is needed.
+A server-owned `api_url` in a receipt is optional evidence, not a caller
+prerequisite, authority grant, or proof of intended repository.
+
+Only the obsolete API expectation requirement is removed. Project/user checks,
+label/text validation, one non-retried POST, byte-verification policy, and the
+readback/recovery requirements below remain unchanged.
 
 The native tool validates bindings/text, POSTs once, and compares submitted
 intent against raw GET. Classify its body-free receipt before continuing:

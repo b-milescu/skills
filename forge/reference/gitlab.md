@@ -32,6 +32,9 @@ documented conditions.
 ## Issue publish
 
 Follow the GitLab-owned [Issue publication contract](../../gitlab/SKILL.md#issue-publication)
-for required native bindings, exact submitted-field preservation, creation
-outcomes, and GET-only/bounded recovery. Fail closed when its trusted API-root
-binding is absent; use only fallback conditions already named by `/gitlab`.
+for URL-free native arguments, independent intended-repository verification,
+fresh project/user bindings, exact submitted-field preservation, creation
+outcomes, and GET-only/bounded recovery. The bound MCP owns routing; missing or
+conflicting repository evidence or an old mounted schema blocks publication,
+not a missing caller API URL. Use only fallback conditions already named by
+`/gitlab`.
