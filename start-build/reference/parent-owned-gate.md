@@ -85,6 +85,31 @@ gate_receipt:
   observed_at: "2026-06-01T00:00:00Z"
 ```
 
+### Publication syntax and proof
+
+Publish the receipt as block-style YAML as above: a standalone `gate_receipt:`
+anchor with indented child fields. JSON text merely placed inside a YAML fence
+is not the publication form. The local validator's `js-yaml` `JSON_SCHEMA` is
+scalar-resolution configuration, not a requirement to author JSON. JSON MCP
+arguments are transport; the YAML receipt body is the durable artifact.
+
+Compatibility is bounded: valid YAML for the full local validator need not be
+recognized correctly by the current native extractor. Retained GitLab !413
+notes [47144](https://gitlab.example.com/agents/skills/-/merge_requests/413#note_47144)
+(JSON form) and [47147](https://gitlab.example.com/agents/skills/-/merge_requests/413#note_47147)
+(block YAML) illustrate that distinction. Arbitrary scalar spellings are not
+proven supported; a generic YAML serializer does not guarantee compatibility.
+Keep the actual project gate command unchanged.
+
+Establish three separate checks: full local pre-post receipt validation;
+native extraction of the exact `checkout_commit`, `command`, and `result` with
+candidate binding; and post-note validation of that same receipt and current
+Lift. Use retained/read-only native evidence or an offline fixture for a
+documentation walkthrough, not a replayed mutation. Anchor recognition or SHA
+equality alone proves neither full receipt validity nor execution, clean/unchanged
+checkout, authorship/provenance, independent review, or authority. Preserve
+source-intent/native byte-for-byte readback and all stage requirements above.
+
 Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:

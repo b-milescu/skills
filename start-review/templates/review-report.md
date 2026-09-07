@@ -16,7 +16,7 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 | Change request | `<opaque provider-native change-request locator>` |
 | Repository | `<canonical repository locator and default branch>` |
 | Reviewed commit | `<commit reviewed; must equal current provider commit at decision time>` |
-| Report locator | `<stable report ID chosen before publication; never pending>` |
+| Report locator | `<stable report locator per the finding-identity contract; never pending>` |
 | CI status / commit | `<advisory native status + bound commit, unavailable, or unbound>` |
 | Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
@@ -29,7 +29,7 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 | Finish authority source | `<verified finish authority source or blocked: missing-authority>` |
 | Finish owner | `<parent for parent-managed dev-flow; otherwise reviewer / authorized actor / N/A>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / rerun-review / fix-blocker>` |
-| Report link | `<this comment; final handoff contains URL when available>` |
+| Report link | `<this durable comment; final locates it by native note ID>` |
 
 ## Context / Snapshot
 
@@ -42,7 +42,7 @@ Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#re
 | Issue | `<linked issue URL or N/A with reason>` |
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | `<round or report number>` |
-| Report locator | `<same stable report ID used by every finding tuple and reviewer final handoff>` |
+| Report locator | `<same stable report locator used by every finding tuple; final uses the published report's native note ID>` |
 | Reviewed commit | `<same commit used for diff, local checks, advisory CI attribution, and action guards>` |
 | CI snapshot | `<advisory pipeline URL/ID/status/SHA, unavailable, or unbound with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
@@ -54,6 +54,13 @@ Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#re
 ## Finding identities
 
 Use the tuple contract and validator named in the [Finding identities guide](filling-guide.md#review-reportmd).
+
+The report locator may be a native URL; do not invent another internal ID just
+for the final, change existing report/commit/finding tuples, or rewrite historical
+reports. The [reviewer final](reviewer-final-handoff.md) locates this durable
+Markdown report by native note ID. Markdown Reviewer Lift/Report artifacts remain
+the evidence owners; an optional YAML [delivery index](../../start-build/templates/delivery-schema.md)
+is an untrusted routing convenience, not a replacement report or final payload.
 
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |

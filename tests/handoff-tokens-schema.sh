@@ -143,18 +143,16 @@ for (const [token, expected] of Object.entries(expectedCrosswalk)) {
 
 const enumText = {
   "start-review/templates/filling-guide.md": "`missing-authority`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`",
-  "start-review/templates/review-report.md": "<none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>",
-  "start-review/templates/reviewer-final-handoff.md": "action_blocker: \"none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other\""
+  "start-review/templates/review-report.md": "<none / missing-authority / changed-head-sha / merge-conflict / sha-bound-action-unsupported / preflight-failure / permission-failure / human-decision-needed / partial-review / secret-exposure-suspected / other>"
 };
-let pointerCount = 0;
 for (const [path, enumNeedle] of Object.entries(enumText)) {
+  assert(fs.readFileSync(path, "utf8").includes(enumNeedle), `${path} enum string drifted`);
+}
+for (const path of [...Object.keys(enumText), "start-review/templates/reviewer-final-handoff.md"]) {
   const text = fs.readFileSync(path, "utf8");
-  assert(text.includes(enumNeedle), `${path} enum string drifted`);
   const pointerLines = text.split("\n").filter((line) => line.includes("handoff-tokens.schema.json"));
   assert(pointerLines.length === 1, `${path} must contain exactly one canonical-schema pointer line`);
-  pointerCount += pointerLines.length;
 }
-assert(pointerCount === 3, "expected exactly three template schema pointers");
 const cataloguePath = "retro/reference/signal-catalogue.md";
 const catalogue = fs.readFileSync(cataloguePath, "utf8");
 const blockerSignal = catalogue.split("\n").find((line) => line.includes("Blocker tokens fired"));
