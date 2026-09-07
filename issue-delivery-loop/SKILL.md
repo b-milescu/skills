@@ -48,8 +48,14 @@ Default: fan out every provably decoupled subset.
 7. On reviewer pass, keep verdict, approval, and finish separate. The default
    permitted finish is `queue auto-merge`; the parent owns it when
    `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
-   Before that finish: the source branch's `issue-<iid>` must resolve to an open item
-   that the description's `Closes`/`Refs` trailer names, and a `pass` whose Review
+   Immediately before that finish, use fresh `forge snapshot` evidence to re-read
+   the allocated work item and require it to remain open. Verify that the current
+   change request, source branch, and work-item relationship match the parent's
+   recorded allocation in its session-owned worktree ledger, using the project
+   profile's branch policy and the selected provider's native relationship/closure
+   checks. Missing or contradictory evidence blocks finish; do not rediscover the
+   allocated item by parsing the branch or selecting another open linked item.
+   A `pass` whose Review
    Report lists surviving `SF` findings gets one filed follow-up issue per finding,
    referenced from the finish note, before the merge is queued.
 8. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
