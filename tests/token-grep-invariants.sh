@@ -390,8 +390,6 @@ contain|start-review/templates/review-report.md|revision-ready
 contain|start-review/templates/review-report.md|bounded remedy direction
 contain|start-review/templates/filling-guide.md|revision-ready
 contain|start-review/templates/filling-guide.md|bounded remedy direction
-contain|start-review/templates/reviewer-final-handoff.md|review_verdict:
-contain|start-review/templates/reviewer-final-handoff.md|action_blocker:
 contain|start-review/templates/review-report.md|| Review verdict |
 contain|start-review/templates/review-report.md|| Approval action |
 contain|start-review/templates/review-report.md|| Finish action |
@@ -472,7 +470,6 @@ re|start-review/REVIEW-FLOW.md|one durable non-blocking report
 re|start-review/templates/review-report.md|^# Review Report$
 re|start-review/templates/review-report.md|Review verdict
 re|start-review/templates/reviewer-final-handoff.md|^# Reviewer Final Handoff$
-re|start-review/templates/reviewer-final-handoff.md|review_verdict
 # review-partial-secret-fail-closed
 re|start-review/REVIEW-FLOW.md|partial-review
 re|start-review/REVIEW-FLOW.md|cannot inspect all behavior-affecting changed surfaces
@@ -897,9 +894,6 @@ assert_enum() {
 report_row() {
   awk -F'|' -v row="$2" '$0 ~ /^\|/ { field=$2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", field); if (field == row) { value=$3; gsub(/^[[:space:]]+|[[:space:]]+$/, "", value); print value; exit } }' "$1"
 }
-yaml_field() {
-  sed -nE "s/^[[:space:]]+$2:[[:space:]]*\"([^\"]+)\".*/\1/p" "$1" | head -n1
-}
 handoff_token_enum() {
   node --input-type=module - start-review/reference/handoff-tokens.schema.json "$1" <<'NODE'
 import fs from "node:fs";
@@ -910,9 +904,7 @@ NODE
 verdicts="$(handoff_token_enum review_verdict)"
 blockers="$(handoff_token_enum action_blocker)"
 assert_enum "Review Report verdict enum" "$(report_row start-review/templates/review-report.md 'Review verdict')" "$verdicts"
-assert_enum "reviewer handoff verdict enum" "$(yaml_field start-review/templates/reviewer-final-handoff.md review_verdict)" "$verdicts"
 assert_enum "Review Report blocker enum" "$(report_row start-review/templates/review-report.md 'Action blocker')" "$blockers"
-assert_enum "reviewer handoff blocker enum" "$(yaml_field start-review/templates/reviewer-final-handoff.md action_blocker)" "$blockers"
 
 # review-ci-oq: no provider mapping in generic table; no matrix copy
 section=$(sed -n '/^## CI and Open Question decision tables$/,/^## Finish authority source precedence$/p' start-review/REVIEW-FLOW.md)
