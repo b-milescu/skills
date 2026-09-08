@@ -34,7 +34,9 @@ Default: fan out every provably decoupled subset.
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
    One issue/worktree/branch/Draft change request/Review Packet per child. Pass
    explicit `Gate owner`; runtime notices never become scope stop instructions.
-5. Event-driven waiting only. Consume builder/reviewer two-line native locator
+5. Event-driven waiting only. Follow
+   [wait cadence](skill://start-build/reference/parent-orchestrator.md#wait-cadence).
+   Consume builder/reviewer two-line native locator
    handoffs, then apply [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification):
    candidate/Lift before parent gating, exact receipt before ready/review,
    independent exact-head report before approval/finish. Pre-gate `not-created`

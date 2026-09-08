@@ -125,6 +125,20 @@ review rather than rebinding its judgment or findings.
 9. **Verify after finish.** Follow [Post-merge verifier recipe](post-merge-verifier.md) with `forge post_merge_snapshot` for result/default containment, advisory result-commit CI, linked-item closure, source-ref cleanup/retention, and pending evidence.
 10. **Archive local artifacts and assert coordinator state.** Keep local run artifacts redacted and untracked. Durable handoff stays in the provider-published change-request description/discussion. Before claiming teardown complete, assert the coordinator checkout's resolved path is still the recorded `coordinator_path`, `git -C "$coordinator_path" branch --show-current` equals the verified default branch, and every session-owned worktree ledger entry is either removed after ordered guards or reported by exact path as a residual session-owned worktree with `cleanup_pending`.
 
+## Wait cadence
+
+Event-driven waiting only. This wait cadence is an upper bound, not a
+sleep: a wait returns as soon as the expected child message or handoff
+arrives. A longer floor does not delay a child that finishes early.
+
+- Builder or parent-owned gate running: wait at least 300 seconds.
+- Reviewer running: wait at least 120 seconds.
+- Short acknowledgements only: the tool default.
+
+Each wait names the expected sender or handoff. After an empty wait, do not
+re-issue a shorter wait; wait again at the same floor or check the child's
+status once.
+
 ## Reviewer launch timing
 
 Parallel launch is the default: step 5 starts the final reviewer as soon as the exact-candidate Gate Receipt exists. Provider CI may run in parallel, but no CI status delays review or changes verdict/action eligibility.
