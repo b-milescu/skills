@@ -6,6 +6,12 @@ Guard-grade MR state/SHA reads default to
 field is absent from the snapshot. Do not couple a description read to a
 Mutation Guard or SHA guard.
 
+Issue state, label, or assignment checks use
+`get_issue(include_description:false)`. Use `get_issue` or
+`get_merge_request` with `description_grep` when only the Closes trailer
+or the Reviewer Lift block is needed. Full-body reads stay prescribed
+when the flow consumes the whole body.
+
 Request bodies separately through the dedicated MCP readers:
 
 - MR and issue descriptions: `get_merge_request_description` and
@@ -21,6 +27,8 @@ Request bodies separately through the dedicated MCP readers:
   corresponding `bodyTruncated`, `bodyBytesReturned`, `bodyOffsetBytes`, and
   `bodyTotalBytes` metadata. An omitted `body_max_bytes` requests the full note,
   so prefer a focused or bounded read when elision or body size is a concern.
+  When reading a Gate Receipt or Review Report for one field, pass `body_grep`
+  or `body_max_bytes`.
 
 If a bounded response is still elided, retry with a smaller
 `description_max_bytes` or `body_max_bytes`, then recover losslessly with
