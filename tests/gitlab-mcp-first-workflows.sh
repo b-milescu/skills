@@ -63,6 +63,13 @@ require_text gitlab/reference/bounded-reads.md 'retry with a smaller' 'smaller b
 require_text gitlab/reference/bounded-reads.md 'body read is a guarded last resort' 'guarded glab body fallback is last resort'
 require_text gitlab/reference/mutation-guard.md 'include_description:false' 'Mutation Guard requires body-free MR re-read'
 require_text gitlab/reference/snippet-transports.md 'include_description:false' 'transport mirror requires body-free SHA guard read'
+# Issue/note state checks stay bounded (agents/skills #442).
+require_text gitlab/SKILL.md 'get_issue\(include_description:false\)' 'SKILL issue state-check is body-free'
+require_text gitlab/reference/snippet-transports.md 'get_issue\(include_description:false\)' 'transport issue state-check is body-free'
+require_text gitlab/SKILL.md 'description_grep' 'SKILL focused Closes/Lift description_grep'
+require_text gitlab/reference/snippet-transports.md 'description_grep' 'transport focused Closes/Lift description_grep'
+require_text gitlab/SKILL.md 'body_grep' 'SKILL Gate Receipt/Review Report note body_grep'
+require_text gitlab/reference/snippet-transports.md 'body_grep' 'transport Gate Receipt/Review Report note body_grep'
 reject_text gitlab/SKILL.md 'first read stays full|First read per MR stays full|Slim guard-read for repeated SHA/state guards' 'obsolete first-full/slim guard discipline'
 reject_text gitlab/SKILL.md 'note body where MCP exposes no bounded param' 'obsolete unbounded-note MCP claim'
 reject_text gitlab/reference/mutation-guard.md 'first per-MR full read|slim guard-read path' 'obsolete Mutation Guard full-read discipline'

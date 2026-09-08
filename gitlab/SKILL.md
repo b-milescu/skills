@@ -142,6 +142,20 @@ authentication failure.
 
 ### Snippet: issue-pickup
 
+MCP primary: `list_issues` for candidates; `get_issue(include_description:false)`
+for every state, label, or assignment check; `get_issue` or `get_merge_request`
+with `description_grep` when only the Closes trailer or Reviewer Lift is needed.
+Full-body `get_issue` stays when the flow consumes the whole description.
+
+```text
+
+get_issue(project_path, issue_iid, include_description:false) -> state, labels, assignees
+get_issue(project_path, issue_iid, description_grep="Closes") or description_grep="Reviewer Lift"
+
+```
+
+Guarded `glab` fallback:
+
 ```bash
 
 ready_label="<live label mapped to the AFK-ready Triage Role in project_profile.label_profile_ref>"
@@ -286,12 +300,12 @@ issue_notes(project_path, issue_iid) -> verify created note exists without print
 
 ### Snippet: label-reconcile
 
-Use MCP `update_issue` label add/remove semantics, then `get_issue`. Compute add/remove sets first; reject add/remove overlap and final state/category label conflicts before mutation.
+Use MCP `update_issue` label add/remove semantics, then `get_issue(include_description:false)`. Compute add/remove sets first; reject add/remove overlap and final state/category label conflicts before mutation.
 
 ```text
 
 update_issue(project_path, issue_iid, add_labels, remove_labels)
-get_issue(project_path, issue_iid) -> verify final labels match requested reconcile result
+get_issue(project_path, issue_iid, include_description:false) -> verify final labels match requested reconcile result
 
 ```
 
@@ -425,11 +439,13 @@ evidence for the workflow `finish_result`; follow the cleanup ordering in
 
 Read-only handoff evidence for one MR. MCP primary is `get_merge_request_handoff_evidence` with optional `reviewed_sha`, `review_report_note_id`, and `gate_receipt_note_id`. Output splits `claims` from verified `bindings`. The Reviewer Lift, Review Report, and Gate Receipt remain the canonical artifacts.
 
-Fallback is not a named MCP gap and is not the YAML handoff block: the caller reassembles `safe-mr-json`, bounded description read, single-note read by id, and approvals read.
+Fallback is not a named MCP gap and is not the YAML handoff block: the caller reassembles `safe-mr-json`, bounded description read (`description_grep` for Closes or Reviewer Lift), single-note read by id with `body_grep` or `body_max_bytes` when reading a Gate Receipt or Review Report for one field, and approvals read.
 
 ```text
 
 get_merge_request_handoff_evidence(project, merge_request_iid, reviewed_sha?, review_report_note_id?, gate_receipt_note_id?)
+get_merge_request_note(project, merge_request_iid, note_id, body_grep) or body_max_bytes -> one Gate Receipt or Review Report field
+get_issue_note(project, issue_iid, note_id, body_grep) or body_max_bytes -> one field
 
 ```
 
