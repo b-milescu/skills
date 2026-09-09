@@ -4,6 +4,8 @@ This is the canonical provider-neutral seam when the child builder hands a Draft
 candidate to the parent for the final local Check Gate and ready transition.
 The child supplies only the ownership contract and exact candidate commit; it
 must not claim local gate PASS/FAIL or Gate Receipt success.
+This file also owns the receipt schema for the other ownership mode: see
+[Builder-owned Gate Receipt](#builder-owned-gate-receipt) when `Gate owner: builder`.
 
 ## Ownership contract
 
@@ -118,6 +120,55 @@ its returned locator, and the current Review Packet before ready:
 node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
 node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <opaque provider locator> --gate-command <command> --gate-policy-ref <policy>
 ```
+
+## Builder-owned Gate Receipt
+
+When the launch prompt selects `Gate owner: builder` (the documented default in
+[child-builder.md](child-builder.md#authority-boundary)), the builder — not the
+parent — runs the full local Check Gate on the exact candidate and publishes the
+receipt itself. This section owns that contract so the two ownership modes
+cannot drift apart. Decision: Option A, recorded 2026-09-09 in issue #443 note
+48372; the converged anchor-form notes 48271/48272/48282/48292 from the
+2026-09-09 `agents/gitlab-mcp` batch are the working form reference.
+
+The builder-owned receipt is one change-request note whose body carries a
+yaml-fenced block with a standalone `gate_receipt:` anchor and exactly these
+child fields:
+
+```yaml
+gate_receipt:
+  kind: "gate-receipt"
+  version: "1"
+  owner: "builder"
+  checkout_commit: "<exact candidate commit the gate ran on>"
+  command: "<full project Check Gate command>"
+  result: "PASS"
+```
+
+The note title honestly names the builder as receipt owner (no parent or
+provider impersonation), and the note body carries evidence bullets for the
+gate run (command, commit, result, checkout provenance). Prose or table-formed
+receipts and YAML alias anchors (`gate_receipt: &gate_receipt`) are invalid;
+the anchor must be the plain mapping key. Builder receipts do not carry the
+parent-only fields (`change_id`, `issue_id`, `checkout_path`, `status_*`,
+`preflight_checks`, `evidence`) — those belong to the parent schema above.
+
+Acceptance is provider-native and exact-candidate: the handoff-evidence tool
+must report `present_anchor: true` and `receipt_commit_eq_head: true` for the
+current head, and publication requires provider-native byte-for-byte readback
+of the note. Validate locally before publication (parent-owned binding flags
+are rejected in this mode; full post-note Reviewer Lift validation stays scoped
+to parent-owned mode):
+
+```text
+node skill://start-build/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+```
+
+Fail-closed floors are unchanged: a receipt bound to any commit other than the
+current candidate is stale evidence, a wrong owner or malformed anchor fails,
+and any push invalidates the receipt until a new exact-candidate receipt
+exists. The builder then returns the read-back-verified receipt note id in the
+two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.md)).
 
 ## Parent verification checklist
 

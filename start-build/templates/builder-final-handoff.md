@@ -15,7 +15,11 @@ parent-owned mode this is the normal pre-gate return: leave the change request
 Draft with its current candidate, complete Reviewer Lift, and parent-owned/not-run
 contract. Do not invent an ID or post a note solely to fill this line. An existing
 receipt is usable only after native readback verifies its candidate binding.
-This locator contract does not implement or change builder-owned receipt policy.
+In builder-owned mode the value is the builder-published anchor-form Gate
+Receipt note id per
+[parent-owned-gate.md#builder-owned-gate-receipt](../reference/parent-owned-gate.md#builder-owned-gate-receipt),
+returned only after native readback and `present_anchor`/`receipt_commit_eq_head`
+verify against the current head; before that receipt exists, use `not-created`.
 
 Record `gate_owner_received` in the durable Review Packet beside the Reviewer
 Lift, not as a third final line: echo the launch value, or `absent` when omitted.
