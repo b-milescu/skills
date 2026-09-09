@@ -3,7 +3,7 @@ import yaml from "js-yaml";
 
 const commonFlags = ["--receipt", "--change-id", "--issue-id", "--reviewed-commit", "--gate-command"];
 const postFlags = ["--review-packet", "--gate-receipt-locator", "--gate-policy-ref"];
-const allowedFlags = ["--mode", ...commonFlags, ...postFlags];
+const allowedFlags = ["--mode", "--owner", ...commonFlags, ...postFlags];
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
 function fail(message) {
@@ -20,12 +20,22 @@ function parseArgs(argv) {
     if (!allowedFlags.includes(flag) || !value || args.has(flag)) fail("invalid arguments");
     args.set(flag, value);
   }
+  const owner = args.get("--owner") ?? "parent";
+  if (!["parent", "builder"].includes(owner)) fail("invalid --owner");
   const mode = args.get("--mode") ?? "post-note";
   if (!["pre-post", "post-note"].includes(mode)) fail("invalid --mode");
-  const required = mode === "pre-post" ? commonFlags : [...commonFlags, ...postFlags];
+  if (owner === "builder" && mode === "post-note") {
+    fail("post-note Reviewer Lift validation is scoped to parent-owned mode; validate builder-owned receipts with --owner builder --mode pre-post");
+  }
+  const required = owner === "builder"
+    ? ["--receipt", "--reviewed-commit", "--gate-command"]
+    : mode === "pre-post" ? commonFlags : [...commonFlags, ...postFlags];
   for (const flag of required) if (!args.has(flag)) fail(`missing ${flag}`);
-  if (mode === "pre-post" && postFlags.some((flag) => args.has(flag))) fail("post-note flags are invalid in pre-post mode");
-  return { args, mode };
+  if (owner === "builder" && ["--change-id", "--issue-id", ...postFlags].some((flag) => args.has(flag))) {
+    fail("parent-owned binding flags are invalid in builder mode");
+  }
+  if (owner === "parent" && mode === "pre-post" && postFlags.some((flag) => args.has(flag))) fail("post-note flags are invalid in pre-post mode");
+  return { args, mode, owner };
 }
 
 function readSafe(path, label) {
@@ -123,6 +133,37 @@ function validateReceipt(body, expected) {
   }
 }
 
+// Builder-owned receipt (start-build/reference/parent-owned-gate.md#builder-owned-gate-receipt):
+// anchor-form gate_receipt block with kind/version/owner/checkout_commit/command/result only.
+function validateBuilderReceipt(body, expected) {
+  if (/^\s*gate_receipt:\s*&\S/m.test(body)) {
+    fail("gate_receipt must be a standalone mapping anchor, not a YAML alias anchor (&gate_receipt)");
+  }
+  let document;
+  try {
+    document = yaml.load(body, { schema: yaml.JSON_SCHEMA });
+  } catch {
+    fail("invalid receipt YAML");
+  }
+  if (!isObject(document) || !isObject(document.gate_receipt)) fail("missing gate_receipt object");
+
+  const receipt = document.gate_receipt;
+  for (const field of ["kind", "version", "owner", "checkout_commit", "command", "result"]) {
+    if (!isNonEmptyString(receipt[field])) fail(`invalid gate_receipt.${field}`);
+  }
+  const exact = {
+    kind: "gate-receipt",
+    version: "1",
+    owner: "builder",
+    checkout_commit: expected.reviewedCommit,
+    command: expected.gateCommand,
+    result: "PASS",
+  };
+  for (const [field, value] of Object.entries(exact)) {
+    if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
+  }
+}
+
 function tableRows(body) {
   const begin = "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->";
   const end = "<!-- REVIEWER-LIFT-SCHEMA:END -->";
@@ -172,7 +213,7 @@ function validateLift(body, expected) {
   }
 }
 
-const { args, mode } = parseArgs(process.argv.slice(2));
+const { args, mode, owner } = parseArgs(process.argv.slice(2));
 const expected = {
   changeId: args.get("--change-id"),
   issueId: args.get("--issue-id"),
@@ -181,12 +222,24 @@ const expected = {
   gatePolicy: args.get("--gate-policy-ref"),
   receiptLocator: args.get("--gate-receipt-locator"),
 };
-if (![expected.changeId, expected.issueId].every(isNonEmptyString) || !/^[0-9a-f]{40}$/.test(expected.reviewedCommit)) {
-  fail("invalid expected binding");
-}
-if (mode === "post-note" && !isNonEmptyString(expected.receiptLocator)) fail("invalid expected binding");
-for (const value of Object.values(expected)) if (value && unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
 
-validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);
-if (mode === "post-note") validateLift(readSafe(args.get("--review-packet"), "review packet"), expected);
-console.log(`gate-receipt ${mode} validation: PASS`);
+if (owner === "builder") {
+  if (!/^[0-9a-f]{40}$/.test(expected.reviewedCommit) || !isNonEmptyString(expected.gateCommand)) {
+    fail("invalid expected binding");
+  }
+  for (const value of [expected.reviewedCommit, expected.gateCommand]) {
+    if (unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
+  }
+  validateBuilderReceipt(readSafe(args.get("--receipt"), "receipt"), expected);
+  console.log(`gate-receipt ${mode} (owner: builder) validation: PASS`);
+} else {
+  if (![expected.changeId, expected.issueId].every(isNonEmptyString) || !/^[0-9a-f]{40}$/.test(expected.reviewedCommit)) {
+    fail("invalid expected binding");
+  }
+  if (mode === "post-note" && !isNonEmptyString(expected.receiptLocator)) fail("invalid expected binding");
+  for (const value of Object.values(expected)) if (value && unsafeControl.test(value)) fail("expected binding contains unsafe control characters");
+
+  validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);
+  if (mode === "post-note") validateLift(readSafe(args.get("--review-packet"), "review packet"), expected);
+  console.log(`gate-receipt ${mode} validation: PASS`);
+}
