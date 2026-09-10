@@ -62,6 +62,10 @@ function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: 
 <!-- REVIEWER-LIFT-SCHEMA:END -->`;
 }
 
+function liftWithSha(sha) {
+  return packet().replace(`| Reviewed SHA | \`${commit}\` |`, `| Reviewed SHA | ${sha} |`);
+}
+
 function run({ document = receipt(), reviewPacket = packet(), locatorValue = locator } = {}) {
   const receiptPath = join(work, "receipt.yml");
   const packetPath = join(work, "packet.md");
@@ -86,6 +90,15 @@ function runBuilder({ document = builderReceipt(), rawBody, mode = "pre-post", e
 
 try {
   assert.equal(run().status, 0, "opaque Azure DevOps-style IDs and locator pass");
+  assert.equal(run({ reviewPacket: liftWithSha(commit) }).status, 0, "bare 40-hex Reviewed SHA passes");
+  assert.equal(run({ reviewPacket: packet() }).status, 0, "code-span Reviewed SHA passes");
+  assert.notEqual(run({ reviewPacket: liftWithSha("2".repeat(40)) }).status, 0, "wrong Reviewed SHA fails");
+  assert.notEqual(run({ reviewPacket: liftWithSha(`${commit} extra`) }).status, 0, "mixed extra text around Reviewed SHA fails");
+  assert.notEqual(run({ reviewPacket: liftWithSha(`\`${commit}\` extra`) }).status, 0, "code-span plus extra text fails");
+  assert.notEqual(run({ reviewPacket: liftWithSha("") }).status, 0, "empty Reviewed SHA fails");
+  assert.notEqual(run({ reviewPacket: packet().replace(`| Reviewed SHA | \`${commit}\` |\n`, "") }).status, 0, "missing Reviewed SHA fails");
+  const schema = readFileSync(join(root, "start-build/templates/reviewer-lift-schema.md"), "utf8");
+  assert.match(schema, /\| Reviewed SHA \| MR head SHA at ready-marking; update on every post-ready push before asking for review\. \|/, "schema does not require a fenced Reviewed SHA");
   assert.notEqual(run({ document: receipt({ checkout_commit: "2".repeat(40) }) }).status, 0, "stale commit fails");
   assert.notEqual(run({ locatorValue: "github://owner/repo/pull/42/comment/9" }).status, 0, "wrong opaque locator fails");
   assert.notEqual(run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — Gate Receipt: ${locator} — https://gitlab.example/x`) }).status, 0, "multiple locators fail");
