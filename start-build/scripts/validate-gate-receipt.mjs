@@ -5,6 +5,9 @@ const commonFlags = ["--receipt", "--change-id", "--issue-id", "--reviewed-commi
 const postFlags = ["--review-packet", "--gate-receipt-locator", "--gate-policy-ref"];
 const allowedFlags = ["--mode", "--owner", ...commonFlags, ...postFlags];
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
+// Preflight command allowlist: the canonical form plus the strictly stronger
+// untracked-files=all form, which also fails on untracked residue (issue #449).
+const cleanStatusCommands = new Set(["git status --porcelain", "git status --porcelain --untracked-files=all"]);
 
 function fail(message) {
   console.error(`gate-receipt validation failed: ${message}`);
@@ -89,7 +92,6 @@ function validateReceipt(body, expected) {
     change_id: expected.changeId,
     issue_id: expected.issueId,
     checkout_commit: expected.reviewedCommit,
-    status_before: "draft",
     status_after: "ready",
     command: expected.gateCommand,
     result: "PASS",
@@ -97,6 +99,8 @@ function validateReceipt(body, expected) {
   for (const [field, value] of Object.entries(exact)) {
     if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
   }
+  // A re-gate of an already-ready change request truthfully records "ready" (issue #449).
+  if (receipt.status_before !== "draft" && receipt.status_before !== "ready") fail("invalid gate_receipt.status_before");
   if (Object.keys(receipt).some((field) => /waiver/i.test(field))) fail("Gate Receipt cannot waive tracked-file changes");
 
   if (!isAbsolutePortable(requireString(receipt, "checkout_path"))) fail("gate_receipt.checkout_path must be absolute");
@@ -112,7 +116,7 @@ function validateReceipt(body, expected) {
   }
   for (const name of ["clean-status-before", "tracked-files-unchanged-after"]) {
     const row = preflight.get(name);
-    if (!row || row.command !== "git status --porcelain") fail(`missing valid ${name} preflight`);
+    if (!row || !cleanStatusCommands.has(row.command)) fail(`missing valid ${name} preflight`);
   }
 
   if (!Array.isArray(receipt.evidence) || receipt.evidence.length === 0) fail("invalid gate_receipt.evidence");
