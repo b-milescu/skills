@@ -162,6 +162,10 @@ function validateBuilderReceipt(body, expected) {
   for (const [field, value] of Object.entries(exact)) {
     if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
   }
+  const allowed = new Set(["kind", "version", "owner", "checkout_commit", "command", "result"]);
+  for (const field of Object.keys(receipt)) {
+    if (!allowed.has(field)) fail(`unexpected gate_receipt.${field}`);
+  }
 }
 
 function tableRows(body) {
