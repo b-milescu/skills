@@ -94,6 +94,15 @@ use an isolated checkout where `git status --porcelain` is empty and the observe
 materializes that exact commit and the reviewer recreates a detached isolated
 worktree, then repeats both checks. Never run an arbitrary `git pull`.
 
+After the durable Review Report is published, the reviewer removes the isolated
+worktree it created with `git worktree remove` when that tree is clean (`git
+status --porcelain` empty) and is not the coordinator path. Use the same
+clean-status and non-coordinator-path guards the parent uses for recorded
+children. Do not remove a dirty tree or a coordinator-colliding path.
+Parent cleanup must not discover or delete reviewer `/tmp` trees.
+Independent-review isolation is unchanged until the report exists: the
+reviewer still uses a detached isolated checkout at the reviewed SHA.
+
 For multiple independent changes, the parent/harness proves the Decoupling
 Contract and gives each change request its own isolated checkout and fresh
 reviewer. Serialized review never batches decisions, comments, or actions.
@@ -271,6 +280,9 @@ in the Review Report's Action / Blocker section.
    An advisory CI classification is not a guard.
 4. Use `forge publish` to create one durable non-blocking report with safe-body
    validation and byte-for-byte provider-native readback.
+   After publication readback, remove the reviewer-created isolated worktree
+   per [Single-change request checkout mode](#single-change-request-checkout-mode)
+   when that tree is clean and is not the coordinator path.
    `Finish owner: parent` reviewers return the two-line final handoff now,
    with approval `not-approved` and finish `none`; they neither act nor wait
    for the parent's action records.
