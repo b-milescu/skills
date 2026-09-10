@@ -96,6 +96,7 @@ try {
   assert.notEqual(runBuilder({ document: builderReceipt({ command: undefined }) }).status, 0, "malformed builder receipt missing command fails");
   assert.notEqual(runBuilder({ document: builderReceipt({ checkout_commit: "2".repeat(40) }) }).status, 0, "stale builder receipt commit fails");
   assert.notEqual(runBuilder({ rawBody: "gate_receipt: &gate_receipt\n  kind: gate-receipt\n" }).status, 0, "YAML alias anchor form fails");
+  assert.notEqual(runBuilder({ document: builderReceipt({ change_id: expected.changeId }) }).status, 0, "builder receipt with parent-only extra field fails");
   assert.notEqual(runBuilder({ mode: "post-note", extraFlags: ["--review-packet", join(work, "packet.md")] }).status, 0, "post-note Lift validation stays scoped to parent-owned mode");
   console.log("gate-receipt-validator: PASS");
 } finally {
