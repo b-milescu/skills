@@ -511,6 +511,10 @@ re|start-review/REVIEW-FLOW.md|recreates a detached isolated
 re|start-review/REVIEW-FLOW.md|selected provider branch
 re|start-review/REVIEW-FLOW.md|materializes that exact commit
 re|start-review/REVIEW-FLOW.md|Never run an arbitrary `git pull`
+contain|start-review/REVIEW-FLOW.md|git worktree remove
+contain|start-review/REVIEW-FLOW.md|Parent cleanup must not discover or delete reviewer `/tmp` trees
+contain|start-review/REVIEW-FLOW.md|clean-status and non-coordinator-path guards
+contain|start-review/REVIEW-FLOW.md|until the report exists
 re|start-review/REVIEW-FLOW.md|each change request
 re|start-review/REVIEW-FLOW.md|own isolated checkout and fresh
 re|start-review/templates/review-report.md|isolated checkout path[^.]*observed commit
@@ -998,6 +1002,10 @@ checkout_offset="$(offset_of "$flow" '^##[[:space:]]+Single-change request check
 checks_offset="$(offset_of "$flow" 'run targeted checks' 'targeted checks')"
 (( checkout_offset < checks_offset )) || fail 'checkout binding must precede targeted checks'
 ! grep -Eiq 'refs/merge-requests|refs/tmp/review/mr-|<iid>|gitlab' <<<"$checkout_section" || fail "$flow checkout section contains provider-specific mechanics"
+grep -Fq 'git worktree remove' <<<"$checkout_section" || fail "$flow checkout section missing git worktree remove"
+grep -Fq 'Parent cleanup must not discover or delete reviewer `/tmp` trees' <<<"$checkout_section" || fail "$flow checkout section missing parent /tmp non-sweep instruction"
+grep -Fq 'clean-status and non-coordinator-path guards' <<<"$checkout_section" || fail "$flow checkout section missing parent child-cleanup guards"
+grep -Fq 'until the report exists' <<<"$checkout_section" || fail "$flow checkout section dropped isolation-until-report"
 
 # review-action-order
 action_section=$(mktemp)
