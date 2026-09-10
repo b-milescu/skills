@@ -125,6 +125,11 @@ commit, short ID, location, observable impact, evidence, and bounded remedy
 Style alone is non-blocking. Be direct and demanding on substance without
 performative language.
 
+The blocking set is bounded by the delivered work item's acceptance criteria.
+A finding demonstrating a named acceptance criterion of the delivered work item is unmet is blocking.
+Carve-outs: an unmet acceptance criterion blocks, and a production defect blocks.
+Once the delivered criteria are met and no production defect is shown, further findings are reported as follow-up material rather than as findings against the candidate.
+
 Publish new optional `SF-N`/`C-N` findings in the plain, non-resolvable Review
 Report or an explicitly non-blocking comment lifecycle. Reserve unresolved
 change-request threads for actual requirements, including required Open
