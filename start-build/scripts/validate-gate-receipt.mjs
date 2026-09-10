@@ -200,7 +200,8 @@ function validateLift(body, expected) {
   const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
   for (const name of names) if (!isNonEmptyString(rows.get(name))) fail(`missing Reviewer Lift ${name}`);
 
-  if (rows.get("Reviewed SHA").trim() !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
+  const reviewedSha = rows.get("Reviewed SHA").trim();
+  if (reviewedSha !== expected.reviewedCommit && reviewedSha !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
   const rationale = rows.get("Gate coverage rationale");
   for (const value of [expected.gatePolicy, expected.gateCommand, expected.reviewedCommit, "exact-candidate-local"]) {
