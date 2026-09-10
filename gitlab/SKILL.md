@@ -67,6 +67,8 @@ Validate every MR/issue body before mutation with `validate_gitlab_text` or a sa
 
 Draft long text in temp/run-dir files with quoted heredocs. File-backed `glab` fallback is allowed only under snippet fallback conditions and enforces the same byte rule. See [`safe-text.md`](skill://gitlab/reference/safe-text.md) and [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
 
+GitLab strips exactly one trailing newline from a published note or description body. Compute expected digests and byte counts over that stripped form. A one-byte difference of exactly that shape is GitLab's normalisation — never a failed write and never a reason to create a second note. This does not weaken authored-source readback equality in [`safe-text.md`](skill://gitlab/reference/safe-text.md).
+
 ## Issue publication
 
 Use `create_issue` with required native arguments `project`,
