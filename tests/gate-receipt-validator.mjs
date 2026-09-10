@@ -35,6 +35,12 @@ function receipt(overrides = {}) {
   } };
 }
 
+function preflights(command) {
+  return ["clean-status-before", "tracked-files-unchanged-after"].map((name) => ({
+    name, command, result: "PASS", summary: "empty",
+  }));
+}
+
 function builderReceipt(overrides = {}) {
   return { gate_receipt: {
     kind: "gate-receipt", version: "1", owner: "builder",
@@ -91,6 +97,11 @@ try {
     ],
   }) }).status, 0, "tracked file changes fail the Receipt");
   assert.notEqual(run({ document: receipt({ tracked_changes_waiver: "accepted" }) }).status, 0, "tracked file changes cannot be waived");
+  assert.equal(run({ document: receipt({ status_before: "ready" }) }).status, 0, "re-gate of an already-ready change request may record status_before: ready");
+  assert.notEqual(run({ document: receipt({ status_before: "merged" }) }).status, 0, "genuinely wrong status_before still fails");
+  assert.equal(run({ document: receipt({ preflight_checks: preflights("git status --porcelain --untracked-files=all") }) }).status, 0, "stronger --untracked-files=all preflight accepted");
+  assert.notEqual(run({ document: receipt({ preflight_checks: preflights("git status") }) }).status, 0, "weaker preflight without --porcelain fails");
+  assert.notEqual(run({ document: receipt({ preflight_checks: preflights("git status --porcelain --untracked-files=all; echo anything") }) }).status, 0, "preflight command is not widened to any string");
   assert.equal(runBuilder().status, 0, "valid builder-owned anchor receipt accepted in pre-post mode");
   assert.notEqual(runBuilder({ document: builderReceipt({ owner: "parent" }) }).status, 0, "wrong owner fails in builder mode");
   assert.notEqual(runBuilder({ document: builderReceipt({ command: undefined }) }).status, 0, "malformed builder receipt missing command fails");
