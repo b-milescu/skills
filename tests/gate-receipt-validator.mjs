@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -109,6 +109,27 @@ try {
   assert.notEqual(runBuilder({ rawBody: "gate_receipt: &gate_receipt\n  kind: gate-receipt\n" }).status, 0, "YAML alias anchor form fails");
   assert.notEqual(runBuilder({ document: builderReceipt({ change_id: expected.changeId }) }).status, 0, "builder receipt with parent-only extra field fails");
   assert.notEqual(runBuilder({ mode: "post-note", extraFlags: ["--review-packet", join(work, "packet.md")] }).status, 0, "post-note Lift validation stays scoped to parent-owned mode");
+
+  // Doc/validator agreement (issue #450): the example a parent copies must teach
+  // exactly the accepted status_before values and preflight commands.
+  const validatorSource = readFileSync(validator, "utf8");
+  const guide = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
+  const acceptedStatuses = [...validatorSource.matchAll(/receipt\.status_before !== "(\w+)"/g)].map((match) => match[1]);
+  const acceptedCommands = [...validatorSource.matchAll(/"(git status --porcelain[^"]*)"/g)].map((match) => match[1]);
+  assert.deepEqual(acceptedStatuses.slice().sort(), ["draft", "ready"], "validator accepts exactly draft and ready");
+  assert.deepEqual(acceptedCommands.slice().sort(), ["git status --porcelain", "git status --porcelain --untracked-files=all"], "validator accepts exactly the two preflight forms");
+  for (const status of acceptedStatuses) {
+    assert.ok(guide.includes(`\`${status}\``), `parent-owned-gate.md documents status_before: ${status}`);
+  }
+  for (const command of acceptedCommands) {
+    assert.ok(guide.includes(command), `parent-owned-gate.md documents preflight command: ${command}`);
+  }
+  for (const [, status] of guide.matchAll(/^\s*status_before: "(\w+)"/gm)) {
+    assert.ok(acceptedStatuses.includes(status), `documented status_before is accepted: ${status}`);
+  }
+  for (const [, command] of guide.matchAll(/^\s*command: "(git status[^"]*)"/gm)) {
+    assert.ok(acceptedCommands.includes(command), `documented preflight command is accepted: ${command}`);
+  }
   console.log("gate-receipt-validator: PASS");
 } finally {
   rmSync(work, { recursive: true, force: true });

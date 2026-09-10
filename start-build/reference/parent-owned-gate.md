@@ -65,18 +65,18 @@ gate_receipt:
   issue_id: "opaque-issue-id"
   checkout_path: "/absolute/path/to/verified/checkout"
   checkout_commit: "1111111111111111111111111111111111111111"
-  status_before: "draft"
+  status_before: "draft"        # or "ready" when re-gating a ready change request
   status_after: "ready"
   command: "<project Check Gate command>"
   result: "PASS"
   summary: "full project Check Gate completed successfully"
   preflight_checks:
     - name: "clean-status-before"
-      command: "git status --porcelain"
+      command: "git status --porcelain --untracked-files=all"
       result: "PASS"
       summary: "empty"
     - name: "tracked-files-unchanged-after"
-      command: "git status --porcelain"
+      command: "git status --porcelain --untracked-files=all"
       result: "PASS"
       summary: "empty"
   evidence:
@@ -86,6 +86,21 @@ gate_receipt:
       summary: "command, checkout commit, and result"
   observed_at: "2026-06-01T00:00:00Z"
 ```
+
+`status_before` records the change request's actual pre-gate state: `draft`, or
+`ready` when re-gating a change request that is already ready. Both are accepted;
+copying `draft` into a re-gate of a ready change request publishes a false field.
+
+Both preflight rows above use the stronger accepted form
+`git status --porcelain --untracked-files=all`. Prefer it: it names every
+untracked file individually instead of collapsing an untracked directory to one
+entry, so generated residue inside a directory is reported rather than
+summarized. The bare `git status --porcelain` is still accepted. Neither form
+reports gitignored paths, so where ignored residue can refuse a gate — a
+generated `node_modules/` tree, for example — check it separately with
+`git status --porcelain --untracked-files=all --ignored=matching -- <paths>`
+rather than by altering the preflight rows. The receipt's required field list
+and the pre-ready ordering rules are unchanged.
 
 ### Publication syntax and proof
 
