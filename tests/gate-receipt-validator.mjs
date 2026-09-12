@@ -145,6 +145,26 @@ try {
   assert.ok(parentOwnedGuide.includes("rebind both `Local gate` and `Gate coverage rationale`"), "parent-owned-gate rebinds both Local gate and Gate coverage rationale");
   assert.ok(parentOwnedGuide.includes("replace only the `result:` token"), "parent-owned-gate names the single result: token to replace");
 
+  // Issue #455: numeric fail counts and one surrounding code span on N/A before ready.
+  const countGate = `PASS — ${expected.gateCommand} — bun test 1913 pass, 1 skip, 0 fail — Gate Receipt: ${locator}`;
+  assert.equal(run({ reviewPacket: packet(countGate) }).status, 0, "0 fail count in Local gate passes");
+  assert.equal(
+    run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — 1 fail — Gate Receipt: ${locator}`) }).status,
+    0,
+    "1 fail count in Local gate passes",
+  );
+  assert.notEqual(
+    run({ reviewPacket: packet(`PASS — ${expected.gateCommand} —  FAIL  — Gate Receipt: ${locator}`) }).status,
+    0,
+    "standalone FAIL in Local gate still fails",
+  );
+  const withDelta = (delta) => packet().replace("| Delta since last ready push | N/A before ready |", `| Delta since last ready push | ${delta} |`);
+  assert.equal(run({ reviewPacket: withDelta("`N/A before ready`") }).status, 0, "backticked N/A before ready passes");
+  assert.notEqual(
+    run({ reviewPacket: withDelta("`" + "2".repeat(40) + " -> " + "3".repeat(40) + ", files, gate, no`") }).status,
+    0,
+    "backticked delta naming a different commit still fails",
+  );
   // Doc/validator agreement (issue #450): the example a parent copies must teach
   // exactly the accepted status_before values and preflight commands.
   const validatorSource = readFileSync(validator, "utf8");

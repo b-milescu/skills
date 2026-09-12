@@ -211,13 +211,13 @@ function validateLift(body, expected) {
   const localGate = rows.get("Local gate");
   const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];
   const locator = locatorTokens.length === 1 ? locatorTokens[0] : "";
-  const contradictory = /\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate) || (localGate.match(/Gate Receipt/gi) ?? []).length !== 1;
+  const contradictory = /(?<!\d\s)\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate) || (localGate.match(/Gate Receipt/gi) ?? []).length !== 1;
   if (!/\bPASS\b/.test(localGate) || contradictory || !localGate.includes(expected.gateCommand) || locator !== expected.receiptLocator) {
     fail("Reviewer Lift local gate or Gate Receipt pointer is stale");
   }
 
   const delta = rows.get("Delta since last ready push");
-  if (!/^N\/A before ready$/i.test(delta.trim()) && (!containsCommit(delta, expected.reviewedCommit) || /pending/i.test(delta))) {
+  if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim()) && (!containsCommit(delta, expected.reviewedCommit) || /pending/i.test(delta))) {
     fail("Reviewer Lift delta is stale");
   }
 }
