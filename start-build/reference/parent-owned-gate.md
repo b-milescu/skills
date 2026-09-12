@@ -136,6 +136,11 @@ node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --rec
 node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <opaque provider locator> --gate-command <command> --gate-policy-ref <policy>
 ```
 
+After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
+For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt <locator>`.
+Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged.
+`Local gate` still requires `PASS`, one locator, and no `not-run`.
+
 ## Builder-owned Gate Receipt
 
 When the launch prompt selects `Gate owner: builder` (the documented default in

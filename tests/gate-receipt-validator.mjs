@@ -50,12 +50,12 @@ function builderReceipt(overrides = {}) {
   } };
 }
 
-function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: ${locator}`) {
+function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: ${locator}`, rationale = `${expected.gatePolicy}; exact-candidate-local; command ${expected.gateCommand}; candidate ${commit}; result PASS`) {
   return `<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
 | Reviewed SHA | \`${commit}\` |
-| Gate coverage rationale | ${expected.gatePolicy}; exact-candidate-local; command ${expected.gateCommand}; candidate ${commit}; result PASS |
+| Gate coverage rationale | ${rationale} |
 | CI pipeline | advisory — unavailable |
 | Local gate | ${localGate} |
 | Delta since last ready push | N/A before ready |
@@ -122,6 +122,28 @@ try {
   assert.notEqual(runBuilder({ rawBody: "gate_receipt: &gate_receipt\n  kind: gate-receipt\n" }).status, 0, "YAML alias anchor form fails");
   assert.notEqual(runBuilder({ document: builderReceipt({ change_id: expected.changeId }) }).status, 0, "builder receipt with parent-only extra field fails");
   assert.notEqual(runBuilder({ mode: "post-note", extraFlags: ["--review-packet", join(work, "packet.md")] }).status, 0, "post-note Lift validation stays scoped to parent-owned mode");
+
+  // Issue #453: parent-owned rationale form is documented and validateLift
+  // accepts a row written exactly to that example.
+  const parentOwnedForm = "Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \\| PASS — Gate Receipt <locator>>";
+  const schemaForRationale = readFileSync(join(root, "start-build/templates/reviewer-lift-schema.md"), "utf8");
+  assert.ok(schemaForRationale.includes(parentOwnedForm), "schema documents parent-owned Gate coverage rationale form");
+  for (const copy of [
+    "start-build/templates/review-packet.md",
+    "start-build/templates/review-packet-compact.md",
+  ]) {
+    assert.ok(readFileSync(join(root, copy), "utf8").includes(parentOwnedForm), `${copy} pastes the documented parent-owned rationale form`);
+  }
+  const filledForm = `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; coverage exact-candidate-local; result: PASS — Gate Receipt ${locator}`;
+  assert.equal(run({ reviewPacket: packet(undefined, filledForm) }).status, 0, "documented parent-owned rationale example passes validateLift");
+  assert.notEqual(
+    run({ reviewPacket: packet(undefined, `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; result: PASS — Gate Receipt ${locator}`) }).status,
+    0,
+    "policy/command/commit without exact-candidate-local fail",
+  );
+  const parentOwnedGuide = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
+  assert.ok(parentOwnedGuide.includes("rebind both `Local gate` and `Gate coverage rationale`"), "parent-owned-gate rebinds both Local gate and Gate coverage rationale");
+  assert.ok(parentOwnedGuide.includes("replace only the `result:` token"), "parent-owned-gate names the single result: token to replace");
 
   // Doc/validator agreement (issue #450): the example a parent copies must teach
   // exactly the accepted status_before values and preflight commands.
