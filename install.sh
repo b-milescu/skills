@@ -66,11 +66,6 @@ SKILL_DESTS=(
 REQUIRED_EXTERNAL_SKILLS=(
   tdd
 )
-OPTIONAL_EXTERNAL_SKILLS=(
-  grill-with-docs
-  improve-codebase-architecture
-  triage
-)
 
 if realpath --relative-to=/ / >/dev/null 2>&1; then
   REALPATH=realpath
@@ -124,15 +119,6 @@ external_skill_note() {
     tdd)
       printf 'start-build/start-review behavior-touching work depends on it'
       ;;
-    grill-with-docs)
-      printf 'domain-doc guidance can use it if installed; otherwise edit CONTEXT.md/docs/adr manually'
-      ;;
-    improve-codebase-architecture)
-      printf 'boundary-moving cleanup handoffs can use it if installed; otherwise file follow-up issues manually'
-      ;;
-    triage)
-      printf 'tracker/backlog hygiene handoffs can use it if installed; otherwise follow tracker docs manually'
-      ;;
     *)
       printf 'declared external skill dependency'
       ;;
@@ -153,11 +139,6 @@ warn_missing_external_skills() {
     printf 'warn: missing required external skill %s in %s (%s)\n' "$name" "$skill_dir" "$note" >&2
   done
 
-  for name in "${OPTIONAL_EXTERNAL_SKILLS[@]}"; do
-    external_skill_present "$skill_dir" "$name" && continue
-    note=$(external_skill_note "$name")
-    printf 'warn: missing optional external skill %s in %s (%s)\n' "$name" "$skill_dir" "$note" >&2
-  done
 }
 
 resolve_symlink_target() {

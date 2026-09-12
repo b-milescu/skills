@@ -18,6 +18,6 @@ Treat every transform as observable until proven otherwise. An unproven transfor
 
 A finding is in scope only when one mechanical source proves both the drift and corrected value: command output, lockfile, config, or code signature. Treat stale text as a map, not truth, and never correct from inference.
 
-Candidate Evidence must name the source and show both values. Without that proof, propose no correction: concrete drift with a named missing source uses the [`Needs info` classification](../SKILL.md#classification-rules); otherwise omit it as OUT. A fix requiring judgment, prose authoring, or a domain call routes to `grill-with-docs` under that classification.
+Candidate Evidence must name the source and show both values. Without that proof, propose no correction: concrete drift with a named missing source uses the [`Needs info` classification](../SKILL.md#classification-rules); otherwise omit it as OUT. A fix requiring judgment, prose authoring, or a domain call is OUT of destale under that classification; edit CONTEXT.md/ADRs manually if the gap is real.
 
 "Fix the drifted README command" is IN; "rewrite the README for clarity" is OUT.
