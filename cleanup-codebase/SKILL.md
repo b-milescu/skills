@@ -1,6 +1,6 @@
 ---
 name: cleanup-codebase
-description: Discover and plan subtractive repo-maintenance cleanup — deslop (simplify needlessly complex local structures, preserving behavior and boundaries) and destale (remove/correct stale code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (use `improve-codebase-architecture`), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (use `triage`). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
+description: Discover and plan subtractive repo-maintenance cleanup — deslop (simplify needlessly complex local structures, preserving behavior and boundaries) and destale (remove/correct stale code, docs, config, deps, CI). Planning-only; routes implementation to the build workflow. Not for boundary-moving refactoring (file a follow-up issue), diff-level tidy-ups (use `simplify`/`code-review`), or issue triage (follow the repo tracker workflow). Use when the user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene discovery.
 ---
 
 # Cleanup Codebase
@@ -17,7 +17,7 @@ Operate as a **relentless subtractive auditor**: exhaustive within the declared 
 
 ## Scope 1 — DESLOP (behavior- AND boundary-preserving simplification)
 
-*Observable behavior* = return values, exceptions (type+message), side effects, emitted text (logs/stdout other code may parse), ordering, rounding, **and time/space complexity class**; a consumer relying on any of these must not be able to tell. **Allowed transforms — CLOSED list** (anything not on it → `improve-codebase-architecture`, not deslop):
+*Observable behavior* = return values, exceptions (type+message), side effects, emitted text (logs/stdout other code may parse), ordering, rounding, **and time/space complexity class**; a consumer relying on any of these must not be able to tell. **Allowed transforms — CLOSED list** (anything not on it is OUT of deslop — file a boundary-change follow-up):
 
 - remove dead/unreachable code
 - remove a literal/near-literal duplicate where a canonical copy exists in-reach (cross-unit dedup is OUT)
@@ -35,10 +35,10 @@ Apply the [DESTALE gate sequence](reference/gates.md#destale-gate-sequence) to c
 
 ## Out of scope — handoffs (each carries a fallback)
 
-- boundary-moving restructuring (split mixed-responsibility files, move responsibilities, change APIs/layers, cross-unit dedup) → `improve-codebase-architecture` *(fallback: file a boundary-change follow-up issue)*
-- tracker/backlog hygiene (stale issues, labels, untriaged backlog) → `triage` *(fallback: repo tracker workflow)*
+- boundary-moving restructuring (split mixed-responsibility files, move responsibilities, change APIs/layers, cross-unit dedup) → file a boundary-change follow-up issue
+- tracker/backlog hygiene (stale issues, labels, untriaged backlog) → follow the repo tracker workflow
 - unsafe-default / security assessment → `security-review`, flag-and-refer only *(built-in)*
-- terminology / ADR / glossary → `grill-with-docs` *(fallback: edit `CONTEXT.md`/ADRs manually)*
+- terminology / ADR / glossary → edit `CONTEXT.md`/ADRs manually
 
 ## Quick start
 

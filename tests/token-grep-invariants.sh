@@ -631,7 +631,9 @@ contain|cleanup-codebase/SKILL.md|leave implementation to the build workflow
 contain|cleanup-codebase/SKILL.md|DESLOP
 contain|cleanup-codebase/SKILL.md|DESTALE
 contain|cleanup-codebase/SKILL.md|CLOSED list
-contain|cleanup-codebase/SKILL.md|improve-codebase-architecture
+absent|cleanup-codebase/SKILL.md|improve-codebase-architecture
+absent|cleanup-codebase/SKILL.md|grill-with-docs
+absent|cleanup-codebase/SKILL.md|`triage`
 contain|cleanup-codebase/SKILL.md|Gate sequence
 contain|cleanup-codebase/SKILL.md|Export gate
 contain|cleanup-codebase/SKILL.md|Reference gate
