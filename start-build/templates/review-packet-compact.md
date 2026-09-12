@@ -35,7 +35,7 @@ Child runs: `gate_owner_received: <literal launch value, or absent>` per
 | Transport | `<mcp / eligible glab-fallback gap / n/a; per reviewer-lift-schema.md>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<exact-candidate-local>` |
-| Gate coverage rationale | `<policy + exact local command + candidate commit + result; refresh after push>` |
+| Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
 | CI pipeline | `<advisory provider-native CI locator + ID + status + commit when available, or N/A — why>` |
 | Local gate | `<status + exact command per reviewer-lift-schema.md; parent-owned: not-run until Gate Receipt per ../reference/parent-owned-gate.md>` |
 | RED | `<behavior-touching implementation: failing check; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
