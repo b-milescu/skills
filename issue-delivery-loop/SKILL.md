@@ -36,6 +36,9 @@ Default: fan out every provably decoupled subset.
    explicit `Gate owner`; runtime notices never become scope stop instructions.
 5. Event-driven waiting only. Follow
    [wait cadence](skill://start-build/reference/parent-orchestrator.md#wait-cadence).
+   Reviewer replacement cites
+   [reviewer launch timing](skill://start-build/reference/parent-orchestrator.md#reviewer-launch-timing)
+   rather than restating its published-report precondition.
    Consume builder/reviewer two-line native locator
    handoffs, then apply [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification):
    candidate/Lift before parent gating, exact receipt before ready/review,

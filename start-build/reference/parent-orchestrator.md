@@ -144,6 +144,8 @@ status once.
 Parallel launch is the default: step 5 starts the final reviewer as soon as the exact-candidate Gate Receipt exists. Provider CI may run in parallel, but no CI status delays review or changes verdict/action eligibility.
 
 - Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
+- Before relaunching a replacement, take a `forge snapshot` of the change request's notes for a Review Report whose reviewed commit equals the current head. If one exists, consume it as the handoff instead of relaunching. Do not consume a report whose reviewed commit does not equal the current head.
+- A report consumed this way still receives the readback the crashed reviewer skipped (provider-native note digest + reviewed commit equals head) before it feeds approval/finish; the independent-review floor is unchanged.
 
 ## Minimal reviewer launch prompt
 

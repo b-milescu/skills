@@ -176,6 +176,13 @@ absent|start-build/reference/standalone-gate.md|approve / request-changes / reje
 contain|start-build/reference/parent-orchestrator.md|check the reviewer run status/activity before replacement
 contain|start-build/reference/parent-orchestrator.md|Do not start a second reviewer while the first run is still active
 contain|start-build/reference/parent-orchestrator.md|escalate instead of launching a duplicate reviewer
+contain|start-build/reference/parent-orchestrator.md|Before relaunching a replacement, take a `forge snapshot`
+contain|start-build/reference/parent-orchestrator.md|consume it as the handoff instead of relaunching
+contain|start-build/reference/parent-orchestrator.md|provider-native note digest
+contain|start-build/reference/parent-orchestrator.md|independent-review floor is unchanged
+contain|start-build/reference/parent-orchestrator.md|Do not consume a report whose reviewed commit does not equal the current head
+contain|issue-delivery-loop/SKILL.md|#reviewer-launch-timing
+absent|issue-delivery-loop/SKILL.md|consume it as the handoff instead of relaunching
 absent|start-build/reference/standalone-gate.md|within 10 minutes
 absent|start-build/reference/standalone-gate.md|Timeout: 10 minutes per round
 absent|start-build/reference/standalone-gate.md|try one fresh reviewer session, then escalate
