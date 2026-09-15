@@ -8,17 +8,17 @@ provider branch owns native approval and finish mechanics.
 
 ## Decision Summary
 
-Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). This is the immutable pre-action judgment; record intended or no-action state only.
+Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). This is the immutable pre-action judgment; record intended or no-action state only. `Reviewed commit` and `Findings summary` are machine-read: each holds one bare value with no trailing prose, so the reviewed commit must equal the current provider commit at decision time and every finding must appear by ID. Commentary belongs in a neighbouring cell or the report body.
 
 | Field | Value |
 |---|---|
 | Review verdict | `<pass / request-changes / reject / blocked>` |
 | Change request | `<opaque provider-native change-request locator>` |
 | Repository | `<canonical repository locator and default branch>` |
-| Reviewed commit | `<commit reviewed; must equal current provider commit at decision time>` |
+| Reviewed commit | `<40-hex reviewed commit>` |
 | Report locator | `<stable report locator per the finding-identity contract; never pending>` |
 | CI status / commit | `<advisory native status + bound commit, unavailable, or unbound>` |
-| Findings summary | `MF: <count or IDs>; SF: <count or IDs>; C: <count or IDs>` |
+| Findings summary | `MF: <0 or MF-N list>; SF: <0 or SF-N list>; C: <0 or C-N list>` |
 | Local checks | `<commands run + brief result, or not-run + rationale>` |
 | Approval authority | `<verified default-after-pass or restricted: reason/source>` |
 | Approval authority source | `<verified stable repo policy ref or explicit restriction source>` |
@@ -33,7 +33,7 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 
 ## Context / Snapshot
 
-Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#review-reportmd).
+Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#review-reportmd). `Reviewed commit` stays a bare value here too, repeating the Decision Summary value: the same commit used for diff, local checks, advisory CI attribution, and action guards.
 
 | Field | Value |
 |---|---|
@@ -43,7 +43,7 @@ Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#re
 | Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
 | Report # | `<round or report number>` |
 | Report locator | `<same stable report locator used by every finding tuple; final uses the published report's native note ID>` |
-| Reviewed commit | `<same commit used for diff, local checks, advisory CI attribution, and action guards>` |
+| Reviewed commit | `<40-hex reviewed commit>` |
 | CI snapshot | `<advisory pipeline URL/ID/status/SHA, unavailable, or unbound with reason>` |
 | Local check snapshot | `<checkout path + checkout SHA + commands/result, Gate Receipt verification, or not-run + rationale>` |
 | Authority snapshot | `<Approval authority + source verification; Finish authority + source verification; Finish owner verification>` |
