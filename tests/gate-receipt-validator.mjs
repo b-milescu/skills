@@ -100,8 +100,6 @@ try {
   const schema = readFileSync(join(root, "start-build/templates/reviewer-lift-schema.md"), "utf8");
   assert.match(schema, /\| Reviewed SHA \| MR head SHA at ready-marking; update on every post-ready push before asking for review\. \|/, "schema does not require a fenced Reviewed SHA");
   assert.notEqual(run({ document: receipt({ checkout_commit: "2".repeat(40) }) }).status, 0, "stale commit fails");
-  assert.notEqual(run({ locatorValue: "github://owner/repo/pull/42/comment/9" }).status, 0, "wrong opaque locator fails");
-  assert.notEqual(run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — Gate Receipt: ${locator} — https://gitlab.example/x`) }).status, 0, "multiple locators fail");
   assert.notEqual(run({ document: receipt({ change_id: "" }) }).status, 0, "empty opaque ID fails");
   assert.notEqual(run({ document: receipt({
     preflight_checks: [
@@ -185,6 +183,37 @@ try {
   for (const [, command] of guide.matchAll(/^\s*command: "(git status[^"]*)"/gm)) {
     assert.ok(acceptedCommands.includes(command), `documented preflight command is accepted: ${command}`);
   }
+  // Issue #458: the locator argument must equal the Local gate row's sole
+  // scheme:// token, and that mismatch is distinguishable from the other three
+  // Local gate conditions, naming both compared values.
+  const twoUrls = run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — Gate Receipt: ${locator} — https://gitlab.example/x`) });
+  assert.notEqual(twoUrls.status, 0, "two locator tokens in Local gate fail: the mechanism is the sole token, not the first");
+  assert.match(twoUrls.stderr, /Gate Receipt pointer mismatch/, "two-URL row reports a pointer mismatch, not the shared stale message");
+  assert.match(twoUrls.stderr, /2 locator tokens/, "two-URL row reports that no sole token could be extracted");
+  const wrongLocator = run({ locatorValue: "github://owner/repo/pull/42/comment/9" });
+  assert.notEqual(wrongLocator.status, 0, "wrong locator fails");
+  assert.match(wrongLocator.stderr, /github:\/\/owner\/repo\/pull\/42\/comment\/9/, "mismatch names the expected argument");
+  assert.ok(wrongLocator.stderr.includes(locator), "mismatch names the token extracted from the row");
+  const localGateFailures = {
+    noPass: run({ reviewPacket: packet(`done — ${expected.gateCommand} — Gate Receipt: ${locator}`) }),
+    contradictory: run({ reviewPacket: packet(`PASS — not-run — ${expected.gateCommand} — Gate Receipt: ${locator}`) }),
+    noCommand: run({ reviewPacket: packet(`PASS — npm run other — Gate Receipt: ${locator}`) }),
+  };
+  for (const [name, result] of Object.entries(localGateFailures)) {
+    assert.notEqual(result.status, 0, `${name} Local gate fails`);
+    assert.doesNotMatch(result.stderr, /Gate Receipt pointer mismatch/, `${name} is not reported as a pointer mismatch`);
+  }
+  assert.equal(
+    new Set(Object.values(localGateFailures).map((result) => result.stderr)).size,
+    3,
+    "the three non-locator Local gate conditions no longer share one message",
+  );
+  assert.ok(
+    guide.includes("--gate-receipt-locator <the sole URL in the Reviewer Lift `Local gate` row>"),
+    "parent-owned-gate.md documents the locator argument as the row's sole URL",
+  );
+  assert.ok(!/opaque provider locator/.test(guide), "parent-owned-gate.md no longer calls the locator opaque");
+
   console.log("gate-receipt-validator: PASS");
 } finally {
   rmSync(work, { recursive: true, force: true });

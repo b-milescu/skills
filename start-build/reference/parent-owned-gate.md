@@ -133,8 +133,16 @@ its returned locator, and the current Review Packet before ready:
 
 ```text
 node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
-node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <opaque provider locator> --gate-command <command> --gate-policy-ref <policy>
+node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <the sole URL in the Reviewer Lift `Local gate` row> --gate-command <command> --gate-policy-ref <policy>
 ```
+
+`--gate-receipt-locator` is not an opaque value: it must equal, byte for byte,
+the sole `scheme://` URL the Reviewer Lift's `Local gate` row carries — the
+published note's full URL, not a bare note id. Sole, not first: a row carrying
+two or more URLs extracts no locator at all and fails. A mismatch is reported as
+`Gate Receipt pointer mismatch`, naming the argument and the token read from the
+row, separately from the row's missing-`PASS`, contradictory-token, and
+missing-gate-command failures.
 
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
 For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt <locator>`.
