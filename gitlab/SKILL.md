@@ -22,16 +22,7 @@ Bounded metadata/body-read rules live in
 
 ## Guarded glab fallback and help-first rule
 
-Before any flagged fallback `glab` command, run exact command help and verify every flag:
-
-```bash
-
-glab issue list --help; glab issue view --help; glab issue create --help
-glab mr list --help; glab mr view --help; glab mr diff --help
-glab mr create --help; glab mr update --help; glab mr approve --help; glab mr merge --help
-glab ci status --help; glab repo view --help; glab api --help
-
-```
+Before any flagged fallback `glab` command, run exact command help and verify every flag with `glab <area> <verb> --help`.
 
 Do not invent flags from memory or other CLIs. If help conflicts with this skill, use help and note skill drift.
 
@@ -39,33 +30,23 @@ Project hooks may specialize policy but not exact-candidate Gate Receipt, review
 
 ### Per-run help cache
 
-Help-first remains mandatory for fallback `glab`. A run-dir help cache may reduce repeated output noise only after the exact help text has been captured for this run and context. Keep the cache in a temp/run artifact directory and never commit it.
-
-The run-dir help cache records the exact `glab <command> --help` output with verification status. Refresh the cache whenever the command, `glab` version, or repo context changes.
+Help-first remains mandatory for fallback `glab`. The run-dir help cache — kept in a temp/run artifact directory and never committed — records the exact `glab <command> --help` output with verification status for this run and context. Refresh the cache whenever the command, `glab` version, or repo context changes.
 
 Detailed cache contract, context invalidation rules, and the executable helper pattern live in [skill://gitlab/reference/help-first.md](skill://gitlab/reference/help-first.md#per-run-help-cache).
 
 ## Important fallback/local pitfalls
 
-- `glab issue list`: open is default. No `--state`; use `--closed` or `--all` only if help shows them.
-- `glab issue list`: JSON uses `-O json` / `--output json`; `-F` means `--output-format` (`details`, `ids`, `urls`).
-- `glab repo view`, `issue view`, `mr view`, `mr list`: JSON uses `-F json`.
 - Issue `labels` are strings: use `.labels`, not `.labels[].name`.
-- Issue comments: `glab issue note <id> --message ...`; no `issue note create`.
-- MR comments: `glab mr note create <id> --message ...`.
-- `glab mr diff` has no `--stat`; use raw diff with `git apply --numstat`.
 - `glab ci status --mr` is unreliable; prefer MCP `get_merge_request`/`list_pipelines` exact-SHA reads, or fallback branch CI / MR `.pipeline` only as contract allows.
 - `glab mr list -F json` is candidate data; use MCP `get_merge_request` or fallback `glab mr view <id> -F json` for decision-grade SHA/pipeline/mergeability.
 - Use `-R "$repo_url"` when fallback repo/host inference might be wrong.
-- Use file-backed long descriptions/messages: the caller reads the file and submits its text to `validate_gitlab_text` before eligible inline `glab` fallback, or to an MCP safe mutation tool. No shipped wrapper reads or validates files for the caller; never print bodies or receive secrets.
-- Generic path, comparison, and directory-change hygiene lives in
-  [`bounded-reads.md` §Generic shell hygiene](skill://gitlab/reference/bounded-reads.md#generic-shell-hygiene).
+- Use file-backed long descriptions/messages; [`safe-text.md`](skill://gitlab/reference/safe-text.md) owns the caller steps and the never-print-bodies rule.
 
 ## Safe multiline GitLab text
 
-Validate every MR/issue body before mutation with `validate_gitlab_text` or a safe mutation tool that embeds it. Reject NUL, non-whitespace C0 controls, and DEL; allow tab, newline, and carriage return. Diagnostics name only the role and byte offset, never body content or secrets.
+Validate every MR/issue body before mutation with `validate_gitlab_text` or a safe mutation tool that embeds it. [`safe-text.md`](skill://gitlab/reference/safe-text.md) owns the byte rule and the role/offset-only diagnostics.
 
-Draft long text in temp/run-dir files with quoted heredocs. File-backed `glab` fallback is allowed only under snippet fallback conditions and enforces the same byte rule. See [`safe-text.md`](skill://gitlab/reference/safe-text.md) and [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text).
+Draft long text in temp/run-dir files with quoted heredocs; [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text) owns the file-backed pattern and its fallback conditions.
 
 GitLab strips exactly one trailing newline from a published note or description body. Compute expected digests and byte counts over that stripped form. A one-byte difference of exactly that shape is GitLab's normalisation — never a failed write and never a reason to create a second note. This does not weaken authored-source readback equality in [`safe-text.md`](skill://gitlab/reference/safe-text.md).
 
@@ -73,8 +54,7 @@ GitLab strips exactly one trailing newline from a published note or description 
 
 Use `create_issue` with required native arguments `project`,
 `expected_project_id`, `expected_user_id`, and `title`, plus the intended
-publication fields. The bound MCP connection owns the API destination; no
-caller API URL or replacement API-configuration argument is needed.
+publication fields. The bound MCP connection owns the API destination.
 
 Before publication, compare a fresh successful `get_project` response's
 canonical project/clone metadata with the independently intended repository
@@ -85,18 +65,9 @@ blocks publication. Instance-local project/user IDs alone are not cross-instance
 identity proof. Use exact existing label names and preserve every submitted
 field, including authored Markdown.
 
-Inspect the refreshed mounted `create_issue` schema read-only before adopting
-this contract. If it still requires `expected_api_url`, stop before POST with a
-server/client contract-version blocker; resume only with the URL-free schema.
-Do not request an operator URL, derive an API root, discover/echo one through
-`get_project`, probe creation, or retain a legacy-call branch. No new discovery
-tool, cache, parser, fallback transport, or credential access is needed.
-A server-owned `api_url` in a receipt is optional evidence, not a caller
-prerequisite, authority grant, or proof of intended repository.
-
-Only the obsolete API expectation requirement is removed. Project/user checks,
-label/text validation, one non-retried POST, byte-verification policy, and the
-readback/recovery requirements below remain unchanged.
+If the mounted `create_issue` schema still requires `expected_api_url`, stop
+before POST with a server/client contract-version blocker; resume only with the
+URL-free schema.
 
 The native tool validates bindings/text, POSTs once, and compares submitted
 intent against raw GET. Classify its body-free receipt before continuing:
@@ -124,11 +95,11 @@ Keep three distinct oracles:
 
 ## GitLab Mutation Guard
 
-Every GitLab mutation uses the ordered **GitLab Mutation Guard** in [`mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`. Fallback never bypasses stale-head, CI, authority, permission, self-finish, or content-byte guards.
+Every GitLab mutation uses the ordered **GitLab Mutation Guard** in [`mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) and its machine schema at `skill://gitlab/reference/mutation-guard.schema.json`.
 
 ## Canonical snippets
 
-Snippet names and contracts are stable API. [`snippet-metadata.json`](skill://gitlab/reference/snippet-metadata.json) is the machine source of truth; [`snippet-transports.md`](skill://gitlab/reference/snippet-transports.md) is its synchronized table. This skill owns transport order, help-first fallback, flag drift, and examples. Shared mutation and CI/finish rules live in [`mutation-guard.md`](skill://gitlab/reference/mutation-guard.md) and [`ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md).
+Snippet names and contracts are stable API. [`snippet-metadata.json`](skill://gitlab/reference/snippet-metadata.json) is the machine source of truth; [`snippet-transports.md`](skill://gitlab/reference/snippet-transports.md) is its synchronized table. This skill owns transport order, help-first fallback, flag drift, and examples.
 
 ### Snippet: local-repo-preflight
 
@@ -167,18 +138,11 @@ glab issue view <id> -F json | jq '{iid,title,state,labels,assignees,web_url}'
 
 ```
 
-Maintenance only when workflow calls for it. For issue comments, use `gitlab` **Snippet: issue-note-create** explicitly instead of combining issue and MR note commands.
-
-```bash
-
-glab issue close <id>
-glab issue update <id> --label foo,bar --unlabel baz
-
-```
+For issue comments use **Snippet: issue-note-create**; for label maintenance use **Snippet: label-reconcile**.
 
 ### Snippet: draft-mr-create
 
-Open the early Draft MR only after the source branch exists remotely. MCP primary: validate the Review Packet with `validate_gitlab_text`, then call `create_merge_request(draft=true, source_branch, target_branch, title, description)`. Re-read state/binding without the body and read the description separately for integrity. The description must include plain `Closes #<iid>`.
+Open the early Draft MR only after the source branch exists remotely. MCP primary: validate the Review Packet with `validate_gitlab_text`, then call `create_merge_request(draft=true, source_branch, target_branch, title, description)`. The description must include plain `Closes #<iid>`.
 
 ```text
 
@@ -190,7 +154,7 @@ get_merge_request_description(project_path, mr_iid, description_max_bytes, descr
 
 ### Snippet: mr-description-update
 
-Refresh the MR description / Reviewer Lift without changing draft/ready state. MCP primary: `safe_update_merge_request_description` validates content bytes and updates the bound MR description. Re-read state/binding without the body and read the description separately for integrity. Do not combine with ready-marking.
+Refresh the MR description / Reviewer Lift without changing draft/ready state. MCP primary: `safe_update_merge_request_description` validates content bytes and updates the bound MR description. Do not combine with ready-marking.
 
 ```text
 
@@ -202,7 +166,7 @@ get_merge_request_description(project_path, mr_iid, description_max_bytes, descr
 
 ### Snippet: draft-mr-mark-ready
 
-Use only after the local gate has passed (or N/A is documented), the MR description and Reviewer Lift name the current head SHA, and the workflow is ready for review. Do not paste this with Draft MR creation or description update commands as one executable sequence. After the ready mutation, re-read state/binding without the body and read the description separately to prove it stayed intact.
+Use only after the local gate has passed (or N/A is documented) and the MR description and Reviewer Lift name the current head SHA.
 
 ```text
 
@@ -218,7 +182,6 @@ get_merge_request_description(project_path, mr_iid, description_max_bytes, descr
 
 glab mr view
 glab mr list --not-draft -F json --per-page 50
-glab mr list --merged; glab mr list --closed; glab mr list --all
 glab mr view <id> --comments
 glab mr view <id> -F json | jq '{iid,title,state,draft,source_branch,target_branch,author:.author.username,web_url,sha,pipeline,detailed_merge_status}'
 
@@ -247,21 +210,13 @@ glab ci status --branch "$source_branch" -F json
 
 ### Snippet: ci-watch-sha-pinned
 
-Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned).
-
-Inputs:
-
-- `mr_iid`: merge request IID.
-- `source_branch`: MR source branch, used only for fallback/progress context.
-- `reviewed_sha`: SHA from the review report or Reviewer Lift.
-- `timeout_seconds` and `poll_seconds`: caller-selected wait budget.
-- Optional output mode: human summary or machine-readable YAML.
+Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned); inputs and outputs live in the [snippet transport table](skill://gitlab/reference/snippet-transports.md).
 
 MCP primary: poll `get_merge_request_workflow_snapshot` and exact-SHA
 `list_pipelines(sha=reviewed_sha)` / `get_pipeline`. A changed MR head stops
-attribution to `reviewed_sha`; every pipeline state, including missing, failed,
-canceled, skipped, pending, stale, and timeout, is advisory progress evidence.
-Record `via=mcp`; guarded `glab` fallback is only for unavailable MCP reads.
+attribution to `reviewed_sha`; every pipeline state is advisory progress
+evidence. Record `via=mcp`; guarded `glab` fallback is only for unavailable
+MCP reads.
 
 ```text
 
@@ -270,8 +225,6 @@ list_pipelines(project_path, sha=reviewed_sha) or get_pipeline(project_path, pip
 observation -> bound-success / bound-pending / bound-failure / unavailable / unbound
 
 ```
-
-For raw-command fallback adaptation, see [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned) and [`skill://gitlab/reference/mutation-guard.md`](skill://gitlab/reference/mutation-guard.md).
 
 ### Snippet: mr-note-create
 
@@ -284,10 +237,9 @@ merge_request_notes_or_discussions(project_path, mr_iid) -> verify created note 
 
 ```
 
-Use exact-note content or lossless bounded recovery when verifying source
-equality. The tool's canonical-body digest and `verify_merge_request_note_digest`
-prove stored-body equality, not equality to the authored report; neither
-replaces the source comparison.
+Verify source equality from exact-note content or lossless bounded recovery: the
+canonical-body digest and `verify_merge_request_note_digest` prove stored-body
+equality, not equality to the authored report.
 
 ### Snippet: issue-note-create
 
@@ -324,7 +276,7 @@ get_project(project_path) -> verify binding
 
 ### Snippet: auto-merge-api-fallback
 
-Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer the native finish call below, or lower-level `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after caller-owned reviewed-SHA, Gate Receipt, independent review, authority, caller/context, and fallback guards pass. Native success is not proof of those workflow checks.
+Stable snippet name for the known auto-merge queue fallback boundary. Authorized non-builders should prefer the native finish call below, or lower-level `merge_merge_request(auto_merge=true, sha=reviewed_sha, should_remove_source_branch=true, confirm=true)`. Use guarded `glab mr merge --auto-merge --sha --remove-source-branch` fallback only for the documented MCP/CLI 405 gap after the [GitLab Mutation Guard](#gitlab-mutation-guard) passes.
 
 ```text
 
@@ -335,7 +287,7 @@ get_merge_request(project_path, mr_iid) -> verify queue state and record via=mcp
 
 ### Snippet: sha-guard
 
-MCP primary is `get_merge_request_workflow_snapshot`; compare its top-level `sha` with `reviewed_sha`. Use `get_merge_request(include_description:false)` only if a future guard needs a field absent from the snapshot. The fallback below is only for MCP-unavailable metadata reads and still requires explicit project binding plus help-first verification.
+MCP primary is `get_merge_request_workflow_snapshot`; compare its top-level `sha` with `reviewed_sha`. The fallback below is only for MCP-unavailable metadata reads and still requires explicit project binding plus help-first verification.
 
 ```bash
 
@@ -361,7 +313,7 @@ glab mr approve "$mr_iid" --sha "$reviewed_sha"
 
 ### Snippet: sha-bound-merge
 
-Use only when the reviewed SHA is current, the exact-candidate Gate Receipt and authority guards pass, and explicit authority permits direct merge. Native GitLab policy may refuse the mutation; report it and never bypass it.
+Use only when the [GitLab Mutation Guard](#gitlab-mutation-guard) passes and explicit authority permits direct merge.
 
 ```bash
 
@@ -373,7 +325,7 @@ glab mr merge "$mr_iid" --yes --sha "$reviewed_sha" --auto-merge=false
 
 ### Snippet: sha-bound-auto-merge-queue
 
-Use only when the reviewed SHA is current, project policy permits protected auto-merge, and explicit authority permits queueing auto-merge. Request source-branch removal on merge with `--remove-source-branch` (MCP primary: `should_remove_source_branch=true`), matching the primary finish path so the remote source branch is gone once the queued merge completes.
+Use only when the [GitLab Mutation Guard](#gitlab-mutation-guard) passes, project policy permits protected auto-merge, and explicit authority permits queueing auto-merge. Request source-branch removal on merge with `--remove-source-branch` (MCP primary: `should_remove_source_branch=true`), matching the primary finish path so the remote source branch is gone once the queued merge completes.
 
 ```bash
 
@@ -390,8 +342,8 @@ Use after `sha-bound-approval` when approval status must be verified through the
 MCP primary: `get_merge_request_approvals(project=project_path, merge_request_iid=mr_iid)`,
 plus a fresh MR head/caller binding. An approval record is not independent
 exact-SHA review evidence. A tier-unavailable `not_available` response leaves
-approval unverified and fails closed; fallback cannot bypass native tier policy.
-Use the help-first read below only for an eligible unavailable MCP transport.
+approval unverified and fails closed; use the help-first read below only for an
+eligible unavailable MCP transport.
 
 ```bash
 
@@ -415,17 +367,6 @@ Native inputs are shown below; `should_remove_source_branch` is optional.
 Unlike lower-level approve/merge tools (which retain `sha` and `confirm=true`),
 finish takes `reviewed_sha` and no `confirm`.
 
-The caller verifies the Gate Receipt, independent exact-SHA review, authority
-provenance, and identity/context eligibility before invoking native finish.
-The tool freshly checks project/MR/SHA/branches and supplied role/authority,
-performs at most one action, and returns native readback with optional nullable
-advisory `ci`; success does not establish the caller's workflow proofs.
-Builder role always stops at handoff. Stop on stale head, missing/stale Gate
-Receipt, missing authority/source, identity drift, same-session review/finish,
-unsupported action, dirty worktree cleanup, or native GitLab policy refusal.
-Raw `glab` fallback is allowed only under snippet-specific documented MCP gaps
-after MCP re-read and all mandatory guards pass.
-
 ```text
 
 finish_merge_request(project=project_path, merge_request_iid=mr_iid, reviewed_sha=reviewed_sha, action=action, source_branch=source_branch, target_branch=target_branch, caller_role=caller_role, authority=merge_authority, authority_source=authority_source) -> native action/readback and advisory ci
@@ -441,7 +382,7 @@ evidence for the workflow `finish_result`; follow the cleanup ordering in
 
 Read-only handoff evidence for one MR. MCP primary is `get_merge_request_handoff_evidence` with optional `reviewed_sha`, `review_report_note_id`, and `gate_receipt_note_id`. Output splits `claims` from verified `bindings`. The Reviewer Lift, Review Report, and Gate Receipt remain the canonical artifacts.
 
-Fallback is not a named MCP gap and is not the YAML handoff block: the caller reassembles `safe-mr-json`, bounded description read (`description_grep` for Closes or Reviewer Lift), single-note read by id with `body_grep` or `body_max_bytes` when reading a Gate Receipt or Review Report for one field, and approvals read.
+Fallback is not a named MCP gap: reassemble the evidence from `safe-mr-json` and the bounded description/note reads in [`bounded-reads.md`](skill://gitlab/reference/bounded-reads.md).
 
 ```text
 
@@ -451,10 +392,6 @@ get_issue_note(project, issue_iid, note_id, body_grep) or body_max_bytes -> one 
 
 ```
 
-## Optional helper scripts
-
-MCP is the only shipped GitLab transport and validator. Documented help-first `glab` remains inline fallback text only. Do not invoke `gitlab/scripts/*`.
-
 ## Troubleshooting
 
-Repo wrong: inspect branch remote, `git remote -v`, and fallback `glab repo view "$repo_url"`; decision-grade project identity still comes from MCP `get_project` when available. JSON shape wrong: inspect keys and adapt projection only. Flag fails: rerun exact `glab <area> <verb> --help` and remove unsupported flag.
+JSON shape wrong: inspect keys and adapt projection only.
