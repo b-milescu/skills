@@ -4,6 +4,7 @@ node_modules/
 # Local agent/runtime artifacts
 graphify-out/
 .graphify*
+.trace-mcp/
 
 # Claude Code agent runtime state and isolation worktrees. Parallel agent
 # worktrees live under .claude/worktrees/<id>/ and carry copies of canonical
