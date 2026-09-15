@@ -187,10 +187,13 @@ const genericTriageSeed = read('setup-dev-skills/triage-labels.md');
 assert(!genericTriageSeed.includes('ready-for-agent'), 'generic triage seed must not hardcode this repo AFK-ready label');
 assert(genericTriageSeed.includes('Do not assume a global label string'), 'generic triage seed must document label mapping');
 
-// The issue-pickup body moved to the read-and-evidence group file (ADR-0002).
-const gitlabSnippets = read('gitlab/reference/snippets-read-evidence.md');
-assert(!gitlabSnippets.includes('--label ready-for-agent'), 'gitlab issue-pickup fallback must not hardcode ready-for-agent');
-assert(gitlabSnippets.includes('project_profile.label_profile_ref'), 'gitlab issue-pickup fallback must point to project_profile.label_profile_ref');
+// The issue-pickup body moved to the read-and-evidence group file (ADR-0002),
+// so the negative must hold for the entry procedure and the group file alike.
+const gitlabReadEvidence = 'gitlab/reference/snippets-read-evidence.md';
+for (const file of ['gitlab/SKILL.md', gitlabReadEvidence]) {
+  assert(!read(file).includes('--label ready-for-agent'), `${file} must not hardcode ready-for-agent in the gitlab issue-pickup fallback`);
+}
+assert(read(gitlabReadEvidence).includes('project_profile.label_profile_ref'), 'gitlab issue-pickup fallback must point to project_profile.label_profile_ref');
 
 const snippetMetadata = read('gitlab/reference/snippet-metadata.json');
 const snippetTransport = read('gitlab/reference/snippet-transports.md');
