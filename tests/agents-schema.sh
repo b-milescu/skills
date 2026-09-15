@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Focus: Claude/OMP agent frontmatter parsing, required fields, name/filename
+# matching, runtime-only field drift, dialect-specific tool casing, OMP MCP
+# inventory, retired Pi fields/bridge wording, OMP model-provider allowlist,
+# OMP thinking-level values, canonical OMP multiword keys, and model-token-free
+# route names.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

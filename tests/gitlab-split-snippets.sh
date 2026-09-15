@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Focus: GitLab workflow snippets remain split into Draft MR create, MR
+# description update, Draft MR mark-ready, SHA-bound approval, merge,
+# auto-merge, MR-note, issue-note, label-reconcile, safe-mr-json,
+# auto-merge-api-fallback, CI watch, and finish MCP tool guidance.
 set -euo pipefail
 
 # Parallel-execution contract (issue #197/#210):

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Regression coverage for install.sh external skill dependency warnings.
+# Focus: `install.sh` warnings for missing required external skills and
+# silence when they exist under a temporary `HOME`.
 
 set -euo pipefail
 

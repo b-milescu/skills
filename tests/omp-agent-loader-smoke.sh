@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regression: install.sh exposes agents/omp/*.md to the real OMP task-agent loader.
+# Focus: install.sh exposes agents/omp/*.md to the real OMP task-agent loader.
 #
 # Proves a clean temp-HOME install surfaces every OMP agent to user-scope
 # discovery, and that loaded runtime metadata matches the repo-owned OMP routing

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Parent-only subagent discovery guidance stays in the
+# parent-orchestrator recipe and out of child builder prompts.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

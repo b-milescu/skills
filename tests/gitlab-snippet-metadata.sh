@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Focus: `gitlab/reference/snippet-metadata.json` remains the machine-readable
+# source of truth for all 21 stable GitLab workflow snippets; verifies required
+# metadata fields, unchanged snippet names, `skill://gitlab/reference/...`
+# resource references, via evidence tokens, and exact sync between the Markdown
+# transport table and metadata.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

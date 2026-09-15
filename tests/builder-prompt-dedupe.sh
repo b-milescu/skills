@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Claude/OMP builder prompts stay frontmatter plus invoke `start-build`,
+# reject inlined policy headings, and stay below the tiny route-pin body cap.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

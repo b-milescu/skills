@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Focus: Advisory-CI policy graph invariant: exact-candidate local Gate Receipt
+# is the singular quality gate; review, authority, mutation/readback, queue
+# non-terminality, post-merge containment/closure/cleanup, and native policy
+# refusal remain mandatory.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Reviewer Lift generated-copy blocks match the canonical schema and
+# stale duplicate field-list tables are rejected.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

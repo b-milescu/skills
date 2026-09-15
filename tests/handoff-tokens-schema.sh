@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Focus: Canonical forge-neutral reviewer-handoff token arrays and nine-entry
+# action-blocker crosswalk stay exact; every crosswalk target exists in the
+# mutation-guard or finish-result schema; installed token consumers, the three
+# template pointers, and schema-derived token grep invariants stay
+# synchronized.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

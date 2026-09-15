@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: `setup-dev-skills` remains manual-invocation only and docs preserve
+# ask-before-running guidance.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

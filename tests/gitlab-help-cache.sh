@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: `/gitlab` help-first run-dir cache guidance, context invalidation, and
+# verification-status wording.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
