@@ -210,10 +210,16 @@ function validateLift(body, expected) {
 
   const localGate = rows.get("Local gate");
   const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];
+  // The pointer binding is the row's SOLE locator token: zero or several tokens
+  // collapse to "" and never match the expected argument (issue #458).
   const locator = locatorTokens.length === 1 ? locatorTokens[0] : "";
-  const contradictory = /(?<!\d\s)\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate) || (localGate.match(/Gate Receipt/gi) ?? []).length !== 1;
-  if (!/\bPASS\b/.test(localGate) || contradictory || !localGate.includes(expected.gateCommand) || locator !== expected.receiptLocator) {
-    fail("Reviewer Lift local gate or Gate Receipt pointer is stale");
+  if (!/\bPASS\b/.test(localGate)) fail("Reviewer Lift local gate does not record PASS");
+  if (/(?<!\d\s)\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate)) fail("Reviewer Lift local gate carries a contradictory FAIL/pending/not-run/N/A token");
+  if ((localGate.match(/Gate Receipt/gi) ?? []).length !== 1) fail("Reviewer Lift local gate needs exactly one Gate Receipt pointer");
+  if (!localGate.includes(expected.gateCommand)) fail(`Reviewer Lift local gate does not name the gate command ${expected.gateCommand}`);
+  if (locator !== expected.receiptLocator) {
+    const observed = locator || `none — the row carries ${locatorTokens.length} locator tokens: ${locatorTokens.join(", ") || "(none)"}`;
+    fail(`Gate Receipt pointer mismatch: --gate-receipt-locator ${expected.receiptLocator} vs Local gate sole locator token ${observed}`);
   }
 
   const delta = rows.get("Delta since last ready push");
