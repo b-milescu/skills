@@ -1,14 +1,6 @@
 # GitLab safe-text reference
 
-Transport-agnostic safety rules for any text body submitted to GitLab — MR/issue
-descriptions and notes — regardless of whether the body reaches GitLab through a
-file-backed eligible inline `glab` fallback, an MCP `body`/`description` string, or another
-transport. This reference owns two durable concerns:
-
-1. The **content-byte rule** that every GitLab write must satisfy.
-2. The **shell-safety guidance** (inline-heredoc command-substitution hazard,
-   redaction rule, no-secrets rule) migrated here from `multiline-text.md` so the
-   knowledge survives that file's later deletion.
+Transport-agnostic safety rules for any text body submitted to GitLab — MR/issue descriptions and notes — whatever transport carries it.
 
 The [`GitLab Mutation Guard`](mutation-guard.md) calls this the **Safe GitLab Text** phase; a content-byte failure blocks both MCP and fallback before any body-bearing GitLab mutation.
 
@@ -19,9 +11,9 @@ non-whitespace C0 control character, and no DEL (`0x7f`). Tab (`0x09`), newline
 (`0x0a`), and carriage return (`0x0d`) stay valid because Markdown bodies use
 them. Reject the body before any GitLab write when it violates this rule.
 
-The MCP validator `validate_gitlab_text` owns the active workflow contract for this rule. Body-bearing MCP mutation helpers (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`) apply the same rule before sending text to GitLab. Historical local guards may exist for fallback/regression fixtures, but active workflow docs must name the MCP validator/tool contract.
+The MCP validator `validate_gitlab_text` owns the active workflow contract for this rule. Body-bearing MCP mutation helpers (`safe_update_merge_request_description`, `safe_create_merge_request_note`, `safe_create_issue_note`) apply the same rule before sending text to GitLab.
 
-`validate_gitlab_text` accepts `content` plus an optional `role` (`body`, `description`, `note`, `review_packet`, or `reviewer_lift`), returns success when text is safe, and fails closed on NUL, non-whitespace C0 controls, DEL, or malformed UTF-16. Diagnostics name the role and offending offset and **never print body**, so malformed secret-bearing payload is not echoed back.
+`validate_gitlab_text` accepts `content` plus an optional `role` (`body`, `description`, `note`, `review_packet`, or `reviewer_lift`) and fails closed on NUL, non-whitespace C0 controls, DEL, or malformed UTF-16. Diagnostics name the role and offending offset and **never print body**, so malformed secret-bearing payload is not echoed back.
 
 ## MR body issue-reference intent
 
@@ -39,19 +31,13 @@ When an MR or issue body mentions an issue it must **not** close, avoid bare
 Keep the real auto-close trailer deliberate and unique: use a plain standalone
 `Closes #<target>` line only for the issue the MR should close.
 
-
 ```text
 validate_gitlab_text(role="description", content=body)
 # PASS: no NUL, non-whitespace C0 controls, or DEL
 # FAIL: role + byte offset only; body is not printed
 ```
 
-The caller reads file-backed text without losing authored bytes, including
-trailing newlines, and submits `content` to `validate_gitlab_text` before
-eligible inline `glab` fallback. No shipped wrapper performs this step.
-MCP callers that pass a `body` or `description` string use the MCP validator
-before mutation or a safe mutation tool embedding it; validation is not a
-substitute for authored-source readback equality.
+MCP callers that pass a `body` or `description` string validate it before mutation, or use a safe mutation tool embedding the validator; validation is not a substitute for authored-source readback equality. Read file-backed text without losing authored bytes, including trailing newlines.
 
 ## Inline heredoc command-substitution hazard
 

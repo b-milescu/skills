@@ -191,8 +191,13 @@ assert(finishProfile.includes('reviewed_sha_guard'), 'SHA-bound profile must req
 assert(finishProfile.includes('exact_candidate_gate_receipt'), 'SHA-bound profile must require exact-candidate Gate Receipt');
 assert(shaBoundApproval.required_guards.includes('current MR head equals reviewed SHA before action'), 'approval metadata must implement reviewed_sha_guard');
 assert(shaBoundApproval.required_guards.includes('passing exact-candidate Gate Receipt bound to reviewed SHA'), 'approval metadata must implement exact_candidate_gate_receipt');
-assert(shaBoundApproval.markdown.required_guards.includes('current head equals reviewed SHA'), 'generated approval prose must state reviewed-head equality');
-assert(shaBoundApproval.markdown.required_guards.includes('passing exact-candidate Gate Receipt bound to reviewed SHA'), 'generated approval prose must state Gate Receipt guard');
+const approvalRow = fs.readFileSync('gitlab/reference/snippet-transports.md', 'utf8')
+  .split(/\r?\n/)
+  .find((line) => line.startsWith('| `sha-bound-approval` |'));
+assert(approvalRow, 'snippet-transports.md is missing the sha-bound-approval row');
+const approvalGuards = approvalRow.split('|').slice(1, -1)[3];
+assert(approvalGuards.includes('current head equals reviewed SHA'), 'approval transport row must state reviewed-head equality');
+assert(approvalGuards.includes('passing exact-candidate Gate Receipt bound to reviewed SHA'), 'approval transport row must state Gate Receipt guard');
 assert(!shaBoundApproval.required_guards.some((guard) => /CI/i.test(guard)), 'approval eligibility metadata must not contain a CI guard');
 
 const transportDoc = requireText('gitlab/reference/snippet-transports.md', /GitLab Mutation Guard/, 'Mutation Guard reference');

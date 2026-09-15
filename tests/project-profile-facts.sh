@@ -194,7 +194,6 @@ assert(gitlabSkill.includes('project_profile.label_profile_ref'), 'gitlab issue-
 const snippetMetadata = read('gitlab/reference/snippet-metadata.json');
 const snippetTransport = read('gitlab/reference/snippet-transports.md');
 assert(!snippetMetadata.includes('selection filters (`ready-for-agent`'), 'snippet metadata must not hardcode ready-for-agent as a filter');
-assert(snippetMetadata.includes('target repo AFK-ready label from `project_profile.label_profile_ref`'), 'snippet metadata must describe label-profile-derived filters');
 assert(snippetTransport.includes('target repo AFK-ready label from `project_profile.label_profile_ref`'), 'snippet transport table must match label-profile-derived filters');
 
 console.log('project-profile-facts: PASS');

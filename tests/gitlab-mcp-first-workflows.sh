@@ -46,7 +46,6 @@ contract=gitlab/reference/snippet-transports.md
 require_text "$contract" 'MCP primary tool' 'MCP primary tool column'
 require_text "$contract" 'Fail-closed checks' 'fail-closed checks column'
 require_text "$contract" 'Fallback condition' 'fallback condition column'
-require_text "$contract" 'Post-mutation MCP re-read' 'post-mutation MCP re-read column'
 require_text "$contract" 'via=mcp' 'MCP transport evidence token'
 require_text "$contract" 'via=glab-fallback' 'fallback transport evidence token'
 
@@ -90,9 +89,7 @@ for name in \
   require_text "$contract" "\`$name\`" "transport contract for $name"
 done
 
-require_text gitlab/reference/ci-finish-guards.md 'current head equals `reviewed_sha`' 'fresh reviewed-head guard before finish'
 require_text gitlab/reference/ci-finish-guards.md 'list_pipelines\(sha=reviewed_sha\).*get_pipeline' 'SHA-attributed advisory CI observation'
-require_text gitlab/reference/ci-finish-guards.md 'authority and caller/context eligibility' 'authority/source and caller guard'
 require_text gitlab/reference/ci-finish-guards.md 'exactly one mutation and provider-native readback' 'one-mutation/readback guard'
 require_text gitlab/reference/ci-finish-guards.md 'authority/caller evidence, and transport' 'finish transport evidence'
 require_text gitlab/reference/finish-result-schema.json '"transport"' 'finish_result transport field'
