@@ -21,6 +21,7 @@ This list is the canonical safety-floor enumeration for the repo: consuming docs
 - The **mandatory independent review gate** applies to every behavior-touching change regardless of tier; only discovery, packet, design, and verification *depth* scale.
 - TDD for behavior-touching work, the safety non-negotiables, exact-candidate local Check Gate/Gate Receipt, reviewed-SHA binding, and authority guards hold at every tier. Provider CI is advisory evidence and never a quality or finish gate.
 - The role and finish boundaries hold at every tier: the builder/context-firewall finish boundary, the child-builder boundary, the verifier read-only boundary, and provider-native / MCP-first transport correctness.
+- The evidence and transport floors hold at every tier: **complete diff coverage** of the reviewed change, **provider-native readback** of every mutation before it is reported as done, and **help-first provider fallback correctness** whenever a documented fallback transport is used.
 - Scaling down is a claim, not a default: record the chosen tier and why in the packet so a reviewer can challenge it.
 
 ## Token economy
