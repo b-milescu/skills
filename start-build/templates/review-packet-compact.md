@@ -1,87 +1,54 @@
 # Review Packet (compact)
 
-For docs-only, tests-only with no runtime safety impact, typo/lint, or a
-dependency bump with no API/runtime impact. `filling-guide.md`
-(review-packet-compact.md) owns eligibility and section instructions.
+A run uses exactly one packet: this compact variant for docs-only, tests-only
+with no runtime safety impact, typo/lint, or a dependency bump with no
+API/runtime impact; otherwise [review-packet.md](review-packet.md), which owns
+every section, metadata field, and filling rule not restated below. Section
+instructions, publication, closure/readback, and finding-binding checks are
+canonical in [`filling-guide.md`](filling-guide.md#general-rules-for-all-builder-templates).
 
 ## Metadata
 
-| Field | Value |
-|---|---|
-| Work item | `<provider-native identifier and locator>` |
-| Change request | `<provider-native identifier and locator>` |
-| Title | |
-| Builder | `@builder — <exact model id if exposed>` |
-| Branch | |
-| Base commit | |
-| Current/reviewed commit(s) | |
-
-Publication, closure/readback, and finding-binding checks are canonical in
-[`filling-guide.md`](filling-guide.md#general-rules-for-all-builder-templates).
+Full-packet fields minus `ADR needed?`, `Blocks`, and `Blocked by`.
 
 ## Reviewer Lift
 
-Fill every row per `reviewer-lift-schema.md`; parent-owned mode follows `../reference/parent-owned-gate.md`.
+Every row is required; `reviewer-lift-schema.md` owns their semantics and
+`../reference/parent-owned-gate.md` owns parent-owned mode. Child runs add
+`gate_owner_received` per [builder-final-handoff.md](builder-final-handoff.md).
 
-Child runs: `gate_owner_received: <literal launch value, or absent>` per
-[builder-final-handoff.md](builder-final-handoff.md).
-
-<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
+<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated copy; schema reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
-| Reviewed SHA | `<MR head; refresh after every push>` |
-| Finding bindings | `<per reviewer-lift-schema.md: none or validated report/SHA/finding-ID tuples>` |
-| Review gate | `<mandatory / bypassed (human override)>` |
-| Transport | `<mcp / eligible glab-fallback gap / n/a; per reviewer-lift-schema.md>` |
-| Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
-| Gate coverage | `<exact-candidate-local>` |
+| Reviewed SHA | |
+| Finding bindings | |
+| Review gate | |
+| Transport | `<mcp / glab-fallback (gap: <named gap>) / n/a>` |
+| Gate owner | |
+| Gate coverage | |
 | Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
-| CI pipeline | `<advisory provider-native CI locator + ID + status + commit when available, or N/A — why>` |
-| Local gate | `<status + exact command per reviewer-lift-schema.md; parent-owned: not-run until Gate Receipt per ../reference/parent-owned-gate.md>` |
-| RED | `<behavior-touching implementation: failing check; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
-| GREEN | `<passing behavior check, or N/A with rationale; per reviewer-lift-schema.md>` |
-| Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<paths separated with <br>>` |
-| Touched safety surfaces | `<none or schema-listed surfaces>` |
-| Acceptance surfaces | `<profile surface:evidence entries, or none; per reviewer-lift-schema.md>` |
-| Decoupling proof | `<single change request, or co-running changes + contract proof>` |
-| Reviewer Focus | `<none / changed docs/tests / 1 area to read hardest>` |
+| CI pipeline | |
+| Local gate | `<status + exact command; parent-owned: not-run until the Gate Receipt>` |
+| RED | `<behavior-touching implementation: failing check; else N/A with rationale; do not fake tests>` |
+| GREEN | |
+| Changed paths | `git diff --name-only <base>...HEAD` measured output: `<paths>` |
+| Touched safety surfaces | |
+| Acceptance surfaces | |
+| Decoupling proof | |
+| Reviewer Focus | `<none / changed docs or tests / 1 area>` |
 | Open Questions | `<none / count + OQ IDs>` |
-| Approval authority | `<claim per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#approval-authority-policy>` |
-| Approval authority source | `<verifiable source per reviewer-lift-schema.md>` |
-| Finish authority | `<quoted claim per reviewer-lift-schema.md; default: none — requires explicit human/parent instruction>` |
-| Finish authority source | `<verifiable provenance per reviewer-lift-schema.md and ../../start-review/REVIEW-FLOW.md#finish-authority-source-precedence>` |
-| Delta since last ready push | `<N/A before ready; after ready: old SHA -> new SHA, reason, changed files, gate rerun, substantive? yes/no>` |
+| Approval authority | |
+| Approval authority source | |
+| Finish authority | |
+| Finish authority source | |
+| Delta since last ready push | |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
-## Summary
+## Sections
 
-One paragraph: what changed and why. Name loaded context sources beyond the
-issue and rulebook index, or write `none beyond issue and rulebook index`.
-
-## Scope
-
-- **In scope:**
-- **Out of scope:** `<usually: no runtime behavior, external paths, state schema, gates, or domain rules changed>`
-
-## Acceptance Criteria Evidence
-
-| Acceptance criterion | Evidence |
-|---|---|
-| AC-1: `<criterion>` | `<test/command/link/manual evidence>` |
-| AC-N literal string: `<quoted target text>` | `<exact-string comparison evidence against current head SHA; only when this criterion is byte-for-byte wording-sensitive>` |
-
-## Safety Confirmation
-
-`<Confirm none changed: product/runtime/operator external-system mutation path;
-credential / secret-store handling; domain rule or strategy behavior; state
-schema, migration, deploy topology, or enforce-mode behavior. Note any exception.>`
-
-## Test Evidence
-
-Commands run and result, or CI link. State `TDD: N/A — <reason>` for
-compact-eligible non-behavior changes. A targeted markdown/read check may be
-enough for docs-only work.
-
-## Follow-ups
-
-`None` or linked follow-up issues.
+`Summary`, `Scope`, `Acceptance Criteria Evidence`, `Test Evidence`, and
+`Follow-ups` as in the full packet. `Safety Confirmation` replaces the full
+packet's three-surface delta: one line confirming that no external-system
+mutation path, credential/secret-store handling, domain rule, state schema,
+migration, deploy topology, or enforce-mode behavior changed. Any surface that
+did change makes the work compact-ineligible.

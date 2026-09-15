@@ -1,8 +1,7 @@
 # Review Packet
 
 Summary-first packet. Fill the default sections below; add a conditional section
-only when its trigger applies. `filling-guide.md` (review-packet.md) owns
-section-by-section instructions and the conditional-section triggers.
+only when its trigger applies.
 
 ## Metadata
 
@@ -19,7 +18,8 @@ section-by-section instructions and the conditional-section triggers.
 | Blocks | |
 | Blocked by | |
 
-Publication, closure/readback, and finding-binding checks are canonical in
+Section instructions, conditional-section triggers, publication, closure/readback,
+and finding-binding checks are canonical in
 [`filling-guide.md`](filling-guide.md#general-rules-for-all-builder-templates).
 
 ## Reviewer Lift
@@ -103,11 +103,10 @@ Linked issues for deferred items, or `None`.
 
 <!--
 Conditional sections — add the matching heading below ONLY when its trigger
-applies. Triggers and filling instructions live in filling-guide.md
-(review-packet.md > Conditional sections).
+applies; filling-guide.md (review-packet.md > Conditional sections) owns them.
 
-## Architecture / Design Decisions   (a non-trivial design choice or required ADR)
-## Diff Summary                       (large/spread diff needing a per-file map)
-## Manual / Operational Evidence      (dry-run / runbook / read-only operator output)
-## Reviewer Hints                     (files/tests to inspect first)
+## Architecture / Design Decisions
+## Diff Summary
+## Manual / Operational Evidence
+## Reviewer Hints
 -->

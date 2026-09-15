@@ -61,10 +61,6 @@ re|forge/reference/common-guard.md|provider-native post-mutation re-read
 re|forge/reference/common-guard.md|blocks without transport fallback
 re|start-build/SKILL.md|advisory CI observation
 re|start-build/SKILL.md|fresh independent reviewer
-re|start-build/SKILL.md|child/parent/reviewer/verifier
-re|start-build/SKILL.md|authority guards
-re|start-build/SKILL.md|Post-merge
-re|start-build/SKILL.md|verification is read-only
 re|start-review/REVIEW-FLOW.md|gate-eligible reviewer is fresh
 re|start-review/REVIEW-FLOW.md|exact reviewed commit
 re|start-review/REVIEW-FLOW.md|commit-bound CI observation

@@ -1,35 +1,27 @@
 # Parent-orchestrator recipe
 
-Detailed parent/coordinator flow for child builders and final reviewers in provider-neutral work-item-to-change-request loops. This file is the canonical owner of the parent-orchestrator recipe; [SKILL.md](../SKILL.md) routes here from the mode matrix. Project rulebooks and `project_profile` hooks may specialize labels, local gates, branch naming, CI jobs, domain docs, release/deploy policy, manual validation, auxiliary indexes, authority defaults/sources, run artifact paths, and post-merge checks, but must not weaken the safety invariants in this flow.
+Detailed parent/coordinator flow for child builders and final reviewers in provider-neutral work-item-to-change-request loops. This file is the canonical owner of the parent-orchestrator recipe.
 
 Safety invariants: child builders do not spawn reviewers, approve, finish, or clean parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; the current head, reviewed commit, and exact-candidate local Gate Receipt stay bound before approval or finish; explicit authority source stays required; provider CI is advisory evidence; `/forge` owns provider-native transport and readback; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
 ## Durable child outputs
 
-Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on `worktree:true` plus a relative `output` path plus `outputMode:"file-only"` for any artifact the parent must read later: that combination can return a path inside a temporary `omp-worktree-*` checkout, and parent reads can fail after the worktree is removed.
+Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on `worktree:true` plus a relative `output` path plus `outputMode:"file-only"` for any artifact the parent must read later: that combination can return a path inside a temporary `omp-worktree-*` checkout, which the parent cannot read once the worktree is removed. Prefer inline child output; when a file output is required, pass an absolute path under a durable run directory created outside any `omp-worktree-*` path and ensure it exists before launch. Recover a stale temporary-worktree path from durable run artifacts rather than treating the missing local file as the delivery record.
 
-Safe patterns:
-
-- Prefer inline child output for the parent handoff when size permits.
-- If a file output is required, have the caller create a durable run directory outside any `omp-worktree-*` path, then pass an absolute output path under that directory and ensure the parent directory exists before launch.
-- If a child returns a stale temporary-worktree output path, recover from async run logs or other durable run artifacts when available; do not treat the missing local file as the canonical delivery record.
-- The provider-published change-request description's Reviewer Lift / Review Packet and provider-native discussion are the canonical durable handoff. Local handoff files, run artifacts, and compact `delivery.kind=change-delivery` blocks are convenience indexes only; parents verify compact fields from Tier 1/Tier 2 evidence before routing, review, finish, or verification.
+The provider-published change-request description's Reviewer Lift / Review Packet and provider-native discussion are the canonical durable handoff. Local handoff files, run artifacts, and compact `delivery.kind=change-delivery` blocks are convenience indexes only; parents verify compact fields from Tier 1/Tier 2 evidence before routing, review, finish, or verification.
 
 Auxiliary project-index updates default to the parent/coordinator checkout unless `project_profile.auxiliary_index_policy` explicitly assigns them elsewhere. Child worktrees treat index reports as read-only unless assigned and must not copy index artifacts between worktrees.
 
 ## Parent-owned Gate Receipt mode
 
-Use this mode when the parent coordinator, not the child builder, owns the final local gate and ready transition. The canonical ownership contract, Gate Receipt schema, parent verification checklist, ready-transition conditions, and evidence-ready tokens live in [parent-owned-gate.md](parent-owned-gate.md). Parent-orchestrator steps point there instead of redefining the receipt.
-
-Before marking ready, follow the [parent verification checklist](parent-owned-gate.md#parent-verification-checklist): bind the exact candidate commit from the child and change request, run the target-repo Check Gate on that checkout, publish a Gate Receipt through `forge publish`, require provider-native readback, and verify the change-request head still matches before `forge act`.
+When the parent coordinator, not the child builder, owns the final local gate and ready transition, [parent-owned-gate.md](parent-owned-gate.md) is canonical for the ownership contract, receipt schema, ready-transition conditions, and evidence-ready tokens. Work through its [parent verification checklist](parent-owned-gate.md#parent-verification-checklist) before `forge act`; do not redefine the receipt here.
 
 ## Default builder routing
 
-Parent-loop deliveries use the shared model-free `mr-builder` basename. It
-resolves in the current runtime dialect directory: Claude Code loads
-`agents/claude/mr-builder.md`; OMP loads `agents/omp/mr-builder.md`. Model and
-effort pins live in frontmatter, never in route names. The mandatory independent
-final reviewer remains `mr-reviewer-final`.
+Parent-loop deliveries use the shared model-free `mr-builder` basename, resolved
+in the current runtime dialect directory, plus the mandatory independent final
+reviewer `mr-reviewer-final`. Model and effort pins live in frontmatter, never in
+route names.
 
 When either exact route is unavailable in the current dialect directory, stop
 with a route-unavailable blocker and explicit parent/operator decision. Never
@@ -72,28 +64,14 @@ per-branch invariant, not a one-time batch preflight:
     stop "coordinator and child worktree paths collide"
   ```
 
-  No repository-wide worktree discovery result is owned cleanup scope. At the
-  existing finish cleanup seam, pass
+  No repository-wide worktree discovery result is owned cleanup scope. Pass
   `--coordinator-path "$coordinator_path"` on every local-mutating finish call,
-  including calls that do not request child-worktree removal. Also pass
-  `--worktree-path "$child_worktree_path"` when the recorded child is in cleanup
-  scope; the primary finish path receives the same recorded child path.
-  Missing, relative, colliding, unknown, or no-longer-bound paths stay untouched.
+  and `--worktree-path "$child_worktree_path"` when the recorded child is in
+  cleanup scope. Missing, relative, colliding, unknown, or no-longer-bound
+  paths stay untouched.
 - After merge, local cleanup stays ordered around default-branch safety: fetch origin, fast-forward local default in a clean checkout, then remove clean local worktrees and delete local source branches.
 - Remote source-branch cleanup remains guarded. First confirm the real remote source branch is already gone (`git ls-remote origin <source_branch>` returns nothing) or delete it only after `forge post_merge_snapshot` proves the provider result commit is contained by the fast-forwarded default branch. If containment cannot be proved, retain the local worktree/branch and report `cleanup_pending`.
 - After the real remote branch deletion/absence checks pass, run the `git remote prune --dry-run origin` equivalent stale-ref check. Cleanup is complete only when that stale-ref result is empty. If stale local remote-tracking refs remain, report `cleanup_pending` with the stale refs listed instead of claiming branch cleanup complete.
-
-## Parent-managed finish ownership
-
-`Finish owner: parent` is the literal parent-managed dev-flow contract. Reviewers publish only Review Report verdict/evidence. They do not approve or finish in that mode; the parent/authorized finisher uses `forge snapshot` plus the `/forge` common guard to re-read current change-request identity, current/reviewed commits, the exact-candidate Gate Receipt, advisory CI, and authority provenance before `forge act`.
-The default finish is to queue auto-merge through `forge act` when verified
-authority grants it; otherwise stop at the most permissive authorized action.
-Reviewers return without waiting for parent action evidence. The authorized
-finisher owns native post-read and any required compact action explanation;
-next actors discover and verify that backlink through native notes/discussions
-per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence).
-The historical Review Report stays immutable; a changed head routes new-head
-review rather than rebinding its judgment or findings.
 
 ## Parent loop
 
@@ -104,54 +82,40 @@ review rather than rebinding its judgment or findings.
    label `project_profile.label_profile_ref` or other approved agent-work state. For
    multiple work items, evaluate the
    [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) per pair
-   before the first child launch, then automatically launch every provably decoupled
-   subset in parallel, one child per item and one isolated worktree/branch/Draft
-   change request/Review Packet per child. Coupled members serialize only within
-   their coupled cluster in dependency order; never serialize otherwise decoupled
-   items. Fall back to serial execution only when decoupling proof fails or is
-   unknown, or the caller explicitly bounds concurrency.
+   before the first child launch and fan out exactly as
+   `issue-delivery-loop` specifies: one child per item and one isolated
+   worktree/branch/Draft change request/Review Packet per child.
 2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
 3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Launch the exact shared `mr-builder` route basename in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
-4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence.
-
-   Apply [stage-correct handoff verification](parent-owned-gate.md#stage-correct-handoff-verification): check candidate/Lift and the launch-bound ownership echo before parent gating; require the exact-candidate receipt before ready/review, and the independent exact-head report before approval/finish. `not-created` is a valid pre-gate return, not a receipt. Verify present artifact claims and author/bindings at their applicable stage; stale or contradictory current claims fail closed. Historical finding reports retain their originating commits.
-
+4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence, applying [stage-correct handoff verification](parent-owned-gate.md#stage-correct-handoff-verification) at the applicable stage. `not-created` is a valid pre-gate return, not a receipt.
    Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing its route.
-5. **Launch final review.** Launch the reviewer as soon as the exact-candidate Gate Receipt exists; advisory CI may run in parallel. Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
-6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. In `Finish owner: parent` mode the parent still runs fresh commit/Gate Receipt/authority/identity/common-guard checks before any action and records CI only as advisory evidence. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
+5. **Launch final review.** Launch the reviewer as soon as the exact-candidate Gate Receipt exists. Provider CI may run in parallel, but no CI status delays review or changes verdict/action eligibility. Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
+6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
 7. **Enforce candidate and gate guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and the exact-candidate local Gate Receipt to be valid. CI state never changes eligibility.
-8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. The parent/authorized finisher verifies provenance and passes the `/forge` common guard before one `forge act`, then requires provider-native readback. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it.
+8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. Under the literal `Finish owner: parent` contract, reviewers publish only Review Report verdict/evidence and return without waiting for parent action evidence; the parent/authorized finisher verifies provenance and passes the `/forge` common guard before one `forge act`, then requires provider-native readback. The default permitted finish is queued auto-merge when verified authority grants it; otherwise stop at the most permissive authorized action. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it. That finisher owns native post-read and any required compact action explanation, which next actors verify per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence). The historical Review Report stays immutable; a changed head routes new-head review rather than rebinding its judgment or findings.
 9. **Verify after finish.** Follow [Post-merge verifier recipe](post-merge-verifier.md) with `forge post_merge_snapshot` for result/default containment, advisory result-commit CI, linked-item closure, source-ref cleanup/retention, and pending evidence.
 10. **Archive local artifacts and assert coordinator state.** Keep local run artifacts redacted and untracked. Durable handoff stays in the provider-published change-request description/discussion. Before claiming teardown complete, assert the coordinator checkout's resolved path is still the recorded `coordinator_path`, `git -C "$coordinator_path" branch --show-current` equals the verified default branch, and every session-owned worktree ledger entry is either removed after ordered guards or reported by exact path as a residual session-owned worktree with `cleanup_pending`.
 
 ## Wait cadence
 
-Event-driven waiting only. This wait cadence is an upper bound, not a
-sleep: a wait returns as soon as the expected child message or handoff
-arrives. A longer floor does not delay a child that finishes early.
+Event-driven waiting only. A wait floor is an upper bound, not a sleep: it
+returns as soon as the expected child message or handoff arrives.
 
 - Builder or parent-owned gate running: wait at least 300 seconds.
 - Reviewer running: wait at least 120 seconds.
 - Short acknowledgements only: the tool default.
 
-Each wait names the expected sender or handoff. After an empty wait, do not
-re-issue a shorter wait; wait again at the same floor or check the child's
-status once.
+Each wait names the expected sender or handoff. After an empty wait, wait again
+at the same floor or check the child's status once; never re-issue a shorter wait.
 
 ## Reviewer launch timing
-
-Parallel launch is the default: step 5 starts the final reviewer as soon as the exact-candidate Gate Receipt exists. Provider CI may run in parallel, but no CI status delays review or changes verdict/action eligibility.
 
 - Reviewer replacement is fail-closed: check the reviewer run status/activity before replacement. Do not start a second reviewer while the first run is still active; no fixed wall-clock value alone authorizes replacement. Replace only after observed reviewer status/activity shows the first attempt failed, stale, interrupted, or unreachable, and otherwise escalate instead of launching a duplicate reviewer.
 - Before relaunching a replacement, take a `forge snapshot` of the change request's notes for a Review Report whose reviewed commit equals the current head. If one exists, consume it as the handoff instead of relaunching. Do not consume a report whose reviewed commit does not equal the current head.
 - A report consumed this way still receives the readback the crashed reviewer skipped (provider-native note digest + reviewed commit equals head) before it feeds approval/finish; the independent-review floor is unchanged.
 
 ## Minimal reviewer launch prompt
-
-The minimal reviewer launch prompt keeps only the Change request locator,
-Reviewer Lift pointer, Project rulebook path, stop/finish ownership, and a
-do-not-treat parent/builder reasoning as evidence instruction.
 
 When the parent starts a fresh reviewer, pass only the review target and bounded
 routing/evidence instructions:
@@ -173,11 +137,9 @@ Minimum evidence pointers: Reviewer Lift block, Gate Receipt artifact when prese
 Finish authority grant (only when granted): <orchestrator/parent finish-authority grant plus source provenance; omit when none>
 ```
 
-Do not include parent/builder planning details, summaries, hypotheses, prior conversation, or hidden reasoning in the launch prompt. Do not name or directly read a skill's internal reference files in the launch prompt; invoke the skill through the Skill tool so the subagent enters through its entry procedure. If a coordination constraint must be passed, state it as a claim/source pointer for independent verification.
+No launch prompt carries parent/builder planning details, summaries, hypotheses, cross-issue context, prior conversation, or hidden reasoning. Do not name or directly read a skill's internal reference files in the prompt; invoke the skill through the Skill tool so the subagent enters through its entry procedure. Pass a required coordination constraint or specific risk only as a claim/source pointer for independent verification.
 
-The reviewer posts a durable Review Report artifact and returns `reviewer-final-handoff.md` as a parseable parent-orchestrator aid; the Review Report stays canonical.
-
-A finish-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent finish-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [authority-verification.md](../../forge/reference/common-guard.md) — so the reviewer has a verifiable finish-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
+A finish-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent finish-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [common-guard.md §Authority Verification](../../forge/reference/common-guard.md#authority-verification), which GitLab binds to `gitlab/reference/authority-verification.md` — so the reviewer has a verifiable finish-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 
 ## Minimal child-builder launch prompt
 
@@ -201,11 +163,6 @@ Minimum evidence pointers: project rulebook path, repository Check Gate path, Ch
 ```
 
 The `Gate owner` line is the explicit gate-ownership selection; set it once per batch, and omit it only to select the documented `builder` default. Child interpretation and the finish-authority separation are canonical in [child-builder §Authority boundary](child-builder.md#authority-boundary); parent-owned semantics remain in [parent-owned-gate.md](parent-owned-gate.md).
-
-Do not include broad parent reasoning, cross-issue summaries, hidden hypotheses,
-or unrelated backlog context in the builder prompt. If a specific risk requires
-extra context, pass only that risk as a claim/source pointer the builder can
-verify.
 
 ## Minimal revision prompt
 
