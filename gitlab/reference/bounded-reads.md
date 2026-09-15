@@ -25,8 +25,7 @@ Request bodies separately through the dedicated MCP readers:
 - Individual MR and issue notes: `get_merge_request_note` and `get_issue_note`.
   Use `body_grep`, `body_max_bytes`, and `body_offset_bytes`, following the
   corresponding `bodyTruncated`, `bodyBytesReturned`, `bodyOffsetBytes`, and
-  `bodyTotalBytes` metadata. An omitted `body_max_bytes` requests the full note,
-  so prefer a focused or bounded read when elision or body size is a concern.
+  `bodyTotalBytes` metadata.
   When reading a Gate Receipt or Review Report for one field, pass `body_grep`
   or `body_max_bytes`.
 
@@ -37,9 +36,8 @@ body read is a guarded last resort only when the relevant dedicated MCP reader
 is unavailable or remains elided after that smaller/chunked attempt.
 `glab mr view` metadata projection is likewise last-resort fallback only when
 the snapshot and any field-required body-free `get_merge_request` read are
-unavailable. Before either fallback, preserve project binding and every
-applicable reviewed-SHA, exact-candidate Gate Receipt, authority,
-caller-identity/context, and content-byte guard; advisory CI state never changes
+unavailable. Before either fallback, apply the
+[GitLab Mutation Guard](mutation-guard.md); advisory CI state never changes
 fallback eligibility.
 
 ## Selected list traversal
@@ -60,9 +58,3 @@ only for actual inability to complete or recover a required traversal after
 native cursor recovery; then apply existing help-first guarded fallback.
 Re-read actionable issues/MRs by IID before mutation regardless of traversal
 completeness.
-
-## Generic shell hygiene
-
-- Paths passed to non-shell binaries must use a namespace that binary can resolve: prefer repo-relative paths, or drive-letter form when the binary requires it, rather than shell-only paths such as `/tmp/...`. When native invocation is unavailable, use the caller-local helper against caller-local paths instead of mixing path namespaces.
-- Treat only a comparison tool's exit status as the equality result. A comparison whose absence of output appears to mean equality must not suppress stderr: an unreadable input is an error, not a successful match.
-- Treat any `cd` failure as fatal; never continue a validation block in the previous directory.
