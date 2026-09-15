@@ -10,7 +10,7 @@ Apply these rules only to the configuration being changed; repository convention
 - Do not add provisioners. Do not change backend or state behavior unless the task explicitly requires and authorizes that surface.
 - Keep modules narrow, names descriptive, formatting canonical, and comments limited to non-obvious intent.
 
-Use the official style guides for details rather than copying them here:
+Style guides:
 
 - Terraform: <https://developer.hashicorp.com/terraform/language/style>
 - OpenTofu: <https://opentofu.org/docs/language/syntax/style/>

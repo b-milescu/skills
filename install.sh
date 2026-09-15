@@ -16,13 +16,12 @@
 # this repo — fix those by hand. Stale repo-owned symlinks are pruned so
 # renames propagate cleanly.
 #
-# Runtime skill roots must contain only actual skill directories. On Windows,
-# Linux, and macOS, shared docs/templates stay reachable through skill-local
-# resource symlinks such as ~/.claude/skills/start-build/docs/... and
-# ~/.claude/skills/start-build/shared-templates/.... When Git materializes
-# tracked resource symlinks as regular relative-target files, the installer
-# builds an equivalent runtime view without copying the canonical resources.
-# Linking shared roots as skill-root siblings would expose bogus skills.
+# Runtime skill roots must contain only actual skill directories, so shared
+# docs/templates stay reachable through skill-local resource symlinks such as
+# ~/.claude/skills/start-build/docs/... — linking shared roots as skill-root
+# siblings would expose bogus skills. When Git materializes tracked resource
+# symlinks as regular relative-target files, the installer builds an equivalent
+# runtime view without copying the canonical resources.
 
 set -euo pipefail
 shopt -s nullglob

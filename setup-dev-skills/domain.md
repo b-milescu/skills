@@ -1,13 +1,12 @@
 # Domain Docs
 
-How dev skills should consume the target repo's domain documentation when exploring the codebase.
+How dev skills consume the target repo's domain documentation.
 
 Use this file, or the target-specific replacement path recorded in
 `setup-dev-skills/reference/project-profile-facts.json`, as the default
 `project_profile.domain_docs` reference. Record the repo's context and ADR layout
-here so project-specific hooks can point agents to the right domain language
-without changing GitLab delivery schema field names or workflow safety
-invariants.
+here so project-specific hooks can point agents at the right domain language
+without renaming delivery fields or weakening safety invariants.
 
 ## Before exploring, read these
 
@@ -19,35 +18,14 @@ If any of these files don't exist, proceed silently. Don't flag their absence or
 
 ## File structure
 
-Single-context repo:
-
-```text
-/
-├── CONTEXT.md
-├── docs/adr/
-└── src/
-```
-
-Multi-context repo:
-
-```text
-/
-├── CONTEXT-MAP.md
-├── docs/adr/                          # system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  # context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
-```
+A single-context repo keeps `CONTEXT.md` and `docs/adr/` at the root. A
+multi-context repo keeps root `CONTEXT-MAP.md` plus root `docs/adr/` for
+system-wide decisions, and one `CONTEXT.md` with its own `docs/adr/` per context
+directory (for example `src/ordering/` and `src/billing/`).
 
 ## Use glossary vocabulary
 
-When your output names a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
-
-If the concept you need isn't in the glossary yet, either reconsider the language or note the gap. Record the gap in the relevant project docs manually.
+When your output names a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term as defined in `CONTEXT.md`; don't drift to synonyms the glossary explicitly avoids. If the concept isn't in the glossary yet, either reconsider the language or record the gap in the relevant project docs manually.
 
 ## Flag ADR conflicts
 

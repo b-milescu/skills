@@ -1,8 +1,8 @@
 # Azure DevOps Transport
 
-Use only after `preflight` binds organization, project ID, repository ID, and
-default branch. Use mounted Azure DevOps Boards/Repos/Pipelines tools first and
-native REST only for a required guarded operation they do not expose. Add no SDK.
+Native identifiers: organization, project ID, repository ID, default branch. Use
+mounted Azure DevOps Boards/Repos/Pipelines tools first and native REST only for
+a required guarded operation they do not expose. Add no SDK.
 
 ## Snapshot
 
@@ -17,9 +17,8 @@ native REST only for a required guarded operation they do not expose. Add no SDK
 - Reviewer votes are policy input, not standalone approval. Require the current
   blocking policy evaluations to be approved.
 
-Handoff evidence has no dedicated Azure DevOps tool. Satisfy the snapshot shape
-from existing reads, or record the field `unavailable` and keep those reads as
-the fallback:
+No dedicated Azure DevOps handoff-evidence tool exists. Satisfy the snapshot
+shape from these reads, or record the field `unavailable`:
 
 - change-request author id: pull request created-by identity;
 - Lift `claims` and missing rows: parse Reviewer Lift markers in the PR
@@ -51,7 +50,7 @@ name a native create.
 
 ## Post-merge
 
-Verify reviewed-source binding, `lastMergeCommit` result identity,
-repository refs/cleanup, and every linked work item's observed state category.
-Any CI observation remains advisory and cannot change the post-merge result.
-Only the provider-observed Completed state category counts as closed.
+Verify reviewed-source binding, `lastMergeCommit` result identity, repository
+refs/cleanup, and every linked work item's observed state category. Any CI
+observation stays advisory. Only the provider-observed Completed state category
+counts as closed.

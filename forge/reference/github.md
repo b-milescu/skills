@@ -1,7 +1,7 @@
 # GitHub Transport
 
-Use only after `preflight` binds GitHub host, owner/repository, and default branch.
-Use native REST/GraphQL or `gh`; add no SDK. Bind a pull request to `headRefOid`.
+Native identifiers: host, owner/repository, default branch; a pull request binds
+to `headRefOid`. Use native REST/GraphQL or `gh`; add no SDK.
 
 ## Snapshot
 
@@ -13,9 +13,8 @@ Use native REST/GraphQL or `gh`; add no SDK. Bind a pull request to `headRefOid`
 - Treat `reviewDecision`, unresolved required threads, `mergeable: null`, and
   closingIssuesReferences as provider-native facts, not inferred booleans.
 
-Handoff evidence has no dedicated GitHub tool. Satisfy the snapshot shape from
-existing reads, or record the field `unavailable` and keep those reads as the
-fallback:
+No dedicated GitHub handoff-evidence tool exists. Satisfy the snapshot shape
+from these reads, or record the field `unavailable`:
 
 - change-request author id: pull request author;
 - Lift `claims` and missing rows: parse Reviewer Lift markers in the PR body;
@@ -39,14 +38,13 @@ fallback:
 ## Issue publish
 
 Create one issue through native REST/GraphQL or `gh` (no SDK), apply mapped
-labels, then re-read the issue and require byte-for-byte body and label match.
-Fail closed if this branch cannot name a native create.
+labels, then re-read and require byte-for-byte body and label match. Fail closed
+if this branch cannot name a native create.
 
 ## Post-merge
 
 Verify the provider-reported result commit for merge, squash, rebase, or indirect
 merge; advisory result-commit CI when bound; source-branch cleanup; and linked
-issue state. Closing keywords
-only act when the pull request targets the default branch, and repository
-auto-close may be disabled, so `closingIssuesReferences` is a preview rather
-than proof of closure.
+issue state. Closing keywords only act when the pull request targets the default
+branch, and repository auto-close may be disabled, so `closingIssuesReferences`
+is a preview rather than proof of closure.
