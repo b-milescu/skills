@@ -1,11 +1,11 @@
 # Parent-owned Check Gate and Gate Receipt
 
 This is the canonical provider-neutral seam when the child builder hands a Draft
-candidate to the parent for the final local Check Gate and ready transition.
-The child supplies only the ownership contract and exact candidate commit; it
-must not claim local gate PASS/FAIL or Gate Receipt success.
-This file also owns the receipt schema for the other ownership mode: see
-[Builder-owned Gate Receipt](#builder-owned-gate-receipt) when `Gate owner: builder`.
+candidate to the parent for the final local Check Gate and ready transition. The
+child supplies only the ownership contract and exact candidate commit; it
+must not claim local gate PASS/FAIL or Gate Receipt success. For
+`Gate owner: builder` this file also owns the
+[Builder-owned Gate Receipt](#builder-owned-gate-receipt).
 
 ## Ownership contract
 
@@ -46,10 +46,10 @@ ID, ceremonial note, or retired final delivery block.
 | Revision candidate | Rebind candidate/Lift, retain original report/commit/finding tuples, and label old receipt/review artifacts historical. Return to parent gate with `not-created` for the new receipt, even if the change request is already ready; ready state alone cannot authorize re-review or finish. |
 | Stale or contradictory claims | An old receipt/report claimed as current, wrong candidate or author, conflicting owner, fabricated ID, or publication/readback mismatch fails closed at the affected transition. Resolve the contradiction; do not treat it as absent future evidence. Historical artifacts cannot satisfy current gate/review eligibility. |
 
-Check every existing artifact presented as current even at pre-gate entry.
-Native snapshots remain evidence-only; the parent derives the next stage.
-Provider CI remains advisory. None of these routing outcomes changes receipt
-validation, authoritative ownership selection, or approval/finish authority.
+Check every existing artifact presented as current, even at pre-gate entry.
+Native snapshots stay evidence-only; the parent derives the next stage, and no
+routing outcome changes receipt validation, ownership selection, or
+approval/finish authority.
 
 ## Gate Receipt schema
 
@@ -99,33 +99,23 @@ summarized. The bare `git status --porcelain` is still accepted. Neither form
 reports gitignored paths, so where ignored residue can refuse a gate — a
 generated `node_modules/` tree, for example — check it separately with
 `git status --porcelain --untracked-files=all --ignored=matching -- <paths>`
-rather than by altering the preflight rows. The receipt's required field list
-and the pre-ready ordering rules are unchanged.
+rather than by altering the preflight rows.
 
 ### Publication syntax and proof
 
 Publish the receipt as block-style YAML as above: a standalone `gate_receipt:`
 anchor with indented child fields. JSON text merely placed inside a YAML fence
-is not the publication form. The local validator's `js-yaml` `JSON_SCHEMA` is
-scalar-resolution configuration, not a requirement to author JSON. JSON MCP
-arguments are transport; the YAML receipt body is the durable artifact.
+is not the publication form; JSON MCP arguments are transport, while the YAML
+receipt body is the durable artifact. Valid YAML for the full local validator
+need not be recognized correctly by the current native extractor, so arbitrary
+scalar spellings are not proven supported. Keep the actual project gate command
+unchanged.
 
-Compatibility is bounded: valid YAML for the full local validator need not be
-recognized correctly by the current native extractor. Retained GitLab !413
-notes [47144](https://gitlab.example.com/agents/skills/-/merge_requests/413#note_47144)
-(JSON form) and [47147](https://gitlab.example.com/agents/skills/-/merge_requests/413#note_47147)
-(block YAML) illustrate that distinction. Arbitrary scalar spellings are not
-proven supported; a generic YAML serializer does not guarantee compatibility.
-Keep the actual project gate command unchanged.
-
-Establish three separate checks: full local pre-post receipt validation;
-native extraction of the exact `checkout_commit`, `command`, and `result` with
+Three checks stay separate: full local pre-post receipt validation; native
+extraction of the exact `checkout_commit`, `command`, and `result` with
 candidate binding; and post-note validation of that same receipt and current
-Lift. Use retained/read-only native evidence or an offline fixture for a
-documentation walkthrough, not a replayed mutation. Anchor recognition or SHA
-equality alone proves neither full receipt validity nor execution, clean/unchanged
-checkout, authorship/provenance, independent review, or authority. Preserve
-source-intent/native byte-for-byte readback and all stage requirements above.
+Lift. Anchor recognition or SHA equality alone proves none of receipt validity,
+execution, an unchanged checkout, authorship, independent review, or authority.
 
 Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
@@ -155,9 +145,7 @@ When the launch prompt selects `Gate owner: builder` (the documented default in
 [child-builder.md](child-builder.md#authority-boundary)), the builder — not the
 parent — runs the full local Check Gate on the exact candidate and publishes the
 receipt itself. This section owns that contract so the two ownership modes
-cannot drift apart. Decision: Option A, recorded 2026-09-09 in issue #443 note
-48372; the converged anchor-form notes 48271/48272/48282/48292 from the
-2026-09-09 `agents/gitlab-mcp` batch are the working form reference.
+cannot drift apart.
 
 The builder-owned receipt is one change-request note whose body carries a
 yaml-fenced block with a standalone `gate_receipt:` anchor and exactly these
@@ -220,13 +208,10 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
 9. Provider-native post-read confirms ready and unchanged current commit.
 
 The exact candidate plus a passing parent Gate Receipt is sufficient to mark
-ready and launch independent review. Provider CI is advisory: pending, failed,
-canceled, skipped, missing, stale, wrong-commit, or unavailable status never
-changes pass or finish eligibility.
-
-Literal byte-for-byte acceptance strings receive targeted exact-string evidence;
-do not expand this into broad ceremony. Such evidence does not substitute for
-independent reviewer verification.
+ready and launch independent review. Provider CI is advisory and never changes
+pass or finish eligibility. Literal byte-for-byte acceptance strings receive
+targeted exact-string evidence, which does not substitute for independent
+reviewer verification.
 
 ## Stale exact-SHA evidence fails closed after a revision push
 
@@ -242,9 +227,8 @@ before another ready/review handoff.
 - `ready-transition-post-reread`
 
 With feasibility established, before the receipt the two-line final uses
-`not-created`; the parent derives `phase: parent-gate`, next actor `parent`, next
-action `parent-run-gate`, with no extra decision. These routing fields remain
-available in other supported compact indexes, not builder/reviewer finals.
+`not-created`, and the parent derives `phase: parent-gate` / next actor
+`parent` / next action `parent-run-gate` with no extra decision.
 An unresolved prerequisite instead requires a precise blocked report to the
 parent; neither the ownership contract nor an N/A result is a passing receipt.
 A Gate Receipt is canonical gate evidence; later description updates are delta-only.

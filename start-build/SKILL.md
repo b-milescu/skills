@@ -84,10 +84,8 @@ post-read. A failed mandatory phase never tries another transport.
 [SAFETY.md](skill://start-build/SAFETY.md) is the single owner of this pair's
 safety floors — read them there rather than re-deriving them here. Its
 non-negotiables and done-criteria tiers hold the line on the exact-candidate
-local Gate Receipt, independent review, child/parent/reviewer/verifier
-boundaries, and authority guards. Provider CI is advisory; queued finish is
-non-terminal and Post-merge verification is read-only. Keep scope tight and
-prefer the smallest direct change.
+local Gate Receipt, independent review, role boundaries, and authority
+provenance. Keep scope tight and prefer the smallest direct change.
 
 ## Templates
 

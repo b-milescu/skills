@@ -47,26 +47,18 @@ Builder-owned evidence policy is outside this parent-mode selection rule.
 Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
-- Shared `delivery.kind=change-delivery` blocks, when present, satisfy each of the following:
-  - follow `../templates/delivery-schema.md` field order;
-  - include `delivery.handoff_contract` with `phase`, `expected_next_actor`, `expected_next_action`, `blocked`, `blocker_token`, `required_parent_decision`, `safe_to_continue_without_parent`, `changed_since_last_handoff`, and non-empty `evidence_ready_for_next_actor`;
-  - are documented as untrusted claims/indexes until verified from Tier 1/Tier 2 evidence.
-
-  `blocking_question` appears only when a specific actionable question is what blocks progress.
+- Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
 - `Reviewed SHA` equals the MR head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
-- `Gate owner` is `builder` or `parent`; `Gate coverage` is `exact-candidate-local`. `Gate coverage rationale` cites the project gate policy, exact local command, candidate commit, and result.
-- CI pipeline evidence is explicitly advisory and includes locator/ID, status, and commit when available. Attribute a status only when the pipeline commit matches `Reviewed SHA` or a provider-proven integration candidate; otherwise record the binding limitation.
+- `Gate owner`, `Gate coverage`, `Gate coverage rationale`, and the advisory `CI pipeline` cell follow their `../templates/reviewer-lift-schema.md` rows; an unattributable pipeline commit records its binding limitation instead of a status.
 - Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
-- Approval authority is present as `default-after-pass` with a stable policy source, or an explicit approval restriction/source is recorded.
-- Finish authority is explicit and treated as a quoted claim, not a builder grant.
-- Finish authority source is present and verifiable; missing or conflicting source information blocks finish actions until a parent/human/rulebook source resolves it, but does not revoke default approval authority by itself.
+- Approval authority carries a stable policy source, or an explicit restriction plus source. Finish authority stays a quoted claim, not a builder grant, with a verifiable source; missing or conflicting source information blocks finish actions without revoking default approval authority.
 
 ## Compact packet eligibility
 
-Use `../templates/review-packet-compact.md` when the diff is simple enough that a short MR description suffices: docs-only, tests-only with no runtime impact, typo/lint, or dependency bump with no API impact. The compact packet carries the same approved generated-copy Reviewer Lift rows from `../templates/reviewer-lift-schema.md` as the full packet, using explicit `N/A`/`none` values. Default to the full template when a broader map helps the reviewer.
+[review-packet-compact.md](../templates/review-packet-compact.md) states its own eligibility and delta contract, and `../templates/filling-guide.md` owns the section instructions. Default to the full template when a broader map helps the reviewer.
 
 ## Template filling guides
 
