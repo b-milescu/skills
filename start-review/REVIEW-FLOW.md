@@ -40,14 +40,12 @@ Tier 2 source before relying on it:
   parent conversation, hidden history, memory, and unrelated summaries.
 
 Reviewer Lift is a map, not proof. Independently verify every safety-critical
-field and record its verification and source. A suspected secret exposure
-blocks partial approval, uses redacted diagnostics, and routes to a
-human/security path.
+field and record its verification and source.
 
 
 ## Fail-closed review coverage
 
-Complete provider-native files, diffs, discussions, reviews, and required policy inputs are required; truncation, pagination uncertainty, or stale bindings block. CI absence or incomplete CI pagination is recorded as an advisory observation and does not make review coverage incomplete.
+Complete provider-native files, diffs, discussions, reviews, and required policy inputs are required; truncation, pagination uncertainty, or stale bindings block.
 If the reviewer cannot inspect all behavior-affecting changed surfaces, return
 `blocked` with `partial-review`; never partially approve. Fail-closed triggers
 are: diff unavailable; too large for bounded review; binary/generated artifact without provenance; hidden dependencies; missing linked issue/context affecting behavior; or tool limits before decision. Request a split when bounded complete review cannot otherwise be restored.
@@ -131,8 +129,10 @@ reviewer. Serialized review never batches decisions, comments, or actions.
 Each finding records stable Review Report locator, originating 40-hex reviewed
 commit, short ID, location, observable impact, evidence, and bounded remedy
 (required for `MF-N`, optional for `SF-N`/`C-N`).
-Style alone is non-blocking. Be direct and demanding on substance without
-performative language.
+Style alone is non-blocking. Raise evidence-backed structural findings plainly:
+name the smell, location, and bounded remedy. Tone never moves the bar.
+Do not request changes for taste; taste, naming, and formatting remain
+non-blocking `C-N`.
 
 The blocking set is bounded by the delivered work item's acceptance criteria.
 A finding demonstrating a named acceptance criterion of the delivered work item is unmet is blocking.
@@ -166,12 +166,6 @@ special-case branching, and wrong-layer helpers. A file growing from `<1000` to
 
 Decision rule: material in-scope complexity may block as `MF-N`. Use `C-N` for
 taste, speculative redesign, or out-of-scope cleanup.
-
-## Review tone
-
-Raise evidence-backed structural findings plainly: name the smell, location, and
-bounded remedy. Tone never moves the bar. Do not request changes for taste;
-taste, naming, and formatting remain non-blocking `C-N`.
 
 ## CI and Open Question decision tables
 
@@ -240,10 +234,8 @@ Classify the failed predicate, not the blocker token alone:
 | Provider cannot bind the requested action to the reviewed commit | Retain the complete current review's judgment | Deny that action; `sha-bound-action-unsupported`, `fix-blocker` to the parent; no unbound substitute |
 
 An action-only classification requires all review-validity predicates to hold.
-For example, permission loss that prevents full diff access is incomplete review,
-not merely action denial; caller/context uncertainty that compromises
-independence cannot preserve pass. Security and human-decision review blockers
-remain governed by the coverage, Context Firewall, and Open Question policies.
+Security and human-decision review blockers remain governed by the coverage,
+Context Firewall, and Open Question policies.
 Every action guard remains mandatory, including for independently permitted
 approval when finish is denied. Use existing
 [`handoff-tokens.schema.json`](reference/handoff-tokens.schema.json) tokens and
@@ -304,11 +296,6 @@ in the Review Report's Action / Blocker section.
 
 ## Review Report contract
 
-The durable report contains provider/repository/change-request binding, stable
-report locator, reviewed commit, complete-diff/discussion evidence, local gate,
-CI commit/status, context capsule, Reviewer Lift verification, acceptance and
-safety surfaces, findings, targeted checks, open questions, verdict, intended
-or no-action approval/finish state, and publication-time blocker/next action.
 Publication readback establishes durability. Keep that report immutable:
 later effects, blockers, or evidence corrections use a backlinking note,
 not a regenerated verdict, changed reviewed commit, or renumbered findings.
@@ -332,13 +319,11 @@ Never claim success from a mutation response alone; queued is not merged.
 This note explains the action, not a second review verdict or authority grant.
 
 The next actor discovers the note through existing provider-native
-change-request notes/discussions, following pagination through the relevant
-post-report records. Match the backlink to the retrieved report's stable
-identity, published locator, repository/change request, and exact reviewed
-commit; verify the note author/authority and cited native outcome evidence.
-Read the complete note and relevant replies, not a search snippet or latest-note
-guess. Historical outcomes do not authorize a new action: re-read current head,
-Gate Receipt, and authority through the common guard.
+change-request notes/discussions. Match the backlink to the retrieved report's
+stable identity, published locator, repository/change request, and exact
+reviewed commit; verify the note author/authority and cited native outcome
+evidence. Historical outcomes do not authorize a new action: re-read current
+head, Gate Receipt, and authority through the common guard.
 
 A missing required note, incomplete discovery, failed publication readback,
 or mismatched backlink/evidence leaves the action record unverified. Preserve

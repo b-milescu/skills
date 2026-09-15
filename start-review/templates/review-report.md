@@ -8,7 +8,7 @@ provider branch owns native approval and finish mechanics.
 
 ## Decision Summary
 
-Fill and reconcile this first-screen summary per the [Decision Summary guide](filling-guide.md#review-reportmd). This is the immutable pre-action judgment; record intended or no-action state only. `Reviewed commit` and `Findings summary` are machine-read: each holds one bare value with no trailing prose, so the reviewed commit must equal the current provider commit at decision time and every finding must appear by ID. Commentary belongs in a neighbouring cell or the report body.
+Fill and reconcile this first-screen summary. This is the immutable pre-action judgment; record intended or no-action state only. `Reviewed commit` and `Findings summary` are machine-read: each holds one bare value with no trailing prose, so the reviewed commit must equal the current provider commit at decision time and every finding must appear by ID. Commentary belongs in a neighbouring cell or the report body.
 
 | Field | Value |
 |---|---|
@@ -33,7 +33,7 @@ Fill and reconcile this first-screen summary per the [Decision Summary guide](fi
 
 ## Context / Snapshot
 
-Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#review-reportmd). `Reviewed commit` stays a bare value here too, repeating the Decision Summary value: the same commit used for diff, local checks, advisory CI attribution, and action guards.
+Fill from Tier 1 evidence. `Reviewed commit` stays a bare value here too, repeating the Decision Summary value: the same commit used for diff, local checks, advisory CI attribution, and action guards.
 
 | Field | Value |
 |---|---|
@@ -53,7 +53,7 @@ Fill from Tier 1 evidence per the [Context / Snapshot guide](filling-guide.md#re
 
 ## Finding identities
 
-Use the tuple contract and validator named in the [Finding identities guide](filling-guide.md#review-reportmd).
+Use the tuple contract and validator in [`finding-identities.md`](../reference/finding-identities.md).
 
 The report locator may be a native URL; do not invent another internal ID just
 for the final, change existing report/commit/finding tuples, or rewrite historical
@@ -70,7 +70,7 @@ is an untrusted routing convenience, not a replacement report or final payload.
 
 ## Reviewer Lift (builder handoff)
 
-Copy the builder handoff, then verify it per the [Reviewer Lift guide](filling-guide.md#review-reportmd) and canonical [`reviewer-lift-schema.md`](../../start-build/templates/reviewer-lift-schema.md). Reviewer Lift values are maps, not proof; safety-critical claims need verification and source evidence.
+Copy the builder handoff, then verify it against canonical [`reviewer-lift-schema.md`](../../start-build/templates/reviewer-lift-schema.md). Reviewer Lift values are maps, not proof; safety-critical claims need verification and source evidence.
 
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
@@ -101,7 +101,7 @@ Copy the builder handoff, then verify it per the [Reviewer Lift guide](filling-g
 
 ## Review Context Capsule
 
-Use the [Review Context Capsule guide](filling-guide.md#review-reportmd). Treat Reviewer Lift, Gate Receipt, and delivery claims as maps, not proof; record safety-critical verification and source evidence, including parent-owned Gate Receipt validation per `../../start-build/reference/parent-owned-gate.md`.
+Follow [Review Context Capsule](../REVIEW-FLOW.md#review-context-capsule). Treat Reviewer Lift, Gate Receipt, and delivery claims as maps, not proof; record safety-critical verification and source evidence, including parent-owned Gate Receipt validation per `../../start-build/reference/parent-owned-gate.md`.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|
@@ -115,7 +115,7 @@ Use the [Review Context Capsule guide](filling-guide.md#review-reportmd). Treat 
 
 ## Findings
 
-Required. Follow the [Findings guide](filling-guide.md#review-reportmd) and canonical identity contract. Real findings use stable IDs; every MF-N must be revision-ready with an exact locator, concrete problem, and bounded remedy direction. If a human decision is required, do not disguise it as a Must Fix. Redact suspected secrets.
+Required. Follow [Findings and tone](../REVIEW-FLOW.md#findings-and-tone) and the canonical identity contract. Real findings use stable IDs; every MF-N must be revision-ready with an exact locator, concrete problem, and bounded remedy direction. If a human decision is required, do not disguise it as a Must Fix. Redact suspected secrets.
 
 ### Must Fix
 
@@ -131,13 +131,13 @@ Required. Follow the [Findings guide](filling-guide.md#review-reportmd) and cano
 
 ## Open Questions Addressed
 
-Required. Follow the [Open Questions Addressed guide](filling-guide.md#review-reportmd) and classify every `OQ-N`; do not leave a default completion value.
+Required. Classify every `OQ-N` per [CI and Open Question decision tables](../REVIEW-FLOW.md#ci-and-open-question-decision-tables); do not leave a default completion value.
 
 <!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. Human/product/security decisions stay blocked routing (`human-decision-needed`) until the decision source exists. If verified no OQ-N exists, write `Verified: no OQ-N entries in the change request description after review.` -->
 
 ## Evidence
 
-Required. Fill this concise evidence hub per the [Evidence guide](filling-guide.md#review-reportmd); put verbose checklists in the optional annex.
+Required. Fill this concise evidence hub; put verbose checklists in the optional annex.
 
 ### Tests / CI / Local Checks
 
@@ -171,7 +171,7 @@ execution ran, state `Not run — <rationale>`.
 
 ## Action / Blocker
 
-Required. Fill and reconcile these values per the [Action / Blocker guide](filling-guide.md#review-reportmd). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here. For a `request-changes` verdict, record `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, and `Next action: revise`. Use `other` only for a blocker no listed token names, and add a one-line reason in this section.
+Required. Fill and reconcile these values per [Publication and actions](../REVIEW-FLOW.md#publication-and-actions). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here. For a `request-changes` verdict, record `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, and `Next action: revise`. Use `other` only for a blocker no listed token names, and add a one-line reason in this section.
 
 | Field | Value |
 |---|---|
@@ -189,7 +189,7 @@ Later outcomes belong to [Post-report action evidence](../REVIEW-FLOW.md#post-re
 
 ## Optional Annex: Checklists
 
-Use the [Optional Annex guide](filling-guide.md#review-reportmd) only when it adds evidence beyond the core report.
+Use only when it adds evidence beyond the core report.
 
 ### Safety / State / External-System Checklist
 
@@ -207,7 +207,7 @@ Use the [Optional Annex guide](filling-guide.md#review-reportmd) only when it ad
 
 ### Follow-ups for Other Tasks
 
-Record linked non-blocking follow-up issues and brief-quality defects per the [Follow-ups guide](filling-guide.md#review-reportmd); do not widen this change request.
+Record linked non-blocking follow-up issues and brief-quality defects; do not widen this change request.
 
 ### Final Notes
 
