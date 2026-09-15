@@ -40,6 +40,13 @@ unavailable. Before either fallback, apply the
 [GitLab Mutation Guard](mutation-guard.md); advisory CI state never changes
 fallback eligibility.
 
+## Schema-first MCP arguments
+
+Before the first call of a mounted MCP tool in a run, verify its required
+arguments against the mounted schema. Never take an argument name from memory,
+from another tool, or from prose. A rejected call echoes the schema without a
+network round trip, so verifying beats retrying; `page` below is one instance.
+
 ## Selected list traversal
 
 Use cursor-first traversal for exposed `list_*` tools. On an incomplete result,
