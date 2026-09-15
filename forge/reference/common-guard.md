@@ -23,7 +23,7 @@ and the post-read classification. Binding failure, stale head, missing or stale
 Gate Receipt, missing authority, unsafe body, unsupported commit binding, or
 failed post-read blocks without transport fallback. CI status never blocks.
 
-Provider branches validate native identifier and locator shapes. Shared callers
+Provider branches validate native identifier and locator shapes; shared callers
 and validators preserve their values as opaque strings.
 
 ## Snapshot evidence
@@ -40,15 +40,15 @@ and validators preserve their values as opaque strings.
   reviewed SHA equals head, receipt commit equals head, and finding bindings
   match the report.
 
-No routing field is added. `claims` and `bindings` are labelled as such;
-snapshot never turns them into a decision.
+No routing field is added. `claims` and `bindings` are labelled as such; snapshot
+never turns them into a decision, and its claims never replace native post-read.
 
-Later action explanations are discovered through existing native notes/discussions,
-not an added snapshot field or a future link in the immutable Review Report.
-Consumers follow [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence)
+Later action explanations are discovered through existing native
+notes/discussions, not an added snapshot field or a future link in the immutable
+Review Report. Consumers follow [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence)
 to verify report identity, exact reviewed commit, actor, and native outcome
-evidence. Missing or mismatched action notes are evidence gaps, not proof that
-an action succeeded or did not run; snapshot claims never replace native post-read.
+evidence. Missing or mismatched action notes are evidence gaps, not proof that an
+action succeeded or did not run.
 
 ## Authority Verification
 

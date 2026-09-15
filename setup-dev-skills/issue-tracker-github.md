@@ -1,17 +1,17 @@
 # Issue tracker: GitHub
 
-Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all issue operations.
+Issues and PRDs for this repo live as GitHub issues. Use the native GitHub
+transport from `skill://forge/reference/github.md` for every issue operation;
+`gh` is one of the native transports it names. Infer the repo from
+`git remote -v`; `gh` does this automatically inside a clone.
 
-## Conventions
+## Tracker shape
 
-- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc or file for multi-line bodies.
-- **Read an issue**: `gh issue view <number> --comments` and include labels.
-- **List issues**: `gh issue list --state open --json number,title,body,labels,comments` with appropriate `--label` filters.
-- **Comment on an issue**: `gh issue comment <number> --body "..."`.
-- **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`.
-- **Close**: `gh issue close <number> --comment "..."`.
-
-Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
+- An issue carries title, body, labels, and comments. Read comments with the
+  issue; they hold the current discussion an agent must reconcile.
+- Multi-line bodies go through a file or heredoc, never an inline quoted blob.
+- Labels are applied to an existing issue from the repo's triage-label doc, not
+  invented at create time.
 
 ## Approved-plan publishing
 
@@ -23,4 +23,4 @@ Create a GitHub issue. If publishing an approved plan as multiple vertical slice
 
 ## When a skill says "fetch the relevant ticket"
 
-Run `gh issue view <number> --comments`.
+Read the issue with its comments through the native GitHub transport.

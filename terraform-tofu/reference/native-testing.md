@@ -1,6 +1,6 @@
 # Native-testing rules
 
-Use only the native test features supported by the bound engine/version. Terraform and OpenTofu can differ; verify the selected CLI's documentation and `test -help` instead of assuming parity.
+Use only native test features the bound engine/version supports. Terraform and OpenTofu differ; verify against the selected CLI's documentation rather than assuming parity.
 
 ## Test shape
 
@@ -21,7 +21,7 @@ Do not use `command = apply` against real infrastructure by default. It is allow
 
 Missing or ambiguous evidence stops the run. Native mocks or plan-mode coverage are the safe replacement; never weaken the behavior merely to avoid the guard.
 
-Official command references:
+Command references:
 
 - Terraform tests: <https://developer.hashicorp.com/terraform/language/tests>
 - OpenTofu tests: <https://opentofu.org/docs/cli/commands/test/>

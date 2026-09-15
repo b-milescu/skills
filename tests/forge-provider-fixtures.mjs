@@ -76,7 +76,7 @@ function verify(f) {
 }
 
 for (const provider of Object.keys(pass)) {
-  const fixture = JSON.parse(readFileSync(new URL(`../forge/fixtures/${provider}.json`, import.meta.url), "utf8"));
+  const fixture = JSON.parse(readFileSync(new URL(`./fixtures/forge/${provider}.json`, import.meta.url), "utf8"));
   verify(fixture);
   const failures = [
     ["wrong commit", (x) => { if (provider === "gitlab") x.snapshot.sha = "f".repeat(40); else if (provider === "github") x.snapshot.headRefOid = "f".repeat(40); else x.snapshot.lastMergeSourceCommit.commitId = "f".repeat(40); }, /stale\/wrong source commit/],

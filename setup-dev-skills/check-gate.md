@@ -13,8 +13,7 @@ Run the repo's full local gate against the exact candidate before marking work r
 Expected result: exit code `0`.
 
 If no full local gate exists, record `N/A — no full local gate discovered` with
-the best targeted checks and obtain project-owner confirmation. Provider CI does
-not replace the local quality gate.
+the best targeted checks and obtain project-owner confirmation.
 
 ## Project-profile refs
 
@@ -25,10 +24,7 @@ Use this file, or the target-specific replacement path recorded in
 checks, configured advisory CI jobs, and allowed manual validation evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-exact-candidate local Gate Receipt, reviewed-SHA binding, explicit authority
-source, independent review, the child-builder boundary, the verifier read-only
-boundary, or MCP-first transport correctness plus help-first provider fallback
-correctness.
+the [safety-floor litany](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Targeted checks
 
@@ -48,9 +44,10 @@ Record where these commands came from: `README.md`, `CONTRIBUTING.md`, `Makefile
 ## Advisory CI parity
 
 Describe which configured CI jobs mirror the local gate. Record an observed
-status only with its pipeline/job commit. Pending, failed, canceled, skipped,
-missing, stale, wrong-commit, or unavailable CI is advisory and never replaces
-or changes eligibility derived from the exact-candidate local gate.
+status only with its pipeline/job commit. Any CI status or absence — pending,
+failed, canceled, skipped, missing, stale, wrong-commit, unavailable — is
+advisory and never replaces the exact-candidate local gate or changes
+eligibility derived from it.
 
 ## Manual validation rules
 

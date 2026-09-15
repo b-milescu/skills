@@ -4,9 +4,7 @@
   "kind": "setup-dev-skills-project-profile-facts",
   "version": "1",
   "owner": "setup-dev-skills",
-  "description": "Machine-readable project-profile facts used by setup-dev-skills to instantiate or verify Agent Setup Docs without hardcoding one repository's paths or labels into reusable Agent Skills.",
   "machine_resource": "skill://setup-dev-skills/reference/project-profile-facts.json",
-  "human_owner": "setup-dev-skills/SKILL.md",
   "provider_detection": {
     "executable": "skill://setup-dev-skills/scripts/detect-provider.mjs",
     "input_fields": ["remote", "profile_provider", "profile_id"],
@@ -28,31 +26,13 @@
     "resource_addressing"
   ],
   "triage_roles": {
-    "afk_ready": {
-      "name": "AFK-ready",
-      "description": "Issue is fully specified and safe for an AFK agent implementation without a new human decision.",
-      "label_rule": "Map this Triage Role to the target repo's live label only when that label exists; do not assume a global label string."
-    },
-    "needs_info": {
-      "name": "needs-info",
-      "description": "Issue needs more information before AFK work.",
-      "label_rule": "Map only when the target repo has a confirmed live label; otherwise record the state in issue/MR prose."
-    },
-    "human_decision": {
-      "name": "human-decision",
-      "description": "Issue needs a maintainer decision before AFK work.",
-      "label_rule": "Map only when the target repo has a confirmed live label; otherwise record the blocker in issue/MR prose."
-    }
+    "afk_ready": { "name": "AFK-ready" },
+    "needs_info": { "name": "needs-info" },
+    "human_decision": { "name": "human-decision" }
   },
   "resource_addressing": {
-    "target_repo_docs": {
-      "mode": "repo-relative",
-      "summary": "Agent Setup Docs in the target repo stay repo-relative, for example docs/agents/check-gate.md or a target-specific replacement path."
-    },
-    "runtime_skill_resources": {
-      "mode": "skill-uri",
-      "summary": "Reusable skill docs, schemas, templates, and helper scripts use explicit skill://<skill>/... URIs when invoked from another repo."
-    }
+    "target_repo_docs": { "mode": "repo-relative" },
+    "runtime_skill_resources": { "mode": "skill-uri" }
   },
   "default_profile": {
     "profile_id": "default",
