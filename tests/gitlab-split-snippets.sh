@@ -152,7 +152,6 @@ require_text "$SKILL" 'reference/snippet-transports\.md' 'snippet transport cont
 require_text "$CONTRACT" 'MCP primary tool' 'MCP primary tools column'
 require_text "$CONTRACT" 'Fail-closed checks' 'fail-closed checks column'
 require_text "$CONTRACT" 'Fallback condition' 'fallback condition column'
-require_text "$CONTRACT" 'Post-mutation MCP re-read' 'post-mutation re-read column'
 for name in \
   local-repo-preflight issue-pickup draft-mr-create mr-description-update \
   draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \

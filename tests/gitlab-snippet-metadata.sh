@@ -56,16 +56,14 @@ function parseMarkdownRows(markdown) {
   for (const line of markdown.split(/\r?\n/)) {
     if (!line.startsWith('| `')) continue;
     const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
-    assert(cells.length === 7, `transport row does not have 7 cells: ${line}`);
+    assert(cells.length === 5, `transport row does not have 5 cells: ${line}`);
     const nameMatch = cells[0].match(/^`([^`]+)`$/);
     assert(nameMatch, `transport row has invalid snippet cell: ${line}`);
     rows.set(nameMatch[1], {
       mcp_primary_tools: cells[1],
       inputs: cells[2],
-      outputs: cells[3],
-      required_guards: cells[4],
-      fallback_conditions: cells[5],
-      post_mutation_reread: cells[6]
+      required_guards: cells[3],
+      fallback_conditions: cells[4]
     });
   }
   return rows;
@@ -106,7 +104,6 @@ for (const field of [
   'fallback_conditions',
   'post_mutation_reread',
   'via_evidence',
-  'markdown'
 ]) {
   assert(requiredSnippetFields.includes(field), `required snippet field inventory missing ${field}`);
 }
@@ -123,14 +120,7 @@ const markdownRows = parseMarkdownRows(contract);
 sameList('Markdown stable snippet names', [...markdownRows.keys()], expectedNames);
 
 const allowedRereadModes = new Set(['none', 'conditional', 'required']);
-const markdownFields = [
-  'mcp_primary_tools',
-  'inputs',
-  'outputs',
-  'required_guards',
-  'fallback_conditions',
-  'post_mutation_reread'
-];
+const markdownCells = ['mcp_primary_tools', 'inputs', 'required_guards', 'fallback_conditions'];
 
 for (const snippet of snippets) {
   for (const field of requiredSnippetFields) {
@@ -154,11 +144,9 @@ for (const snippet of snippets) {
 
   const row = markdownRows.get(snippet.name);
   assert(row, `${snippet.name} missing from ${contractPath}`);
-  for (const field of markdownFields) {
-    assert(typeof snippet.markdown[field] === 'string', `${snippet.name} metadata markdown.${field} missing`);
-    if (row[field] !== snippet.markdown[field]) {
-      fail(`${snippet.name} Markdown ${field} disagrees with metadata\nmarkdown: ${row[field]}\nmetadata: ${snippet.markdown[field]}`);
-    }
+  assert(!Object.hasOwn(snippet, 'markdown'), `${snippet.name} must not reintroduce the retired markdown mirror`);
+  for (const cell of markdownCells) {
+    assert(row[cell].length > 0, `${snippet.name} has an empty Markdown ${cell} cell in ${contractPath}`);
   }
 }
 

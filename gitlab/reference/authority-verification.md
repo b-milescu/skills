@@ -2,28 +2,7 @@
 
 **Authority Verification** is the canonical seam for deciding whether a GitLab workflow actor may approve or finish, must hand off, or must ask a human for a missing or contradictory authority fact.
 
-Machine-readable claim/result fields and enums: [`authority-verification.schema.json`](authority-verification.schema.json) / `skill://gitlab/reference/authority-verification.schema.json`.
-
-## Resource addressing
-
-From a target repository, use:
-
-- `skill://gitlab/reference/authority-verification.md`
-- `skill://gitlab/reference/authority-verification.schema.json`
-- `skill://gitlab/reference/authority-matrix.md`
-- `skill://gitlab/reference/identity-and-authentication.md`
-
-Target-repo policy stays repo-relative: use `docs/agents/dev-workflows.md`, `docs/agents/check-gate.md`, and the changed repository's rulebook paths.
-
-## Scope
-
-This seam owns:
-
-- finish-owner routing (`Finish owner: parent`) separately from merge authority;
-- approval/merge claim shape, source types, and precedence;
-- missing, restricted, and conflicting-source results;
-- verified authority output and action routing;
-- no-self-approval/no-self-merge relative to identity and review context.
+Machine claim/result fields and enums: `skill://gitlab/reference/authority-verification.schema.json`.
 
 In `Finish owner: parent` mode, reviewers hand off approval, merge, and auto-merge queue actions to the parent even when authority is otherwise verified.
 
@@ -31,18 +10,16 @@ Project binding, current SHA, exact-candidate local Gate Receipt, advisory CI ob
 
 ## Claims and sources
 
-Authority claims are maps, never grants. Builders may quote them in Reviewer Lift or delivery handoffs, but a consumer verifies the source before approval, merge, auto-merge queue, release, close, or cleanup.
+Authority claims are maps, never grants. A consumer verifies the source before approval, merge, auto-merge queue, release, close, or cleanup.
 
-The machine schema owns all required fields and enum values for `requested_action`, caller identity/context, `approval`, `merge`, and `source_evidence`. In particular, each approval/merge claim carries its value, source, source type, and verification state; approval also carries `restricted`.
-
-The human input shape keeps the source/grant relationship explicit (the schema owns the full record):
+The machine schema owns every required field and enum. The human input shape keeps only the source/grant relationship explicit:
 
 ```yaml
 source_evidence:
   - grants_authority: true
 ```
 
-Each entry also carries `source_type`, `source`, and `value`; `true` is valid only when that source grants the requested action.
+Each entry also carries `source_type`, `source`, and `value`. `true` is valid only when that source grants the action.
 
 ### Source types and precedence
 
@@ -66,8 +43,6 @@ Precedence fails closed:
 5. Missing or unverifiable source yields `result: missing`; it blocks the action without inventing a default finish authority.
 
 ## Result and routing
-
-The machine schema owns output fields and enums: one result for one requested action, including `result`, `decision`, `blocker`, `next_actor`, `next_action`, verified approval/merge claims, conflicts, and source evidence.
 
 Routing decisions mean:
 

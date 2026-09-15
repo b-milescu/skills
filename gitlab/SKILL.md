@@ -16,7 +16,7 @@ Use from the GitLab-backed worktree, in this order:
 3. **Local `git` remains local.** Keep worktree, branch, fetch, and ref checks in `git`.
 
 Known MCP gaps are owned by
-[`snippet-transports.md` §Known MCP gaps fallback limits](skill://gitlab/reference/snippet-transports.md#known-mcp-gaps-fallback-limits).
+[`mutation-guard.md` §First-class MCP gap states](skill://gitlab/reference/mutation-guard.md#first-class-mcp-gap-states).
 Bounded metadata/body-read rules live in
 [`bounded-reads.md`](skill://gitlab/reference/bounded-reads.md).
 

@@ -59,7 +59,7 @@ complete/recover the traversal needed by the decision.
 
 After every mutation, immediately re-read the applicable record through MCP and re-check the expected SHA before trusting local state. Report `via=mcp` or, for an eligible guarded fallback, `via=glab-fallback`.
 
-The [Mutation Guard outputs](mutation-guard.md#outputs) and its schema own blocker/gap tokens and post-read classifications, including `already_merged`, `stale_head`, and `merge_blocked`. Classify before retrying: `already_merged` is success-equivalent; stale or blocked state fails closed. Any retry loop has a small fixed bound and reports its last classification.
+The [`mutation-guard.schema.json`](mutation-guard.schema.json) output fields own blocker/gap tokens and post-read classifications, including `already_merged`, `stale_head`, and `merge_blocked`. Classify before retrying: `already_merged` is success-equivalent; stale or blocked state fails closed. Any retry loop has a small fixed bound and reports its last classification.
 
 Issue creation instead follows the no-automatic-repeat
 [Issue publication contract](../SKILL.md#issue-publication), including the four
