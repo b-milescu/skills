@@ -7,23 +7,23 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
+- `compaction-index/` — OMP compaction extension (not a skill); `install.sh` links it into `~/.omp/agent/extensions/`.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills
 
 | Skill | Purpose |
 |---|---|
-| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) for scaffolding per-repo Agent Setup Docs, including coding guardrails. Invoke explicitly as `/setup-dev-skills`; agents may recommend it when docs are missing/stale, but must ask before running or writing. |
-| `gitlab` | MCP-first GitLab transport reference with guarded help-first `glab` fallback/helper contracts for local/self-hosted GitLab work. |
-| `forge` | Five-operation provider seam for GitLab, GitHub, and Azure DevOps transport selection, evidence, guarded actions, and post-merge snapshots. |
-| `start-build` | Pick up issues, implement with TDD, and open Draft change requests with Review Packets. |
-| `start-review` | Independently review one bound change request, exact commit, complete review surface, and CI evidence. |
-| `issue-delivery-loop` | Coordinate bounded issue batches, serial by default, with Decoupling Contract gating and provider-neutral build/review/verifier routing. |
-| `plan-to-issues` | Plan-to-issues publisher for GitLab, GitHub, and Azure DevOps. Slash is `/plan-to-issues`. |
-| `cleanup-codebase` | Discover and plan subtractive repo maintenance — deslop (behavior- and boundary-preserving local simplification) and destale (remove/correct stale items) — as planning-only work routed to the build workflow. |
-| `retro` | Delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. |
-| `exampleproject-target-geometry-validation` | Validate target-build map geometry through a native proof chain: client provenance, extraction, Detour/MMAP route evidence, and sanitized record. |
-| `exampleproject-world-db-refresh` | Check public AshamaneCore for newer WoW 7.3.5.26972 world SQL and, only when explicitly requested, materialize an exact compatible cut. |
+| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) that scaffolds per-repo Agent Setup Docs. Invoke explicitly as `/setup-dev-skills`; agents must ask before running or writing. |
+| `gitlab` | MCP-first GitLab transport with guarded help-first `glab` fallback. |
+| `forge` | Five-operation provider seam for GitLab, GitHub, and Azure DevOps. |
+| `start-build` | Implement one issue test-first as a Draft change request with a Review Packet. |
+| `start-review` | Independently review one change request at an exact commit. |
+| `issue-delivery-loop` | Coordinate bounded issue batches under the Decoupling Contract. |
+| `plan-to-issues` | Publish an approved plan as tracker issues. Slash is `/plan-to-issues`. |
+| `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
+| `retro` | Mine a finished delivery session for friction; proposes follow-up issues only. |
+| `terraform-tofu` | Author Terraform/OpenTofu configuration with native test-first development. |
 
 ## External skill dependencies
 

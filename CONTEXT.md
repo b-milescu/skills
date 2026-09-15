@@ -29,7 +29,7 @@ The ordered seam every GitLab-backed **Dev Workflow** mutation uses before and a
 _Avoid_: fallback checklist, merge guard
 
 **Safety floor**:
-A load-bearing safety/transport invariant that never scales away (for example exact-candidate local Gate Receipt, reviewed-SHA binding, explicit authority source, independent review, the child-builder and verifier boundaries, MCP-first transport correctness). Used as a shared additive leading word so a single canonical enumeration can be referenced by name ("the safety-floor litany") at non-canonical repeats instead of restating the full list. The canonical enumerations live in `docs/effort-scaling.md` (Hard floors) and the per-site "must not weaken" litany.
+A load-bearing safety/transport invariant that never scales away. Used as a shared additive leading word so the canonical enumeration can be referenced by name ("the safety-floor litany"); it lives in `docs/effort-scaling.md` (Hard floors).
 _Avoid_: hard limit, guard rail (when the specific invariant set is meant)
 
 **Triage Role**:
@@ -37,26 +37,12 @@ An issue state that may be mapped to the target tracker's actual label string wh
 _Avoid_: label, status
 
 **Skill Invocation**:
-Running a skill's `SKILL.md` entry procedure through the runtime skill mechanism, so the agent enters the skill at its documented start (mode matrix, preflight, gate-ownership read, safety flow) rather than mid-policy. The per-dialect mechanism is documented in [`docs/agents/dev-workflows.md`](docs/agents/dev-workflows.md#skill-activation-mechanism): Claude uses the `skills:` agent-frontmatter field plus the Skill tool; OMP uses the `autoload-skills` frontmatter field plus harness auto-injection. A launch prompt names the skill and instructs invocation; it must not name the skill's internal reference files (the [#320 minimal-prompt exclusion rule](start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt)), because a subagent could then satisfy the prompt with a **Reference Read** that skips the entry procedure.
+Entering a skill at its `SKILL.md` entry procedure through the runtime skill mechanism, rather than mid-policy. The per-dialect mechanism is owned by [dev-workflows](docs/agents/dev-workflows.md#skill-activation-mechanism).
 _Avoid_: load (a skill), skill-enter directive
 
 **Reference Read**:
-Reading one of a skill's reference, template, or doc files (for example `start-build/reference/child-builder.md`) for detail after the skill is already active. A **Reference Read** is legitimate context loading, but it is not a substitute for **Skill Invocation**: entering through a reference file alone skips the `SKILL.md` entry procedure. Reserve the word "load" for this kind of file/context read, never for skill activation.
+Reading one of a skill's reference, template, or doc files after the skill is already active. Legitimate context loading, never a substitute for **Skill Invocation**.
 _Avoid_: invoking a skill, loading a skill
-
-## Relationships
-
-- A **Setup Skill** creates **Agent Setup Docs** for a target repo.
-- **Agent Setup Docs** inventory live tracker labels and map **Triage Roles** only where the project has confirmed labels for them.
-- A **Dev Workflow** depends on the selected issue tracker.
-- GitLab-backed **Dev Workflows** use GitLab issues and merge requests.
-- A **Check Gate** records the repo-specific commands builders and reviewers use as local evidence.
-- A **GitLab Mutation Guard** preserves mutation safety across MCP primary transport and guarded fallback helpers.
-
-## Example dialogue
-
-> **Dev:** "Should this setup skill call the section agent workflows?"
-> **Domain expert:** "No — use **Dev Workflow**. The value is project workflow guidance, not branding the actor."
 
 ## Flagged ambiguities
 
