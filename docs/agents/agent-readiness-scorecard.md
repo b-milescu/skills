@@ -4,11 +4,6 @@ Agent Readiness is the visible contract for an issue carrying `ready-for-agent`.
 It records why an AFK builder can start without broad rediscovery and gives the
 reviewer a stable checklist for spotting gaps.
 
-This doc owns the readiness criteria. [Triage Labels](triage-labels.md) owns the
-live label vocabulary. The [`plan-to-issues` issue body template](../../plan-to-issues/templates/issue-body.md#agent-readiness)
-owns the compatible issue body section for newly published tracker issues. Keep
-those files pointer-first; do not copy this full contract into each workflow doc.
-
 ## Pass rule
 
 Before applying `ready-for-agent`, fill the scorecard in the issue body or in a
@@ -33,11 +28,3 @@ the missing context is resolved.
 | Unknowns | Open questions and human decisions are listed; AFK issues have `None` or an explicit maintainer waiver. |
 | AFK safety | The issue explains why an agent can proceed without new human decisions or live product/runtime/operator mutations. |
 | Reviewer focus | The expected hardest review area is named so the reviewer can compare the MR against the readiness contract. |
-
-## Use in `/plan-to-issues` publishing
-
-New AFK issues published through `/plan-to-issues` use the compatible
-`## Agent Readiness` section from the issue body template. Preserve that section
-when posting generated issues. If the scorecard cannot pass and no maintainer
-waiver exists, publish the issue as HITL or Needs info instead of applying the
-AFK-ready label.

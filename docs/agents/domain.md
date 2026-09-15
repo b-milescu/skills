@@ -13,19 +13,6 @@ agents need domain language.
 - **`CONTEXT.md`** at the repo root.
 - **`docs/adr/`**, when present — read ADRs that touch the area you're about to work in.
 
-If `docs/adr/` doesn't exist, **proceed silently**. Don't flag its absence; don't suggest creating it upfront. Create or update ADRs under `docs/adr/` manually when needed.
-
-## File structure
-
-```
-/
-├── CONTEXT.md
-├── docs/adr/                 # when present
-│   ├── 0001-some-decision.md
-│   └── 0002-another-decision.md
-└── <skill folders>/
-```
-
 ## Use the glossary's vocabulary
 
 When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
