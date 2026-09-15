@@ -101,10 +101,10 @@ require_text gitlab/reference/safe-text.md 'Diagnostics never print the body' 'b
 require_text gitlab/reference/safe-text.md 'does not close #410' 'negated close example documented'
 require_text gitlab/reference/safe-text.md 'group/project#410' 'safe non-closing full-path issue reference documented'
 require_text gitlab/reference/safe-text.md 'Keep the real auto-close trailer deliberate and unique' 'single intended auto-close trailer guidance'
-require_text gitlab/reference/multiline-text.md 'must \*\*not\*\* close' 'MR description non-closing issue guidance'
+require_text gitlab/reference/safe-text.md 'must \*\*not\*\* close' 'MR description non-closing issue guidance'
 require_text gitlab/reference/safe-text.md 'never print body' 'diagnostics do not print body'
 require_text gitlab/reference/safe-text.md 'malformed secret-bearing payload is not echoed back' 'sensitive-body redaction invariant'
 
-require_text gitlab/reference/mcp-contract-verification.md 'Merge robustness' 'known MCP merge robustness gap'
+require_text gitlab/reference/snippet-transports.md 'MCP merge robustness gap' 'known MCP merge robustness gap'
 
 printf 'gitlab-mcp-first-workflows: PASS\n'

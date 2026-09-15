@@ -269,13 +269,12 @@ require_text "gitlab/reference/snippet-transports.md" 'safe_update_merge_request
 
 # --- File-backed multiline + help-first guidance survive ----------------------
 require_text "$SKILL" 'Use file-backed long descriptions/messages' 'file-backed multiline guidance'
-require_text "gitlab/reference/multiline-text.md" 'do not print secrets or the malformed packet body' 'malformed body redaction guidance'
+require_text "gitlab/reference/safe-text.md" 'secret-bearing payload is never surfaced in logs' 'malformed body redaction guidance'
 require_text "$SKILL" 'Before any flagged fallback `glab` command, run exact command help' 'fallback help-first rule'
 
 require_text "gitlab/reference/snippet-transports.md" 'get_merge_request_workflow_snapshot' 'CI watcher MCP contract reference'
 require_text "gitlab/reference/snippet-transports.md" 'finish_merge_request' 'finish MCP contract reference'
 require_text "gitlab/reference/snippet-transports.md" 'auto-merge-api-fallback' 'auto-merge fallback contract reference'
-require_text "gitlab/scripts/README.md" 'MCP is the only shipped GitLab transport and validator' 'MCP-only transport note'
 
 # --- Retired combined snippets stay gone (transport-independent names) ---------
 if grep -Fq 'Snippet: approve-merge-sha-bound' "$SKILL"; then

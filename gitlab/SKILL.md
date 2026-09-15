@@ -32,8 +32,6 @@ Project hooks may specialize policy but not exact-candidate Gate Receipt, review
 
 Help-first remains mandatory for fallback `glab`. The run-dir help cache — kept in a temp/run artifact directory and never committed — records the exact `glab <command> --help` output with verification status for this run and context. Refresh the cache whenever the command, `glab` version, or repo context changes.
 
-Detailed cache contract, context invalidation rules, and the executable helper pattern live in [skill://gitlab/reference/help-first.md](skill://gitlab/reference/help-first.md#per-run-help-cache).
-
 ## Important fallback/local pitfalls
 
 - Issue `labels` are strings: use `.labels`, not `.labels[].name`.
@@ -46,7 +44,7 @@ Detailed cache contract, context invalidation rules, and the executable helper p
 
 Validate every MR/issue body before mutation with `validate_gitlab_text` or a safe mutation tool that embeds it. [`safe-text.md`](skill://gitlab/reference/safe-text.md) owns the byte rule and the role/offset-only diagnostics.
 
-Draft long text in temp/run-dir files with quoted heredocs; [`multiline-text.md`](skill://gitlab/reference/multiline-text.md#safe-multiline-gitlab-text) owns the file-backed pattern and its fallback conditions.
+Draft long text in temp/run-dir files with quoted heredocs; [`safe-text.md` §Inline heredoc command-substitution hazard](skill://gitlab/reference/safe-text.md#inline-heredoc-command-substitution-hazard) owns the file-backed pattern.
 
 GitLab strips exactly one trailing newline from a published note or description body. Compute expected digests and byte counts over that stripped form. A one-byte difference of exactly that shape is GitLab's normalisation — never a failed write and never a reason to create a second note. This does not weaken authored-source readback equality in [`safe-text.md`](skill://gitlab/reference/safe-text.md).
 
