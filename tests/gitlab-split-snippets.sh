@@ -12,8 +12,11 @@ set -euo pipefail
 #   This test asserts BEHAVIOURAL invariants, stable snippet names, and guarded
 #   fallback/helper contracts, NOT unconditional primary `glab` command strings.
 #   Per-snippet MCP primary tool/input/output/fail-closed/fallback details live
-#   in gitlab/reference/snippet-transports.md; inline SKILL shell blocks
-#   are accepted MCP/fallback examples.
+#   in gitlab/reference/snippet-transports.md; the inline shell blocks in the
+#   phase-grouped snippet files are accepted MCP/fallback examples.
+#   Snippet bodies live in gitlab/reference/snippets-{read-evidence,
+#   publish-body,mutate-finish}.md (ADR-0002); gitlab/SKILL.md keeps the index,
+#   the transport order, and the guard order.
 #     - the 21 snippet NAMES are stable (transport-independent API),
 #     - one action per snippet (no snippet mixes two mutating verbs),
 #     - no combined approve+merge in any generic snippet (only the
@@ -27,6 +30,12 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
 
 SKILL="gitlab/SKILL.md"
+# Snippet bodies live in three phase-grouped reference files (ADR-0002); the
+# entry procedure keeps the index, transport order, and guard order.
+GROUP_READ="gitlab/reference/snippets-read-evidence.md"
+GROUP_PUBLISH="gitlab/reference/snippets-publish-body.md"
+GROUP_MUTATE="gitlab/reference/snippets-mutate-finish.md"
+GROUP_FILES=("$GROUP_READ" "$GROUP_PUBLISH" "$GROUP_MUTATE")
 TEST_NAME="gitlab-split-snippets"
 
 # shellcheck source=tests/lib/assertions.sh
@@ -37,18 +46,33 @@ source "$REPO_ROOT/tests/lib/marked-sections.sh"
 source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
 
 
+# Group file that owns each stable snippet name. Unknown names fail closed so a
+# renamed or relocated snippet cannot silently skip its body assertions.
+snippet_home() {
+  case "$1" in
+    local-repo-preflight|issue-pickup|mr-pickup|artifact-capture|safe-mr-json|sha-guard|ci-decision-snapshot|ci-watch-sha-pinned|approval-confirmation|mr-handoff-evidence)
+      printf '%s\n' "$GROUP_READ" ;;
+    draft-mr-create|mr-description-update|draft-mr-mark-ready|mr-note-create|issue-note-create|label-reconcile)
+      printf '%s\n' "$GROUP_PUBLISH" ;;
+    sha-bound-approval|sha-bound-merge|sha-bound-auto-merge-queue|auto-merge-api-fallback|finish-mr-authority-aware)
+      printf '%s\n' "$GROUP_MUTATE" ;;
+    *) fail "no group file owns snippet $1" ;;
+  esac
+}
+
 extract_snippet() {
   local file="$1" name="$2"
-  # Terminate on the next heading of ANY level (not just the next `### Snippet:`)
-  # so the final snippet does not run to EOF and absorb trailing `## ` sections
-  # (e.g. `## Optional helper scripts`, `## Troubleshooting`). See issue #388.
-  extract_markdown_section "$file" "### Snippet: $name" '^#'
+  # Terminate on the next heading of ANY level (not just the next `## Snippet:`)
+  # so the final snippet in a group file does not run to EOF and absorb trailing
+  # sections. See issue #388.
+  extract_markdown_section "$file" "## Snippet: $name" '^#'
 }
 
 require_snippet() {
-  local name="$1" body
-  body="$(extract_snippet "$SKILL" "$name")"
-  [[ -n "$body" ]] || fail "$SKILL missing snippet $name"
+  local name="$1" file body
+  file="$(snippet_home "$name")"
+  body="$(extract_snippet "$file" "$name")"
+  [[ -n "$body" ]] || fail "$file missing snippet $name"
   printf '%s\n' "$body"
 }
 
@@ -118,32 +142,59 @@ handoff_body="$(require_snippet mr-handoff-evidence)"
 # --- Snippet-name stability: the 21 stable snippet names exist ----------------
 # The names are the transport-independent API workflow skills depend on; they
 # must remain stable across MCP primary and fallback/helper implementations.
-for name in \
-  local-repo-preflight issue-pickup draft-mr-create mr-description-update \
-  draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
-  ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile \
-  safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
-  sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
-  finish-mr-authority-aware mr-handoff-evidence; do
-  require_exact_line "$SKILL" "### Snippet: $name" "stable snippet name $name"
+# Bodies now live in the phase-grouped files, so each name is asserted against
+# the file that holds it and the hard count of 21 is summed across the group.
+SNIPPET_NAMES=(
+  local-repo-preflight issue-pickup draft-mr-create mr-description-update
+  draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot
+  ci-watch-sha-pinned mr-note-create issue-note-create label-reconcile
+  safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval
+  sha-bound-merge sha-bound-auto-merge-queue approval-confirmation
+  finish-mr-authority-aware mr-handoff-evidence
+)
+for name in "${SNIPPET_NAMES[@]}"; do
+  require_exact_line "$(snippet_home "$name")" "## Snippet: $name" "stable snippet name $name"
 done
-snippet_count="$(grep -cE '^### Snippet:' "$SKILL")"
-[[ "$snippet_count" -eq 21 ]] || fail "expected exactly 21 snippet names, found $snippet_count"
+snippet_count=0
+for file in "${GROUP_FILES[@]}"; do
+  [[ -f "$file" ]] || fail "missing snippet group file $file"
+  snippet_count=$((snippet_count + $(grep -cE '^## Snippet:' "$file" || true)))
+done
+[[ "$snippet_count" -eq 21 ]] || fail "expected exactly 21 snippet names across the group files, found $snippet_count"
+# Bodies left the entry procedure entirely; a stray `### Snippet:` there means a
+# body drifted back in beside the index.
+reject_text "$SKILL" '^### Snippet:' 'snippet body back in the entry procedure'
+
+# --- Snippet index: one row per snippet naming its group file (#469) ----------
+# Selection happens from the index alone, so every stable name must have a row
+# and every group file must be reachable from the entry procedure.
+group_slug() {
+  local home
+  home="$(snippet_home "$1")"
+  home="${home##*/snippets-}"
+  printf '%s\n' "${home%.md}"
+}
+for name in "${SNIPPET_NAMES[@]}"; do
+  require_text_case_sensitive "$SKILL" \
+    "^\\| \`$name\` \\| [^|]+ \\| $(group_slug "$name") \\|$" \
+    "snippet index row for $name"
+done
+for file in "${GROUP_FILES[@]}"; do
+  assert_file_contains "$SKILL" "skill://$file" "entry-procedure link to $file"
+  require_text_case_sensitive "$file" 'skill://gitlab/SKILL\.md' "group file pointer back to the entry procedure"
+done
 
 # --- Snippet terminator: a body stops at the next heading of ANY level (#388) ---
-# extract_snippet must terminate a snippet body on the next heading of any level,
-# not only on the next `^### Snippet:` heading. The last snippet is now
-# mr-handoff-evidence, followed by `## Optional helper scripts`. A terminator
-# that only stops on `### Snippet:` would leak those `## ` headings into
-# mr-handoff-evidence while the finish-snippet checks still passed. Keep
-# finish-mr-authority-aware name-stability (loop above) and assert the last
-# snippet body contains zero `^## ` headings.
-finish_trailing_headings="$(printf '%s\n' "$finish_body" | grep -c '^## ' || true)"
+# extract_snippet must terminate a snippet body on the next heading of any
+# level, not only on the next `^## Snippet:` heading. The last snippet in a
+# group file is followed by EOF, and earlier ones by the next `## Snippet:`
+# heading, so a body must never contain a heading line at all.
+finish_trailing_headings="$(printf '%s\n' "$finish_body" | grep -c '^#' || true)"
 [[ "$finish_trailing_headings" -eq 0 ]] \
-  || fail "finish-mr-authority-aware body absorbed $finish_trailing_headings trailing '## ' heading(s); the snippet terminator must stop at the next heading of any level"
-handoff_trailing_headings="$(printf '%s\n' "$handoff_body" | grep -c '^## ' || true)"
+  || fail "finish-mr-authority-aware body absorbed $finish_trailing_headings trailing heading(s); the snippet terminator must stop at the next heading of any level"
+handoff_trailing_headings="$(printf '%s\n' "$handoff_body" | grep -c '^#' || true)"
 [[ "$handoff_trailing_headings" -eq 0 ]] \
-  || fail "mr-handoff-evidence body absorbed $handoff_trailing_headings trailing '## ' heading(s); the snippet terminator must stop at the next heading of any level"
+  || fail "mr-handoff-evidence body absorbed $handoff_trailing_headings trailing heading(s); the snippet terminator must stop at the next heading of any level"
 
 
 CONTRACT="gitlab/reference/snippet-transports.md"
@@ -277,21 +328,21 @@ require_text "gitlab/reference/snippet-transports.md" 'finish_merge_request' 'fi
 require_text "gitlab/reference/snippet-transports.md" 'auto-merge-api-fallback' 'auto-merge fallback contract reference'
 
 # --- Retired combined snippets stay gone (transport-independent names) ---------
-if grep -Fq 'Snippet: approve-merge-sha-bound' "$SKILL"; then
-  fail 'retired combined approve-merge-sha-bound snippet still present'
-fi
-if grep -Fq 'Snippet: note-comment-creation' "$SKILL"; then
-  fail 'retired combined note-comment-creation snippet still present'
-fi
-if grep -Fq 'Snippet: draft-mr-create-update' "$SKILL"; then
-  fail 'retired combined draft-mr-create-update snippet still present'
-fi
+# Checked in the entry procedure and in every group file that now holds bodies.
+for file in "$SKILL" "${GROUP_FILES[@]}"; do
+  for retired in approve-merge-sha-bound note-comment-creation draft-mr-create-update; do
+    if grep -Fq "Snippet: $retired" "$file"; then
+      fail "retired combined $retired snippet still present in $file"
+    fi
+  done
+done
 
 # Issue #316 deleted start-build/BUILD-FLOW.md; the split-snippet references it
 # carried now assert against reference/implementation-flow.md, the canonical
 # owner of the implementation flow's Draft-MR snippet guidance.
 for file in \
   gitlab/SKILL.md \
+  "${GROUP_FILES[@]}" \
   start-build/SKILL.md \
   start-build/reference/implementation-flow.md \
   $(agent_prompt_paths "${builder_prompt_names[@]}"); do
@@ -303,6 +354,7 @@ done
 
 for file in \
   gitlab/SKILL.md \
+  "${GROUP_FILES[@]}" \
   start-review/SKILL.md \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
@@ -333,7 +385,10 @@ for file in \
   fi
 done
 
-require_text "$SKILL" 'Snippet: issue-note-create' 'issue-note snippet reference'
+# The issue-pickup body's cross-reference moved with it into the read-evidence
+# group file; the entry procedure keeps the name in its index row.
+require_text "$GROUP_READ" 'Snippet: issue-note-create' 'issue-note snippet reference from issue-pickup'
+assert_file_contains "$SKILL" '`issue-note-create`' 'issue-note-create index row'
 
 # --- No-combined-approve+merge warning survives (transport-independent prose) --
 require_text "$SKILL" 'Choose (exactly )?one action' 'choose-one-action warning for approval/merge snippets'
@@ -353,10 +408,11 @@ awk '
       bad=1
     }
   }
-  /^### Snippet:/ {
+  FNR == 1 { flush(); snippet="" }
+  /^## Snippet:/ {
     flush()
     snippet=$0
-    sub(/^### Snippet: /, "", snippet)
+    sub(/^## Snippet: /, "", snippet)
     saw_approve=0
     saw_merge=0
     next
@@ -364,7 +420,7 @@ awk '
   snippet != "" && (/glab mr approve/ || /approve_merge_request/) { saw_approve=1 }
   snippet != "" && (/glab mr merge/ || /merge_merge_request/) { saw_merge=1 }
   END { flush(); exit bad ? 1 : 0 }
-' "$SKILL" || fail 'combined approve+merge snippet detected'
+' "${GROUP_FILES[@]}" || fail 'combined approve+merge snippet detected'
 
 # --- One-action-per-snippet (no create+description+ready facade) ---------------
 awk '
@@ -374,10 +430,11 @@ awk '
       bad=1
     }
   }
-  /^### Snippet:/ {
+  FNR == 1 { flush(); snippet="" }
+  /^## Snippet:/ {
     flush()
     snippet=$0
-    sub(/^### Snippet: /, "", snippet)
+    sub(/^## Snippet: /, "", snippet)
     saw_create=0
     saw_description=0
     saw_ready=0
@@ -387,7 +444,7 @@ awk '
   snippet != "" && ((/glab mr update/ && /--description/) || (/update_merge_request/ && /description/)) { saw_description=1 }
   snippet != "" && ((/glab mr update/ && /--ready/) || (/update_merge_request/ && /ready/)) { saw_ready=1 }
   END { flush(); exit bad ? 1 : 0 }
-' "$SKILL" || fail 'combined create+description-update+ready snippet detected'
+' "${GROUP_FILES[@]}" || fail 'combined create+description-update+ready snippet detected'
 
 # --- One-action-per-snippet (no combined MR-note + issue-note) -----------------
 awk '
@@ -397,10 +454,11 @@ awk '
       bad=1
     }
   }
-  /^### Snippet:/ {
+  FNR == 1 { flush(); snippet="" }
+  /^## Snippet:/ {
     flush()
     snippet=$0
-    sub(/^### Snippet: /, "", snippet)
+    sub(/^## Snippet: /, "", snippet)
     saw_mr_note=0
     saw_issue_note=0
     next
@@ -408,6 +466,6 @@ awk '
   snippet != "" && (/glab mr note/ || /create_note/) { saw_mr_note=1 }
   snippet != "" && (/glab issue note/ || /create_issue_note/) { saw_issue_note=1 }
   END { flush(); exit bad ? 1 : 0 }
-' "$SKILL" || fail 'combined MR+issue note snippet detected'
+' "${GROUP_FILES[@]}" || fail 'combined MR+issue note snippet detected'
 
 printf 'gitlab-split-snippets: PASS\n'
