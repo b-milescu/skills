@@ -60,6 +60,8 @@ The rule is unconditional and context-based:
 - Equal GitLab caller/author ids do not by themselves block a fresh gate-eligible reviewer. Account identity is audit/token-stability evidence; session/context establishes independence.
 - Missing or changed caller identity maps to `identity_unavailable` or `identity_changed` before the role × authority decision.
 
+Identity capture, immutable retention, pre-finish re-verification, the finish-gate input surface, and the exact `authority_source_mismatch` comparison contract are owned by [`identity-and-authentication.md`](identity-and-authentication.md).
+
 The enforced role × merge-authority × action sub-decision is in [`authority-matrix.md`](authority-matrix.md).
 
 ## Finish/result reporting
