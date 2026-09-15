@@ -1,9 +1,8 @@
 ---
 name: retro
 description: >-
-  Delivery retrospective for forge-bound build/review workflows: mine a just-finished
-  session or batch for friction evidence, then propose bounded improvements as
-  routed follow-up issues. Use after a /start-build, /start-review, or
+  Delivery retrospective: turn build/review/delivery friction evidence into
+  bounded, routed follow-up issues. Use after a /start-build, /start-review, or
   /issue-delivery-loop run, when asked for a retro / retrospective / lessons
   learned on agent delivery work, or to turn per-batch delivery metrics into
   improvement issues.
@@ -39,7 +38,7 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 - **Refute before presenting.** A finding the drafter never argued against is a guess with citations. Every report crosses one refuter pass before the user sees it, and each surviving finding carries the strongest counter-argument it beat.
 - **Read-only collection.** Use `/forge snapshot` and read-only git/file inspection. Never mutate change requests, issues, labels, branches, or worktrees while collecting. The only mutations this skill leads to are the follow-up issues the user approves.
 - **Current context first.** The primary input is the run at hand: conversation evidence, builder/reviewer final handoffs, Review Reports, revision rounds, blocker tokens, Gate Receipts, batch metrics, and local leftovers. Expand to the active memory plugin/MCP if present, or older tracker history only to confirm whether a friction is recurring.
-- **Session-first MCP evidence (both scopes).** Identify friction from existing calls, outputs, or documented unavailability of a required tool in the scoped sessions. Only when needed and available, inspect implicated, identified local metadata, source, or already-sanitized logs; state unavailable evidence and uncertainty about whether local source corresponds to the running server. No observed MCP friction means no additional local-tooling investigation. Catalogue examples are recognition aids, not mandatory per-tool investigations or inventory/version discovery.
+- **Session-first MCP evidence (both scopes).** Bound MCP evidence to the scoped sessions' own calls, outputs, and documented unavailability. Only when needed and available, inspect implicated, identified local metadata, source, or already-sanitized logs; state unavailable evidence and uncertainty about whether local source corresponds to the running server. No observed MCP friction means no additional local-tooling investigation.
 - **Safety floors are not retro material.** Never propose weakening the [safety-floor litany](<../docs/effort-scaling.md#hard-floors-never-scaled-away>). A proposal that touches one is classified `human-decision` and stops there.
 - **Route, don't edit.** Map each accepted finding to the evidenced implementation, configuration, documentation, or skill owner, with repository and component/file locator when known; unresolved ownership stays `unknown`. Use the target repo's rulebook / Agent Setup Docs ownership map for project policy and the owning Agent Skill for workflow behavior. Route to the repository that owns the cause, not the symptom; [ownership guidance](reference/signal-catalogue.md#ownership-mapping-hints) requires causal evidence before proposing a fix.
 
@@ -48,9 +47,9 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 1. **Bound the retro.** Name the batch/session, the issue/change-request IDs in scope, and the time range. Ask only when scope is genuinely ambiguous.
 2. **Collect evidence (read-only).** Batch metrics; per-change request review rounds and verdicts; `Action blocker` / `blocker_token` values; Gate Receipts and gate outcomes; timeout/stale/interrupted rounds; transport fallbacks and repeated workarounds; local state (`git worktree list`, `git for-each-ref refs/tmp`, `git status --porcelain`, gate result on the fresh default branch); ceremony-vs-tier fit per [Effort Scaling](skill://retro/docs/effort-scaling.md).
 
-   **Complete when:** every source above is inspected or marked `N/A — <why>`; MCP collection follows the session-first bounds above, not a tool audit.
-3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence. The catalogue is a checklist, not a cap — record any evidence-backed friction even when no row matches.
-4. **Classify findings.** One `RF-N` per finding using the taxonomy below. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
+   **Complete when:** every source above is inspected or marked `N/A — <why>`.
+3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence.
+4. **Classify findings.** One `RF-N` per finding. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
 5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.
 6. **Refute the draft.** Launch one read-only refuter subagent (the harness picks the agent type) with a fresh context, the draft report, and the evidence locators — not the collection reasoning. It re-derives each finding from its cited source and returns one verdict per `RF-N` using [reference/refutation.md](reference/refutation.md). Apply every verdict before the report leaves the session.
 
@@ -59,18 +58,9 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
 
 ## Finding taxonomy
 
-Categories (definitions in the [signal catalogue](reference/signal-catalogue.md)):
-
-- `flow` — ordering, handoff, or routing problems between roles.
-- `process` — ceremony/effort miscalibration and policy friction.
-- `context` — context loading and size problems: re-reads, restated canon, bloated prompts.
-- `taxonomy` — vocabulary gaps and collisions: events forced into `other`, undefined metrics, one concept under several names.
-- `tooling` — transport/helper/runtime defects and repeated workarounds.
-- `docs-drift` — canonical docs disagreeing with each other or with observed behavior.
+Categories — `flow`, `process`, `context`, `taxonomy`, `tooling`, `docs-drift` — are defined in the [signal catalogue](reference/signal-catalogue.md#category-definitions).
 
 Dispositions: `adopt` (clear bounded fix), `experiment` (try and measure), `monitor` (insufficient evidence yet), `human-decision` (touches a safety floor or a product/policy choice).
-
-Required fields per finding: category, disposition, claim, evidence + source, Owner, bounded proposal, expected effect, metric to watch.
 
 ## Safety
 
@@ -80,9 +70,3 @@ Required fields per finding: category, disposition, claim, evidence + source, Ow
 - Never replay mutating calls, restart servers, or change configuration to collect evidence.
 - Read-only while collecting; no tracker mutations except user-approved follow-up issue creation through `/plan-to-issues`.
 - Do not overfit: a single bad round is rarely a process defect. Prefer `monitor` over speculative churn.
-
-## Templates
-
-- [templates/retro-report.md](templates/retro-report.md) — Retro Report shape with stable `RF-N` IDs, metrics table, safety floor check, and routing plan.
-- [reference/signal-catalogue.md](reference/signal-catalogue.md) — friction signal inventory with detection sources and category definitions.
-- [reference/refutation.md](reference/refutation.md) — refuter attack surface, verdict vocabulary, and refuter boundary.

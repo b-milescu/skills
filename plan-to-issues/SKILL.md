@@ -1,10 +1,9 @@
 ---
 name: plan-to-issues
 description: >-
-  Break an approved plan, spec, PRD, or conversation into independently-grabbable
-  tracker issues as vertical slices with target-repo triage labels. Use when the
-  user asks for /plan-to-issues, "break this into issues",
-  GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
+  Break an approved plan, spec, PRD, or conversation into tracker issues as
+  vertical slices. Use when the user asks for /plan-to-issues, "break this into
+  issues", GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
 ---
 
 # plan-to-issues
@@ -31,13 +30,13 @@ Slice *toward* the shared [Decoupling Contract](skill://plan-to-issues/docs/deco
 
 ## Slice types and labels
 
-Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy label creation. That selected-profile file owns the live vocabulary; this section only describes when to look there.
+Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy label creation. That selected-profile file owns the live vocabulary; this section only describes when to look there. Apply a slice's kind label only when `<triage-labels-doc>` defines one; otherwise state `Type: <slice type>` in the issue body.
 
-- **AFK**: ready for an agent to implement; see the skill-owned [Agent Readiness scorecard](skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard) for what that requires. Fill the [Agent Readiness](skill://plan-to-issues/templates/issue-body.md#agent-readiness) section and apply the repo's AFK-ready label only if `<triage-labels-doc>` defines one.
-- **Docs**: documentation-only or documentation-focused slice. Apply a docs kind label only if `<triage-labels-doc>` defines one.
-- **Refactor**: structure-improvement slice. Apply a refactor kind label only if `<triage-labels-doc>` defines one.
-- **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent. If no live label exists, state `Type: HITL` in the issue body.
-- **Needs info**: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet. If no live label exists, state `Type: Needs info` and the blocker in the issue body.
+- **AFK**: ready for an agent to implement; see the skill-owned [Agent Readiness scorecard](skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard) for what that requires, and fill the [Agent Readiness](skill://plan-to-issues/templates/issue-body.md#agent-readiness) section.
+- **Docs**: documentation-only or documentation-focused slice.
+- **Refactor**: structure-improvement slice.
+- **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent.
+- **Needs info**: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet; name the blocker in the issue body.
 
 ## Draft workflow
 
@@ -59,10 +58,10 @@ Publish approved issues in dependency order so later issues can reference real b
 
 Before publishing, show the user the detected preflight target, labels to apply, issue count, and issue titles, then ask for explicit approval to publish. If approval is not explicit, do not create issues.
 
-Each approved slice is one `forge publish` tracker-issue or work-item plus provider-native readback. The disclosed provider reference owns native create, labels, comments, safe-body, and fallback. Never paste secrets or sensitive payloads into issue bodies or comments. Apply mapped labels only when they exist in `<triage-labels-doc>`; otherwise record the slice type in the issue body.
+Never paste secrets or sensitive payloads into issue bodies or comments.
 
 For generated AFK issues, preserve the `## Agent Readiness` section from the issue body template. If any readiness field lacks durable context and no maintainer waiver exists, publish the slice as HITL or Needs info instead of applying an AFK-ready label.
 
 ## Issue body template
 
-Use [skill://plan-to-issues/templates/issue-body.md](skill://plan-to-issues/templates/issue-body.md) as the starting point for each published issue body. Keep the AFK/HITL/Needs info type, parent reference, vertical-slice description, user stories, acceptance criteria, Agent Readiness section, out-of-scope notes, safety/evidence notes, and blocker details intact unless the approved breakdown requires a narrower value.
+Use [skill://plan-to-issues/templates/issue-body.md](skill://plan-to-issues/templates/issue-body.md) as the starting point for each published issue body. Keep its sections intact unless the approved breakdown requires a narrower value.
