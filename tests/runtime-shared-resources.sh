@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
-# Regression coverage for shared skill resources when workflows run from another project.
+# Focus: disposable temp-HOME installs prove Windows, Linux, and macOS
+# shared-resource behavior for both native symlink-preserving checkouts and
+# symlink-disabled checkouts where Git materializes links as relative-target
+# files. Installed Claude and OMP skills expose the canonical shared
+# docs/templates through skill-local `docs/` and `shared-templates/` paths
+# from a foreign project cwd, including the Agent Readiness scorecard; runtime
+# skill roots do not expose `docs`/`templates` as bogus skills; invoked agent
+# prompts and workflow skill entrypoints use explicit `skill://<skill>/...`
+# URIs for reusable skill-owned docs/templates/scripts while preserving
+# target-rooted `docs/agents/...` policy references.
 
 set -euo pipefail
 

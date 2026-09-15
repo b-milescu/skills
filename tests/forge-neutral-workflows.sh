@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Focus: Shared build/review/delivery workflows bind one provider through the
+# five-operation `/forge` seam; common guard ordering, provider-native
+# GitLab/GitHub/Azure DevOps constraints, neutral delivery schema, routed
+# agents, and setup generation remain forge-neutral.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)

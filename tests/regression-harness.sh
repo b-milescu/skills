@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Shared regression harness self-check for shell assertion primitives,
+# command-output capture, marked-section extraction, and schema-sync field
+# extraction.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

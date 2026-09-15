@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Focus: `gitlab/reference/finish-result-schema.json` carries the finish
+# result/action/SHA/blocker, optional nullable advisory `ci`, issue state,
+# cleanup, authority/caller evidence, transport, conflict, and retry
+# vocabulary.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

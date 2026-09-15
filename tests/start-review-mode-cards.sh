@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Deleted `start-review` mode cards stay gone; `SKILL.md` points at
+# REVIEW-FLOW, review-report, and reviewer-final-handoff instead of checklist
+# cards.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

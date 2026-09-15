@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
-# Regression guard: installer smoke requirement docs stay present in check-gate.md.
-# Fails if the requirement text is removed, so the rule cannot silently disappear.
+# Focus: installer smoke requirement docs stay present in
+# `docs/agents/check-gate.md`: `install_surface` surface, `agents/`,
+# `install.sh`, runtime routing triggers, temp-HOME installer smoke evidence,
+# parent-owned gate evidence requirement, default MR route symlink ownership
+# in `install-symlink-ownership` inventory entry, `installer-smoke-requirement`
+# self-entry. Fails if the requirement text is removed, so the rule cannot
+# silently disappear.
 
 set -euo pipefail
 

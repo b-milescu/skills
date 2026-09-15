@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Markdown local-link checker diagnostics for broken files, anchors,
+# image targets, allowed skill URIs, and external URL host allowlist behavior.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

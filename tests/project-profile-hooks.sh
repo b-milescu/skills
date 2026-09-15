@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Focus: `project_profile` extension fields stay documented in the GitLab
+# delivery schema and generated handoff copies; setup-dev-skills
+# seeds/generated docs declare gate, labels, branch naming, CI jobs,
+# domain/ADR, release/deploy, manual validation, language, and auxiliary index
+# hooks; GitLab-specific schema names and safety invariants remain intact.
 set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT"

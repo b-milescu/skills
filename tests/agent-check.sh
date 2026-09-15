@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Regression coverage for the read-only agent/install check surface.
+# Focus: `agents/check.sh` parity, canonical-pointer coverage for generic and
+# routed MR agents, prompt-drift, external-skill dependency, and no-mutation
+# `install.sh --check` regressions under temporary homes.
 
 set -euo pipefail
 

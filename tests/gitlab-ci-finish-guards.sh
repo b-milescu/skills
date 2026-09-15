@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Focus: `ci-watch-sha-pinned` remains read-only advisory evidence;
+# `finish-mr-authority-aware` requires exact candidate, Gate Receipt,
+# authority/caller, exactly one mutation/readback, nullable advisory CI, and
+# native policy refusal reporting.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

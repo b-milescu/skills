@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Focus: GitLab workflow docs/prompts stay MCP-first for GitLab API actions,
+# preserve stable `/gitlab` snippet names, allow `glab` only as documented
+# fallback/helper/troubleshooting/test coverage, require per-snippet transport
+# contracts, preserve safe-text/content-byte rules for MCP bodies, and record
+# known MCP merge/list gaps.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# compaction-index regression: index builder (dedupe, per-entry ~2 KiB and
-# total ~16 KiB caps, no full skill bodies) plus install.sh extension surfacing
-# (link when ~/.omp/agent exists, skip+report when absent). Pure local: fixture
-# skill tree via COMPACT_INDEX_SKILL_ROOT and temp HOMEs for the installer.
+# Focus: compaction-index regression: the skill-index extension keeps
+# `session.compacting` re-injection deduped, within per-entry 2 KiB and total
+# 16 KiB caps and free of full skill bodies, and `install.sh` links it into
+# `~/.omp/agent/extensions/` while skipping and reporting when the OMP agent
+# dir is absent. Pure local: fixture skill tree via COMPACT_INDEX_SKILL_ROOT
+# and temp HOMEs for the installer.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

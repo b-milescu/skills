@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: `setup-dev-skills` coding guardrails seed, generated pointer, and no
+# upstream prose vendoring regressions.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

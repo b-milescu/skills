@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Claude/OMP reviewer prompts stay frontmatter plus invoke
+# `start-review` below the tiny route-pin body cap, and shared ADR template
+# ownership/drift stays enforced.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

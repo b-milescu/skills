@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Focus: Canonical post-merge verifier recipe read-only invariant keeps the
+# forbidden-action tokens (approve/merge/queue, force-close, delete-branch,
+# release/deploy/operator), `issue_closure_pending` /
+# `source_branch_cleanup_pending` report tokens, helper wiring, and removed
+# top-level skill absence check, and keeps the post-#152 dropped "promised
+# docs/ADR/follow-ups" check absent.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

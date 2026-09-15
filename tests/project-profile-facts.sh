@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Focus: `setup-dev-skills/reference/project-profile-facts.json` remains the
+# canonical project-profile fact source for Agent Setup Doc paths, Triage
+# Role-to-live-label mappings, Check Gate refs, Dev Workflow refs, branch
+# naming, CI parity, skill resource URIs, and a non-default docs/labels
+# fixture; setup seeds/live docs and GitLab issue pickup avoid globally
+# hardcoded labels.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

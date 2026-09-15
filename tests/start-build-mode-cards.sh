@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Deleted `start-build` mode cards stay gone; `SKILL.md` points at
+# canonical child-builder, parent-owned-gate, implementation-flow, and
+# parent-orchestrator docs.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Table-driven collapse of the token-grep farm and five *-invariants.sh
-# scripts. Needles stay; per-script fail/require wrappers go.
+# Focus: table-driven collapse of the token-grep farm and five
+# `*-invariants.sh` scripts: same needles via `tests/lib/assertions.sh`, fewer
+# files. Per-script fail/require wrappers go.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

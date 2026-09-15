@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# Focus: `gitlab/reference/mutation-guard.md` and `mutation-guard.schema.json`
+# define the canonical GitLab Mutation Guard seam with ordered exact-candidate
+# Gate Receipt and advisory CI phases, blocker/gap/transport evidence tokens,
+# fallback-forbidden states, approval/finish profiles, top-level merge
+# metadata, successful post-mutation readback classification, and cross-project
+# `skill://gitlab/...` guard resource guidance.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Builder/reviewer final-handoff locator fields, explicit builder
+# pre-gate `not-created`, no YAML fence, and no live locators.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)

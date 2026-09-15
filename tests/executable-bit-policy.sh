@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
+# Focus: Executable-bit policy enforcement: reads `git ls-files -s` index modes
+# (not filesystem perms) and fails closed when any tracked `100755` file falls
+# outside the documented allowlist (`install.sh`, `scripts/check.sh`); fixture
+# self-tests prove a stray executable test, a non-allowlisted top-level script,
+# and an executable non-allowlisted helper all FAIL while the two documented
+# entrypoints PASS.
 set -euo pipefail
 
-# Enforces executable-bit policy documented in docs/agents/check-gate.md
-# §Executable-bit policy: tracked file mode 100755 is allowed only for
-# directly invoked entrypoints `install.sh` and `scripts/check.sh`.
-# Every other tracked
-# shell/helper file must stay 100644.
-#
-# The guard reads `git ls-files -s` (the git index mode), not filesystem
-# permissions, so a CI checkout that drops or adds execute bits on disk cannot
-# mask drift in the committed tree.
+# Policy source: docs/agents/check-gate.md §Executable-bit policy. Every other
+# tracked shell/helper file must stay 100644. Reading the git index mode rather
+# than filesystem permissions means a CI checkout that drops or adds execute
+# bits on disk cannot mask drift in the committed tree.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 TMPDIR="$(mktemp -d)"

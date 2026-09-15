@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Pins the Reviewer Lift build-side Transport field and its enum, and fails if
-# the Reviewer Lift schema and the finish-result schema disagree on the
-# transport vocabulary. See issue #397.
+# Focus: Reviewer Lift declares a build-side Transport field whose enum
+# matches the finish-result schema exactly, forces naming the eligible MCP gap
+# for `glab-fallback`, and appears in every generated copy. Fails if the two
+# schemas disagree on the transport vocabulary. See issue #397.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

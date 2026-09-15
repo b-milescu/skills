@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Neutral compact `delivery.kind=change-delivery` vocabulary remains
+# supported while final handoffs use locator fields and explicit pre-gate
+# absence, without generated delivery blocks.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)

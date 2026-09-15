@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Focus: Check Gate shipped shell regression inventory stays synchronized with
+# tracked `tests/*.sh` files.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -14,11 +16,11 @@ write_check_gate_doc() {
     printf '# Check Gate\n\n'
     printf '## Shipped shell regression inventory\n\n'
     printf '`scripts/check.sh` runs every top-level `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script.\n\n'
-    printf '| Script | Focus |\n'
-    printf '| --- | --- |\n'
+    printf '| Script |\n'
+    printf '| --- |\n'
     local script
     for script in "$@"; do
-      printf '| `%s` | Fixture focus. |\n' "$script"
+      printf '| `%s` |\n' "$script"
     done
     printf '\n## Next Section\n\n'
   } > "$repo/docs/agents/check-gate.md"

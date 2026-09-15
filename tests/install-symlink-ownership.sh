@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# Regression coverage for install.sh symlink ownership checks.
+# Focus: `install.sh` preserves out-of-repo symlinks, replaces stale in-repo
+# symlinks, and keeps the default builder plus final reviewer installed in
+# each runtime dialect without treating model pins as route names — all under
+# temporary `HOME`.
 
 set -euo pipefail
 

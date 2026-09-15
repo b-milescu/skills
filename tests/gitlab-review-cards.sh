@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Focus: Deleted GitLab review/CI cards stay gone; `/forge` GitLab branch
+# points at `gitlab/SKILL.md` while generic `/start-review` owns no direct
+# GitLab card links.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"

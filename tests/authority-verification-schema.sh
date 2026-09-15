@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# Focus: Canonical `gitlab/reference/authority-verification.md` and
+# `.schema.json` own approval/merge authority claim shape, source precedence,
+# conflict/restricted/missing-source outputs, proceed/handoff/ask-human
+# routing, builder/self-approval/self-merge blocks, and separate
+# authority-vs-transport evidence references from Reviewer Lift, Review Report,
+# delivery handoffs, finish result schema, authority matrix, Mutation Guard,
+# and identity docs.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
