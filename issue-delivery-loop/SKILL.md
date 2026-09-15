@@ -1,8 +1,8 @@
 ---
 name: issue-delivery-loop
 description: >-
-  Parent coordinator for bounded GitLab, GitHub, or Azure DevOps issue delivery.
-  Automatically fans out provably decoupled ready items and routes builders/reviewers.
+  Parent coordinator for bounded GitLab, GitHub, or Azure DevOps issue delivery:
+  fans out decoupled ready items and routes builders/reviewers.
 ---
 
 # Issue Delivery Loop
@@ -32,21 +32,16 @@ Default: fan out every provably decoupled subset.
    child/reviewer/verifier boundaries.
 4. Run the canonical parent loop from
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
-   One issue/worktree/branch/Draft change request/Review Packet per child. Pass
-   explicit `Gate owner`; runtime notices never become scope stop instructions.
+   Pass explicit `Gate owner`; runtime notices never become scope stop instructions.
 5. Event-driven waiting only. Follow
    [wait cadence](skill://start-build/reference/parent-orchestrator.md#wait-cadence).
    Reviewer replacement cites
    [reviewer launch timing](skill://start-build/reference/parent-orchestrator.md#reviewer-launch-timing)
    rather than restating its published-report precondition.
-   Consume builder/reviewer two-line native locator
-   handoffs, then apply [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification):
-   candidate/Lift before parent gating, exact receipt before ready/review,
-   independent exact-head report before approval/finish. Pre-gate `not-created`
-   is valid; stale or contradictory current claims fail closed. Other compact
-   delivery indexes retain `handoff_contract`, but finals need no delivery block.
-   Derive routing from verified native evidence; preserve authority provenance
-   and treat commit-bound CI only as advisory.
+   Consume builder/reviewer two-line native locator handoffs, then apply
+   [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification)
+   at the applicable stage. Other compact delivery indexes retain
+   `handoff_contract`, but finals need no delivery block.
 6. Launch independent review as soon as the exact-candidate gate contract
    allows. Provider CI may run in parallel; no CI status changes verdict,
    approval, or finish eligibility.

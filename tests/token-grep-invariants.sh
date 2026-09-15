@@ -626,11 +626,6 @@ absent|cleanup-codebase/SKILL.md|improve-codebase-architecture
 absent|cleanup-codebase/SKILL.md|grill-with-docs
 absent|cleanup-codebase/SKILL.md|`triage`
 contain|cleanup-codebase/SKILL.md|Gate sequence
-contain|cleanup-codebase/SKILL.md|Export gate
-contain|cleanup-codebase/SKILL.md|Reference gate
-contain|cleanup-codebase/SKILL.md|Incidental-contract gate
-contain|cleanup-codebase/SKILL.md|Domain gate
-contain|cleanup-codebase/SKILL.md|Edge gate
 contain|cleanup-codebase/SKILL.md|Survives all five
 contain|cleanup-codebase/SKILL.md|Default to a repo-wide sweep when scope is unspecified
 contain|cleanup-codebase/SKILL.md|honor any explicit narrower user scope

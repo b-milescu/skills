@@ -1,7 +1,5 @@
 # Refutation pass
 
-The refuter is the adversary of the draft Retro Report. It runs once, between drafting ([SKILL.md](../SKILL.md) flow step 5) and presenting (step 7), in a fresh context holding the draft and the evidence locators but not the collection reasoning. Its output is one verdict per `RF-N`, applied to the report before any human sees it.
-
 Target the finding, not the drafter. A finding earns its place by surviving the strongest argument against it.
 
 ## Attack surface
@@ -20,8 +18,6 @@ Walk every row against every `RF-N`. Re-open at least one cited source per findi
 | **Status-quo steel-man** — is current behavior right and this run atypical? | the friction survives the best case for leaving things alone | `demote` |
 
 For `lookback` runs, also confirm every aggregate and finding is scoped to the named window.
-
-For MCP findings, apply the [attribution guidance](signal-catalogue.md#ownership-mapping-hints) to cited evidence: schema-valid input, retries, or CLI recovery alone do not prove a server defect; caller misuse alone does not prove faulty instructions. Account for unavailable evidence and uncertain local-source/running-server correspondence. Demote observed friction with unresolved cause to `monitor`; reroute unsupported ownership to the evidenced Owner or `unknown`.
 
 Check `What went well` against the same source test: an item with no citable evidence is ceremony, and gets cut.
 

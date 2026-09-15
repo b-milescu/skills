@@ -67,14 +67,3 @@ list). List any finding escalated to human-decision by this check, or state
 | RF-1 | adopt | `/plan-to-issues` — <target repo> issue with <labels> |
 | RF-2 | monitor | next retro |
 ```
-
-## Filling guidance
-
-- **Summary first.** The finding counts and scope line lead the report so a maintainer can triage it without reading every finding.
-- **One root cause per `RF-N`.** Merge symptoms that share a cause; split findings that need different owners or routes.
-- **Evidence is mandatory.** A finding with no citable evidence is not a finding; either gather the evidence or drop it.
-- **Attribution and Owner.** Follow [ownership guidance](../reference/signal-catalogue.md#ownership-mapping-hints): observed friction can survive as `monitor` without a proven cause or forced Owner. Evidence collection stays within [SKILL.md](../SKILL.md)'s session-first and privacy bounds.
-- **Survivors carry their counter-argument.** Every finding the user reads has already been argued against; the `Refutation` field shows the argument it beat, so triage sees both sides.
-- **Dropped findings stay visible.** Log every dropped and merged `RF-N` with the reason so the next retro does not re-raise it.
-- **Stable IDs.** Number `RF-N` in report order and keep IDs stable when follow-up issues cite them.
-- **Metrics are claims.** Copy batch metrics from the delivery run's report when one exists; recompute from tracker evidence only when missing, and say which you did.
