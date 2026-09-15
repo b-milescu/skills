@@ -2,7 +2,7 @@
 
 Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills` (`https://gitlab.example.com/agents/skills`).
 
-Use `/gitlab` from inside this repository clone so GitLab API actions follow MCP-first transport order. Guarded `glab` fallback is second and only for documented fallback/helper/troubleshooting conditions; before fallback issue, MR, CI, note, approval, or merge commands, follow `/gitlab` for help-first flag checks, JSON output modes, file-backed descriptions/messages, SHA pinning, and known pitfalls. Do not duplicate transport snippets in this guide.
+Use `/gitlab` from inside this repository clone so GitLab API actions follow its MCP-first transport order; guarded `glab` fallback is second and only under the conditions `/gitlab` documents. Do not duplicate transport snippets in this guide.
 
 This repo's tracker path, host, project path, and label-profile ref are verified against `setup-dev-skills/reference/project-profile-facts.json`; generated target repos may use different repo-relative Agent Setup Doc paths.
 
@@ -12,7 +12,7 @@ This repo's tracker path, host, project path, and label-profile ref are verified
 - GitLab merge requests are the review vehicle for code, docs, and workflow changes.
 - Comments are GitLab notes; use `/gitlab` for the exact MCP/fallback note contract.
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
-- For machine-readable issue lists and the MCP list-pagination / `glab` `-F`/`-O` caveats, use `/gitlab` **Snippet: issue-pickup** and its centralized known-pitfalls section; do not restate syntax here.
+- For machine-readable issue lists and pagination caveats, use `/gitlab` **Snippet: issue-pickup** and its centralized known-pitfalls section; do not restate syntax here.
 - Infer the project from `git remote`; pass an explicit project/repo target only when `/gitlab` says it is needed to avoid host/project ambiguity.
 - Branch naming is project policy, not a GitLab schema rename. This repo declares
   it in [`docs/agents/dev-workflows.md`](dev-workflows.md#branch-naming) as

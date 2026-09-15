@@ -4,13 +4,10 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 
 ## Skills
 
-- **`/forge`** — selects the verified provider once and exposes preflight, snapshot, publish, act, and post-merge snapshot.
-- **`/gitlab`** — GitLab-specific MCP-first transport used only by the selected GitLab branch.
-- **`/plan-to-issues`** — plan-to-issues via `/plan-to-issues` after `/forge preflight`.
-- **`/start-build`** — implements issues with TDD and an early Draft change request.
-- **`/start-review`** — independently reviews one bound change request and exact commit/CI evidence.
+- **`/forge`** — the one provider seam; every shared workflow binds through it.
+- **`/gitlab`** — GitLab-specific MCP-first transport, used only by the selected GitLab branch.
 - **`/issue-delivery-loop`** — coordinates bounded batches using the internal `mr-builder` and `mr-reviewer-final` routes.
-- **`/retro`** — delivery retrospective: mine a finished build/review/delivery session for friction evidence and propose bounded improvements as routed follow-up issues. Proposal-only; never edits skills or docs directly. See `skill://retro/SKILL.md`.
+- **`/plan-to-issues`**, **`/start-build`**, **`/start-review`**, **`/retro`** — each skill's own `description:` states its scope; invoke them per [Usage rules](#usage-rules).
 
 ## Skill activation mechanism
 
@@ -25,14 +22,14 @@ Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch pr
 
 ## Active recipes
 
-- `skill://forge/SKILL.md` — shared five-operation transport seam; this profile selects `skill://forge/reference/gitlab.md`.
-- `skill://forge/reference/common-guard.md` — shared mutation order and Authority Verification; provider branches own native mechanics.
-- `skill://issue-delivery-loop/SKILL.md` — bounded coordinator delegating build/review without copying provider mechanics.
-- `skill://start-build/reference/parent-orchestrator.md` — provider-neutral parent loop and cleanup ordering.
-- `skill://start-build/reference/post-merge-verifier.md` — read-only verifier using `forge post_merge_snapshot`.
-- `skill://start-build/templates/delivery-schema.md` — `delivery.kind=change-delivery`; compact records are untrusted routing indexes.
-- `skill://setup-dev-skills/reference/project-profile-facts.json` — provider/profile and Agent Setup Doc facts.
-- `skill://start-build/reference/parent-owned-gate.md` — parent Gate Receipt and exact-candidate ready seam.
+- `skill://forge/SKILL.md` — this profile selects `skill://forge/reference/gitlab.md`.
+- `skill://forge/reference/common-guard.md`
+- `skill://issue-delivery-loop/SKILL.md`
+- `skill://start-build/reference/parent-orchestrator.md`
+- `skill://start-build/reference/parent-owned-gate.md`
+- `skill://start-build/reference/post-merge-verifier.md`
+- `skill://start-build/templates/delivery-schema.md`
+- `skill://setup-dev-skills/reference/project-profile-facts.json`
 - `skill://gitlab/SKILL.md` — selected GitLab transport branch only.
 
 ## Default MR routes
