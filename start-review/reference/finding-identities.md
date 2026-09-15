@@ -6,6 +6,8 @@ A review finding is identified by the tuple `(Report locator, Reviewed SHA, Find
 - `Reviewed SHA` is the exact 40-hex MR head reviewed by that report.
 - `Finding ID` remains the short human-readable `MF-N`, `SF-N`, or `C-N` label. A later report may reuse a short ID because the full tuple remains distinct.
 
+Every machine-read cell carries one bare value: the identity table's `Report locator` / `Reviewed SHA` / `Finding ID` cells, and the report's `Reviewed commit` and `Findings summary` cells. Trailing prose inside the value slot is not cosmetic — a reviewed-SHA cell followed by an explanatory clause was extracted verbatim (prose included), so its head binding became uncomputable and the report's machine `finding_ids` came back empty while its prose listed three findings; the same report shape with a bare cell returned them. Put commentary in a neighbouring cell or the report body, never after the value.
+
 One report locator maps to exactly one reviewed SHA. Review Reports expose the locator and SHA in their snapshot and list every finding in this marked table; Revision Packets repeat the originating rows they address without renumbering the short IDs:
 
 ```markdown

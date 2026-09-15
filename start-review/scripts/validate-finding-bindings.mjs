@@ -5,6 +5,7 @@ const END = "<!-- FINDING-IDENTITY-SCHEMA:END -->";
 const ID = /\b(?:MF|SF|C)-\d+\b/g;
 const SHA = /^[0-9a-f]{40}$/i;
 const LOCATOR = /^(?:review-report:[^;\s]+|https?:\/\/[^;\s]+)$/;
+const SUMMARY = /^MF: (?:0|MF-\d+(?:, MF-\d+)*); SF: (?:0|SF-\d+(?:, SF-\d+)*); C: (?:0|C-\d+(?:, C-\d+)*)$/;
 
 function fail(message, status = 2) {
   console.error(`finding-bindings: FAIL: ${message}`);
@@ -96,6 +97,23 @@ for (const file of args.report) {
     fail(`${file}: report contains contradictory Report locators`);
   }
 
+  // Machine consumers read these cells as one value; commentary after the value silently drops the
+  // reviewed-SHA and finding claims, so the value slot stays bare and the offending cell is named.
+  for (const [section, label] of [[decision, "Decision Summary"], [snapshot, "Context / Snapshot"]]) {
+    if (fields(section, "Reviewed commit").some((value) => /[`\s]/.test(value))) {
+      fail(`${file}: ${label} Reviewed commit cell must be a bare commit with no trailing prose`);
+    }
+  }
+  const summaries = fields(decision, "Findings summary");
+  if (summaries.length > 1) fail(`${file}: report must contain exactly one Findings summary`);
+  if (summaries.length === 1) {
+    if (!SUMMARY.test(summaries[0])) fail(`${file}: Decision Summary Findings summary cell must be a bare MF/SF/C list with no trailing prose`);
+    const summaryIds = ids(summaries[0]);
+    const tableIds = new Set(bindings.map((binding) => binding.id));
+    if (summaryIds.size !== tableIds.size || [...summaryIds].some((id) => !tableIds.has(id))) {
+      fail(`${file}: Decision Summary Findings summary IDs do not match the finding identity table`);
+    }
+  }
   const shaFields = fields(snapshot, "Reviewed commit");
   if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed commit`);
   const decisionShas = fields(decision, "Reviewed commit");

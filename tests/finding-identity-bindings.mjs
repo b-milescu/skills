@@ -217,6 +217,75 @@ try {
     /registered identity SF-9 is not a report finding/,
   );
 
+  // Machine-read Decision Summary / Context-Snapshot cells must hold one bare value: trailing prose
+  // inside the value slot makes provider-side reviewed-SHA and finding extraction drop the claims.
+  const prose = " (equals provider head at decision time)";
+  const decisionProseCommit = path.join(temp, "report-decision-prose-commit.md");
+  writeFileSync(
+    decisionProseCommit,
+    durable.replace(
+      "| Reviewed commit | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` |\n| Report locator |",
+      `| Reviewed commit | \`1ab7ad068c2c71c4ac9d68d59fa083936c930e9d\`${prose} |\n| Report locator |`,
+    ),
+  );
+  reject(
+    "prose after the Decision Summary Reviewed commit value",
+    ["--report", decisionProseCommit],
+    /Decision Summary Reviewed commit cell must be a bare commit/,
+  );
+
+  const snapshotProseCommit = path.join(temp, "report-snapshot-prose-commit.md");
+  writeFileSync(
+    snapshotProseCommit,
+    firstReport.replace(
+      "| Reviewed commit | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` |",
+      `| Reviewed commit | \`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\`${prose} |`,
+    ),
+  );
+  reject(
+    "prose after the Context / Snapshot Reviewed commit value",
+    ["--report", snapshotProseCommit],
+    /Context \/ Snapshot Reviewed commit cell must be a bare commit/,
+  );
+
+  const summaryRow = "| Findings summary | `MF: MF-1, MF-2; SF: 0; C: 0` |";
+  const withSummary = (body) => body.replace("| Report locator | `review-report:agents/skills!361:4` |", `${summaryRow}\n| Report locator | \`review-report:agents/skills!361:4\` |`);
+  const bareSummaryReport = path.join(temp, "report-bare-findings-summary.md");
+  writeFileSync(bareSummaryReport, withSummary(durable));
+  run(["--report", bareSummaryReport], 0, /reports=1 identities=2 artifacts=0/);
+
+  const proseSummaryReport = path.join(temp, "report-prose-findings-summary.md");
+  writeFileSync(proseSummaryReport, withSummary(durable).replace(summaryRow, `| Findings summary | \`MF: MF-1, MF-2; SF: 0; C: 0\` — both block the candidate |`));
+  reject(
+    "prose after the Findings summary value",
+    ["--report", proseSummaryReport],
+    /Findings summary cell must be a bare MF\/SF\/C list/,
+  );
+
+  const droppedSummaryReport = path.join(temp, "report-dropped-findings-summary.md");
+  writeFileSync(droppedSummaryReport, withSummary(durable).replace(summaryRow, "| Findings summary | `MF: MF-1; SF: 0; C: 0` |"));
+  reject(
+    "Findings summary omitting a registered finding",
+    ["--report", droppedSummaryReport],
+    /Findings summary IDs do not match the finding identity table/,
+  );
+
+  const proseSentinel = "PROTECTED-PROSE-SENTINEL";
+  const echoedProseReport = path.join(temp, "report-prose-echo.md");
+  writeFileSync(
+    echoedProseReport,
+    durable.replace(
+      "| Reviewed commit | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` |\n| Report locator |",
+      `| Reviewed commit | \`1ab7ad068c2c71c4ac9d68d59fa083936c930e9d\` ${proseSentinel} |\n| Report locator |`,
+    ),
+  );
+  rejectWithoutEcho(
+    "bare-cell rejection echoed artifact body",
+    ["--report", echoedProseReport],
+    proseSentinel,
+    /Decision Summary Reviewed commit cell must be a bare commit/,
+  );
+
   assert.deepEqual(acceptedInvalid, [], `validator accepted invalid artifacts: ${acceptedInvalid.join(", ")}`);
 
   const unstableReport = path.join(temp, "report-pending.md");
