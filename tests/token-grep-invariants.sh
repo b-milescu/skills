@@ -540,16 +540,11 @@ contain|start-review/REVIEW-FLOW.md|block as `MF-N`
 contain|start-review/REVIEW-FLOW.md|Use `C-N`
 contain|start-review/REVIEW-FLOW.md|Code-judo simplification
 # review-tone
-contain|start-review/REVIEW-FLOW.md|## Review tone
 contain|start-review/REVIEW-FLOW.md|Tone never moves the bar.
 contain|start-review/REVIEW-FLOW.md|Do not request changes for taste
 contain|start-review/SKILL.md|Treat style-only preferences as non-blocking
 contain|start-review/SKILL.md|Correctness, safety, incomplete
 contain|start-review/SKILL.md|unresolved required review, credential exposure, and contract
-contain|start-review/SKILL.md|named acceptance criterion of the delivered work item is unmet
-contain|start-review/SKILL.md|an unmet acceptance criterion blocks
-contain|start-review/SKILL.md|a production defect blocks
-contain|start-review/SKILL.md|further findings are reported as follow-up material
 contain|start-review/REVIEW-FLOW.md|named acceptance criterion of the delivered work item is unmet
 contain|start-review/REVIEW-FLOW.md|an unmet acceptance criterion blocks
 contain|start-review/REVIEW-FLOW.md|a production defect blocks

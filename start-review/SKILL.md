@@ -75,9 +75,8 @@ parent-orchestrated.
   approval or finish.
 - Treat style-only preferences as non-blocking. Correctness, safety, incomplete
   evidence, unresolved required review, credential exposure, and contract
-  violations are blocking. A finding demonstrating a named acceptance criterion of the delivered work item is unmet is blocking.
-  Carve-outs: an unmet acceptance criterion blocks, and a production defect blocks.
-  Once the delivered criteria are met and no production defect is shown, further findings are reported as follow-up material rather than as findings against the candidate. See
+  violations are blocking. The blocking set is otherwise bounded by the
+  delivered work item's acceptance criteria per
   [Findings and tone](skill://start-review/REVIEW-FLOW.md#findings-and-tone).
 
 Use [review-report.md](skill://start-review/templates/review-report.md) and
