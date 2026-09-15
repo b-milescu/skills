@@ -51,6 +51,17 @@ function sameList(label, actual, expected) {
   }
 }
 
+// Group-file membership is phase-ordered, so equality there is set equality.
+function sameSet(label, actual, expected) {
+  assert(Array.isArray(actual), `${label} is not an array`);
+  const sortedActual = [...actual].sort();
+  const sortedExpected = [...expected].sort();
+  if (new Set(actual).size !== actual.length) {
+    fail(`${label} has duplicates\nactual: ${JSON.stringify(sortedActual)}`);
+  }
+  sameList(label, sortedActual, sortedExpected);
+}
+
 function parseMarkdownRows(markdown) {
   const rows = new Map();
   for (const line of markdown.split(/\r?\n/)) {
@@ -113,8 +124,24 @@ assert(Array.isArray(snippets), 'metadata snippets must be an array');
 sameList('metadata stable snippet names', snippets.map((snippet) => snippet.name), expectedNames);
 assert(new Set(snippets.map((snippet) => snippet.name)).size === snippets.length, 'metadata snippet names must be unique');
 
-const skillSnippetNames = [...skill.matchAll(/^### Snippet: ([^\r\n]+)$/gm)].map((match) => match[1]);
-sameList('SKILL stable snippet names', skillSnippetNames, expectedNames);
+// Bodies live in the three phase-grouped files (ADR-0002); the entry procedure
+// keeps the index. The hard count survives as a sum across the group.
+const groupPaths = [
+  'gitlab/reference/snippets-read-evidence.md',
+  'gitlab/reference/snippets-publish-body.md',
+  'gitlab/reference/snippets-mutate-finish.md'
+];
+const groupSnippetNames = groupPaths.flatMap((path) =>
+  [...fs.readFileSync(path, 'utf8').matchAll(/^## Snippet: ([^\r\n]+)$/gm)].map((match) => match[1])
+);
+sameSet('group-file stable snippet names', groupSnippetNames, expectedNames);
+assert(
+  !/^### Snippet:/m.test(skill),
+  'gitlab/SKILL.md must keep the snippet index only; bodies belong in the group files'
+);
+for (const name of expectedNames) {
+  assert(skill.includes(`\`${name}\``), `gitlab/SKILL.md snippet index is missing a row for ${name}`);
+}
 
 const markdownRows = parseMarkdownRows(contract);
 sameList('Markdown stable snippet names', [...markdownRows.keys()], expectedNames);

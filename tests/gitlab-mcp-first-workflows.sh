@@ -14,6 +14,9 @@ source "$REPO_ROOT/tests/lib/agent-prompt-sets.sh"
 
 workflow_docs=(
   gitlab/SKILL.md
+  gitlab/reference/snippets-read-evidence.md
+  gitlab/reference/snippets-publish-body.md
+  gitlab/reference/snippets-mutate-finish.md
   start-build/SKILL.md
   start-review/SKILL.md
   start-review/REVIEW-FLOW.md
@@ -39,7 +42,9 @@ done
 require_text gitlab/SKILL.md 'MCP first' '/gitlab MCP-first transport order'
 require_text gitlab/SKILL.md 'Guarded `glab` fallback second' '/gitlab guarded glab fallback order'
 require_text gitlab/SKILL.md 'MCP-first transport correctness plus help-first `glab` fallback correctness' 'qualified transport correctness invariant'
-require_text gitlab/SKILL.md 'via=mcp.*via=glab-fallback|via=glab-fallback.*via=mcp' 'transport evidence wording'
+# The `via=` transport-evidence wording moved with the auto-merge-api-fallback
+# body into the mutate-and-finish group file (ADR-0002).
+require_text gitlab/reference/snippets-mutate-finish.md 'via=mcp.*via=glab-fallback|via=glab-fallback.*via=mcp' 'transport evidence wording'
 
 contract=gitlab/reference/snippet-transports.md
 [[ -f "$contract" ]] || fail "missing $contract"
@@ -62,22 +67,38 @@ require_text gitlab/reference/bounded-reads.md 'retry with a smaller' 'smaller b
 require_text gitlab/reference/bounded-reads.md 'body read is a guarded last resort' 'guarded glab body fallback is last resort'
 require_text gitlab/reference/mutation-guard.md 'include_description:false' 'Mutation Guard requires body-free MR re-read'
 require_text gitlab/reference/snippet-transports.md 'include_description:false' 'transport mirror requires body-free SHA guard read'
-# Issue/note state checks stay bounded (agents/skills #442).
-require_text gitlab/SKILL.md 'get_issue\(include_description:false\)' 'SKILL issue state-check is body-free'
+# Issue/note state checks stay bounded (agents/skills #442). Snippet bodies now
+# live in the phase-grouped files (ADR-0002), so each needle is asserted against
+# the file that holds it.
+GITLAB_SNIPPET_GROUPS=(
+  gitlab/reference/snippets-read-evidence.md
+  gitlab/reference/snippets-publish-body.md
+  gitlab/reference/snippets-mutate-finish.md
+)
+require_text gitlab/reference/snippets-read-evidence.md 'get_issue\(include_description:false\)' 'issue-pickup state-check is body-free'
+require_text gitlab/reference/snippets-publish-body.md 'get_issue\(include_description:false\)' 'label-reconcile state-check is body-free'
 require_text gitlab/reference/snippet-transports.md 'get_issue\(include_description:false\)' 'transport issue state-check is body-free'
-require_text gitlab/SKILL.md 'description_grep' 'SKILL focused Closes/Lift description_grep'
+require_text gitlab/reference/snippets-read-evidence.md 'description_grep' 'focused Closes/Lift description_grep'
+require_text gitlab/reference/snippets-publish-body.md 'description_max_bytes' 'bounded description readback after publication'
 require_text gitlab/reference/snippet-transports.md 'description_grep' 'transport focused Closes/Lift description_grep'
-require_text gitlab/SKILL.md 'body_grep' 'SKILL Gate Receipt/Review Report note body_grep'
+require_text gitlab/reference/snippets-read-evidence.md 'body_grep' 'Gate Receipt/Review Report note body_grep'
 require_text gitlab/reference/snippet-transports.md 'body_grep' 'transport Gate Receipt/Review Report note body_grep'
-reject_text gitlab/SKILL.md 'first read stays full|First read per MR stays full|Slim guard-read for repeated SHA/state guards' 'obsolete first-full/slim guard discipline'
-reject_text gitlab/SKILL.md 'note body where MCP exposes no bounded param' 'obsolete unbounded-note MCP claim'
+for file in gitlab/SKILL.md "${GITLAB_SNIPPET_GROUPS[@]}"; do
+  reject_text "$file" 'first read stays full|First read per MR stays full|Slim guard-read for repeated SHA/state guards' 'obsolete first-full/slim guard discipline'
+  reject_text "$file" 'note body where MCP exposes no bounded param' 'obsolete unbounded-note MCP claim'
+done
 reject_text gitlab/reference/mutation-guard.md 'first per-MR full read|slim guard-read path' 'obsolete Mutation Guard full-read discipline'
 
 require_text gitlab/reference/mutation-guard.md 'GitLab Mutation Guard' 'canonical Mutation Guard document'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_merge_robustness_gap' 'Mutation Guard MCP merge robustness gap token'
 require_text gitlab/reference/mutation-guard.schema.json 'mcp_pagination_gap' 'Mutation Guard MCP pagination gap token'
-snippet_count="$(grep -cE '^### Snippet:' gitlab/SKILL.md)"
-[[ "$snippet_count" -eq 21 ]] || fail "expected 21 stable snippet names, found $snippet_count"
+snippet_count=0
+for file in "${GITLAB_SNIPPET_GROUPS[@]}"; do
+  [[ -f "$file" ]] || fail "missing snippet group file $file"
+  snippet_count=$((snippet_count + $(grep -cE '^## Snippet:' "$file" || true)))
+done
+[[ "$snippet_count" -eq 21 ]] || fail "expected 21 stable snippet names across the group files, found $snippet_count"
+reject_text gitlab/SKILL.md '^### Snippet:' 'snippet body back in the entry procedure'
 for name in \
   local-repo-preflight issue-pickup draft-mr-create mr-description-update \
   draft-mr-mark-ready mr-pickup artifact-capture ci-decision-snapshot \
@@ -85,7 +106,9 @@ for name in \
   safe-mr-json auto-merge-api-fallback sha-guard sha-bound-approval \
   sha-bound-merge sha-bound-auto-merge-queue approval-confirmation \
   finish-mr-authority-aware mr-handoff-evidence; do
-  require_exact_line gitlab/SKILL.md "### Snippet: $name" "stable snippet $name"
+  grep -Fxq -- "## Snippet: $name" "${GITLAB_SNIPPET_GROUPS[@]}" \
+    || fail "no snippet group file holds stable snippet $name"
+  require_text gitlab/SKILL.md "\`$name\`" "snippet index row for $name"
   require_text "$contract" "\`$name\`" "transport contract for $name"
 done
 
