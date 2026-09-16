@@ -193,10 +193,19 @@ const genericTriageSeed = read('setup-dev-skills/triage-labels.md');
 assert(!genericTriageSeed.includes('ready-for-agent'), 'generic triage seed must not hardcode this repo AFK-ready label');
 assert(genericTriageSeed.includes('Do not assume a global label string'), 'generic triage seed must document label mapping');
 
-// The issue-pickup body moved to the read-and-evidence group file (ADR-0002),
-// so the negative must hold for the entry procedure and the group file alike.
+// Snippet bodies live in the phase-grouped group files (ADR-0002), so the
+// negative must hold across the union of files that could carry the string:
+// the entry procedure plus every group file. Same list that
+// tests/gitlab-mcp-first-workflows.sh loops its reject_text negatives over;
+// one list keeps a fifth group file a single edit away.
 const gitlabReadEvidence = 'gitlab/reference/snippets-read-evidence.md';
-for (const file of ['gitlab/SKILL.md', gitlabReadEvidence]) {
+const gitlabLabelSurfaces = [
+  'gitlab/SKILL.md',
+  gitlabReadEvidence,
+  'gitlab/reference/snippets-publish-body.md',
+  'gitlab/reference/snippets-mutate-finish.md'
+];
+for (const file of gitlabLabelSurfaces) {
   assert(!read(file).includes('--label ready-for-agent'), `${file} must not hardcode ready-for-agent in the gitlab issue-pickup fallback`);
 }
 assert(read(gitlabReadEvidence).includes('project_profile.label_profile_ref'), 'gitlab issue-pickup fallback must point to project_profile.label_profile_ref');
