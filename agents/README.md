@@ -19,6 +19,9 @@ runtime-specific wording; point procedure at the
 There is deliberately no generator or shared-fragment system; revisit that in a
 dedicated issue or ADR, not a routine agent edit.
 
+An agent body that reports on remote state must carry explicit
+anti-fabrication reporting rules.
+
 ## Validate instead of memorising
 
 `npm run check:agents-schema` is the authority for each dialect's allowed tool
