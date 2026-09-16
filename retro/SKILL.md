@@ -50,7 +50,7 @@ The don't-overfit-to-anecdotes rule (Safety, below) applies to both scopes: one 
    **Complete when:** every source above is inspected or marked `N/A — <why>`.
 3. **Scan the signal catalogue.** Walk [reference/signal-catalogue.md](reference/signal-catalogue.md) and record hits with evidence.
 4. **Classify findings.** One `RF-N` per finding. Dedupe by root cause, not by symptom; three symptoms of one cause are one finding.
-5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan.
+5. **Draft the Retro Report** from [templates/retro-report.md](templates/retro-report.md): summary first, metrics table, what went well, findings, safety floor check, routing plan. Number findings `RF-N` in report order and keep those IDs stable once follow-up issues cite them.
 6. **Refute the draft.** Launch one read-only refuter subagent (the harness picks the agent type) with a fresh context, the draft report, and the evidence locators — not the collection reasoning. It re-derives each finding from its cited source and returns one verdict per `RF-N` using [reference/refutation.md](reference/refutation.md). Apply every verdict before the report leaves the session.
 
    **Complete when:** every `RF-N` carries a verdict and every survivor carries the counter-argument it withstood, or marked `N/A — <why>`.

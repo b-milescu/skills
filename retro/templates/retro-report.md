@@ -1,6 +1,6 @@
 # Retro Report template
 
-The Retro Report is the session deliverable; accepted follow-up issues are the durable record. Post or keep the report in the conversation (or a caller-provided run directory) — do not edit canonical skills/docs directly from a retro, and do not invent metric values: use `N/A — <why>` when a metric was not observable.
+The Retro Report is the session deliverable; accepted follow-up issues are the durable record. Post or keep the report in the conversation (or a caller-provided run directory) — do not edit canonical skills/docs directly from a retro, and do not invent metric values: use `N/A — <why>` when a metric was not observable. Copy batch metrics from the delivery run's report when one exists, recompute from tracker evidence only when it does not, and say which you did.
 
 The report reaches the user only after the refuter pass ([reference/refutation.md](../reference/refutation.md)): counts, findings, and the safety floor check below are all post-verdict.
 
