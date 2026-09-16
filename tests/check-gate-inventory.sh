@@ -84,6 +84,24 @@ check_inventory() {
     fi
     exit 1
   fi
+
+  # docs/agents/check-gate.md keeps no per-script prose; it delegates coverage
+  # to a `# Focus:` header directly below each shebang (issue #463). Enforce
+  # that placement and non-empty text so the convention is a check, not trust.
+  local headerless_file="$TMPDIR/headerless.$(basename "$repo").txt"
+  local path
+  : > "$headerless_file"
+  while read -r path; do
+    if [[ "$(sed -n '2p' "$repo/$path")" != '# Focus:'*[![:space:]]* ]]; then
+      printf '%s\n' "$path" >> "$headerless_file"
+    fi
+  done < "$actual_file"
+
+  if [[ -s "$headerless_file" ]]; then
+    echo "Top-level tests/*.sh scripts must state their coverage in a non-empty '# Focus:' header comment directly below the shebang." >&2
+    sed 's/^/  - /' "$headerless_file" >&2
+    exit 1
+  fi
 }
 
 make_fixture_repo() {
@@ -152,6 +170,41 @@ if [[ $untracked_status -eq 0 || "$untracked_output" != *"tests/untracked-presen
   echo "untracked-present script fixture did not fail with expected diagnostic" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$untracked_output" >&2
+  exit 1
+fi
+
+# In-sync inventories still fail when a tracked top-level script does not state
+# its own coverage: docs/agents/check-gate.md delegates the per-script
+# description to a `# Focus:` header directly below the shebang (issue #463),
+# so the gate has to enforce that convention rather than trust it.
+header_missing_repo="$TMPDIR/header-missing"
+mkdir -p "$header_missing_repo"
+make_fixture_repo "$header_missing_repo" tests/actual.sh
+write_check_gate_doc "$header_missing_repo" tests/actual.sh
+set +e
+header_missing_output="$(check_inventory "$header_missing_repo" 2>&1)"
+header_missing_status=$?
+set -e
+if [[ $header_missing_status -eq 0 || "$header_missing_output" != *"tests/actual.sh"* ]]; then
+  echo "missing '# Focus:' header fixture did not fail with expected diagnostic" >&2
+  echo "--- output ---" >&2
+  printf '%s\n' "$header_missing_output" >&2
+  exit 1
+fi
+
+header_empty_repo="$TMPDIR/header-empty"
+mkdir -p "$header_empty_repo"
+make_fixture_repo "$header_empty_repo" tests/actual.sh
+write_check_gate_doc "$header_empty_repo" tests/actual.sh
+printf '#!/usr/bin/env bash\n# Focus:\n' > "$header_empty_repo/tests/actual.sh"
+set +e
+header_empty_output="$(check_inventory "$header_empty_repo" 2>&1)"
+header_empty_status=$?
+set -e
+if [[ $header_empty_status -eq 0 || "$header_empty_output" != *"tests/actual.sh"* ]]; then
+  echo "empty '# Focus:' header fixture did not fail with expected diagnostic" >&2
+  echo "--- output ---" >&2
+  printf '%s\n' "$header_empty_output" >&2
   exit 1
 fi
 
