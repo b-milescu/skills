@@ -100,7 +100,7 @@ glab ci status --branch "$source_branch" -F json
 
 ## Snippet: ci-watch-sha-pinned
 
-Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned); inputs and outputs live in the [snippet transport table](skill://gitlab/reference/snippet-transports.md).
+Role eligibility (who may call) lives in [`skill://gitlab/reference/ci-finish-guards.md`](skill://gitlab/reference/ci-finish-guards.md#advisory-ci-observation-ci-watch-sha-pinned); required inputs live in the `Required inputs` column of the [snippet transport table](skill://gitlab/reference/snippet-transports.md).
 
 MCP primary: poll `get_merge_request_workflow_snapshot` and exact-SHA
 `list_pipelines(sha=reviewed_sha)` / `get_pipeline`. A changed MR head stops
