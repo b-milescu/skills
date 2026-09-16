@@ -78,6 +78,7 @@ Copy the builder handoff, then verify it against canonical [`reviewer-lift-schem
 | Reviewed SHA | `<copy; verify per reviewer-lift-schema.md>` |
 | Finding bindings | `<copy; verify per reviewer-lift-schema.md>` |
 | Review gate | `<copy; verify per reviewer-lift-schema.md>` |
+| Change tier | `<copy; verify tier + rationale per reviewer-lift-schema.md>` |
 | Transport | `<copy; verify mcp / glab-fallback / n/a per reviewer-lift-schema.md>` |
 | Gate owner | `<copy; verify per reviewer-lift-schema.md>` |
 | Gate coverage | `<copy; verify per reviewer-lift-schema.md>` |
