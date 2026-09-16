@@ -41,7 +41,7 @@ Entering a skill at its `SKILL.md` entry procedure through the runtime skill mec
 _Avoid_: load (a skill), skill-enter directive
 
 **Reference Read**:
-Reading one of a skill's reference, template, or doc files after the skill is already active. Legitimate context loading, never a substitute for **Skill Invocation**.
+Reading a skill's reference, template, or doc file after the skill is active. Legitimate context loading, never a substitute for **Skill Invocation**. See [dev-workflows](docs/agents/dev-workflows.md#skill-activation-mechanism).
 _Avoid_: invoking a skill, loading a skill
 
 ## Flagged ambiguities
