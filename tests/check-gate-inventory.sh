@@ -185,7 +185,7 @@ set +e
 header_missing_output="$(check_inventory "$header_missing_repo" 2>&1)"
 header_missing_status=$?
 set -e
-if [[ $header_missing_status -eq 0 || "$header_missing_output" != *"tests/actual.sh"* ]]; then
+if [[ $header_missing_status -eq 0 || "$header_missing_output" != *"tests/actual.sh"* || "$header_missing_output" != *"non-empty '# Focus:' header"* ]]; then
   echo "missing '# Focus:' header fixture did not fail with expected diagnostic" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$header_missing_output" >&2
@@ -201,7 +201,7 @@ set +e
 header_empty_output="$(check_inventory "$header_empty_repo" 2>&1)"
 header_empty_status=$?
 set -e
-if [[ $header_empty_status -eq 0 || "$header_empty_output" != *"tests/actual.sh"* ]]; then
+if [[ $header_empty_status -eq 0 || "$header_empty_output" != *"tests/actual.sh"* || "$header_empty_output" != *"non-empty '# Focus:' header"* ]]; then
   echo "empty '# Focus:' header fixture did not fail with expected diagnostic" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$header_empty_output" >&2
