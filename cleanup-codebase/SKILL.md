@@ -73,7 +73,7 @@ Apply the [DESTALE gate sequence](reference/gates.md#destale-gate-sequence) to c
 A published candidate's criteria **MUST** be checkable before a builder starts; measure them here, not after delivery.
 
 - **Derive or declare.** A byte budget **MUST** be computed from the enumerated cut list, or state which additional content the implementer is authorized to remove. A target unreachable from the issue's own enumerated changes is a defect in the issue.
-- **Subtract mandated content first.** Where an issue both mandates content (an index, a retained table, a byte-frozen file) and sets a budget on the file holding it, check the budget against the mandated content's own measured size before publishing.
+- **Subtract mandated content first.** Where an issue both mandates content (an index, a retained table, a byte-frozen file) and sets a budget on the file holding it, **MUST** check the budget against the mandated content's own measured size before publishing.
 - **Scope every emptiness assertion.** A "grep must return empty" criterion **MUST** state its search scope and whether ignore entries, fixtures, and negative assertions count, and **MUST NOT** be satisfiable only by deleting a fail-closed guard. Count-of-files figures **MUST** name their glob: `tests/*.sh` means different things to a shell glob and a git pathspec.
 
 ## Output shape
