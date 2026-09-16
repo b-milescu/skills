@@ -35,6 +35,7 @@ Child runs: `gate_owner_received: <literal launch value, or absent>` per
 | Reviewed SHA | `<MR head; refresh after every push>` |
 | Finding bindings | `<per reviewer-lift-schema.md: none or validated report/SHA/finding-ID tuples>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
+| Change tier | `<trivial / moderate / high-risk + one-clause rationale; per reviewer-lift-schema.md>` |
 | Transport | `<mcp / eligible glab-fallback gap / n/a; per reviewer-lift-schema.md>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<exact-candidate-local>` |
