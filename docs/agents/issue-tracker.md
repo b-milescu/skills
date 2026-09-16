@@ -26,3 +26,7 @@ Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow a
 ## When a skill says "fetch the relevant ticket"
 
 Read the referenced GitLab issue, including comments/notes, using `/gitlab` for the exact MCP primary / guarded fallback contract.
+
+## Reconcile on unblock
+
+When a merge closes an issue that an open issue names as a blocker or ordering constraint, update or strike that dependent issue's `Blocked by` / `Dependencies` text in the same step, so the next reader sees current tracker state instead of an expired constraint. This reconcile-on-unblock rule is bounded to that transition; it grants no licence to rewrite issue bodies otherwise.
