@@ -57,7 +57,13 @@ Default: fan out every provably decoupled subset.
    allocated item by parsing the branch or selecting another open linked item.
    A `pass` whose Review
    Report lists surviving `SF` findings gets one filed follow-up issue per finding,
-   referenced from the finish note, before the merge is queued.
+   referenced from the finish note, before the merge is queued. Before writing
+   that follow-up's acceptance criteria, re-derive the finding's load-bearing
+   measurement on the current default branch and write the criteria against that
+   measurement rather than the report's prose. That is one measurement, not a
+   re-review: keep the original verdict; do not re-read the diff or launch a
+   second reviewer. If the re-derivation contradicts the finding, the follow-up
+   records the contradiction instead of inheriting it.
 8. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
    boundary without polling CI. Provider merge-event evidence advances the
