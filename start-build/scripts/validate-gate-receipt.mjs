@@ -195,6 +195,11 @@ function containsCommit(value, commit) {
   return new RegExp(`(?:^|[^0-9a-f])${commit}(?:$|[^0-9a-f])`, "i").test(value);
 }
 
+function namesShortReviewedCommit(value, commit) {
+  return [...value.matchAll(/(?:^|[^0-9a-f])([0-9a-f]{7,39})(?=$|[^0-9a-f])/gi)]
+    .some((match) => commit.startsWith(match[1].toLowerCase()));
+}
+
 function validateLift(body, expected) {
   const rows = tableRows(body);
   const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
@@ -223,8 +228,12 @@ function validateLift(body, expected) {
   }
 
   const delta = rows.get("Delta since last ready push");
-  if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim()) && (!containsCommit(delta, expected.reviewedCommit) || /pending/i.test(delta))) {
-    fail("Reviewer Lift delta is stale");
+  if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim())) {
+    const hasFull = containsCommit(delta, expected.reviewedCommit);
+    if (/pending/i.test(delta) || (!hasFull && !namesShortReviewedCommit(delta, expected.reviewedCommit))) {
+      fail("Reviewer Lift delta is stale");
+    }
+    if (!hasFull) fail("Reviewer Lift delta names the reviewed commit in short form; the full 40-hex form is required");
   }
 }
 

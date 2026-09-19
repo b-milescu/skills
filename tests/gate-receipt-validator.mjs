@@ -163,6 +163,22 @@ try {
     0,
     "backticked delta naming a different commit still fails",
   );
+  // Issue #489: short-form reviewed SHA is a form error, not stale.
+  const shortSha = commit.slice(0, 7);
+  const shortDelta = run({ reviewPacket: withDelta(`${shortSha} -> files, gate, no`) });
+  assert.notEqual(shortDelta.status, 0, "short-form delta fails");
+  assert.match(shortDelta.stderr, /full 40-hex form is required/, "short-form names the 40-hex requirement");
+  assert.doesNotMatch(shortDelta.stderr, /delta is stale/, "short-form is not reported as stale");
+  const staleDelta = run({ reviewPacket: withDelta("2".repeat(40) + " -> files, gate, no") });
+  assert.notEqual(staleDelta.status, 0, "different-commit delta fails");
+  assert.match(staleDelta.stderr, /Reviewer Lift delta is stale/, "different commit keeps the stale message");
+  assert.doesNotMatch(staleDelta.stderr, /full 40-hex form is required/, "stale is not the short-form message");
+  const pendingDelta = run({ reviewPacket: withDelta("pending") });
+  assert.notEqual(pendingDelta.status, 0, "pending delta fails");
+  assert.match(pendingDelta.stderr, /Reviewer Lift delta is stale/, "pending keeps the stale message");
+  const fullDelta = run({ reviewPacket: withDelta(`${commit} -> files, gate, no`) });
+  assert.equal(fullDelta.status, 0, "full 40-hex delta still passes");
+
   // Doc/validator agreement (issue #450): the example a parent copies must teach
   // exactly the accepted status_before values and preflight commands.
   const validatorSource = readFileSync(validator, "utf8");
