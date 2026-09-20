@@ -117,6 +117,20 @@ candidate binding; and post-note validation of that same receipt and current
 Lift. Anchor recognition or SHA equality alone proves none of receipt validity,
 execution, an unchanged checkout, authorship, independent review, or authority.
 
+Retained local-log custody (issue #490): when a `local-gate` evidence row's
+`source` names the retained local log by absolute filesystem path, the
+validator requires that exact file to be readable — at pre-post validation,
+before any publication or ready action, and again at post-note validation.
+Native/remote evidence locators (`scheme://` URLs) keep their documented
+behavior and are never opened as local filenames. A missing or unreadable
+retained log refuses the receipt with a diagnostic naming the source and the
+corrective action: retain and verify the original run's evidence before
+publication, and if custody failed, recover it with explicit original-run
+provenance — never pass a replacement run off as the historical one. A
+readable log permits the check to proceed but by itself proves no gate PASS,
+exact-candidate binding, clean checkout, review, or authority; the other
+checks on this page still apply.
+
 Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:

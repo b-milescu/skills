@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { accessSync, constants, readFileSync } from "node:fs";
 import yaml from "js-yaml";
 
 const commonFlags = ["--receipt", "--change-id", "--issue-id", "--reviewed-commit", "--gate-command"];
@@ -125,7 +125,19 @@ function validateReceipt(body, expected) {
     if (!isObject(row)) fail("invalid evidence row");
     for (const field of ["tier", "kind", "source", "summary"]) requireString(row, field);
     if (!/^tier-[12]$/.test(row.tier)) fail("invalid evidence tier");
-    if (row.kind === "local-gate") hasLocalGate = true;
+    if (row.kind === "local-gate") {
+      hasLocalGate = true;
+      // Issue #490: refuse to publish a receipt claiming a retained local log
+      // that is not readable. Native/remote locators (scheme://) keep their
+      // documented behavior and are never opened as local paths.
+      if (!/[a-z][a-z0-9+.-]*:\/\//i.test(row.source) && isAbsolutePortable(row.source)) {
+        try {
+          accessSync(row.source, constants.R_OK);
+        } catch {
+          fail(`gate_receipt.evidence retained local log ${row.source} is not readable; retain and verify the original run's evidence before publication, and if custody failed recover it with explicit original-run provenance — never pass off a replacement run as the historical one`);
+        }
+      }
+    }
   }
   if (!hasLocalGate) fail("missing local-gate evidence");
 

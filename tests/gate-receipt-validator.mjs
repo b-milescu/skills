@@ -66,18 +66,22 @@ function liftWithSha(sha) {
   return packet().replace(`| Reviewed SHA | \`${commit}\` |`, `| Reviewed SHA | ${sha} |`);
 }
 
-function run({ document = receipt(), reviewPacket = packet(), locatorValue = locator } = {}) {
+function run({ document = receipt(), reviewPacket = packet(), locatorValue = locator, mode = "post-note" } = {}) {
   const receiptPath = join(work, "receipt.yml");
   const packetPath = join(work, "packet.md");
   writeFileSync(receiptPath, yaml.dump(document));
   writeFileSync(packetPath, reviewPacket);
-  return spawnSync(process.execPath, [validator,
-    "--receipt", receiptPath, "--review-packet", packetPath,
+  const argv = ["--receipt", receiptPath,
     "--change-id", expected.changeId, "--issue-id", expected.issueId,
-    "--reviewed-commit", commit, "--gate-command", expected.gateCommand,
-    "--gate-policy-ref", expected.gatePolicy,
-    "--gate-receipt-locator", locatorValue,
-  ], { encoding: "utf8" });
+    "--reviewed-commit", commit, "--gate-command", expected.gateCommand];
+  if (mode === "post-note") {
+    argv.push("--review-packet", packetPath,
+      "--gate-policy-ref", expected.gatePolicy,
+      "--gate-receipt-locator", locatorValue);
+  } else {
+    argv.unshift("--mode", mode);
+  }
+  return spawnSync(process.execPath, [validator, ...argv], { encoding: "utf8" });
 }
 
 function runBuilder({ document = builderReceipt(), rawBody, mode = "pre-post", extraFlags = [] } = {}) {
@@ -229,6 +233,23 @@ try {
     "parent-owned-gate.md documents the locator argument as the row's sole URL",
   );
   assert.ok(!/opaque provider locator/.test(guide), "parent-owned-gate.md no longer calls the locator opaque");
+
+  // Issue #490: a parent receipt naming a retained local log must point at a
+  // readable file at the pre-publication step; remote/native evidence
+  // locators keep their documented behavior and are never opened as local
+  // paths.
+  const retainedLog = join(work, "gate-run.log");
+  writeFileSync(retainedLog, "gate output\n");
+  const retainedEvidence = [{ tier: "tier-1", kind: "local-gate", source: retainedLog, summary: "exact candidate" }];
+  assert.equal(run({ document: receipt({ evidence: retainedEvidence }), mode: "pre-post" }).status, 0, "readable retained local log passes pre-publication validation");
+  assert.equal(run({ document: receipt({ evidence: retainedEvidence }) }).status, 0, "readable retained local log passes post-note validation");
+  const missingEvidence = [{ tier: "tier-1", kind: "local-gate", source: join(work, "absent-gate-run.log"), summary: "exact candidate" }];
+  const missingPre = run({ document: receipt({ evidence: missingEvidence }), mode: "pre-post" });
+  assert.notEqual(missingPre.status, 0, "missing retained local log is refused before publication");
+  assert.match(missingPre.stderr, /retained local log .*absent-gate-run\.log.* is not readable/, "refusal names the unreadable evidence source");
+  assert.match(missingPre.stderr, /original-run provenance/, "refusal names the recovery action");
+  assert.notEqual(run({ document: receipt({ evidence: missingEvidence }) }).status, 0, "missing retained local log also fails post-note validation");
+  assert.equal(run({ document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: "https://gitlab.example/-/notes/53817", summary: "exact candidate" }] }) }).status, 0, "remote evidence locator is not opened as a local file");
 
   console.log("gate-receipt-validator: PASS");
 } finally {
