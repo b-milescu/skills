@@ -19,6 +19,30 @@ This repo's tracker path, host, project path, and label-profile ref are verified
   `project_profile.branch_naming`; delivery fields remain `source_branch` and
   `target_branch`.
 
+## Claiming convention
+
+This section is the rulebook-documented claiming convention that the shared
+issue-pickup flow's conditional-claim rule (set the assignee only when the
+target project's rulebook documents such a convention) conditionally requires.
+
+- **Claim at pickup:** before opening a branch or Draft change request, a
+  delivery session assigns the chosen work item to its authenticated tracker
+  identity (the identity `forge preflight` binds for that session).
+- **Release when work stops:** when work on the item stops — delivered (change
+  request merged or review handed off), blocked, or abandoned — the session
+  releases the claim in that same stopping step, so a stale claim never
+  permanently blocks pickup.
+- **Why the claim exists:** it gives the pickup flow's pre-launch assignee
+  re-read its signal. A second session re-reading the item before launch sees
+  the claim and stops to ask instead of racing the first session. The
+  mechanism and its stop-and-ask semantics live in the pickup skill
+  (`start-build/reference/issue-pickup.md`, steps 8–9); this file documents
+  the convention only and does not restate the skill's procedure.
+- **Labels:** the claim uses assignee only. It creates no labels, stays within
+  the live label vocabulary in
+  [`docs/agents/triage-labels.md`](triage-labels.md), and adds no tooling or
+  enforcement automation.
+
 ## When a skill says "publish to the issue tracker"
 
 Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and transport contract from `/gitlab`. If publishing an approved plan, spec, PRD, or conversation as multiple vertical slices, use `/plan-to-issues`.
