@@ -21,14 +21,6 @@ Instruction that the reviewer templates do not already carry inline. Each templa
 - **Action blocker** — Use `none` or a stable token: `missing-authority`, `changed-head-sha`, `merge-conflict`, `sha-bound-action-unsupported`, `preflight-failure`, `permission-failure`, `human-decision-needed`, `partial-review`, `secret-exposure-suspected`, or `other`. CI status is not a blocker. Use `other` only for a blocker no listed token names, and add a one-line reason in **Action / Blocker**. Canonical values are owned by [`handoff-tokens.schema.json`](../reference/handoff-tokens.schema.json).
 - **Follow-ups for Other Tasks** — Items not blocking this change request. Open separate issues and link them when a `C-N` or other non-blocking finding should survive after merge. Record brief-quality defects here too when the issue brief omitted critical context, acceptance criteria, test strategy, or non-goals; name the missing fields and the avoidable discovery or rework. Use only the documented provider/local issue workflow and live label vocabulary.
 
-## unblock-response.md
-
-- Use when responding to a Stuck Packet. Post as a change-request comment with `forge publish`. When Builder resumes, remove the project's unblock label if one exists.
-- **Engagement with hypotheses** — Respond to each ranked hypothesis (`H-N`) the builder listed in the Stuck Packet, one subsection per hypothesis: confirm, refute, refine, or defer it with the evidence or check that backs your call.
-- **Direction** — Pointer / correction / pair / escalation. Cite files, tests, docs, or commands.
-- **Safety notes** — Any product/runtime/operator external-system / credential / state precautions before continuing.
-- **What I did not check** — Honest scope. **Confidence** — High / medium / low and why.
-
 ## adr.md
 
 See the [shared ADR filling guide](../shared-templates/filling-guide.md) for ADR template filling instructions.
