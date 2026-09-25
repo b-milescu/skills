@@ -1,3 +1,10 @@
+// Focus: Cross-platform pure-local Gate Receipt validator: accepts the
+// canonical exact-SHA receipt; rejects
+// missing/malformed/stale/prose-only/unsafe receipt and Reviewer Lift evidence
+// without body leakage; rejects changed tracked files and any tracked-change
+// waiver; proves Windows/UNC path plus CRLF handling; enforces pre-ready
+// ordering; and keeps build/review cards and generated templates pointed at the
+// canonical helper.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
