@@ -36,6 +36,27 @@ list_prompt_drift_markdown_files() {
   bash "$REPO_ROOT/scripts/list-prompt-drift-markdown.sh" "$REPO_ROOT"
 }
 
+# Fill the global prompt_drift_files array with prompt-drift Markdown files,
+# minus the canonical file $1 (repo-relative). Callers then scan every file in
+# ONE awk process (per-file awk forks dominated this checker's runtime).
+prompt_drift_files=()
+load_prompt_drift_files() {
+  local skip="$REPO_ROOT/$1" file
+  prompt_drift_files=()
+  while IFS= read -r -d '' file; do
+    [[ "$file" == "$skip" ]] && continue
+    prompt_drift_files+=("$file")
+  done < <(list_prompt_drift_markdown_files)
+}
+
+# Add the bad-file count printed by a multi-file awk scan to errors; an awk
+# failure itself also counts as an error.
+add_scan_errors() {
+  local count="$1" status="$2"
+  errors=$((errors + ${count:-0}))
+  [[ "$status" -eq 0 ]] || errors=$((errors + 1))
+}
+
 list_agent_names() {
   local dir="$1" file
   [[ -d "$dir" ]] || return 0
@@ -205,7 +226,7 @@ check_reviewer_lift_schema() {
     "$REPO_ROOT/start-build/templates/review-packet-compact.md"
     "$REPO_ROOT/start-review/templates/review-report.md"
   )
-  local copy copy_fields diff_output file rel
+  local copy copy_fields diff_output rel bad_count status=0
 
   if [[ ! -f "$schema" ]]; then
     error "Reviewer Lift schema missing: $(relpath "$schema")"
@@ -236,41 +257,41 @@ check_reviewer_lift_schema() {
     fi
   done
 
-  while IFS= read -r -d '' file; do
-    rel="$(relpath "$file")"
-    [[ "$rel" == "start-build/templates/reviewer-lift-schema.md" ]] && continue
-    if ! awk -v fields_file="$schema_fields" -v file="$rel" -F'|' '
-      BEGIN {
-        while ((getline line < fields_file) > 0) wanted[line]=1
-        close(fields_file)
-        run=0
-        start=0
-      }
-      /REVIEWER-LIFT-SCHEMA:BEGIN/ { in_block=1; run=0; next }
-      /REVIEWER-LIFT-SCHEMA:END/ { in_block=0; run=0; next }
-      in_block { next }
-      /^\|/ {
-        field=$2
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
-        gsub(/`|\*\*/, "", field)
-        if (wanted[field]) {
-          if (run == 0) start=FNR
-          run++
-          if (run >= 4 && !bad) {
-            printf "Reviewer Lift stale duplicate table: %s:%d (canonical field run starts at line %d; use generated-copy block from start-build/templates/reviewer-lift-schema.md instead of inlining)\n", file, FNR, start > "/dev/stderr"
-            bad=1
-          }
-        } else if (field !~ /^-+$/) {
-          run=0
+  load_prompt_drift_files "start-build/templates/reviewer-lift-schema.md"
+  [[ "${#prompt_drift_files[@]}" -gt 0 ]] || return 0
+  bad_count="$(awk -v fields_file="$schema_fields" -v root="$REPO_ROOT/" -F'|' '
+    BEGIN {
+      while ((getline line < fields_file) > 0) wanted[line]=1
+      close(fields_file)
+    }
+    FNR == 1 {
+      file = index(FILENAME, root) == 1 ? substr(FILENAME, length(root) + 1) : FILENAME
+      in_block=0; run=0; start=0; bad=0
+    }
+    /REVIEWER-LIFT-SCHEMA:BEGIN/ { in_block=1; run=0; next }
+    /REVIEWER-LIFT-SCHEMA:END/ { in_block=0; run=0; next }
+    in_block { next }
+    /^\|/ {
+      field=$2
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", field)
+      gsub(/`|\*\*/, "", field)
+      if (wanted[field]) {
+        if (run == 0) start=FNR
+        run++
+        if (run >= 4 && !bad) {
+          printf "Reviewer Lift stale duplicate table: %s:%d (canonical field run starts at line %d; use generated-copy block from start-build/templates/reviewer-lift-schema.md instead of inlining)\n", file, FNR, start > "/dev/stderr"
+          bad=1
+          bad_files++
         }
-        next
+      } else if (field !~ /^-+$/) {
+        run=0
       }
-      { run=0 }
-      END { exit bad ? 1 : 0 }
-    ' "$file"; then
-      errors=$((errors + 1))
-    fi
-  done < <(list_prompt_drift_markdown_files)
+      next
+    }
+    { run=0 }
+    END { print bad_files + 0 }
+  ' "${prompt_drift_files[@]}")" || status=$?
+  add_scan_errors "$bad_count" "$status"
 }
 
 extract_review_report_headings() {
@@ -281,7 +302,7 @@ extract_review_report_headings() {
 check_review_report_structure() {
   local report="$REPO_ROOT/start-review/templates/review-report.md"
   local headings="$TMPDIR_CHECK/review-report.headings"
-  local file rel
+  local bad_count status=0
 
   if [[ ! -f "$report" ]]; then
     error "Review Report template missing: $(relpath "$report")"
@@ -294,37 +315,37 @@ check_review_report_structure() {
     return
   fi
 
-  while IFS= read -r -d '' file; do
-    rel="$(relpath "$file")"
-    [[ "$rel" == "start-review/templates/review-report.md" ]] && continue
-    if ! awk -v headings_file="$headings" -v file="$rel" '
-      BEGIN {
-        while ((getline line < headings_file) > 0) wanted[line]=1
-        close(headings_file)
-        run=0
-        start=0
-      }
-      /^##[[:space:]]+/ {
-        heading=$0
-        sub(/^##[[:space:]]+/, "", heading)
-        gsub(/[[:space:]]+$/, "", heading)
-        if (wanted[heading]) {
-          if (run == 0) start=FNR
-          run++
-          if (run >= 4 && !bad) {
-            printf "Review Report stale structure: %s:%d (canonical heading run starts at line %d; reference start-review/templates/review-report.md instead of inlining its structure)\n", file, FNR, start > "/dev/stderr"
-            bad=1
-          }
-        } else {
-          run=0
+  load_prompt_drift_files "start-review/templates/review-report.md"
+  [[ "${#prompt_drift_files[@]}" -gt 0 ]] || return 0
+  bad_count="$(awk -v headings_file="$headings" -v root="$REPO_ROOT/" '
+    BEGIN {
+      while ((getline line < headings_file) > 0) wanted[line]=1
+      close(headings_file)
+    }
+    FNR == 1 {
+      file = index(FILENAME, root) == 1 ? substr(FILENAME, length(root) + 1) : FILENAME
+      run=0; start=0; bad=0
+    }
+    /^##[[:space:]]+/ {
+      heading=$0
+      sub(/^##[[:space:]]+/, "", heading)
+      gsub(/[[:space:]]+$/, "", heading)
+      if (wanted[heading]) {
+        if (run == 0) start=FNR
+        run++
+        if (run >= 4 && !bad) {
+          printf "Review Report stale structure: %s:%d (canonical heading run starts at line %d; reference start-review/templates/review-report.md instead of inlining its structure)\n", file, FNR, start > "/dev/stderr"
+          bad=1
+          bad_files++
         }
-        next
+      } else {
+        run=0
       }
-      END { exit bad ? 1 : 0 }
-    ' "$file"; then
-      errors=$((errors + 1))
-    fi
-  done < <(list_prompt_drift_markdown_files)
+      next
+    }
+    END { print bad_files + 0 }
+  ' "${prompt_drift_files[@]}")" || status=$?
+  add_scan_errors "$bad_count" "$status"
 }
 
 agent_references_skill() {

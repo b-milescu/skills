@@ -40,7 +40,7 @@ assert_not_exists() {
 copy_repo() {
   local dest="$1"
   mkdir -p "$dest"
-  (cd "$REPO_ROOT" && tar --exclude .git -cf - .) | (cd "$dest" && tar -xf -)
+  (cd "$REPO_ROOT" && tar --exclude .git --exclude node_modules -cf - .) | (cd "$dest" && tar -xf -)
 }
 
 prepare_installed_agents() {
