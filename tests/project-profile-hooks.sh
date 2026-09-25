@@ -21,7 +21,6 @@ done
 for token in GitLab GitHub "Azure DevOps"; do
   assert_file_contains setup-dev-skills/SKILL.md "$token" "setup supports $token"
 done
-node tests/setup-provider-detector.mjs
 assert_file_contains setup-dev-skills/SKILL.md "skill://setup-dev-skills/scripts/detect-provider.mjs" "setup consumes executable provider detector"
 assert_file_contains setup-dev-skills/reference/project-profile-facts.json "provider_detection" "facts point to provider detector"
 assert_file_contains setup-dev-skills/dev-workflows-generic.md auxiliary-index "neutral seed auxiliary index policy"

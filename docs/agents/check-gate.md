@@ -4,7 +4,7 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 ## Full local gate
 
-Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitLab CI `node:22` image. `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order.
+Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitLab CI `node:22` image. `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order. Its Node step, `node --test 'tests/*.mjs'`, is the native test framework for JavaScript tests: every top-level `tests/*.mjs` file runs in parallel under Node's built-in runner, so a new `.mjs` test is gated by adding the file, with no wrapper script.
 
 **Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Switch to Node 22 per `.nvmrc` (e.g. `nvm use 22`), then run `npm ci` to install dependencies from `package-lock.json`, then run `npm run check`. Skipping either bootstrap step produces spurious failures (wrong Node version or missing `node_modules`).
 
@@ -65,6 +65,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
+| JavaScript tests | `node --test 'tests/*.mjs'` | Node 22 built-in runner over every top-level `tests/*.mjs` (plain `node:assert/strict` files); runs in parallel, continues past failures, prints a failure summary. Keep the glob quoted: an empty match then runs nothing instead of Node's repo-wide default patterns, and a directory argument fails on Node 22. |
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.omp/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.omp/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
@@ -73,7 +74,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 ## Shipped shell regression inventory
 
-`scripts/check.sh` runs every top-level `tests/*.sh` file, keeps going after a failing script, and ends with the list of failing scripts and a non-zero exit; the pre-loop steps (`bash -n install.sh`, agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
+`scripts/check.sh` runs `node --test 'tests/*.mjs'` and then every top-level `tests/*.sh` file, keeps going after a failing step, and ends with the failing set (the Node step is listed as `tests/*.mjs`) and a non-zero exit; the pre-loop steps (`bash -n install.sh`, agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
 
 Each script states its own coverage in a `# Focus:` header comment directly below its shebang; read the script rather than a paraphrase kept here.
 
@@ -89,10 +90,8 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/compaction-index.sh` |
 | `tests/delivery-schema.sh` |
 | `tests/executable-bit-policy.sh` |
-| `tests/finding-identity-bindings.sh` |
 | `tests/finish-result-schema.sh` |
 | `tests/forge-neutral-workflows.sh` |
-| `tests/gate-receipt-validator.sh` |
 | `tests/gitlab-build-cards.sh` |
 | `tests/gitlab-ci-finish-guards.sh` |
 | `tests/gitlab-help-cache.sh` |

@@ -35,9 +35,12 @@ run "agent consistency" env AGENT_SKILLS_CHECK_HOME="$CHECK_HOME" bash agents/ch
 run "Markdown lint" npm run check:md
 run "Markdown links" npm run check:links
 
-# Pre-loop steps above stay fail-fast; every tests/*.sh script runs and the
-# failing set is reported once at the end.
+# Pre-loop steps above stay fail-fast; the Node tests and every tests/*.sh
+# script run, and the failing set is reported once at the end.
 failed=()
+# Quoted so Node expands the glob: an empty match runs nothing rather than
+# falling back to Node's default repo-wide test patterns.
+run "node --test tests/*.mjs" node --test 'tests/*.mjs' || failed+=("tests/*.mjs")
 for test_script in tests/*.sh; do
   run "$test_script" bash "$test_script" || failed+=("$test_script")
 done
