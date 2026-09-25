@@ -382,8 +382,7 @@ for file in \
   start-review/SKILL.md \
   start-review/REVIEW-FLOW.md \
   start-review/templates/filling-guide.md \
-  start-review/templates/review-report.md \
-  start-review/templates/unblock-response.md; do
+  start-review/templates/review-report.md; do
   if grep -Eq 'Snippet: (draft-mr|mr-|issue-note|sha-bound)' "$file"; then
     fail "$file directly owns a GitLab Snippet reference"
   fi

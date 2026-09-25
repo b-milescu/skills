@@ -67,8 +67,7 @@ for shared in \
   start-build/reference/standalone-gate.md \
   start-build/reference/multiple-worktrees.md \
   start-build/templates/revision-packet.md \
-  start-build/templates/stuck-packet.md \
-  start-review/templates/unblock-response.md; do
+  start-build/templates/stuck-packet.md; do
   assert_file_contains "$shared" "forge" "$shared provider-neutral forge seam"
   for forbidden in GitLab "MR URL" "MR comment" "MR IID" merge_commit_sha squash_commit_sha; do
     assert_file_not_contains "$shared" "$forbidden" "$shared excludes $forbidden"

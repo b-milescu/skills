@@ -38,8 +38,9 @@ actions. The caller invokes native finish only after the [ordered guard
 sequence](mutation-guard.md#ordered-guard-sequence) passes for the requested
 action, ending in exactly one mutation and provider-native readback.
 
-The caller assembles the workflow finish result from native action/result, SHA,
-nullable advisory `ci`, post-merge issue/branch and cleanup state,
+The caller assembles the workflow finish result
+([`finish-result-schema.json`](finish-result-schema.json)) from native
+action/result, SHA, nullable advisory `ci`, post-merge issue/branch and cleanup state,
 authority/caller evidence, and transport. Native success does not prove the Gate
 Receipt, independent review, authority provenance, or caller identity/context
 eligibility. Native branch protection or merge policy may refuse the mutation;
