@@ -14,6 +14,8 @@ List only sources loaded for evidence. Use one short bullet per source: `<path o
 
 ## Test plan
 
+Name the native test framework and command, or `TDD: N/A — <reason>`.
+
 ## Risk
 
 ## Non-goals

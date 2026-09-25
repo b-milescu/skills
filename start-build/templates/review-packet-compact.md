@@ -30,7 +30,7 @@ Every row is required; `reviewer-lift-schema.md` owns their semantics and
 | Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
 | CI pipeline | |
 | Local gate | `<status + exact command; parent-owned: not-run until the Gate Receipt>` |
-| RED | `<behavior-touching implementation: failing check; else N/A with rationale; do not fake tests>` |
+| RED | `<behavior-touching implementation: failing native test; else N/A with rationale; do not fake tests>` |
 | GREEN | |
 | Changed paths | `git diff --name-only <base>...HEAD` measured output: `<paths>` |
 | Touched safety surfaces | |
