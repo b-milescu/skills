@@ -3,6 +3,7 @@
 # `*-invariants.sh` scripts: same needles via `tests/lib/assertions.sh`, fewer
 # files. Per-script fail/require wrappers go.
 set -euo pipefail
+shopt -s extglob
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO_ROOT"
@@ -24,6 +25,17 @@ assert_fixed_absent() {
   fi
 }
 
+# contain rows survive paragraph reflow: whitespace runs (newlines included)
+# collapse to one space in both the file text and the needle before matching.
+declare -A flat_text=()
+assert_flat_contains() {
+  local file="$1" needle="$2"
+  [[ -f "$file" ]] || fail "missing file for $needle: $file"
+  [[ -v flat_text[$file] ]] || flat_text[$file]="$(tr -s '[:space:]' ' ' <"$file")"
+  [[ "${flat_text[$file]}" == *"${needle//+([[:space:]])/ }"* ]] \
+    || fail "$file missing $needle: $needle"
+}
+
 offset_of() {
   local file="$1" pattern="$2" label="$3" offset
   offset="$(LC_ALL=C grep -Eibom1 -- "$pattern" "$file" | cut -d: -f1 || true)"
@@ -41,12 +53,12 @@ extract_section() {
 }
 
 # --- token table: kind|file|needle ---
-# contain = fixed string present; absent = fixed string forbidden
+# contain = fixed string present (whitespace-insensitive); absent = fixed string forbidden
 # re = case-insensitive regex present; nre = case-insensitive regex forbidden
 while IFS='|' read -r kind file needle; do
   [[ -n "${kind:-}" && "$kind" != \#* ]] || continue
   case "$kind" in
-    contain) assert_file_contains "$file" "$needle" ;;
+    contain) assert_flat_contains "$file" "$needle" ;;
     absent) assert_fixed_absent "$file" "$needle" ;;
     re) require_text "$file" "$needle" "$needle" ;;
     nre) reject_text "$file" "$needle" "$needle" ;;
