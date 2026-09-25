@@ -42,8 +42,8 @@ Child runs: `gate_owner_received: <literal launch value, or absent>` per
 | Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
 | CI pipeline | `<advisory provider-native CI locator + ID + status + commit when available, or N/A — why>` |
 | Local gate | `<status + exact command per reviewer-lift-schema.md; parent-owned: not-run until Gate Receipt per ../reference/parent-owned-gate.md>` |
-| RED | `<behavior-touching implementation: failing check; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
-| GREEN | `<passing behavior check, or N/A with rationale; per reviewer-lift-schema.md>` |
+| RED | `<behavior-touching implementation: failing native test; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
+| GREEN | `<same native test passing, or N/A with rationale; per reviewer-lift-schema.md>` |
 | Changed paths | `git diff --name-only <base>...HEAD` — measured output: `<paths separated with <br>>` |
 | Touched safety surfaces | `<none or schema-listed surfaces>` |
 | Acceptance surfaces | `<profile surface:evidence entries, or none; per reviewer-lift-schema.md>` |
@@ -87,7 +87,8 @@ One line per surface; write `N/A — <reason>` when a surface is untouched.
 
 Expand on the `RED`/`GREEN` Reviewer Lift fields: targeted tests, full check
 gate output (or CI link), and regression evidence for behavior-touching
-refactors. State `TDD: N/A — <reason>` for non-behavior changes.
+refactors. State `TDD: N/A — <reason>` for non-behavior changes or no native
+test framework.
 
 ## Reviewer Focus
 

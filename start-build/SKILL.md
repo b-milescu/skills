@@ -28,6 +28,18 @@ worktrees, and one Review Packet/gate/handoff per change request.
 
 Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
 Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
+Tests run on the project's **native test framework**: the harness its default
+branch already runs through the Check Gate, CI, or a documented test command
+for the changed surface's language or tool; else that language or tool's
+built-in test runner, adding no dependency. Invoke any skill that owns the
+changed surface's testing; its native-test rules, including when to block,
+override this paragraph. Add cases, fixtures, fakes, and helpers where that
+framework already discovers them. Committing anything it would not run (a
+new runner, standalone script, harness, or test dependency) is framework
+adoption and needs its own work item. When the changed surface has no native
+framework, record `TDD: N/A — no native test framework` with manual dry-run
+[regression evidence](skill://start-build/SAFETY.md#behavior-touching-refactors)
+and raise framework adoption as an open question.
 
 Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
 [parent gate](skill://start-build/reference/parent-owned-gate.md),

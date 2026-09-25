@@ -223,6 +223,13 @@ contain|start-build/SAFETY.md|This is scoped to headline claims, not every asser
 contain|start-build/SAFETY.md|An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
 contain|start-build/SAFETY.md|A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result.
 contain|start-build/SAFETY.md|The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.
+contain|start-build/SKILL.md|Tests run on the project's **native test framework**
+contain|start-build/SKILL.md|adoption and needs its own work item.
+contain|start-build/SKILL.md|framework, record `TDD: N/A — no native test framework` with manual dry-run
+contain|start-build/SKILL.md|branch already runs through the Check Gate, CI, or a documented test command
+contain|start-build/SKILL.md|its native-test rules, including when to block,
+contain|start-build/templates/reviewer-lift-schema.md|the same native test command passing
+contain|start-build/templates/reviewer-lift-schema.md|failing command on the native test framework
 # start-build-ready-gate-push-semantics
 contain|start-build/SAFETY.md|The exact-candidate local Check Gate is the quality gate before ready/review.
 contain|start-build/reference/implementation-flow.md|**Early Draft change-request push.**
