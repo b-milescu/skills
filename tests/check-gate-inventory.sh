@@ -43,7 +43,7 @@ extract_inventory_scripts() {
 }
 
 list_executed_test_scripts() {
-  # Discover the same surface scripts/check.sh:38 actually executes: the
+  # Discover the same surface the scripts/check.sh test loop actually executes: the
   # top-level tests/*.sh disk glob. Keying on disk presence (not git ls-files)
   # catches a new test that is present but unregistered before it is committed,
   # so the local gate fails identically to CI (issue #326). tests/lib/** helper
@@ -159,7 +159,7 @@ mkdir -p "$untracked_repo"
 make_fixture_repo "$untracked_repo" tests/actual.sh
 write_check_gate_doc "$untracked_repo" tests/actual.sh
 # A new top-level test present on disk but neither tracked nor listed in the
-# inventory: this is exactly what scripts/check.sh:38 would execute, so the
+# inventory: this is exactly what the scripts/check.sh test loop would execute, so the
 # inventory check must flag it before commit (it is the bug under issue #326).
 printf '#!/usr/bin/env bash\n' > "$untracked_repo/tests/untracked-present.sh"
 set +e

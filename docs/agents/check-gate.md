@@ -73,7 +73,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 ## Shipped shell regression inventory
 
-`scripts/check.sh` runs every top-level `tests/*.sh` file. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
+`scripts/check.sh` runs every top-level `tests/*.sh` file, keeps going after a failing script, and ends with the list of failing scripts and a non-zero exit; the pre-loop steps (`bash -n install.sh`, agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
 
 Each script states its own coverage in a `# Focus:` header comment directly below its shebang; read the script rather than a paraphrase kept here.
 
@@ -85,6 +85,7 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/authority-verification-schema.sh` |
 | `tests/builder-prompt-dedupe.sh` |
 | `tests/check-gate-inventory.sh` |
+| `tests/check-gate-runner.sh` |
 | `tests/compaction-index.sh` |
 | `tests/delivery-schema.sh` |
 | `tests/executable-bit-policy.sh` |

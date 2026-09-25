@@ -35,8 +35,17 @@ run "agent consistency" env AGENT_SKILLS_CHECK_HOME="$CHECK_HOME" bash agents/ch
 run "Markdown lint" npm run check:md
 run "Markdown links" npm run check:links
 
+# Pre-loop steps above stay fail-fast; every tests/*.sh script runs and the
+# failing set is reported once at the end.
+failed=()
 for test_script in tests/*.sh; do
-  run "$test_script" bash "$test_script"
+  run "$test_script" bash "$test_script" || failed+=("$test_script")
 done
+
+if ((${#failed[@]})); then
+  printf '\ncheck: FAIL - %d failing test script(s):\n' "${#failed[@]}"
+  printf '  %s\n' "${failed[@]}"
+  exit 1
+fi
 
 printf '\ncheck: PASS\n'
