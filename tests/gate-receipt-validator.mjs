@@ -333,7 +333,7 @@ try {
     "Touched safety surfaces": ["none", "[]", "`none`", "gates, locks", "other (one new read-only query, LAN panel)", "`state, other (x)`"],
     "Acceptance surfaces": [
       "none", "[]", "`none`", "gate-receipt:test, docs:docs-read", "panel:smoke, deploy:N/A — no deploy surface", "ci-parity:ci", "tooling:test, deploy:N/A — no deploy, no CI",
-      "deploy:N/A — no deploy, reason: parent-owned gate",
+      "deploy:N/A — out of scope, note: parent-owned",
     ],
     // One value per co-running identifier alternative, each matching only that alternative (#502 SF-1).
     "Decoupling proof": [
@@ -376,12 +376,12 @@ try {
     "Touched safety surfaces": ["none — test only", "`gates`, `locks`", "gates; locks", "database", "other: x", undefined],
     "Acceptance surfaces": [
       "AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", "gate:N/A ()",
-      "deploy:N/A — no deploy, `docs:docs-read`", "deploy:N/A — no deploy, gate:tested",
+      "docs:N/A — none, `gate:test`", "deploy:N/A — no deploy, gate:tested",
     ],
     "Decoupling proof": [
       "single issue; only one test file touched; #555 still open and not asserted", "single MR; one file", "single change request; one file", "N/A", "independent", "co-running; no overlap", undefined,
       "independent — no other branch in flight", "co-running branches: none", "N/A — this branch only", "only one branch touched; no siblings",
-      "co-running branch `none`; no overlap", "see https://gitlab.example/g/p/-/blob/main/docs/decoupling-contract.md",
+      "co-running branch `none`; no overlap", "independent; see https://gitlab.example.com/agents/skills/-/blob/main/docs/decoupling-contract.md",
     ],
     "Open Questions": ["maybe the timeout", "0", undefined],
     "Approval authority": ["approve after pass", "restricted", undefined],
