@@ -136,9 +136,14 @@ require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:
 
 ```text
-node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <candidate description> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
 node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <the sole URL in the Reviewer Lift `Local gate` row> --gate-command <command> --gate-policy-ref <policy>
 ```
+
+Pre-post with `--review-packet` checks the candidate Lift's structure before
+anything is posted (issue #503): the exact BEGIN/END markers, unique rows, the
+required rows, and the closed-set values below. It performs no mutation and
+needs no receipt locator; `Local gate` may still read `not-run — parent-owned`.
 
 `--gate-receipt-locator` is not an opaque value: it must equal, byte for byte,
 the sole `scheme://` URL the Reviewer Lift's `Local gate` row carries — the
@@ -154,7 +159,7 @@ Reviewer Lift row whose value set
 `Review gate`, `Change tier`, `Transport` (may be absent), `Gate owner`,
 `Gate coverage`, `CI pipeline`, `Touched safety surfaces`,
 `Acceptance surfaces`, `Decoupling proof`, `Open Questions`,
-`Approval authority`, and `Finish authority`. Post-note validates a
+`Approval authority`, and `Finish authority`; pre-post runs the same check. Post-note validates a
 parent-owned Lift, so `Gate owner` must lead with `parent`; the annotation after
 it (for example `parent — parent-owned/not-run; candidate <sha>`) may stay after
 the receipt, while `builder`, `parent-owned`, or `both` is refused (issue #502).
@@ -172,7 +177,16 @@ judged, and `Finding bindings` stays with `validate-finding-bindings.mjs`.
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
 For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt <locator>`.
 Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged.
-`Local gate` still requires `PASS`, one locator, and no `not-run`.
+`Local gate` still requires `PASS`, the gate command, exactly one literal
+`Gate Receipt` pointer (the label once, with one locator), and no `not-run`.
+
+`Delta since last ready push` must name the full reviewed commit. A `pending`
+refuses it when its `;`- or `<br>`-separated clause is the bare word `pending`,
+or names the gate, the gate command, a rerun, a receipt, a head, a rebind, a
+SHA or commit (the word or a SHA token), or an arrow (`gate rerun pending`,
+`Gate Receipt: pending`, `receipts pending`, `new head pending rebind`,
+`npm run check pending`, `<sha> pending`, `<sha> → pending`, `; pending;`).
+Other prose, such as "the bound-or-pending wording", is accepted.
 
 ## Builder-owned Gate Receipt
 

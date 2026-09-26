@@ -37,7 +37,11 @@ function parseArgs(argv) {
   if (owner === "builder" && ["--change-id", "--issue-id", ...postFlags].some((flag) => args.has(flag))) {
     fail("parent-owned binding flags are invalid in builder mode");
   }
-  if (owner === "parent" && mode === "pre-post" && postFlags.some((flag) => args.has(flag))) fail("post-note flags are invalid in pre-post mode");
+  // Pre-post may lint the candidate Lift (--review-packet); the receipt pointer
+  // and policy binding exist only after the note is posted (issue #503).
+  if (owner === "parent" && mode === "pre-post" && ["--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) {
+    fail("--gate-receipt-locator and --gate-policy-ref are post-note flags, invalid in pre-post mode");
+  }
   return { args, mode, owner };
 }
 
@@ -184,20 +188,24 @@ function validateBuilderReceipt(body, expected) {
   }
 }
 
+const liftBegin = "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->";
+const liftEnd = "<!-- REVIEWER-LIFT-SCHEMA:END -->";
+
 function tableRows(body) {
-  const begin = "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->";
-  const end = "<!-- REVIEWER-LIFT-SCHEMA:END -->";
-  const first = body.indexOf(begin);
-  const last = body.indexOf(end);
-  if (first < 0 || last <= first || body.indexOf(begin, first + begin.length) >= 0 || body.indexOf(end, last + end.length) >= 0) {
-    fail("invalid Reviewer Lift block");
+  const first = body.indexOf(liftBegin);
+  const last = body.indexOf(liftEnd);
+  if (first < 0 || body.indexOf(liftBegin, first + liftBegin.length) >= 0) {
+    fail(`Reviewer Lift BEGIN marker must appear exactly once, byte for byte: ${liftBegin}`);
+  }
+  if (last <= first || body.indexOf(liftEnd, last + liftEnd.length) >= 0) {
+    fail(`Reviewer Lift END marker must appear exactly once, after the BEGIN marker: ${liftEnd}`);
   }
 
   const rows = new Map();
-  for (const line of body.slice(first + begin.length, last).split(/\r?\n/)) {
+  for (const line of body.slice(first + liftBegin.length, last).split(/\r?\n/)) {
     const match = line.match(/^\|\s*([^|]+?)\s*\|\s*(.*?)\s*\|$/);
     if (!match || match[1] === "Field" || /^-+$/.test(match[1])) continue;
-    if (rows.has(match[1])) fail("duplicate Reviewer Lift row");
+    if (rows.has(match[1])) fail(`Reviewer Lift ${match[1]} row appears more than once`);
     rows.set(match[1], match[2]);
   }
   return rows;
@@ -282,11 +290,30 @@ function offSchemaLiftRows(rows) {
   return refused;
 }
 
-function validateLift(body, expected) {
+// Receipt-independent Lift checks, shared by pre-post (before the receipt note
+// is posted) and post-note: markers, unique rows, required rows, closed sets.
+function liftStructure(body) {
   const rows = tableRows(body);
   const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
   for (const name of names) if (!isNonEmptyString(rows.get(name))) fail(`missing Reviewer Lift ${name}`);
+  const refused = offSchemaLiftRows(rows);
+  if (refused.length > 0) fail(`Reviewer Lift values are off-schema per start-build/templates/reviewer-lift-schema.md:\n${refused.join("\n")}`);
+  return rows;
+}
 
+// `pending` makes the Delta stale only inside a `;`/`<br>` clause that is the
+// bare word, or names the gate, its command, a rerun, a receipt, a head, a
+// rebind, a SHA/commit (word or token), or an arrow; prose such as "the
+// bound-or-pending wording" is not a pointer (issue #503).
+const deltaPointer = /\bgate\b|\bre-?runs?\b|\breceipts?\b|\bshas?\b|\bcommits?\b|\bheads?\b|\bre-?bind(?:ing)?\b|\bre-?bound\b|→|->/i;
+
+function pendingPointer(clause, gateCommand) {
+  if (!/pending/i.test(clause)) return false;
+  return /^\W*pending\W*$/i.test(clause) || deltaPointer.test(clause) || ciSha.test(clause) || clause.includes(gateCommand);
+}
+
+function validateLift(body, expected) {
+  const rows = liftStructure(body);
   const reviewedSha = rows.get("Reviewed SHA").trim();
   if (reviewedSha !== expected.reviewedCommit && reviewedSha !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
@@ -311,15 +338,15 @@ function validateLift(body, expected) {
 
   const delta = rows.get("Delta since last ready push");
   if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim())) {
+    if (delta.split(/;|<br\s*\/?>/i).some((clause) => pendingPointer(clause, expected.gateCommand))) {
+      fail("Reviewer Lift delta is stale: Delta since last ready push leaves a gate rerun, Gate Receipt, or commit pending");
+    }
     const hasFull = containsCommit(delta, expected.reviewedCommit);
-    if (/pending/i.test(delta) || (!hasFull && !namesShortReviewedCommit(delta, expected.reviewedCommit))) {
-      fail("Reviewer Lift delta is stale");
+    if (!hasFull && !namesShortReviewedCommit(delta, expected.reviewedCommit)) {
+      fail("Reviewer Lift delta is stale: Delta since last ready push does not name the reviewed commit");
     }
     if (!hasFull) fail("Reviewer Lift delta names the reviewed commit in short form; the full 40-hex form is required");
   }
-
-  const refused = offSchemaLiftRows(rows);
-  if (refused.length > 0) fail(`Reviewer Lift values are off-schema per start-build/templates/reviewer-lift-schema.md:\n${refused.join("\n")}`);
 }
 
 const { args, mode, owner } = parseArgs(process.argv.slice(2));
@@ -350,5 +377,6 @@ if (owner === "builder") {
 
   validateReceipt(readSafe(args.get("--receipt"), "receipt"), expected);
   if (mode === "post-note") validateLift(readSafe(args.get("--review-packet"), "review packet"), expected);
+  else if (args.has("--review-packet")) liftStructure(readSafe(args.get("--review-packet"), "review packet"));
   console.log(`gate-receipt ${mode} validation: PASS`);
 }

@@ -112,7 +112,7 @@ require_text_case_sensitive "$schema" 'Advisory pipeline' 'CI pipeline advisory 
 require_text_case_sensitive "$schema" 'matches `Reviewed SHA`' 'CI pipeline exact-commit attribution'
 require_text_case_sensitive "$schema" 'never changes verdict or action eligibility' 'CI pipeline non-blocking policy'
 
-local_gate_row='| Local gate | `PASS`, `FAIL`, `N/A`, or `not-run` plus the exact command. `PASS` on the exact candidate is the required quality gate. `N/A` requires a rationale that no local gate can run. In parent-owned mode use the ownership contract and exact-candidate Gate Receipt pointer from `start-build/reference/parent-owned-gate.md`; child builders must not claim gate pass/fail. |'
+local_gate_row='| Local gate | `PASS`, `FAIL`, `N/A`, or `not-run` plus the exact command. `PASS` on the exact candidate is the required quality gate. `N/A` requires a rationale that no local gate can run. In parent-owned mode use the ownership contract and exact-candidate Gate Receipt pointer from `start-build/reference/parent-owned-gate.md`; after the receipt the row carries exactly one literal `Gate Receipt` pointer (the label once, with one locator); child builders must not claim gate pass/fail. |'
 require_exact_line "$schema" "$local_gate_row" 'Local gate safety-floor row byte-identity'
 
 require_text_case_sensitive "start-review/templates/review-report.md" 'Finish owner' 'Review Report Finish owner row'
