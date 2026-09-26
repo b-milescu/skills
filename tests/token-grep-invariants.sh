@@ -27,9 +27,10 @@ assert_fixed_absent() {
 
 # contain rows survive paragraph reflow: whitespace runs (newlines included)
 # collapse to one space in both the file text and the needle before matching.
+# LC_ALL=C gives byte-oriented tr and bash [[:space:]] the same ASCII class.
 declare -A flat_text=()
 assert_flat_contains() {
-  local file="$1" needle="$2"
+  local LC_ALL=C file="$1" needle="$2"
   [[ -f "$file" ]] || fail "missing file for $needle: $file"
   [[ -v flat_text[$file] ]] || flat_text[$file]="$(tr -s '[:space:]' ' ' <"$file")"
   [[ "${flat_text[$file]}" == *"${needle//+([[:space:]])/ }"* ]] \
@@ -1092,7 +1093,8 @@ assert_required_sections_placeholder_clean() {
   done
 }
 bad_placeholders="$(mktemp)"
-trap 'rm -f "$action_section" "$bad_placeholders"' EXIT
+flat_fixture="$(mktemp)"
+trap 'rm -f "$action_section" "$bad_placeholders" "$flat_fixture"' EXIT
 cat > "$bad_placeholders" <<'BAD'
 # Review Report
 ## Findings
@@ -1117,6 +1119,15 @@ for old_heading in \
     fail "Review Report keeps old required top-level ${old_heading}; move it under optional annex/compact sections"
   fi
 done
+
+# contain| flattening (#499): tr and the needle glob collapse the same
+# whitespace class under a UTF-8 locale, and a changed word still misses.
+printf 'a\xe2\x80\x83b pinned\n  real   word\n' >"$flat_fixture"
+(LC_ALL=C.UTF-8; assert_flat_contains "$flat_fixture" $'a\xe2\x80\x83b pinned real word') 2>/dev/null \
+  || fail "contain| needle with U+2003 does not match identical file text under C.UTF-8"
+if (assert_flat_contains "$flat_fixture" 'pinned real ward') 2>/dev/null; then
+  fail "contain| reflow tolerance matched a changed word"
+fi
 
 # terraform frontmatter + RED before GREEN
 assert_path_readable terraform-tofu/SKILL.md
