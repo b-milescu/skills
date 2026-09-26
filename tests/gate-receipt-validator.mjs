@@ -252,6 +252,11 @@ try {
     "receipts pending": `${oldSha} → ${commit}: fix; files x; receipts pending; substantive yes`,
     "new head pending rebind": `${oldSha} → ${commit}: fix; files x; new head pending rebind; substantive yes`,
     "gate command pending": `${oldSha} → ${commit}: fix; files x; ${expected.gateCommand} pending; substantive yes`,
+    // Issue #505: a clause that starts with `pending` is an annotated slot, and
+    // `re-running` is a rerun pointer.
+    "annotated pending slot": `${oldSha} → ${commit}: fix; files x; pending — parent-owned; substantive yes`,
+    "parenthesized pending slot": `${oldSha} → ${commit}: fix; files x; pending (parent); substantive yes`,
+    "re-running pending": `${oldSha} → ${commit}: fix; files x; check re-running, pending; substantive yes`,
   };
   for (const [name, delta] of Object.entries(staleDeltas)) {
     const result = run({ reviewPacket: withDelta(delta) });
