@@ -224,9 +224,10 @@ function namesShortReviewedCommit(value, commit) {
 // (issue #501). Each entry: row, accepted-value test, accepted forms for the
 // refusal, and whether the schema lets the row be absent (Transport defaults
 // to mcp). One surrounding code span is stripped from every cell first.
-// A note after a separator must start with real text, so `moderate ()` and
-// `N/A ()` are refused (issue #502 C-2).
-const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)\s*[^\s()].*`;
+// A note after a separator must contain a character other than whitespace or
+// parentheses, so `moderate ()` and `N/A ()` are refused (issue #502 C-2) while
+// `moderate — (one validator)` is accepted (issue #504).
+const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)[\s()]*[^\s()].*`;
 const naText = new RegExp(`^N/A${noteText}$`, "i");
 const tierOnly = /^(?:trivial|moderate|high-risk)(?:[\s\W]*(?:trivial|moderate|high-risk))*[\s\W]*$/;
 const safetySurface = /^(?:external-system|credentials|state|migration|gates|locks|deploy|wire-protocol|other(?:\s*\([^()]+\))?)$/;
