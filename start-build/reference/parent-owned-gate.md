@@ -183,11 +183,14 @@ Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged
 `Gate Receipt` pointer (the label once, with one locator), and no `not-run`.
 
 `Delta since last ready push` must name the full reviewed commit. A `pending`
-refuses it when its `;`- or `<br>`-separated clause is the bare word `pending`,
-or names the gate, the gate command, a rerun, a receipt, a head, a rebind, a
+refuses it when its `;`- or `<br>`-separated clause starts with the word
+`pending` (a bare or annotated slot, such as `; pending;`, `pending — parent-owned`,
+or `pending (parent)`), or names the gate, the gate command, a rerun
+(`rerun`, `reruns`, `re-running`, `rerunning`), a receipt, a head, a rebind, a
 SHA or commit (the word or a SHA token), or an arrow (`gate rerun pending`,
 `Gate Receipt: pending`, `receipts pending`, `new head pending rebind`,
-`npm run check pending`, `<sha> pending`, `<sha> → pending`, `; pending;`).
+`check re-running, pending`, `npm run check pending`, `<sha> pending`,
+`<sha> → pending`).
 Other prose, such as "the bound-or-pending wording", is accepted.
 
 ## Builder-owned Gate Receipt
