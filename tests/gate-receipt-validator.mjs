@@ -234,7 +234,7 @@ try {
   assert.doesNotMatch(staleDelta.stderr, /full 40-hex form is required/, "stale is not the short-form message");
   const pendingDelta = run({ reviewPacket: withDelta("pending") });
   assert.notEqual(pendingDelta.status, 0, "pending delta fails");
-  assert.match(pendingDelta.stderr, /Reviewer Lift delta is stale/, "pending keeps the stale message");
+  assert.match(pendingDelta.stderr, /Reviewer Lift delta is stale: .* pending/, "bare pending is refused by the pending rule");
   const fullDelta = run({ reviewPacket: withDelta(`${commit} -> files, gate, no`) });
   assert.equal(fullDelta.status, 0, "full 40-hex delta still passes");
   // Issue #503: `pending` is stale only when it leaves a gate rerun, Gate
@@ -244,6 +244,14 @@ try {
     "pending gate rerun": `${oldSha} → ${commit}: fix; files x; gate rerun pending; substantive yes`,
     "pending Gate Receipt": `${oldSha} → ${commit}: fix; files x; gate rerun npm run check, Gate Receipt: pending; substantive yes`,
     "unrebound new SHA": `${commit} → pending: fix; files x; gate rerun PASS; substantive yes`,
+    // Review report agents/skills!484:1 MF-1: a SHA token or a bare slot.
+    "bare pending slot": `${oldSha} -> ${commit}; fix; files x; pending; substantive yes`,
+    "other SHA pending": `${commit}: fix; files x; gate rerun PASS; ${"3".repeat(40)} pending; substantive yes`,
+    "reviewed SHA pending": `${commit} pending; fix; files x; gate rerun PASS; substantive yes`,
+    // SF-1: inflections, synonyms, and the gate command itself.
+    "receipts pending": `${oldSha} → ${commit}: fix; files x; receipts pending; substantive yes`,
+    "new head pending rebind": `${oldSha} → ${commit}: fix; files x; new head pending rebind; substantive yes`,
+    "gate command pending": `${oldSha} → ${commit}: fix; files x; ${expected.gateCommand} pending; substantive yes`,
   };
   for (const [name, delta] of Object.entries(staleDeltas)) {
     const result = run({ reviewPacket: withDelta(delta) });
@@ -254,6 +262,8 @@ try {
   const delta558 = `2c72ffb83537718fc2c9f72978551994e64f4d4d → ${commit}: revision for review-report:group/project!558:2 SF-1, C-1 and C-2 (per-kind remainder sources with the pre-rollback master for pin-agnostic policy, and the complementary over-restore diff; the bound-or-pending wording; registry paths in the §5b rollback path set); file .claude/skills/move-pin/SKILL.md (Rollback text plus one §5b sentence); substantive docs wording; gate rerun: PASS — Gate Receipt https://gitlab.example.com/group/project/-/merge_requests/558#note_55375`;
   const prose558 = run({ reviewPacket: withDelta(delta558) });
   assert.equal(prose558.status, 0, `!558 Delta whose only pending is prose is accepted: ${prose558.stderr}`);
+  const proseClause = run({ reviewPacket: withDelta(`${oldSha} → ${commit}: review fix; fix the bound-or-pending wording; files x; gate rerun PASS; substantive yes`) });
+  assert.equal(proseClause.status, 0, `a prose-only pending clause is accepted: ${proseClause.stderr}`);
 
   // Doc/validator agreement (issue #450): the example a parent copies must teach
   // exactly the accepted status_before values and preflight commands.

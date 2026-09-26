@@ -301,10 +301,16 @@ function liftStructure(body) {
   return rows;
 }
 
-// `pending` makes the Delta stale only inside a `;`/`<br>` clause about the
-// gate rerun, Gate Receipt, or a commit (SHA, arrow); prose such as "the
+// `pending` makes the Delta stale only inside a `;`/`<br>` clause that is the
+// bare word, or names the gate, its command, a rerun, a receipt, a head, a
+// rebind, a SHA/commit (word or token), or an arrow; prose such as "the
 // bound-or-pending wording" is not a pointer (issue #503).
-const deltaPointer = /\bgate\b|\bre-?run\b|\breceipt\b|\bsha\b|\bcommit\b|→|->/i;
+const deltaPointer = /\bgate\b|\bre-?runs?\b|\breceipts?\b|\bshas?\b|\bcommits?\b|\bheads?\b|\bre-?bind(?:ing)?\b|\bre-?bound\b|→|->/i;
+
+function pendingPointer(clause, gateCommand) {
+  if (!/pending/i.test(clause)) return false;
+  return /^\W*pending\W*$/i.test(clause) || deltaPointer.test(clause) || ciSha.test(clause) || clause.includes(gateCommand);
+}
 
 function validateLift(body, expected) {
   const rows = liftStructure(body);
@@ -332,7 +338,7 @@ function validateLift(body, expected) {
 
   const delta = rows.get("Delta since last ready push");
   if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim())) {
-    if (delta.split(/;|<br\s*\/?>/i).some((clause) => /pending/i.test(clause) && deltaPointer.test(clause))) {
+    if (delta.split(/;|<br\s*\/?>/i).some((clause) => pendingPointer(clause, expected.gateCommand))) {
       fail("Reviewer Lift delta is stale: Delta since last ready push leaves a gate rerun, Gate Receipt, or commit pending");
     }
     const hasFull = containsCommit(delta, expected.reviewedCommit);
