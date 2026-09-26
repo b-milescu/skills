@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Focus: `scripts/check.sh` runs `node --test 'tests/*.mjs'` and every
-# `tests/*.sh`, keeps going after one fails, ends with the failing-set list and
-# a non-zero exit, and still prints `check: PASS` only on a green run (issues
-# #493, #498).
+# Focus: `scripts/check.sh` runs `node --test 'tests/*.mjs'` (quoted: an empty
+# match never falls back to Node's default patterns) and every `tests/*.sh`,
+# keeps going after one fails, ends with the failing-set list and a non-zero
+# exit, and still prints `check: PASS` only on a green run (issues #493, #498,
+# #500).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -40,6 +41,16 @@ make_repo "$green"
 run_gate "$green" "$WORK/green.out" || fail "green run exited non-zero: $(cat "$WORK/green.out")"
 assert_file_contains "$WORK/green.out" "check: PASS" "green PASS line"
 assert_path_readable "$green/ran-z-pass-mjs" "tests/*.mjs file to run under node --test"
+
+# Empty glob: no top-level tests/*.mjs plus a decoy matching Node's default
+# test patterns. The quoted glob runs 0 tests; unquoted, nullglob drops the
+# argument and bare `node --test` would run the decoy (issue #500).
+empty="$WORK/empty"
+make_repo "$empty"
+rm "$empty/tests/z-pass.mjs"
+printf 'import { writeFileSync } from "node:fs";\nwriteFileSync("ran-decoy", "");\n' > "$empty/decoy.test.mjs"
+run_gate "$empty" "$WORK/empty.out" || fail "empty-glob run exited non-zero: $(cat "$WORK/empty.out")"
+assert_path_absent "$empty/ran-decoy" "decoy run: empty tests/*.mjs glob fell back to Node default patterns"
 
 red="$WORK/red"
 make_repo "$red"
