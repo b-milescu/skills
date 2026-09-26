@@ -302,15 +302,16 @@ function liftStructure(body) {
   return rows;
 }
 
-// `pending` makes the Delta stale only inside a `;`/`<br>` clause that is the
-// bare word, or names the gate, its command, a rerun, a receipt, a head, a
-// rebind, a SHA/commit (word or token), or an arrow; prose such as "the
-// bound-or-pending wording" is not a pointer (issue #503).
-const deltaPointer = /\bgate\b|\bre-?runs?\b|\breceipts?\b|\bshas?\b|\bcommits?\b|\bheads?\b|\bre-?bind(?:ing)?\b|\bre-?bound\b|→|->/i;
+// `pending` makes the Delta stale only inside a `;`/`<br>` clause that starts
+// with it (a bare or annotated slot such as `pending — parent-owned`), or names
+// the gate, its command, a rerun, a receipt, a head, a rebind, a SHA/commit
+// (word or token), or an arrow; prose such as "the bound-or-pending wording"
+// is not a pointer (issues #503, #505).
+const deltaPointer = /\bgate\b|\bre-?run(?:s|n?ing)?\b|\breceipts?\b|\bshas?\b|\bcommits?\b|\bheads?\b|\bre-?bind(?:ing)?\b|\bre-?bound\b|→|->/i;
 
 function pendingPointer(clause, gateCommand) {
   if (!/pending/i.test(clause)) return false;
-  return /^\W*pending\W*$/i.test(clause) || deltaPointer.test(clause) || ciSha.test(clause) || clause.includes(gateCommand);
+  return /^\W*pending\b/i.test(clause) || deltaPointer.test(clause) || ciSha.test(clause) || clause.includes(gateCommand);
 }
 
 function validateLift(body, expected) {
