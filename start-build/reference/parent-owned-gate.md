@@ -163,8 +163,10 @@ Reviewer Lift row whose value set
 parent-owned Lift, so `Gate owner` must lead with `parent`; the annotation after
 it (for example `parent — parent-owned/not-run; candidate <sha>`) may stay after
 the receipt, while `builder`, `parent-owned`, or `both` is refused (issue #502).
-A separator must be followed by real text (`moderate ()` and `N/A ()` are
-refused), and a `Change tier` rationale is not another tier token. `CI pipeline`
+A separator must be followed by a note with at least one character other than
+whitespace or parentheses (`moderate — (one validator)` is accepted; `moderate ()`,
+`moderate — ()`, and `N/A ()` are refused), and a `Change tier` rationale is not
+another tier token. `CI pipeline`
 needs a locator or a `#<n>`/`pipeline <n>`/`run <n>`/`build <n>` ID (a bare
 count is not one) and a SHA; a hex-letter word such as `defaced` is not a SHA.
 `Decoupling proof` names a co-running change request (`!<n>`, `#<n>`,

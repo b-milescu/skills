@@ -350,7 +350,7 @@ try {
     "Review gate": ["mandatory", "bypassed (human override)"],
     "Change tier": [
       "trivial — docs only", "moderate: one validator", "high-risk - gate semantics", "`trivial — docs only`",
-      "`moderate` — one validator", "moderate (one validator)", "moderate; one validator",
+      "`moderate` — one validator", "moderate (one validator)", "moderate; one validator", "moderate — (one validator)",
     ],
     Transport: ["mcp", "n/a", "glab-fallback (gap: approvals endpoint)", undefined],
     // Post-note validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
@@ -365,13 +365,13 @@ try {
       "N/A: no pipeline observed for 1126607b by the builder; advisory only",
       "advisory: pipeline 8053 (https://gitlab.example.com/group/project/-/pipelines/8053), status running at publication, sha 6081f11337676723a591037f82a4e03c38a82089",
       `pipeline #412 success at ${"a".repeat(40)}`,
-      "N/A (no CI configured)",
+      "N/A (no CI configured)", "N/A — (no CI configured)",
       "pipeline 8053 success, sha 1234567",
     ],
     "Touched safety surfaces": ["none", "[]", "`none`", "gates, locks", "other (one new read-only query, LAN panel)", "`state, other (x)`"],
     "Acceptance surfaces": [
       "none", "[]", "`none`", "gate-receipt:test, docs:docs-read", "panel:smoke, deploy:N/A — no deploy surface", "ci-parity:ci", "tooling:test, deploy:N/A — no deploy, no CI",
-      "deploy:N/A — out of scope, note: parent-owned",
+      "deploy:N/A — out of scope, note: parent-owned", "deploy:N/A — (none)",
     ],
     // One value per co-running identifier alternative, each matching only that alternative (#502 SF-1).
     "Decoupling proof": [
@@ -403,17 +403,17 @@ try {
   }
   const offSchema = {
     "Review gate": ["pending — parent-owned independent review after Gate Receipt", "mandatory — pending", "bypassed", undefined],
-    "Change tier": ["trivial", "small — docs", "moderate-ish change", "moderate ()", "moderate; high-risk", undefined],
+    "Change tier": ["trivial", "small — docs", "moderate-ish change", "moderate ()", "moderate — ()", "moderate (", "moderate;", "moderate; high-risk", undefined],
     Transport: ["MCP", "glab", "glab-fallback", "mcp via glab"],
     "Gate owner": ["parent-owned", "both", "parents", "owner: parent", "builder", "builder (full local gate on the candidate)", "builder / parent; parent-owned/not-run", undefined],
     "Gate coverage": ["parent-owned", "exact-candidate-local; plus CI", undefined],
     "CI pipeline": [
-      "advisory; not observed by the builder", "advisory — unavailable", "N/A", "N/A ()", "pipeline 8053 running", "sha 6081f11337676723a591037f82a4e03c38a82089 running", "success", "sha 1234567 running",
+      "advisory; not observed by the builder", "advisory — unavailable", "N/A", "N/A ()", "N/A;", "N/A — ( )", "pipeline 8053 running", "sha 6081f11337676723a591037f82a4e03c38a82089 running", "success", "sha 1234567 running",
       "not observed; 1 retry, sha 1234567", "pipeline 8053 success, commit defaced",
     ],
     "Touched safety surfaces": ["none — test only", "`gates`, `locks`", "gates; locks", "database", "other: x", undefined],
     "Acceptance surfaces": [
-      "AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", "gate:N/A ()",
+      "AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", "gate:N/A ()", "gate:N/A — ()",
       "docs:N/A — none, `gate:test`", "deploy:N/A — no deploy, gate:tested",
     ],
     "Decoupling proof": [
