@@ -154,7 +154,10 @@ Reviewer Lift row whose value set
 `Review gate`, `Change tier`, `Transport` (may be absent), `Gate owner`,
 `Gate coverage`, `CI pipeline`, `Touched safety surfaces`,
 `Acceptance surfaces`, `Decoupling proof`, `Open Questions`,
-`Approval authority`, and `Finish authority`. Each refused row is listed once
+`Approval authority`, and `Finish authority`. `Gate owner` must lead with
+`builder` or `parent`; the parent-owned annotation after it (for example
+`parent — parent-owned/not-run; candidate <sha>`) may stay after the receipt,
+while `parent-owned` or `both` alone is refused. Each refused row is listed once
 with its accepted forms; cell values are not echoed. Free-text rows are not
 judged, and `Finding bindings` stays with `validate-finding-bindings.mjs`.
 

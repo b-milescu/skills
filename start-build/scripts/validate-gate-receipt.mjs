@@ -216,26 +216,34 @@ function namesShortReviewedCommit(value, commit) {
 // (issue #501). Each entry: row, accepted-value test, accepted forms for the
 // refusal, and whether the schema lets the row be absent (Transport defaults
 // to mcp). One surrounding code span is stripped from every cell first.
-const noteText = String.raw`(?:\s*[—–]|\s+-|:)\s*\S.*`;
+const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)\s*\S.*`;
 const naText = new RegExp(`^N/A${noteText}$`, "i");
 const safetySurface = /^(?:external-system|credentials|state|migration|gates|locks|deploy|wire-protocol|other(?:\s*\([^()]+\))?)$/;
 const acceptanceEntry = new RegExp(String.raw`^[^\s:,\`]+:(?:test|smoke|docs-read|ci|N/A${noteText})$`);
+// A commit SHA: any 7-40 hex token with a letter, or an all-digit one after
+// `sha`/`commit` (a bare all-digit token reads as a pipeline ID).
+const ciSha = /\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b|\b(?:sha|commit)\s*[:=]?\s*[0-9]{7,40}\b/i;
+// A co-running change-request/branch identifier (docs/decoupling-contract.md).
+const coRunningId = /[!#]\d+|\b(?:MR|PR|merge request|pull request|change request)\s+#?\d+\b|[a-z][a-z0-9+.-]*:\/\/\S+|\bissue-\d+|\bbranch(?:es)?\b[\s:]+\S/i;
 const liftValueForms = [
   ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
-  ["Change tier", (v) => new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(v), "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
+  ["Change tier", (v) => new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(v.replace(/^`(trivial|moderate|high-risk)`/, "$1")),
+    "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
   ["Transport", (v) => /^(?:mcp|n\/a|glab-fallback \(gap: [^()]+\))$/.test(v), "`mcp`, `n/a`, or `glab-fallback (gap: <named gap>)`", true],
-  ["Gate owner", (v) => /^(?:builder|parent)$/.test(v), "`builder` or `parent`"],
+  ["Gate owner", (v) => /^(?:builder|parent)(?:$|[\s.,;:(—–])/.test(v), "`builder` or `parent`, optionally followed by the ownership-contract annotation"],
   ["Gate coverage", (v) => v === "exact-candidate-local", "`exact-candidate-local`"],
   // ponytail: status is not checked — the schema names no provider-neutral
   // status vocabulary; add one here if the schema ever enumerates it.
-  ["CI pipeline", (v) => naText.test(v) || (/(?:[a-z][a-z0-9+.-]*:\/\/\S+|\b\d+\b)/i.test(v) && /\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b/i.test(v)),
+  ["CI pipeline", (v) => naText.test(v) || (ciSha.test(v) && /(?:[a-z][a-z0-9+.-]*:\/\/\S+|\b\d+\b)/i.test(v.replace(ciSha, ""))),
     "pipeline locator/ID, status, and commit SHA, or `N/A — <why>`"],
   ["Touched safety surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?![^(]*\))/).every((item) => safetySurface.test(item.trim())),
     "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
-  ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(",").every((entry) => acceptanceEntry.test(entry.trim())),
+  // Entries split only at a comma that starts a new `surface:` entry, so an
+  // `N/A — <reason>` may itself contain commas.
+  ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?=\s*[^\s:,`]+:)/).every((entry) => acceptanceEntry.test(entry.trim())),
     "`none`, `[]`, or comma-separated bare `surface:evidence` entries with evidence test, smoke, docs-read, ci, or `N/A — <reason>`"],
-  ["Decoupling proof", (v) => v === "single MR" || (!/^single\b/i.test(v) && /(?:[!#]\d+|\bissue-\d+)/.test(v)),
-    "`single MR`, or the co-running change-request IDs/branches plus the Decoupling Contract summary"],
+  ["Decoupling proof", (v) => /^single (?:MR|PR|change request)$/.test(v) || (!/^single\b/i.test(v) && coRunningId.test(v)),
+    "`single MR` (or `single PR` / `single change request`), or the co-running change-request IDs/locators/branches plus the Decoupling Contract summary"],
   ["Open Questions", (v) => v === "none" || /\bOQ-\d+\b/.test(v), "`none` or a count/list of `OQ-N` IDs"],
   ["Approval authority", (v) => /^(?:default-after-pass|restricted:\s*\S.*)$/.test(v), "`default-after-pass` or `restricted: <source/reason>`"],
   ["Finish authority", (v) => /^(?:none — requires explicit human\/parent instruction|approval-only|reviewer may merge|queue auto-merge|human release|project default:\s*\S.*)$/.test(v.replace(/^"(.*)"$/, "$1")),
