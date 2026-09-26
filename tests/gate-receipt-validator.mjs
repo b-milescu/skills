@@ -4,9 +4,10 @@
 // without body leakage; rejects changed tracked files and any tracked-change
 // waiver; proves Windows/UNC path plus CRLF handling; enforces pre-ready
 // ordering; refuses off-schema values in closed-set Reviewer Lift rows, row by
-// row, against frozen live midnight packets (!534 refused, !585 accepted); and
-// keeps build/review cards and generated templates pointed at the canonical
-// helper.
+// row, against frozen live midnight packets (!534 refused, !585 accepted);
+// validates both packet templates' Lift blocks, pre-post Lift structure, and
+// the narrowed Delta `pending` rule (#503); and keeps build/review cards and
+// generated templates pointed at the canonical helper.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -93,6 +94,15 @@ function liftWithSha(sha) {
   return packet().replace(`| Reviewed SHA | \`${commit}\` |`, `| Reviewed SHA | ${sha} |`);
 }
 
+// The template's own Lift block (markers and row names verbatim), each
+// placeholder replaced by the conforming packet() value for that row.
+function filledTemplate(path, values = packet()) {
+  const rowValues = new Map([...values.matchAll(/^\| ([^|]+?) \| (.*) \|$/gm)].map((match) => [match[1], match[2]]));
+  const body = readFileSync(join(root, path), "utf8");
+  const block = body.slice(body.indexOf("<!-- REVIEWER-LIFT-SCHEMA:BEGIN"), body.indexOf("<!-- REVIEWER-LIFT-SCHEMA:END -->") + "<!-- REVIEWER-LIFT-SCHEMA:END -->".length);
+  return block.replace(/^\| ([^|]+?) \|.*\|$/gm, (line, name) => (name === "Field" ? line : `| ${name} | ${rowValues.get(name) ?? "N/A — template test"} |`));
+}
+
 function run({ document = receipt(), reviewPacket = packet(), locatorValue = locator, mode = "post-note", bind = {} } = {}) {
   const { reviewedCommit = commit, gateCommand = expected.gateCommand, gatePolicy = expected.gatePolicy } = bind;
   const receiptPath = join(work, "receipt.yml");
@@ -108,6 +118,7 @@ function run({ document = receipt(), reviewPacket = packet(), locatorValue = loc
       "--gate-receipt-locator", locatorValue);
   } else {
     argv.unshift("--mode", mode);
+    argv.push("--review-packet", packetPath);
   }
   return spawnSync(process.execPath, [validator, ...argv], { encoding: "utf8" });
 }
@@ -226,6 +237,23 @@ try {
   assert.match(pendingDelta.stderr, /Reviewer Lift delta is stale/, "pending keeps the stale message");
   const fullDelta = run({ reviewPacket: withDelta(`${commit} -> files, gate, no`) });
   assert.equal(fullDelta.status, 0, "full 40-hex delta still passes");
+  // Issue #503: `pending` is stale only when it leaves a gate rerun, Gate
+  // Receipt, or commit unbound; ordinary prose (the !558 Delta) is accepted.
+  const oldSha = "2".repeat(40);
+  const staleDeltas = {
+    "pending gate rerun": `${oldSha} → ${commit}: fix; files x; gate rerun pending; substantive yes`,
+    "pending Gate Receipt": `${oldSha} → ${commit}: fix; files x; gate rerun npm run check, Gate Receipt: pending; substantive yes`,
+    "unrebound new SHA": `${commit} → pending: fix; files x; gate rerun PASS; substantive yes`,
+  };
+  for (const [name, delta] of Object.entries(staleDeltas)) {
+    const result = run({ reviewPacket: withDelta(delta) });
+    assert.notEqual(result.status, 0, `${name} Delta is refused`);
+    assert.match(result.stderr, /Reviewer Lift delta is stale: Delta since last ready push leaves a gate rerun, Gate Receipt, or commit pending/, `${name} refusal names the row and rule`);
+    assert.doesNotMatch(result.stderr, /substantive yes/, `${name} refusal does not echo the cell`);
+  }
+  const delta558 = `2c72ffb83537718fc2c9f72978551994e64f4d4d → ${commit}: revision for review-report:group/project!558:2 SF-1, C-1 and C-2 (per-kind remainder sources with the pre-rollback master for pin-agnostic policy, and the complementary over-restore diff; the bound-or-pending wording; registry paths in the §5b rollback path set); file .claude/skills/move-pin/SKILL.md (Rollback text plus one §5b sentence); substantive docs wording; gate rerun: PASS — Gate Receipt https://gitlab.example.com/group/project/-/merge_requests/558#note_55375`;
+  const prose558 = run({ reviewPacket: withDelta(delta558) });
+  assert.equal(prose558.status, 0, `!558 Delta whose only pending is prose is accepted: ${prose558.stderr}`);
 
   // Doc/validator agreement (issue #450): the example a parent copies must teach
   // exactly the accepted status_before values and preflight commands.
@@ -396,6 +424,37 @@ try {
   }
   const reviewGate = run({ reviewPacket: withRow("Review gate", "pending") });
   assert.match(reviewGate.stderr, /Review gate is off-schema; accepted: `mandatory` or `bypassed \(human override\)`/, "refusal names the accepted forms");
+
+  // Issue #503: a Lift copied from either packet template validates first
+  // time, and pre-post mode refuses a bad Lift before anything is posted.
+  for (const template of ["start-build/templates/review-packet.md", "start-build/templates/review-packet-compact.md"]) {
+    const filled = filledTemplate(template);
+    for (const mode of ["pre-post", "post-note"]) {
+      const result = run({ reviewPacket: filled, mode });
+      assert.equal(result.status, 0, `${template} Lift passes ${mode}: ${result.stderr}`);
+    }
+  }
+  const oldMarker = filledTemplate("start-build/templates/review-packet-compact.md")
+    .replace(/^<!-- REVIEWER-LIFT-SCHEMA:BEGIN .* -->$/m, "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated copy; schema reviewer-lift-schema.md -->");
+  const oldMarkerPre = run({ reviewPacket: oldMarker, mode: "pre-post" });
+  assert.notEqual(oldMarkerPre.status, 0, "pre-post refuses the old compact-template BEGIN marker");
+  assert.match(oldMarkerPre.stderr, /BEGIN marker/, "marker refusal names the BEGIN marker rule");
+  const candidate = packet(`not-run — parent-owned; command ${expected.gateCommand}`, `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; coverage exact-candidate-local; result: not-run — parent-owned`);
+  assert.equal(run({ reviewPacket: candidate, mode: "pre-post" }).status, 0, "pre-post accepts the not-yet-receipted candidate Lift");
+  assert.notEqual(run({ reviewPacket: candidate }).status, 0, "post-note still requires the receipted Local gate");
+  const sentinel = "SENTINEL-CELL-VALUE";
+  const structureRefusals = {
+    "missing END marker": [packet().replace("<!-- REVIEWER-LIFT-SCHEMA:END -->", ""), /Reviewer Lift END marker must appear exactly once/],
+    "missing required row": [withRow("CI pipeline", undefined), /missing Reviewer Lift CI pipeline/],
+    "duplicate row": [packet().replace("| Gate owner | parent |", `| Gate owner | parent |\n| Gate owner | ${sentinel} |`), /Reviewer Lift Gate owner row appears more than once/],
+    "off-schema closed-set value": [withRow("Decoupling proof", sentinel), /Reviewer Lift Decoupling proof is off-schema/],
+  };
+  for (const [name, [body, rule]] of Object.entries(structureRefusals)) {
+    const result = run({ reviewPacket: body, mode: "pre-post" });
+    assert.notEqual(result.status, 0, `pre-post refuses ${name}`);
+    assert.match(result.stderr, rule, `${name} refusal names the row and rule`);
+    assert.ok(!result.stderr.includes(sentinel), `${name} refusal does not echo cell values`);
+  }
 
   console.log("gate-receipt-validator: PASS");
 } finally {

@@ -17,7 +17,7 @@ Every row is required; `reviewer-lift-schema.md` owns their semantics and
 `../reference/parent-owned-gate.md` owns parent-owned mode. Child runs add
 `gate_owner_received` per [builder-final-handoff.md](builder-final-handoff.md).
 
-<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated copy; schema reviewer-lift-schema.md -->
+<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
 | Reviewed SHA | |
