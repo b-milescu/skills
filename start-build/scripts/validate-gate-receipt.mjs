@@ -212,6 +212,47 @@ function namesShortReviewedCommit(value, commit) {
     .some((match) => commit.startsWith(match[1].toLowerCase()));
 }
 
+// Rows with a closed value set in start-build/templates/reviewer-lift-schema.md
+// (issue #501). Each entry: row, accepted-value test, accepted forms for the
+// refusal, and whether the schema lets the row be absent (Transport defaults
+// to mcp). One surrounding code span is stripped from every cell first.
+const noteText = String.raw`(?:\s*[—–]|\s+-|:)\s*\S.*`;
+const naText = new RegExp(`^N/A${noteText}$`, "i");
+const safetySurface = /^(?:external-system|credentials|state|migration|gates|locks|deploy|wire-protocol|other(?:\s*\([^()]+\))?)$/;
+const acceptanceEntry = new RegExp(String.raw`^[^\s:,\`]+:(?:test|smoke|docs-read|ci|N/A${noteText})$`);
+const liftValueForms = [
+  ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
+  ["Change tier", (v) => new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(v), "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
+  ["Transport", (v) => /^(?:mcp|n\/a|glab-fallback \(gap: [^()]+\))$/.test(v), "`mcp`, `n/a`, or `glab-fallback (gap: <named gap>)`", true],
+  ["Gate owner", (v) => /^(?:builder|parent)$/.test(v), "`builder` or `parent`"],
+  ["Gate coverage", (v) => v === "exact-candidate-local", "`exact-candidate-local`"],
+  // ponytail: status is not checked — the schema names no provider-neutral
+  // status vocabulary; add one here if the schema ever enumerates it.
+  ["CI pipeline", (v) => naText.test(v) || (/(?:[a-z][a-z0-9+.-]*:\/\/\S+|\b\d+\b)/i.test(v) && /\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b/i.test(v)),
+    "pipeline locator/ID, status, and commit SHA, or `N/A — <why>`"],
+  ["Touched safety surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?![^(]*\))/).every((item) => safetySurface.test(item.trim())),
+    "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
+  ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(",").every((entry) => acceptanceEntry.test(entry.trim())),
+    "`none`, `[]`, or comma-separated bare `surface:evidence` entries with evidence test, smoke, docs-read, ci, or `N/A — <reason>`"],
+  ["Decoupling proof", (v) => v === "single MR" || (!/^single\b/i.test(v) && /(?:[!#]\d+|\bissue-\d+)/.test(v)),
+    "`single MR`, or the co-running change-request IDs/branches plus the Decoupling Contract summary"],
+  ["Open Questions", (v) => v === "none" || /\bOQ-\d+\b/.test(v), "`none` or a count/list of `OQ-N` IDs"],
+  ["Approval authority", (v) => /^(?:default-after-pass|restricted:\s*\S.*)$/.test(v), "`default-after-pass` or `restricted: <source/reason>`"],
+  ["Finish authority", (v) => /^(?:none — requires explicit human\/parent instruction|approval-only|reviewer may merge|queue auto-merge|human release|project default:\s*\S.*)$/.test(v.replace(/^"(.*)"$/, "$1")),
+    "`none — requires explicit human/parent instruction`, `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or `project default: <policy>`"],
+];
+
+function offSchemaLiftRows(rows) {
+  const refused = [];
+  for (const [name, accepts, forms, optional] of liftValueForms) {
+    const cell = rows.get(name);
+    if (cell === undefined && optional) continue;
+    const value = (cell ?? "").trim().replace(/^`([^`]*)`$/, "$1").trim();
+    if (!accepts(value)) refused.push(`- Reviewer Lift ${name} is off-schema; accepted: ${forms}`);
+  }
+  return refused;
+}
+
 function validateLift(body, expected) {
   const rows = tableRows(body);
   const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
@@ -247,6 +288,9 @@ function validateLift(body, expected) {
     }
     if (!hasFull) fail("Reviewer Lift delta names the reviewed commit in short form; the full 40-hex form is required");
   }
+
+  const refused = offSchemaLiftRows(rows);
+  if (refused.length > 0) fail(`Reviewer Lift values are off-schema per start-build/templates/reviewer-lift-schema.md:\n${refused.join("\n")}`);
 }
 
 const { args, mode, owner } = parseArgs(process.argv.slice(2));

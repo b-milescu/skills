@@ -148,6 +148,16 @@ two or more URLs extracts no locator at all and fails. A mismatch is reported as
 row, separately from the row's missing-`PASS`, contradictory-token, and
 missing-gate-command failures.
 
+Post-note validation also refuses off-schema values (issue #501) in every
+Reviewer Lift row whose value set
+[reviewer-lift-schema.md](../templates/reviewer-lift-schema.md) closes:
+`Review gate`, `Change tier`, `Transport` (may be absent), `Gate owner`,
+`Gate coverage`, `CI pipeline`, `Touched safety surfaces`,
+`Acceptance surfaces`, `Decoupling proof`, `Open Questions`,
+`Approval authority`, and `Finish authority`. Each refused row is listed once
+with its accepted forms; cell values are not echoed. Free-text rows are not
+judged, and `Finding bindings` stays with `validate-finding-bindings.mjs`.
+
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
 For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt <locator>`.
 Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged.
