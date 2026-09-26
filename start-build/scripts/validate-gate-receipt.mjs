@@ -216,31 +216,52 @@ function namesShortReviewedCommit(value, commit) {
 // (issue #501). Each entry: row, accepted-value test, accepted forms for the
 // refusal, and whether the schema lets the row be absent (Transport defaults
 // to mcp). One surrounding code span is stripped from every cell first.
-const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)\s*\S.*`;
+// A note after a separator must start with real text, so `moderate ()` and
+// `N/A ()` are refused (issue #502 C-2).
+const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)\s*[^\s()].*`;
 const naText = new RegExp(`^N/A${noteText}$`, "i");
+const tierOnly = /^(?:trivial|moderate|high-risk)(?:[\s\W]*(?:trivial|moderate|high-risk))*[\s\W]*$/;
 const safetySurface = /^(?:external-system|credentials|state|migration|gates|locks|deploy|wire-protocol|other(?:\s*\([^()]+\))?)$/;
 const acceptanceEntry = new RegExp(String.raw`^[^\s:,\`]+:(?:test|smoke|docs-read|ci|N/A${noteText})$`);
-// A commit SHA: any 7-40 hex token with a letter, or an all-digit one after
+// A commit SHA: a 7-39 hex token with a letter and a digit (so hex-letter words
+// like `defaced` are not SHAs), a full 40-hex token, or an all-digit one after
 // `sha`/`commit` (a bare all-digit token reads as a pipeline ID).
-const ciSha = /\b(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b|\b(?:sha|commit)\s*[:=]?\s*[0-9]{7,40}\b/i;
-// A co-running change-request/branch identifier (docs/decoupling-contract.md).
-const coRunningId = /[!#]\d+|\b(?:MR|PR|merge request|pull request|change request)\s+#?\d+\b|[a-z][a-z0-9+.-]*:\/\/\S+|\bissue-\d+|\bbranch(?:es)?\b[\s:]+\S/i;
+const ciSha = /\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,39}\b|\b[0-9a-f]{40}\b|\b(?:sha|commit)\s*[:=]?\s*[0-9]{7,40}\b/i;
+// A pipeline locator (URL) or ID: `#<n>` or `pipeline|run|build <n>`; a bare
+// number such as a retry count is not an ID (issue #502 C-2).
+const ciPipelineId = /[a-z][a-z0-9+.-]*:\/\/\S+|#\d+\b|\b(?:pipeline|run|build)\s+#?\d+\b/i;
+// A co-running change-request/branch identifier (docs/decoupling-contract.md):
+// a URL only as a change-request locator, and after `branch` only a
+// branch-shaped name, never `none` (issue #502 SF-1).
+const coRunningId = new RegExp([
+  String.raw`[!#]\d+`,
+  String.raw`\b(?:MR|PR|merge request|pull request|change request)\s+#?\d+\b`,
+  String.raw`[a-z][a-z0-9+.-]*:\/\/\S*\/(?:merge_requests|pull|pullrequest)\/\d+`,
+  String.raw`\bissue-\d+`,
+  String.raw`\bbranch(?:es)?\b[\s:]+(?:\`(?!none\`)[^\`\s]+\`|[\w./-]*[/_\d-][\w./-]*)`,
+].join("|"), "i");
 const liftValueForms = [
   ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
-  ["Change tier", (v) => new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(v.replace(/^`(trivial|moderate|high-risk)`/, "$1")),
+  // The rationale is not a second tier token (`moderate; high-risk`, #502 C-2).
+  ["Change tier", (v) => {
+    const tier = v.replace(/^`(trivial|moderate|high-risk)`/, "$1");
+    return new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(tier) && !tierOnly.test(tier);
+  },
     "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
   ["Transport", (v) => /^(?:mcp|n\/a|glab-fallback \(gap: [^()]+\))$/.test(v), "`mcp`, `n/a`, or `glab-fallback (gap: <named gap>)`", true],
-  ["Gate owner", (v) => /^(?:builder|parent)(?:$|[\s.,;:(—–])/.test(v), "`builder` or `parent`, optionally followed by the ownership-contract annotation"],
+  // Post-note mode validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
+  ["Gate owner", (v) => /^parent(?:$|[\s.,;:(—–])/.test(v), "`parent`, optionally followed by the ownership-contract annotation"],
   ["Gate coverage", (v) => v === "exact-candidate-local", "`exact-candidate-local`"],
   // ponytail: status is not checked — the schema names no provider-neutral
   // status vocabulary; add one here if the schema ever enumerates it.
-  ["CI pipeline", (v) => naText.test(v) || (ciSha.test(v) && /(?:[a-z][a-z0-9+.-]*:\/\/\S+|\b\d+\b)/i.test(v.replace(ciSha, ""))),
+  ["CI pipeline", (v) => naText.test(v) || (ciSha.test(v) && ciPipelineId.test(v.replace(ciSha, ""))),
     "pipeline locator/ID, status, and commit SHA, or `N/A — <why>`"],
   ["Touched safety surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?![^(]*\))/).every((item) => safetySurface.test(item.trim())),
     "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
-  // Entries split only at a comma that starts a new `surface:` entry, so an
-  // `N/A — <reason>` may itself contain commas.
-  ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?=\s*[^\s:,`]+:)/).every((entry) => acceptanceEntry.test(entry.trim())),
+  // Entries split only at a comma that starts a new `surface:evidence` entry
+  // (no space after the colon; a backticked one is split off and refused), so
+  // an `N/A — <reason>` may itself contain commas and `, word: text` (#502 C-2).
+  ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?=\s*`?[^\s:,`]+:\S)/).every((entry) => acceptanceEntry.test(entry.trim())),
     "`none`, `[]`, or comma-separated bare `surface:evidence` entries with evidence test, smoke, docs-read, ci, or `N/A — <reason>`"],
   ["Decoupling proof", (v) => /^single (?:MR|PR|change request)$/.test(v) || (!/^single\b/i.test(v) && coRunningId.test(v)),
     "`single MR` (or `single PR` / `single change request`), or the co-running change-request IDs/locators/branches plus the Decoupling Contract summary"],

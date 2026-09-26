@@ -315,11 +315,11 @@ try {
       "`moderate` — one validator", "moderate (one validator)", "moderate; one validator",
     ],
     Transport: ["mcp", "n/a", "glab-fallback (gap: approvals endpoint)", undefined],
+    // Post-note validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
     "Gate owner": [
-      "builder", "parent", "`parent`",
+      "parent", "`parent`",
       `parent — parent-owned/not-run; candidate ${commit}`,
       `parent. The builder has not run the gate (parent-owned). Candidate ${commit}.`,
-      "builder (full local gate on the candidate)",
     ],
     "Gate coverage": ["exact-candidate-local", "`exact-candidate-local`"],
     "CI pipeline": [
@@ -331,12 +331,23 @@ try {
       "pipeline 8053 success, sha 1234567",
     ],
     "Touched safety surfaces": ["none", "[]", "`none`", "gates, locks", "other (one new read-only query, LAN panel)", "`state, other (x)`"],
-    "Acceptance surfaces": ["none", "[]", "`none`", "gate-receipt:test, docs:docs-read", "panel:smoke, deploy:N/A — no deploy surface", "ci-parity:ci", "tooling:test, deploy:N/A — no deploy, no CI"],
+    "Acceptance surfaces": [
+      "none", "[]", "`none`", "gate-receipt:test, docs:docs-read", "panel:smoke, deploy:N/A — no deploy surface", "ci-parity:ci", "tooling:test, deploy:N/A — no deploy, no CI",
+      "deploy:N/A — no deploy, reason: parent-owned gate",
+    ],
+    // One value per co-running identifier alternative, each matching only that alternative (#502 SF-1).
     "Decoupling proof": [
       "single MR", "`single MR`", "single change request", "single PR",
-      "co-running !583 (issue-621-panel-build) and !585; no shared paths, locks, or migrations",
-      "co-running https://gitlab.example/g/p/-/merge_requests/590 (branch fix-lexer); Decoupling Contract: no shared paths",
-      "co-running PR 42 (branch feat/lexer); no ordering relation or shared files",
+      "co-running !583; no shared paths, locks, or migrations",
+      "co-running #583; no shared paths",
+      "co-running PR 42; no ordering relation or shared files",
+      "co-running https://gitlab.example/g/p/-/merge_requests/590; Decoupling Contract: no shared paths",
+      "co-running https://github.example/o/r/pull/12; no shared paths",
+      "co-running https://dev.azure.example/o/p/_git/r/pullrequest/7; no shared paths",
+      "co-running issue-621-panel-build; no shared paths",
+      "co-running branch `lexer`; no shared paths",
+      "co-running branch feat/lexer; no shared paths",
+      "co-running branches: fix_lexer; no shared paths",
     ],
     "Open Questions": ["none", "1: OQ-1", "OQ-1, OQ-2"],
     "Approval authority": ["default-after-pass", "restricted: release freeze until 2026-10-01"],
@@ -354,14 +365,24 @@ try {
   }
   const offSchema = {
     "Review gate": ["pending — parent-owned independent review after Gate Receipt", "mandatory — pending", "bypassed", undefined],
-    "Change tier": ["trivial", "small — docs", "moderate-ish change", undefined],
+    "Change tier": ["trivial", "small — docs", "moderate-ish change", "moderate ()", "moderate; high-risk", undefined],
     Transport: ["MCP", "glab", "glab-fallback", "mcp via glab"],
-    "Gate owner": ["parent-owned", "both", "parents", "owner: parent", undefined],
+    "Gate owner": ["parent-owned", "both", "parents", "owner: parent", "builder", "builder (full local gate on the candidate)", "builder / parent; parent-owned/not-run", undefined],
     "Gate coverage": ["parent-owned", "exact-candidate-local; plus CI", undefined],
-    "CI pipeline": ["advisory; not observed by the builder", "advisory — unavailable", "N/A", "pipeline 8053 running", "sha 6081f11337676723a591037f82a4e03c38a82089 running", "success", "sha 1234567 running"],
+    "CI pipeline": [
+      "advisory; not observed by the builder", "advisory — unavailable", "N/A", "N/A ()", "pipeline 8053 running", "sha 6081f11337676723a591037f82a4e03c38a82089 running", "success", "sha 1234567 running",
+      "not observed; 1 retry, sha 1234567", "pipeline 8053 success, commit defaced",
+    ],
     "Touched safety surfaces": ["none — test only", "`gates`, `locks`", "gates; locks", "database", "other: x", undefined],
-    "Acceptance surfaces": ["AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", undefined],
-    "Decoupling proof": ["single issue; only one test file touched; #555 still open and not asserted", "single MR; one file", "single change request; one file", "N/A", "independent", "co-running; no overlap", undefined],
+    "Acceptance surfaces": [
+      "AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", "gate:N/A ()",
+      "deploy:N/A — no deploy, `docs:docs-read`", "deploy:N/A — no deploy, gate:tested",
+    ],
+    "Decoupling proof": [
+      "single issue; only one test file touched; #555 still open and not asserted", "single MR; one file", "single change request; one file", "N/A", "independent", "co-running; no overlap", undefined,
+      "independent — no other branch in flight", "co-running branches: none", "N/A — this branch only", "only one branch touched; no siblings",
+      "co-running branch `none`; no overlap", "see https://gitlab.example/g/p/-/blob/main/docs/decoupling-contract.md",
+    ],
     "Open Questions": ["maybe the timeout", "0", undefined],
     "Approval authority": ["approve after pass", "restricted", undefined],
     "Finish authority": ["merge when green", "none", "project default", undefined],

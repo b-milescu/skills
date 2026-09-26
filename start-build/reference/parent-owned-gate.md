@@ -154,10 +154,18 @@ Reviewer Lift row whose value set
 `Review gate`, `Change tier`, `Transport` (may be absent), `Gate owner`,
 `Gate coverage`, `CI pipeline`, `Touched safety surfaces`,
 `Acceptance surfaces`, `Decoupling proof`, `Open Questions`,
-`Approval authority`, and `Finish authority`. `Gate owner` must lead with
-`builder` or `parent`; the parent-owned annotation after it (for example
-`parent — parent-owned/not-run; candidate <sha>`) may stay after the receipt,
-while `parent-owned` or `both` alone is refused. Each refused row is listed once
+`Approval authority`, and `Finish authority`. Post-note validates a
+parent-owned Lift, so `Gate owner` must lead with `parent`; the annotation after
+it (for example `parent — parent-owned/not-run; candidate <sha>`) may stay after
+the receipt, while `builder`, `parent-owned`, or `both` is refused (issue #502).
+A separator must be followed by real text (`moderate ()` and `N/A ()` are
+refused), and a `Change tier` rationale is not another tier token. `CI pipeline`
+needs a locator or a `#<n>`/`pipeline <n>`/`run <n>`/`build <n>` ID (a bare
+count is not one) and a SHA; a hex-letter word such as `defaced` is not a SHA.
+`Decoupling proof` names a co-running change request (`!<n>`, `#<n>`,
+`MR <n>`, or a `merge_requests/<n>`, `pull/<n>`, or `pullrequest/<n>` locator)
+or a branch-shaped name (`issue-<n>…`, or after `branch` a code span or a token
+with `/`, `-`, `_`, or a digit; never `none`). Each refused row is listed once
 with its accepted forms; cell values are not echoed. Free-text rows are not
 judged, and `Finding bindings` stays with `validate-finding-bindings.mjs`.
 
