@@ -2,6 +2,6 @@
   "externalLinks": {
     "network": "disabled",
     "allowedSchemes": ["http:", "https:", "mailto:", "skill:"],
-    "allowedHosts": ["gitlab.example.com", "code.claude.com", "developer.hashicorp.com", "opentofu.org"]
+    "allowedHosts": ["gitlab.example.com", "code.claude.com"]
   }
 }

@@ -7,7 +7,6 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 - `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
-- `compaction-index/` — OMP compaction extension (not a skill); `install.sh` links it into `~/.omp/agent/extensions/`.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills
@@ -23,7 +22,6 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `plan-to-issues` | Publish an approved plan as tracker issues. Slash is `/plan-to-issues`. |
 | `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
 | `retro` | Mine a finished delivery session for friction; proposes follow-up issues only. |
-| `terraform-tofu` | Author Terraform/OpenTofu configuration with native test-first development. |
 
 ## External skill dependencies
 
@@ -50,5 +48,7 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 GitLab project namespace is `agents/skills`; the npm package name `@agents/skills` is intentionally unchanged.
 
 `install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as skill-root siblings because some runtimes interpret every skill-root directory as a skill. Each installed skill exposes skill-local resource symlinks (`docs/` and `shared-templates/`) for `skill://<skill>/docs/...` and `skill://<skill>/shared-templates/...` reads. The installer warns for missing declared external skill dependencies and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, invoke `gitlab`, use MCP-first transport, and reserve direct `glab` commands for documented guarded fallback/helper cases from inside the target repo.
+
+Installer reruns also remove stale installer-owned skill and agent symlinks from their runtime roots. In an existing `~/.omp/agent/extensions/` directory, they remove only dangling installer-owned symlinks, resolving both absolute and relative targets with the same repository ownership rules. Working extensions, external symlinks (even dangling ones), and regular files are preserved. Extension cleanup creates no missing directory and never scans HOME recursively.
 
 Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).
