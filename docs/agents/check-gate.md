@@ -87,7 +87,6 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/builder-prompt-dedupe.sh` |
 | `tests/check-gate-inventory.sh` |
 | `tests/check-gate-runner.sh` |
-| `tests/compaction-index.sh` |
 | `tests/delivery-schema.sh` |
 | `tests/executable-bit-policy.sh` |
 | `tests/finish-result-schema.sh` |

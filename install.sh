@@ -6,12 +6,9 @@
 #
 #   Agents:  <repo>/agents/<name>.md → ~/.claude/agents/<name>.md   (Claude Code)
 #
-#   Extensions: <repo>/compaction-index/extensions/<name>.js
-#                                  → ~/.omp/agent/extensions/<name>.js (OMP agent)
-#
 # Each destination is skipped if its parent directory (e.g. ~/.claude/,
 # ~/.omp/agent/) doesn't exist — that agent simply isn't installed on this host.
-# Safe to re-run after adding/removing skills, agents, or extensions. Refuses
+# Safe to re-run after adding/removing skills or agents. Refuses
 # to overwrite non-symlink targets or user-managed symlinks pointing outside
 # this repo — fix those by hand. Stale repo-owned symlinks are pruned so
 # renames propagate cleanly.
@@ -263,7 +260,7 @@ prune_stale_repo_links() {
     [[ -L "$link_path" ]] || continue
 
     name=$(basename "$link_path" .md)
-    "$validator" "$name" && continue
+    "$validator" "$name" "$link_path" && continue
 
     target_abs=$(resolve_symlink_target "$link_path") || continue
 
@@ -331,33 +328,15 @@ for entry in "${AGENT_TARGETS[@]}"; do
   done
 done
 
-# --- OMP extensions ---
-# OMP loads extensions from ~/.omp/agent/extensions/*.ts|*.js. Skip when the
-# OMP agent dir is absent, exactly like the agent targets above.
-EXTENSION_NAMES=()
-for f in "$REPO_ROOT"/compaction-index/extensions/*.js "$REPO_ROOT"/compaction-index/extensions/*.ts; do
-  [[ -f "$f" ]] && EXTENSION_NAMES+=("$(basename "$f")")
-done
-
-is_extension_name() {
-  local name="$1" known
-  for known in "${EXTENSION_NAMES[@]}"; do
-    [[ "$known" == "$name" ]] && return 0
-  done
-  return 1
+# --- Retired OMP extension cleanup ---
+# Only prune dangling installer-owned links in the existing extension root.
+# Working extensions remain user-managed; no extension sources are installed.
+extension_dir="$HOME/.omp/agent/extensions"
+is_working_extension() {
+  [[ -e "$2" ]]
 }
 
-extension_dir="$HOME/.omp/agent/extensions"
-if [[ ! -d "$HOME/.omp/agent" ]]; then
-  printf 'skip: %s (parent %s not present — agent not installed)\n' "$extension_dir" "$HOME/.omp/agent"
-elif [[ ${#EXTENSION_NAMES[@]} -eq 0 ]]; then
-  printf 'skip: %s (no extension sources in repo)\n' "$extension_dir"
-else
-  mkdir -p "$extension_dir"
-  echo "Extensions (OMP) → $extension_dir"
-  prune_stale_repo_links "$extension_dir" is_extension_name
-  for name in "${EXTENSION_NAMES[@]}"; do
-    link "$REPO_ROOT/compaction-index/extensions/$name" "$extension_dir/$name"
-  done
+if [[ -d "$extension_dir" ]]; then
+  prune_stale_repo_links "$extension_dir" is_working_extension
 fi
 echo "done"

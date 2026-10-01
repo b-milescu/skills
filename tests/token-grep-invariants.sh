@@ -664,37 +664,6 @@ contain|cleanup-codebase/SKILL.md|**HITL** — behavior-touching deslop (charact
 absent|cleanup-codebase/SKILL.md|or any candidate with uncertain ownership/impact
 contain|cleanup-codebase/SKILL.md|handoffs
 contain|cleanup-codebase/SKILL.md|fallback
-# terraform-tofu-invariants
-contain|terraform-tofu/SKILL.md|exactly one of `terraform` or `tofu`
-contain|terraform-tofu/SKILL.md|Missing, conflicting, ambiguous, or constraint-only evidence blocks work.
-contain|terraform-tofu/SKILL.md|unsupported required test feature blocks work
-contain|terraform-tofu/SKILL.md|behavior-level `.tftest.hcl` test first
-contain|terraform-tofu/SKILL.md|run exactly `terraform test` or `tofu test`
-contain|terraform-tofu/SKILL.md|A passing-first test, unrelated error, unexecuted test, parse/setup failure, or external framework is not RED
-contain|terraform-tofu/SKILL.md|Do not silently change the engine
-contain|terraform-tofu/SKILL.md|Invoke `/forge preflight` exactly once
-contain|terraform-tofu/SKILL.md|Use `/forge snapshot` only when issue, change-request, or CI context exists.
-contain|terraform-tofu/SKILL.md|record `forge_mode: local-only`
-contain|terraform-tofu/SKILL.md|The skill never publishes, approves, merges, queues, or performs post-merge actions.
-contain|terraform-tofu/SKILL.md|[authoring rules](reference/authoring.md)
-contain|terraform-tofu/SKILL.md|[native-testing rules](reference/native-testing.md)
-contain|terraform-tofu/reference/native-testing.md|Set `command = plan` in every safe-workflow run block.
-contain|terraform-tofu/reference/native-testing.md|native mock providers
-contain|terraform-tofu/reference/native-testing.md|Do not use `command = apply` against real infrastructure by default.
-contain|terraform-tofu/reference/native-testing.md|isolated credentials
-contain|terraform-tofu/reference/native-testing.md|isolated local state and backend boundaries
-contain|terraform-tofu/reference/native-testing.md|deterministic cleanup plus observed cleanup evidence
-contain|terraform-tofu/reference/native-testing.md|https://developer.hashicorp.com/terraform/language/tests
-contain|terraform-tofu/reference/native-testing.md|https://opentofu.org/docs/cli/commands/test/
-contain|terraform-tofu/reference/authoring.md|explicit provider source/version constraints
-contain|terraform-tofu/reference/authoring.md|variables precise types
-contain|terraform-tofu/reference/authoring.md|Mark secret-bearing variables and outputs `sensitive = true`
-contain|terraform-tofu/reference/authoring.md|`for_each` with stable, meaningful keys
-contain|terraform-tofu/reference/authoring.md|Add `depends_on` or `lifecycle` only for an intentional behavior
-contain|terraform-tofu/reference/authoring.md|Do not add provisioners.
-contain|terraform-tofu/reference/authoring.md|Do not change backend or state behavior
-contain|terraform-tofu/reference/authoring.md|https://developer.hashicorp.com/terraform/language/style
-contain|terraform-tofu/reference/authoring.md|https://opentofu.org/docs/language/syntax/style/
 contain|install.sh|[[ -f "$dir/SKILL.md" ]] || continue
 # parent-owned-gate-invariants
 contain|start-build/reference/parent-owned-gate.md|local_gate_owner: "parent"
@@ -822,10 +791,6 @@ if (assert_fixed_absent "$planted" 'mr-builder-trivial') >/dev/null 2>&1; then
   fail "planted retired builder route did not fail"
 fi
 rm -f "$planted"
-
-# terraform-tofu reject needles (regex, must stay out of the file)
-reject_text terraform-tofu/reference/native-testing.md 'default plan-mode|plan-mode default|defaults? to plan' 'wording that implies plan is the native engine default'
-reject_text install.sh 'terraform-tofu' 'installer special case'
 
 # start-review-command-ownership raw-mechanic reject across owned files
 for file in start-review/SKILL.md start-review/REVIEW-FLOW.md start-review/templates/filling-guide.md $(agent_prompt_paths "${reviewer_prompt_names[@]}"); do
@@ -1128,18 +1093,5 @@ printf 'a\xe2\x80\x83b pinned\n  real   word\n' >"$flat_fixture"
 if (assert_flat_contains "$flat_fixture" 'pinned real ward') 2>/dev/null; then
   fail "contain| reflow tolerance matched a changed word"
 fi
-
-# terraform frontmatter + RED before GREEN
-assert_path_readable terraform-tofu/SKILL.md
-assert_path_readable terraform-tofu/reference/authoring.md
-assert_path_readable terraform-tofu/reference/native-testing.md
-frontmatter="$(awk 'NR == 1 { if ($0 != "---") exit 2; next } $0 == "---" { exit } { print }' terraform-tofu/SKILL.md)"
-assert_text_contains "$frontmatter" 'name: terraform-tofu' 'skill name'
-assert_text_contains "$frontmatter" 'Author or change Terraform/OpenTofu configuration' 'authoring trigger'
-assert_text_contains "$frontmatter" 'another skill needs Terraform/OpenTofu implementation' 'skill-to-skill trigger'
-assert_text_not_contains "$frontmatter" 'disable-model-invocation: true' 'disabled model invocation'
-red_line="$(grep -n '^## 3\. Prove native RED$' terraform-tofu/SKILL.md | cut -d: -f1)"
-green_line="$(grep -n '^## 4\. Make the smallest GREEN change$' terraform-tofu/SKILL.md | cut -d: -f1)"
-[[ -n "$red_line" && -n "$green_line" && "$red_line" -lt "$green_line" ]] || fail 'native RED must precede GREEN'
 
 printf '%s: PASS\n' "$TEST_NAME"

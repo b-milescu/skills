@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Focus: `install.sh` preserves out-of-repo symlinks, replaces stale in-repo
-# symlinks, and keeps the default builder plus final reviewer installed in
-# each runtime dialect without treating model pins as route names — all under
-# temporary `HOME`.
+# symlinks, cleans retired skill/extension links without removing working or
+# unmanaged extensions, and keeps the default builder plus final reviewer
+# installed in each runtime dialect — all under temporary `HOME`.
 
 set -euo pipefail
 
@@ -170,5 +170,52 @@ custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
 omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
 assert_contains "$collision_output" "$collision_home/.claude/agents/mr-builder.md (existing symlink points outside repo: $custom_agent_abs)"
 assert_contains "$collision_output" "$collision_home/.omp/agent/agents/mr-builder.md (existing symlink points outside repo: $omp_custom_agent_abs)"
+
+# Retirement cleanup is bounded to runtime roots, independent of extension
+# sources, and preserves working extensions and unmanaged content on reruns.
+cleanup_home="$TMP_ROOT/cleanup-home"
+extension_dir="$cleanup_home/.omp/agent/extensions"
+mkdir -p "$cleanup_home/.claude/skills" "$cleanup_home/.omp/agent/skills" "$extension_dir"
+ln -s "$REPO_ROOT/terraform-tofu" "$cleanup_home/.claude/skills/terraform-tofu"
+ln -s "$REPO_ROOT/terraform-tofu" "$cleanup_home/.omp/agent/skills/terraform-tofu"
+ln -s "$REPO_ROOT/compaction-index/extensions/compaction-skill-index.js" "$extension_dir/compaction-skill-index.js"
+relative_target="$("$REALPATH" -m --relative-to="$extension_dir" "$REPO_ROOT/removed-extension.ts")"
+ln -s "$relative_target" "$extension_dir/relative-retired.ts"
+ln -s "$external_dir/missing-extension.js" "$extension_dir/foreign-dangling.js"
+ln -s "$external_dir/custom-agent.md" "$extension_dir/foreign-working.js"
+ln -s "$REPO_ROOT/install.sh" "$extension_dir/repo-working.js"
+ln -s "$REPO_ROOT/README.md" "$extension_dir/repo-working.md"
+printf 'user extension\n' >"$extension_dir/user-file.js"
+ln -s "$REPO_ROOT/removed-extension.ts" "$cleanup_home/outside-runtime.ts"
+
+for pass in 1 2; do
+  HOME="$cleanup_home" "$REPO_ROOT/install.sh" >"$TMP_ROOT/cleanup-$pass.out" 2>&1
+  assert_not_exists "$cleanup_home/.claude/skills/terraform-tofu"
+  assert_not_exists "$cleanup_home/.omp/agent/skills/terraform-tofu"
+  assert_not_exists "$extension_dir/compaction-skill-index.js"
+  assert_not_exists "$extension_dir/relative-retired.ts"
+  assert_symlink_target "$extension_dir/foreign-dangling.js" "$external_dir/missing-extension.js"
+  assert_symlink_target "$extension_dir/foreign-working.js" "$external_dir/custom-agent.md"
+  assert_symlink_target "$extension_dir/repo-working.js" "$REPO_ROOT/install.sh"
+  assert_symlink_target "$extension_dir/repo-working.md" "$REPO_ROOT/README.md"
+  [[ ! -L "$extension_dir/user-file.js" && "$(cat "$extension_dir/user-file.js")" == 'user extension' ]] || {
+    echo "regular extension file changed" >&2
+    exit 1
+  }
+  assert_symlink_target "$cleanup_home/outside-runtime.ts" "$REPO_ROOT/removed-extension.ts"
+done
+
+for runtime_state in absent present; do
+  missing_home="$TMP_ROOT/missing-$runtime_state"
+  mkdir -p "$missing_home"
+  if [[ "$runtime_state" == present ]]; then
+    mkdir -p "$missing_home/.omp/agent"
+  fi
+  HOME="$missing_home" "$REPO_ROOT/install.sh" >"$TMP_ROOT/missing-$runtime_state.out" 2>&1
+  assert_not_exists "$missing_home/.omp/agent/extensions"
+  if [[ "$runtime_state" == absent ]]; then
+    assert_not_exists "$missing_home/.omp"
+  fi
+done
 
 echo "install-symlink-ownership: PASS"
