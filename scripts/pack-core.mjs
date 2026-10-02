@@ -21,4 +21,3 @@ for (const skill of skills) {
     cpSync(join(root, source), destination, { recursive: true, dereference: true });
   }
 }
-console.log("Portable core materialized; npm runtime dependencies remain package-owned.");
