@@ -8,8 +8,6 @@ Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines
 
 **Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Switch to Node 22 per `.nvmrc` (e.g. `nvm use 22`), then run `npm ci` to install dependencies from `package-lock.json`, then run `npm run check`. Skipping either bootstrap step produces spurious failures (wrong Node version or missing `node_modules`).
 
-**Convention no script states:** inside the gate, `bash agents/check.sh` runs against a fabricated disposable HOME containing stub required external skills (not the operator's real HOME). Only a post-install operator run against the real HOME detects installed-runtime external-skill drift.
-
 Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
 
 For parent-owned gate selection, this policy and the bootstrap route above
@@ -60,7 +58,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | The gate uses a fabricated HOME; after install, use no `AGENT_SKILLS_CHECK_HOME` override; only that real-HOME operator run detects installed-runtime external-skill drift. Both forms check agent parity and workflow/prompt drift. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only repository agent parity, workflow/prompt drift and schema/generated-copy checks; no external specialist dependency check. |
 | Agent schema validation | `npm run check:agents-schema` | Validates Claude/OMP agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, retired bridge wording in Claude/OMP bodies, dialect-specific tool names, OMP MCP tool inventory, and canonical OMP multiword keys. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
@@ -100,7 +98,6 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/gitlab-snippet-metadata.sh` |
 | `tests/gitlab-split-snippets.sh` |
 | `tests/handoff-tokens-schema.sh` |
-| `tests/install-external-deps.sh` |
 | `tests/install-symlink-ownership.sh` |
 | `tests/installer-smoke-requirement.sh` |
 | `tests/md-links.sh` |

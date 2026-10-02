@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Focus: `agents/check.sh` parity, canonical-pointer coverage for generic and
-# routed MR agents, prompt-drift, external-skill dependency, and no-mutation
-# `install.sh --check` regressions under temporary homes.
+# routed MR agents, prompt-drift, and actual both-runtime install/check without
+# external TDD, including read-only installed-HOME snapshot coverage.
 
 set -euo pipefail
 
@@ -43,31 +43,9 @@ copy_repo() {
   (cd "$REPO_ROOT" && tar --exclude .git --exclude node_modules -cf - .) | (cd "$dest" && tar -xf -)
 }
 
-prepare_installed_agents() {
-  local repo="$1" home_dir="$2" with_tdd="${3:-yes}"
-
-  mkdir -p \
-    "$home_dir/.claude/agents" \
-    "$home_dir/.claude/skills" \
-    "$home_dir/.omp/agent/agents" \
-    "$home_dir/.omp/agent/skills"
-
-  for agent in mr-builder mr-reviewer-final; do
-    ln -s "$repo/agents/claude/$agent.md" "$home_dir/.claude/agents/$agent.md"
-    ln -s "$repo/agents/omp/$agent.md" "$home_dir/.omp/agent/agents/$agent.md"
-  done
-
-  if [[ "$with_tdd" == yes ]]; then
-    for runtime in "$home_dir/.claude/skills" "$home_dir/.omp/agent/skills"; do
-      mkdir -p "$runtime/tdd"
-      printf '# tdd\n' > "$runtime/tdd/SKILL.md"
-    done
-  fi
-}
-
 run_check_ok() {
   local repo="$1" home_dir="$2" output="$3"
-  if ! AGENT_SKILLS_CHECK_HOME="$home_dir" bash "$repo/agents/check.sh" >"$output" 2>&1; then
+  if ! HOME="$home_dir" bash "$repo/agents/check.sh" >"$output" 2>&1; then
     echo "expected agents/check.sh to pass" >&2
     echo "--- output ---" >&2
     cat "$output" >&2
@@ -77,7 +55,7 @@ run_check_ok() {
 
 run_check_fail() {
   local repo="$1" home_dir="$2" output="$3"
-  if AGENT_SKILLS_CHECK_HOME="$home_dir" bash "$repo/agents/check.sh" >"$output" 2>&1; then
+  if HOME="$home_dir" bash "$repo/agents/check.sh" >"$output" 2>&1; then
     echo "expected agents/check.sh to fail" >&2
     echo "--- output ---" >&2
     cat "$output" >&2
@@ -89,7 +67,6 @@ clean_repo="$TMP_ROOT/clean-repo"
 clean_home="$TMP_ROOT/clean-home"
 clean_output="$TMP_ROOT/clean.out"
 copy_repo "$clean_repo"
-prepare_installed_agents "$clean_repo" "$clean_home" yes
 run_check_ok "$clean_repo" "$clean_home" "$clean_output"
 assert_contains "$clean_output" "agent-check: PASS"
 # Shared routed inventory has identical model-free basenames in both dialects;
@@ -271,7 +248,6 @@ if ! grep -Fq "$fallback_canonical_md" "$fallback_claude_scan"; then
   exit 1
 fi
 # End-to-end: agent-check must PASS via the find fallback with no .claude leak.
-prepare_installed_agents "$fallback_claude_repo" "$fallback_claude_home" yes
 run_check_ok "$fallback_claude_repo" "$fallback_claude_home" "$fallback_claude_output"
 assert_contains "$fallback_claude_output" "agent-check: PASS"
 assert_not_contains "$fallback_claude_output" ".claude/agent-stray"
@@ -288,20 +264,41 @@ assert_contains "$git_noise_schema_output" "Reviewer Lift schema check passed"
 
 nomutate_home="$TMP_ROOT/nomutate-home"
 nomutate_output="$TMP_ROOT/nomutate.out"
-mkdir -p \
-  "$nomutate_home/.claude/skills/tdd" \
-  "$nomutate_home/.omp/agent/skills/tdd"
-printf '# tdd\n' > "$nomutate_home/.claude/skills/tdd/SKILL.md"
-printf '# tdd\n' > "$nomutate_home/.omp/agent/skills/tdd/SKILL.md"
-if ! AGENT_SKILLS_CHECK_HOME="$nomutate_home" HOME="$nomutate_home" "$clean_repo/install.sh" --check >"$nomutate_output" 2>&1; then
+mkdir -p "$nomutate_home/.claude" "$nomutate_home/.omp/agent"
+HOME="$nomutate_home" "$clean_repo/install.sh" >"$TMP_ROOT/nomutate-install.out" 2>&1
+for runtime in "$nomutate_home/.claude/skills" "$nomutate_home/.omp/agent/skills"; do
+  assert_not_exists "$runtime/tdd"
+  for skill in start-build start-review issue-delivery-loop forge; do
+    [[ -L "$runtime/$skill" && -f "$runtime/$skill/SKILL.md" ]] || {
+      echo "missing installed workflow entry: $runtime/$skill" >&2
+      exit 1
+    }
+  done
+done
+for runtime in "$nomutate_home/.claude/agents" "$nomutate_home/.omp/agent/agents"; do
+  for agent in mr-builder mr-reviewer-final; do
+    [[ -L "$runtime/$agent.md" && -f "$runtime/$agent.md" ]] || {
+      echo "missing installed agent: $runtime/$agent.md" >&2
+      exit 1
+    }
+  done
+done
+snapshot_home() {
+  (cd "$nomutate_home" && find . -printf '%P %y %l %m %T@\n' | LC_ALL=C sort)
+}
+snapshot_home >"$TMP_ROOT/home-before"
+if ! HOME="$nomutate_home" "$clean_repo/install.sh" --check >"$nomutate_output" 2>&1; then
   echo "expected install.sh --check to pass" >&2
   echo "--- output ---" >&2
   cat "$nomutate_output" >&2
   exit 1
 fi
 assert_contains "$nomutate_output" "agent-check: PASS"
-assert_not_exists "$nomutate_home/.claude/agents"
-assert_not_exists "$nomutate_home/.omp/agent/agents"
+snapshot_home >"$TMP_ROOT/home-after"
+if ! cmp -s "$TMP_ROOT/home-before" "$TMP_ROOT/home-after"; then
+  echo "install.sh --check changed installed HOME" >&2
+  exit 1
+fi
 
 omp_only_repo="$TMP_ROOT/omp-only-repo"
 omp_only_home="$TMP_ROOT/omp-only-home"
@@ -314,7 +311,6 @@ description: should be paired with a Claude variant
 tools: read
 ---
 AGENT
-prepare_installed_agents "$omp_only_repo" "$omp_only_home" yes
 run_check_fail "$omp_only_repo" "$omp_only_home" "$omp_only_output"
 assert_contains "$omp_only_output" "agents/omp/omp-only.md has no agents/claude/omp-only.md"
 
@@ -329,7 +325,6 @@ description: should be paired with an OMP variant
 tools: Read
 ---
 AGENT
-prepare_installed_agents "$claude_only_repo" "$claude_only_home" yes
 run_check_fail "$claude_only_repo" "$claude_only_home" "$claude_only_output"
 assert_contains "$claude_only_output" "agents/claude/unpaired-only.md has no agents/omp/unpaired-only.md"
 
@@ -347,7 +342,6 @@ tools: Read
 ---
 AGENT
 done
-prepare_installed_agents "$route_token_repo" "$route_token_home" yes
 run_check_fail "$route_token_repo" "$route_token_home" "$route_token_output"
 assert_contains "$route_token_output" "agent route naming: agents/claude/forbidden-gpt-55.md file name 'forbidden-gpt-55' must not include provider/model token 'gpt-55'"
 assert_contains "$route_token_output" "agent route naming: agents/claude/forbidden-gpt-55.md frontmatter name 'forbidden-gpt-55' must not include provider/model token 'gpt-55'"
@@ -357,7 +351,6 @@ prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
 prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
 copy_repo "$prompt_strategy_repo"
 perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder.md"
-prepare_installed_agents "$prompt_strategy_repo" "$prompt_strategy_home" yes
 run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
 assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder.md"
 
@@ -367,7 +360,6 @@ routed_prompt_strategy_home="$TMP_ROOT/routed-prompt-strategy-home"
 routed_prompt_strategy_output="$TMP_ROOT/routed-prompt-strategy.out"
 copy_repo "$routed_prompt_strategy_repo"
 perl -0pi -e 's/Canonical development pattern source: `start-review`/Canonical development pattern source: `local-copy`/' "$routed_prompt_strategy_repo/agents/claude/mr-reviewer-final.md"
-prepare_installed_agents "$routed_prompt_strategy_repo" "$routed_prompt_strategy_home" yes
 run_check_fail "$routed_prompt_strategy_repo" "$routed_prompt_strategy_home" "$routed_prompt_strategy_output"
 assert_contains "$routed_prompt_strategy_output" "agent prompt strategy: agents/claude/mr-reviewer-final.md"
 
@@ -384,7 +376,6 @@ cat >> "$lift_drift_repo/agents/omp/mr-builder.md" <<'DRIFT'
 | CI pipeline | stale |
 | Local gate | stale |
 DRIFT
-prepare_installed_agents "$lift_drift_repo" "$lift_drift_home" yes
 run_check_fail "$lift_drift_repo" "$lift_drift_home" "$lift_drift_output"
 assert_contains "$lift_drift_output" "Reviewer Lift stale duplicate table"
 
@@ -402,18 +393,8 @@ cat >> "$report_drift_repo/agents/claude/mr-reviewer-final.md" <<'DRIFT'
 
 ## Review Context Capsule
 DRIFT
-prepare_installed_agents "$report_drift_repo" "$report_drift_home" yes
 run_check_fail "$report_drift_repo" "$report_drift_home" "$report_drift_output"
 assert_contains "$report_drift_output" "Review Report stale structure"
-
-missing_tdd_repo="$TMP_ROOT/missing-tdd-repo"
-missing_tdd_home="$TMP_ROOT/missing-tdd-home"
-missing_tdd_output="$TMP_ROOT/missing-tdd.out"
-copy_repo "$missing_tdd_repo"
-prepare_installed_agents "$missing_tdd_repo" "$missing_tdd_home" no
-run_check_fail "$missing_tdd_repo" "$missing_tdd_home" "$missing_tdd_output"
-assert_contains "$missing_tdd_output" "missing required external skill tdd"
-assert_contains "$missing_tdd_output" "Install external skill 'tdd' into"
 
 # Issue #272: in a real Git checkout, parallel agent worktrees leave copies of
 # canonical templates under .claude/worktrees/<id>/. Because `.claude/` is not in
@@ -454,7 +435,6 @@ fi
 git -C "$untracked_worktree_repo" add -f \
   ".claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md" \
   ".claude/worktrees/agent-stray/start-review/templates/review-report.md"
-prepare_installed_agents "$untracked_worktree_repo" "$untracked_worktree_home" yes
 run_check_ok "$untracked_worktree_repo" "$untracked_worktree_home" "$untracked_worktree_output"
 assert_contains "$untracked_worktree_output" "agent-check: PASS"
 assert_not_contains "$untracked_worktree_output" ".claude/worktrees"
@@ -478,7 +458,6 @@ git -C "$tracked_violation_repo" init -q
 git -C "$tracked_violation_repo" add .
 git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=check \
   commit -qm "baseline with tracked violation"
-prepare_installed_agents "$tracked_violation_repo" "$tracked_violation_home" yes
 run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
 assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
 assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"

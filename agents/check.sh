@@ -5,7 +5,6 @@ set -euo pipefail
 shopt -s nullglob
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-CHECK_HOME="${AGENT_SKILLS_CHECK_HOME:-$HOME}"
 TMPDIR_CHECK="$(mktemp -d "${TMPDIR:-/tmp}/agent-check.XXXXXX")"
 trap 'rm -rf "$TMPDIR_CHECK"' EXIT
 
@@ -348,68 +347,10 @@ check_review_report_structure() {
   add_scan_errors "$bad_count" "$status"
 }
 
-agent_references_skill() {
-  local agent_file="$1" skill="$2"
-  grep -Eq "(^skills:[[:space:]]*.*(^|[ ,])${skill}([ ,]|$)|\`${skill}\`|(^|[^[:alnum:]_-])${skill}([^[:alnum:]_-]|$))" "$agent_file"
-}
-
-check_runtime_external_skills() {
-  local label="$1" runtime_root="$2" agent_dir="$3" skill_dir="$4" source_agent_dir="$5"
-  local required_external_skills=(tdd)
-  local skill agent needs_skill found_agent scan_dir scan_label
-
-  if [[ ! -d "$runtime_root" ]]; then
-    info "$label runtime not installed at $runtime_root; external dependency check skipped for this runtime"
-    return
-  fi
-
-  found_agent=0
-  if [[ -d "$agent_dir" ]]; then
-    for agent in "$agent_dir"/*.md; do
-      [[ -f "$agent" ]] || continue
-      found_agent=1
-    done
-  fi
-
-  if [[ "$found_agent" -eq 1 ]]; then
-    scan_dir="$agent_dir"
-    scan_label="installed agents"
-  elif [[ -d "$source_agent_dir" ]]; then
-    scan_dir="$source_agent_dir"
-    scan_label="source agents install.sh would link"
-    info "$label agent dir has no readable installed agents at $agent_dir; checking source agents because $runtime_root exists"
-  else
-    info "$label has no installed agents at $agent_dir and no source agents at $source_agent_dir; external dependency check skipped for this runtime"
-    return
-  fi
-
-  for skill in "${required_external_skills[@]}"; do
-    needs_skill=0
-    for agent in "$scan_dir"/*.md; do
-      [[ -f "$agent" ]] || continue
-      if agent_references_skill "$agent" "$skill"; then
-        needs_skill=1
-      fi
-    done
-
-    [[ "$needs_skill" -eq 1 ]] || continue
-
-    if [[ ! -f "$skill_dir/$skill/SKILL.md" ]]; then
-      error "$label $scan_label reference missing required external skill $skill in $skill_dir. Install external skill '$skill' into $skill_dir/$skill with a SKILL.md file (for example from the owning skill pack) before running behavior-touching build/review workflows."
-    fi
-  done
-}
-
-check_external_skill_dependencies() {
-  check_runtime_external_skills "Claude" "$CHECK_HOME/.claude" "$CHECK_HOME/.claude/agents" "$CHECK_HOME/.claude/skills" "$REPO_ROOT/agents/claude"
-  check_runtime_external_skills "OMP" "$CHECK_HOME/.omp/agent" "$CHECK_HOME/.omp/agent/agents" "$CHECK_HOME/.omp/agent/skills" "$REPO_ROOT/agents/omp"
-}
-
 check_agent_variant_parity
 check_agent_prompt_strategy
 check_reviewer_lift_schema
 check_review_report_structure
-check_external_skill_dependencies
 
 if [[ "$errors" -gt 0 ]]; then
   printf 'agent-check: FAIL (%d error(s))\n' "$errors" >&2

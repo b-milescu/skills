@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Focus: install.sh exposes agents/omp/*.md to the real OMP task-agent loader.
+# Focus: actual installed OMP agent discovery and unpreloaded skill entry access.
 #
-# Proves a clean temp-HOME install surfaces every OMP agent to user-scope
-# discovery, and that loaded runtime metadata matches the repo-owned OMP routing
-# contract: lowercase OMP builtin tools, server-scoped mcp__ wildcard selectors,
-# autoload-skills, and per-agent model/thinking pins.
+# Metadata and resolver evidence are separate from source-verified child inventory
+# inheritance/policy and live model selection. This harness proves neither live
+# child selection, user-only enforcement, reviewer obedience nor Claude execution.
 
 set -euo pipefail
 shopt -s nullglob
@@ -88,6 +87,8 @@ import path from "node:path";
 
 const pkgDir = process.env.OMP_PACKAGE_DIR;
 const { discoverAgents } = await import(pathToFileURL(path.join(pkgDir, "src/task/discovery.ts")).href);
+const { loadSkillsFromDir } = await import(pathToFileURL(path.join(pkgDir, "src/extensibility/skills.ts")).href);
+const { SkillProtocolHandler } = await import(pathToFileURL(path.join(pkgDir, "src/internal-urls/skill-protocol.ts")).href);
 const expectedNames = process.env.EXPECTED_NAMES.split("\n").filter(Boolean).sort();
 const result = await discoverAgents(process.env.DISCOVER_CWD, process.env.HOME);
 const loaded = new Map(result.agents.filter(agent => expectedNames.includes(agent.name)).map(agent => [agent.name, agent]));
@@ -121,18 +122,33 @@ for (const name of expectedNames) {
   for (const tool of requiredTools) assert(agent.tools.includes(tool), `${name} missing tool ${tool}`);
   for (const tool of forbiddenTools) assert(!agent.tools.includes(tool), `${name} retained forbidden tool ${tool}`);
   for (const tool of requiredMcp) assert(agent.tools.includes(tool), `${name} missing MCP tool ${tool}`);
-  assert(Array.isArray(agent.autoloadSkills) && agent.autoloadSkills.includes("forge") && agent.autoloadSkills.includes("tdd"), `${name} missing autoload skills`);
-  if (name.startsWith("mr-builder")) {
-    assert(agent.autoloadSkills.includes("start-build"), `${name} missing start-build autoload`);
-  } else {
-    assert(agent.autoloadSkills.includes("start-review"), `${name} missing start-review autoload`);
-  }
   const pin = expectedPinFor(agent);
   assert(pin.model, `${name} frontmatter missing model pin`);
   assert(pin.thinking, `${name} frontmatter missing thinking-level pin`);
   assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
   assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
 }
+console.log("OMP metadata: installed user-scope routes and runtime pins checked");
+
+const { skills } = await loadSkillsFromDir({
+  dir: path.join(process.env.HOME, ".omp/agent/skills"),
+  source: "omp:user",
+});
+const builder = loaded.get("mr-builder");
+const entry = skills.find(skill => skill.name === "start-review");
+assert(entry && !entry.hide, "installed start-review missing from discoverable inventory");
+assert(!builder.autoloadSkills?.includes(entry.name), "entry-access scenario must be unpreloaded");
+const handler = new SkillProtocolHandler();
+const resource = await handler.resolve(new URL("skill://start-review"), { skills });
+assert(resource.content === fs.readFileSync(entry.filePath, "utf8"), "resolved entry differs from installed entry bytes");
+let missingRejected = false;
+try {
+  await handler.resolve(new URL("skill://start-review"), { skills: [] });
+} catch (error) {
+  missingRejected = /not found|unknown skill/i.test(error.message);
+}
+assert(missingRejected, "absent inventory must reject entry access");
+console.log("OMP entry access: unpreloaded installed start-review resolved; absent inventory rejected");
 BUN
 HOME="$TMP_HOME" \
 PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \

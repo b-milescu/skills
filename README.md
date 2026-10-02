@@ -23,15 +23,16 @@ Loose collection of agent skills. Skills are surfaced to each installed agent (C
 | `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
 | `retro` | Mine a finished delivery session for friction; proposes follow-up issues only. |
 
-## External skill dependencies
+## Task-selected specialists
 
-This repo does not vendor every skill referenced by docs or prompts. Install external skills into each runtime skill directory that exists on the host (for example `~/.claude/skills/<name>` and/or `~/.omp/agent/skills/<name>`).
-
-| Skill | Requirement | Referenced by | Fallback |
-|---|---|---|---|
-| `tdd` | Required for behavior-touching build/review work | `start-build`, `start-review`, `mr-builder`, `mr-reviewer` | Do not run behavior-touching build/review workflows until installed. |
-
-`install.sh` warns for missing declared external skills in each target runtime skill directory; warnings do not vendor or install those external skills. `cleanup-codebase` also refers to `simplify`, `code-review`, and `security-review`, which are harness built-ins rather than installable skill dependencies.
+Dev Workflows invoke applicable installed specialists on demand under the shared
+[selection policy](start-build/reference/context-and-planning.md#task-selected-specialists).
+An external `tdd` skill is not required to install or check this repo; observable
+TDD/native-test rules still apply. Runtime workflow/forge preloads are distinct
+from entry access and invocation eligibility; see
+[skill activation](docs/agents/dev-workflows.md#skill-activation-mechanism).
+`cleanup-codebase` also refers to `simplify`, `code-review`, and `security-review`,
+which are harness built-ins rather than installable skill dependencies.
 
 ## Check before install or review
 
@@ -47,7 +48,7 @@ git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 
 GitLab project namespace is `agents/skills`; the npm package name `@agents/skills` is intentionally unchanged.
 
-`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as skill-root siblings because some runtimes interpret every skill-root directory as a skill. Each installed skill exposes skill-local resource symlinks (`docs/` and `shared-templates/`) for `skill://<skill>/docs/...` and `skill://<skill>/shared-templates/...` reads. The installer warns for missing declared external skill dependencies and refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, invoke `gitlab`, use MCP-first transport, and reserve direct `glab` commands for documented guarded fallback/helper cases from inside the target repo.
+`install.sh` is idempotent — re-run it after adding new skills. It auto-discovers every top-level skill dir (containing `SKILL.md`) and installs only those directories into each agent skill root; shared repo `docs/` and `templates/` are intentionally not symlinked as skill-root siblings because some runtimes interpret every skill-root directory as a skill. Each installed skill exposes skill-local resource symlinks (`docs/` and `shared-templates/`) for `skill://<skill>/docs/...` and `skill://<skill>/shared-templates/...` reads. The installer refuses to overwrite non-symlink targets or symlinks pointing outside this repo. For GitLab work, invoke `gitlab`, use MCP-first transport, and reserve direct `glab` commands for documented guarded fallback/helper cases from inside the target repo.
 
 Installer reruns also remove stale installer-owned skill and agent symlinks from their runtime roots. In an existing `~/.omp/agent/extensions/` directory, they remove only dangling installer-owned symlinks, resolving both absolute and relative targets with the same repository ownership rules. Working extensions, external symlinks (even dangling ones), and regular files are preserved. Extension cleanup creates no missing directory and never scans HOME recursively.
 

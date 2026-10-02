@@ -27,6 +27,9 @@ parent-orchestrated.
    checkout and every decision to the lifted `Reviewed SHA`. Missing pages,
    unresolved required discussion, stale head, or incomplete mandatory evidence
    blocks review; absent or incomplete CI does not.
+   Before substantive judgment, independently follow
+   [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists)
+   from this verified issue/diff.
 3. Copy every Reviewer Lift row into the Review Report as a claim. Verify scope,
    issue acceptance, Gate Receipt/local gate, changed paths, safety and
    acceptance surfaces, TDD evidence, open questions, and authority provenance.
