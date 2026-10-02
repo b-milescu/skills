@@ -25,7 +25,7 @@ This profile declares confirmed custom Agent Setup Doc paths, exact Check Gate
 command/runtime/bootstrap, label/readiness vocabulary, branch policy, advisory CI,
 domain/ADR paths, release/deploy policy, manual acceptance evidence and auxiliary
 index ownership. Hooks preserve the
-[safety floors](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
+[safety floors](skill://start-build/SAFETY.md#safety-floors).
 
 Complete runtime-specific same-name project declarations point at canonical skill
 entries and preserve role/model/effort pins and task-selected specialists. Native

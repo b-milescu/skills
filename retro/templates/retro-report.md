@@ -55,9 +55,9 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 
 ## Safety floor check
 
-<Refuter's attestation: no surviving proposal weakens any hard floor in
-[Effort Scaling](skill://retro/docs/effort-scaling.md) (the canonical floor
-list). List any finding escalated to human-decision by this check, or state
+<Refuter's attestation: no surviving proposal weakens any floor in
+[Start Build Safety floors](skill://start-build/SAFETY.md#safety-floors).
+List any finding escalated to human-decision by this check, or state
 "none touched".>
 
 ## Routing plan

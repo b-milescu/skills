@@ -5,7 +5,7 @@ This repo treats GitLab's live label set as the source of truth. `/setup-dev-ski
 Use this file as `project_profile.label_profile_ref` for this repo. The profile
 may point to this label vocabulary, but it must not create live labels, rely on
 lazy label creation, or weaken the
-[safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
+[safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 
 Verified on 2026-06-11 with `glab label list`:
 

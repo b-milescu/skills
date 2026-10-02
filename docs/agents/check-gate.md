@@ -31,7 +31,7 @@ gate is `npm run check`; configured advisory CI jobs are described in
 These project-owned facts are declared here and in the confirmed [profile](dev-workflows.md#project-profile-hooks), never inferred from installed shared field guidance.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
+the [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 
 ## Gate coverage for ready handoff
 

@@ -140,7 +140,7 @@ Authority Verification uses `skill://forge/reference/common-guard.md` and native
 
 ## Provider and repository binding
 
-`forge preflight` binds intended scopes together through the invoked target's confirmed profile/reference, refreshing only systems required by the requested operation. Independently scoped work items/code/CI and local filesystem work items require explicit verified scope, not invented remote identity. Configuration grants no authority. Profile hooks preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
+`forge preflight` binds intended scopes together through the invoked target's confirmed profile/reference, refreshing only systems required by the requested operation. Independently scoped work items/code/CI and local filesystem work items require explicit verified scope, not invented remote identity. Configuration grants no authority. Profile hooks preserve the [Safety floors](../SAFETY.md#safety-floors).
 
 ## Trust and evidence tiers
 

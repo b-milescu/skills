@@ -5,7 +5,7 @@ Neutral seed: record only the invoked target's confirmed live vocabulary and
 `skill://setup-dev-skills/reference/project-profile-facts.json` supplies neither
 labels nor paths. Preserve custom choices/additions; no live label mutation,
 lazy creation or global label-string assumption. Keep the
-[safety-floor litany](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
+[safety-floor litany](skill://start-build/SAFETY.md#safety-floors).
 
 ## Live label inventory
 

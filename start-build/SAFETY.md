@@ -2,6 +2,26 @@
 
 These rules protect safety boundaries while implementing work items in the invoked target's confirmed integration. Stricter project rulebooks override generic policy. Map domain examples to the target's real safety surfaces. Authorized tracker/change-request publication prescribed by the workflow is distinct from unauthorized product/runtime/operator mutation.
 
+## Safety floors
+
+This is the canonical safety-floor enumeration. Consuming docs reference this
+set rather than redefining it; project hooks and ceremony choices preserve every
+floor. The detailed non-negotiables below remain applicable.
+
+- **Mandatory independent review** applies to every behavior-touching change.
+  Discovery, packet detail, design exploration and verification depth may vary;
+  the review gate does not.
+- **Applicable TDD, safety non-negotiables, exact-candidate local Check Gate and
+  Gate Receipt, reviewed-commit binding and authority guards** remain mandatory.
+  Provider CI is advisory evidence, never a quality or finish gate.
+- **Role and Context Firewall boundaries** remain intact: builders do not
+  self-approve or self-finish; child builders respect parent-owned gate/finish
+  boundaries; reviewers derive independent evidence; verifiers remain read-only.
+- **Native/MCP-first transport correctness, complete reviewed-diff coverage,
+  provider-native mutation readback and help-first documented fallback
+  correctness** remain required. Publication includes safe-body validation and
+  authored-source equality; extraction or a digest alone is not that proof.
+
 ## Non-negotiables
 
 Violations must be fixed or explicitly accepted/waived in the MR before approval. [SKILL.md §Safety floors](SKILL.md#safety-floors) routes here; this file owns the detail behind every floor.

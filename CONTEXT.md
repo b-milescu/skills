@@ -29,7 +29,7 @@ The ordered evidence and authority boundary a **Dev Workflow** crosses before an
 _Avoid_: fallback checklist, merge guard
 
 **Safety floor**:
-A load-bearing safety/transport invariant that never scales away. Used as a shared additive leading word so the canonical enumeration can be referenced by name ("the safety-floor litany"); it lives in `docs/effort-scaling.md` (Hard floors).
+A load-bearing safety/transport invariant that never scales away. Used as a shared additive leading word so the canonical enumeration can be referenced by name ("the safety-floor litany"); it lives in `start-build/SAFETY.md#safety-floors`.
 _Avoid_: hard limit, guard rail (when the specific invariant set is meant)
 
 **Triage Role**:
