@@ -5,7 +5,7 @@ secrets or private payloads. Consumers tolerate absence/malformed content and
 fall back to the durable Review Packet plus provider-native readback.
 Parent-owned fields follow `../reference/parent-owned-gate.md`.
 
-Authority Verification claims use `skill://forge/reference/common-guard.md` for GitLab and the selected provider equivalent elsewhere.
+Authority Verification uses `skill://forge/reference/common-guard.md` and native mechanics from the invoked target's confirmed integration reference.
 
 Change-request locator: `<provider-native change-request locator>`
 Durable note id: `<verified Gate Receipt note id, or not-created>`

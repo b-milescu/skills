@@ -161,11 +161,19 @@ mkdir -p \
   "$collision_home/.omp/agent/agents"
 ln -s "$external_dir/custom-agent.md" "$collision_home/.claude/agents/mr-builder.md"
 ln -s "$external_dir/omp-custom-agent.md" "$collision_home/.omp/agent/agents/mr-builder.md"
+mkdir -p "$collision_home/.claude/skills" "$collision_home/.omp/agent/skills"
+ln -s "$external_dir/missing-skill" "$collision_home/.claude/skills/gitlab"
+printf 'foreign retired-name file\n' >"$collision_home/.omp/agent/skills/gitlab"
 
 HOME="$collision_home" "$REPO_ROOT/install.sh" >"$collision_output" 2>&1
 
 assert_symlink_target "$collision_home/.claude/agents/mr-builder.md" "$external_dir/custom-agent.md"
 assert_symlink_target "$collision_home/.omp/agent/agents/mr-builder.md" "$external_dir/omp-custom-agent.md"
+assert_symlink_target "$collision_home/.claude/skills/gitlab" "$external_dir/missing-skill"
+[[ ! -L "$collision_home/.omp/agent/skills/gitlab" && "$(cat "$collision_home/.omp/agent/skills/gitlab")" == 'foreign retired-name file' ]] || {
+  echo "foreign retired-name regular file changed" >&2
+  exit 1
+}
 custom_agent_abs="$("$REALPATH" -m "$external_dir/custom-agent.md")"
 omp_custom_agent_abs="$("$REALPATH" -m "$external_dir/omp-custom-agent.md")"
 assert_contains "$collision_output" "$collision_home/.claude/agents/mr-builder.md (existing symlink points outside repo: $custom_agent_abs)"
@@ -178,6 +186,12 @@ extension_dir="$cleanup_home/.omp/agent/extensions"
 mkdir -p "$cleanup_home/.claude/skills" "$cleanup_home/.omp/agent/skills" "$extension_dir"
 ln -s "$REPO_ROOT/terraform-tofu" "$cleanup_home/.claude/skills/terraform-tofu"
 ln -s "$REPO_ROOT/terraform-tofu" "$cleanup_home/.omp/agent/skills/terraform-tofu"
+ln -s "$REPO_ROOT/gitlab" "$cleanup_home/.claude/skills/gitlab"
+relative_gitlab="$("$REALPATH" -m --relative-to="$cleanup_home/.omp/agent/skills" "$REPO_ROOT/gitlab")"
+ln -s "$relative_gitlab" "$cleanup_home/.omp/agent/skills/gitlab"
+ln -s "$external_dir/missing-skill" "$cleanup_home/.claude/skills/foreign-dangling"
+ln -s "$external_dir/custom-skill" "$cleanup_home/.omp/agent/skills/unknown-skill"
+printf 'owner file\n' >"$cleanup_home/.claude/skills/unknown-file"
 ln -s "$REPO_ROOT/compaction-index/extensions/compaction-skill-index.js" "$extension_dir/compaction-skill-index.js"
 relative_target="$("$REALPATH" -m --relative-to="$extension_dir" "$REPO_ROOT/removed-extension.ts")"
 ln -s "$relative_target" "$extension_dir/relative-retired.ts"
@@ -192,6 +206,14 @@ for pass in 1 2; do
   HOME="$cleanup_home" "$REPO_ROOT/install.sh" >"$TMP_ROOT/cleanup-$pass.out" 2>&1
   assert_not_exists "$cleanup_home/.claude/skills/terraform-tofu"
   assert_not_exists "$cleanup_home/.omp/agent/skills/terraform-tofu"
+  assert_not_exists "$cleanup_home/.claude/skills/gitlab"
+  assert_not_exists "$cleanup_home/.omp/agent/skills/gitlab"
+  assert_symlink_target "$cleanup_home/.claude/skills/foreign-dangling" "$external_dir/missing-skill"
+  assert_symlink_target "$cleanup_home/.omp/agent/skills/unknown-skill" "$external_dir/custom-skill"
+  [[ ! -L "$cleanup_home/.claude/skills/unknown-file" && "$(cat "$cleanup_home/.claude/skills/unknown-file")" == 'owner file' ]] || {
+    echo "unknown regular skill file changed" >&2
+    exit 1
+  }
   assert_not_exists "$extension_dir/compaction-skill-index.js"
   assert_not_exists "$extension_dir/relative-retired.ts"
   assert_symlink_target "$extension_dir/foreign-dangling.js" "$external_dir/missing-extension.js"

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 
 const REPO_ROOT = findRepoRoot();
@@ -52,15 +52,10 @@ const RETIRED_PI_FIELDS = new Set([
   'maxSubagentDepth',
 ]);
 
-const CLAUDE_MCP_SELECTORS = new Set(['mcp__gitlab-mcp__*', 'mcp__azure-devops__*', 'mcp__wowtools__*', 'mcp__codebase-memory-mcp__*']);
-const ALLOWED_CLAUDE_MCP_SELECTORS = [...CLAUDE_MCP_SELECTORS].join(', ');
-
-// OMP routed agents access MCP servers through server-scoped wildcard selectors
-// only. Bare or broad selectors, Claude-style hyphenated selectors, and exact
-// tool enumerations are rejected. Provider-specific selectors expose only the
-// bound GitLab or Azure DevOps native surface; GitHub uses native `gh` via bash.
-const OMP_MCP_SELECTORS = new Set(['mcp__gitlab_mcp_*', 'mcp__azure_devops_*', 'mcp__wowtools_*', 'mcp__codebase_memory_mcp_*']);
-const ALLOWED_OMP_MCP_SELECTORS = [...OMP_MCP_SELECTORS].join(', ');
+// Validate runtime selector syntax, not a catalogue of native servers. Project
+// configuration and scoped native evidence establish which tools actually exist.
+const CLAUDE_MCP_SELECTOR_RE = /^mcp__[A-Za-z0-9_-]+__(?:[A-Za-z0-9_-]+|\*)$/u;
+const OMP_MCP_SELECTOR_RE = /^mcp__[a-z0-9]+(?:_[a-z0-9]+)*_(?:[a-z0-9]+(?:_[a-z0-9]+)*|\*)$/u;
 
 const CLAUDE_MODELS = new Set(['inherit', 'opus', 'sonnet', 'haiku', 'claude-opus-4-8', 'claude-sonnet-4-6']);
 const OMP_MODEL_PROVIDER_PREFIXES = ['anthropic/', 'openai-codex/', 'pi/', 'zai/'];
@@ -145,6 +140,9 @@ const NON_PI_FORBIDDEN_BODY_TERMS = ['contact_supervisor', 'intercom'];
 const diagnostics = [];
 const files = collectInputFiles();
 const counts = { claude: 0, omp: 0 };
+if (files.length === 0) {
+  diagnostics.push('agents-schema: requested validation collected no agent files');
+}
 
 for (const file of files) {
   counts[file.dialect] += 1;
@@ -161,19 +159,20 @@ if (diagnostics.length > 0) {
 console.log(`agents-schema: checked ${counts.claude} Claude agent(s), ${counts.omp} OMP agent(s)`);
 
 function findRepoRoot() {
-  try {
-    return execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
-  } catch {
-    return path.resolve(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
-  }
+  return path.resolve(path.join(path.dirname(fileURLToPath(import.meta.url)), '..'));
 }
 
 function collectInputFiles() {
   const targets = process.argv.slice(2);
-  const roots = targets.length > 0 ? targets : [path.join(REPO_ROOT, 'agents')];
+  const roots = targets.length > 0 ? targets : [
+    path.join(REPO_ROOT, 'agents'),
+    path.join(REPO_ROOT, '.claude', 'agents'),
+    path.join(REPO_ROOT, '.omp', 'agents'),
+  ];
   const collected = [];
 
   for (const target of roots) {
+    const before = collected.length;
     const absolute = path.resolve(target);
     if (!fs.existsSync(absolute)) {
       diagnostics.push(`${displayPath(absolute)}:1: target does not exist`);
@@ -183,10 +182,10 @@ function collectInputFiles() {
     const stat = fs.statSync(absolute);
     if (stat.isFile()) {
       const dialect = inferDialect(absolute);
-      if (dialect) {
+      if (dialect && absolute.endsWith('.md')) {
         collected.push(agentFile(absolute, dialect));
       } else {
-        diagnostics.push(`${displayPath(absolute)}:1: cannot infer agent dialect from path; expected path under agents/claude or agents/omp`);
+        diagnostics.push(`${displayPath(absolute)}:1: expected Markdown agent under agents/claude, agents/omp, .claude/agents or .omp/agents`);
       }
       continue;
     }
@@ -196,21 +195,29 @@ function collectInputFiles() {
       continue;
     }
 
-    const base = path.basename(absolute);
-    if (DIALECTS.has(base)) {
-      collected.push(...markdownFiles(absolute).map((file) => agentFile(file, base)));
+    const dialect = inferDialect(absolute);
+    if (dialect) {
+      collected.push(...markdownFiles(absolute).map((file) => agentFile(file, dialect)));
+      if (collected.length === before) {
+        diagnostics.push(`${displayPath(absolute)}:1: requested validation collected no agent files`);
+      }
       continue;
     }
 
     for (const dialect of DIALECTS) {
-      const dialectDir = path.join(absolute, dialect);
-      if (fs.existsSync(dialectDir) && fs.statSync(dialectDir).isDirectory()) {
-        collected.push(...markdownFiles(dialectDir).map((file) => agentFile(file, dialect)));
+      for (const dialectDir of [path.join(absolute, dialect), path.join(absolute, `.${dialect}`, 'agents')]) {
+        if (fs.existsSync(dialectDir) && fs.statSync(dialectDir).isDirectory()) {
+          collected.push(...markdownFiles(dialectDir).map((file) => agentFile(file, dialect)));
+        }
       }
+    }
+    if (collected.length === before) {
+      diagnostics.push(`${displayPath(absolute)}:1: requested validation collected no agent files`);
     }
   }
 
-  return collected.sort((left, right) => left.absolute.localeCompare(right.absolute));
+  return [...new Map(collected.map((file) => [file.absolute, file])).values()]
+    .sort((left, right) => left.absolute.localeCompare(right.absolute));
 }
 
 function markdownFiles(dir) {
@@ -229,10 +236,13 @@ function agentFile(absolute, dialect) {
 }
 
 function inferDialect(file) {
-  const parts = file.split(path.sep);
-  for (const dialect of DIALECTS) {
-    if (parts.includes(dialect)) {
-      return dialect;
+  const parts = path.resolve(file).split(path.sep);
+  for (let index = parts.length - 1; index > 0; index -= 1) {
+    if (parts[index - 1] === 'agents' && DIALECTS.has(parts[index])) {
+      return parts[index];
+    }
+    if (parts[index] === 'agents' && DIALECTS.has(parts[index - 1].slice(1)) && parts[index - 1].startsWith('.')) {
+      return parts[index - 1].slice(1);
     }
   }
   return null;
@@ -524,7 +534,7 @@ function splitList(value) {
 }
 
 function validateClaudeTool(file, fieldLines, tool) {
-  if (CLAUDE_TOOLS.has(tool) || CLAUDE_MCP_SELECTORS.has(tool)) {
+  if (CLAUDE_TOOLS.has(tool) || CLAUDE_MCP_SELECTOR_RE.test(tool)) {
     return;
   }
 
@@ -538,7 +548,7 @@ function validateClaudeTool(file, fieldLines, tool) {
     addDiagnostic(
       file,
       lineFor(fieldLines, 'tools'),
-      `Claude MCP selector "${tool}" is not approved; allowed selectors: ${ALLOWED_CLAUDE_MCP_SELECTORS}`,
+      `Claude MCP selector "${tool}" must name an exact tool or one server: mcp__server__tool or mcp__server__*`,
     );
     return;
   }
@@ -547,7 +557,7 @@ function validateClaudeTool(file, fieldLines, tool) {
 }
 
 function validateOmpTool(file, fieldLines, tool) {
-  if (OMP_TOOLS.has(tool) || OMP_MCP_SELECTORS.has(tool)) {
+  if (OMP_TOOLS.has(tool) || OMP_MCP_SELECTOR_RE.test(tool)) {
     return;
   }
 
@@ -567,7 +577,7 @@ function validateOmpTool(file, fieldLines, tool) {
     addDiagnostic(
       file,
       lineFor(fieldLines, 'tools'),
-      `OMP MCP selector "${tool}" is not approved; allowed selectors: ${ALLOWED_OMP_MCP_SELECTORS}`,
+      `OMP MCP selector "${tool}" must name an exact tool or one normalized server: mcp__server_name_tool or mcp__server_name_*`,
     );
     return;
   }

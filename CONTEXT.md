@@ -24,8 +24,8 @@ _Avoid_: AI workflow
 A documented set of local commands that provides readiness evidence before review.
 _Avoid_: test script, CI
 
-**GitLab Mutation Guard**:
-The ordered seam every GitLab-backed **Dev Workflow** mutation uses before and after writing: bind project, re-read target, check reviewed SHA, exact-candidate Gate Receipt, authority, caller, text, and advisory CI attribution as relevant, choose MCP or guarded fallback, mutate once, and re-read through MCP for evidence.
+**Mutation Guard**:
+The ordered evidence and authority boundary a **Dev Workflow** crosses before and after one mutation in its confirmed integration.
 _Avoid_: fallback checklist, merge guard
 
 **Safety floor**:

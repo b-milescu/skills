@@ -1,6 +1,6 @@
 # Start Build Safety Rules
 
-These rules protect safety boundaries while implementing GitLab issues. Project-specific rulebooks override this file when stricter. Domain-specific terms here (venues, sizing, breakers, post-fill, etc.) are examples; map them to the host project's equivalent safety surfaces. Product/runtime/operator systems exclude the GitLab issue/MR actions explicitly prescribed by the build/review workflow.
+These rules protect safety boundaries while implementing work items in the invoked target's confirmed integration. Stricter project rulebooks override generic policy. Map domain examples to the target's real safety surfaces. Authorized tracker/change-request publication prescribed by the workflow is distinct from unauthorized product/runtime/operator mutation.
 
 ## Non-negotiables
 

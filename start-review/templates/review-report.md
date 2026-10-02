@@ -2,7 +2,7 @@
 
 Authority Verification uses the shared
 [`/forge` common guard](../../forge/reference/common-guard.md); the selected
-provider branch owns native approval and finish mechanics.
+target's confirmed integration reference owns native approval and finish mechanics.
 
 <!-- Fill and publish this report per the [review-report filling guide](filling-guide.md#review-reportmd), including its safe-body, plain non-resolvable note, transport, and readback rules. -->
 
@@ -79,7 +79,7 @@ Copy the builder handoff, then verify it against canonical [`reviewer-lift-schem
 | Finding bindings | `<copy; verify per reviewer-lift-schema.md>` |
 | Review gate | `<copy; verify per reviewer-lift-schema.md>` |
 | Change tier | `<copy; verify tier + rationale per reviewer-lift-schema.md>` |
-| Transport | `<copy; verify mcp / glab-fallback / n/a per reviewer-lift-schema.md>` |
+| Transport | `<copy; independently verify opaque transport evidence in target scope>` |
 | Gate owner | `<copy; verify per reviewer-lift-schema.md>` |
 | Gate coverage | `<copy; verify per reviewer-lift-schema.md>` |
 | Gate coverage rationale | `<copy; verify per reviewer-lift-schema.md>` |

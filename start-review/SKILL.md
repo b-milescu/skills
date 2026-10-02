@@ -1,7 +1,7 @@
 ---
 name: start-review
 description: >-
-  Reviews one GitLab, GitHub, or Azure DevOps change request against project
+  Reviews one change request in the invoked target's confirmed integration against project
   rules, safety invariants, complete diff/discussions, local Gate Receipt, advisory CI, and TDD evidence.
 ---
 

@@ -25,7 +25,8 @@ This rulebook is a pointer-first entry point. Keep live tracker, label, check-ga
 | `setup-dev-skills/` | Creates/reconciles target-repo Agent Setup Docs. | Live policy after setup. |
 | `CONTEXT.md` | Project glossary and relationships. | Ops or durable decisions. |
 | `docs/adr/` | Durable design decisions. | Glossary or live ops. |
-| `gitlab/` | MCP-first transport, fallback syntax, guards, snippets. | Merge/CI/authority policy. |
-| `start-build/` | Build, merge/CI/authority, TDD, safety policy. | GitLab syntax or review verdicts. |
-| `start-review/` | Review verdict, CI/OQ, authority policy. | GitLab syntax or build policy. |
+| `forge/` | Common integration binding, mutation and evidence contracts. | Target-native tools or project policy. |
+| `docs/agents/native-integration.md` | This project's native scopes, tools and usable operation recipes. | Foreign target defaults or shared workflow judgment. |
+| `start-build/` | Build, merge/CI/authority, TDD, safety policy. | Native transport syntax or review verdicts. |
+| `start-review/` | Review verdict, CI/OQ, authority policy. | Native transport syntax or build policy. |
 | `retro/` | Retrospective signals, taxonomy, dispositions, refuter pass. | Issue filing, forge, safety floors. |

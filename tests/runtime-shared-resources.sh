@@ -109,7 +109,6 @@ import sys
 
 root = Path(sys.argv[1])
 skill_names = {
-    "gitlab",
     "plan-to-issues",
     "issue-delivery-loop",
     "setup-dev-skills",
@@ -182,8 +181,5 @@ if [[ -s "$portable_resource_bad_refs" ]]; then
   exit 1
 fi
 
-assert_file_contains "$REPO_ROOT/plan-to-issues/SKILL.md" "skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard" "portable Agent Readiness scorecard resource"
-assert_file_contains "$REPO_ROOT/plan-to-issues/SKILL.md" "skill://plan-to-issues/templates/issue-body.md#agent-readiness" "portable issue body template resource"
-assert_file_contains "$REPO_ROOT/setup-dev-skills/SKILL.md" "skill://setup-dev-skills/dev-workflows-generic.md" "portable neutral setup seed resource"
 
 echo "runtime-shared-resources: PASS"

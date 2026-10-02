@@ -8,7 +8,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 - **process** — ceremony/effort miscalibration and policy friction: packets heavier than the tier warrants, rounds spent on avoidable defects, reports produced but never consumed.
 - **context** — context loading and size problems: the same files read repeatedly across agents, canonical bodies restated in prompts, required reads that never influenced a decision, launch prompts beyond the minimal shape.
 - **taxonomy** — vocabulary gaps and collisions: events forced into `other`, metrics without definitions, enum values missing, the same concept under several names across docs.
-- **tooling** — transport/helper/runtime defects and repeated workarounds: MCP / `glab` / git / CI mechanics that needed manual recovery during the run.
+- **tooling** — transport/helper/runtime defects and repeated workarounds in the target's confirmed integration, local git or advisory CI.
 - **docs-drift** — canonical docs disagreeing with each other or with observed behavior; duplicated inventories that drifted apart.
 
 ## Signals
@@ -44,9 +44,9 @@ Route proposals to the implementation, configuration, documentation, or skill th
 - MCP server-contract violation causally tied to responsible implementation → that implementation repository/component, not a skill workaround.
 - Configuration or upstream-service cause → the evidenced configuration owner or upstream repository/component; if evidence cannot resolve ownership, retain `unknown`.
 - Incorrect skill instructions causing caller misuse → the owning instructions, not the server.
-- GitLab transport instructions, snippet/fallback syntax, workflow helper guidance → the `gitlab` skill only when that branch is bound and the instructions are causal; generic collection is forge.
+- Native integration tools/recipes/fallback guidance → the invoked target's selected `provider.reference` owner when causally evidenced; common binding/guard contracts → `forge`.
 - Build behavior, TDD/safety policy, builder handoffs → `start-build` (mode reference docs own mode detail).
 - Review behavior, verdict/CI/OQ policy, reviewer handoffs → `start-review`.
 - Batch coordination, tier routing, batch metrics → `issue-delivery-loop`.
-- Target-repo policy (labels, Check Gate, branch naming, workflows) → that repo's Agent Setup Docs (`docs/agents/...`).
+- Target-repo policy (labels, Check Gate, branch naming, workflows) → that repo's confirmed Agent Setup Doc paths, never installed aliases/defaults.
 - Shared contracts (effort scaling, decoupling) → the shared docs both flows point at.

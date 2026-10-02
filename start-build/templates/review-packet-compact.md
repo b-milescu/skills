@@ -24,11 +24,11 @@ Every row is required; `reviewer-lift-schema.md` owns their semantics and
 | Finding bindings | |
 | Review gate | |
 | Change tier | `<trivial / moderate / high-risk + one-clause rationale>` |
-| Transport | `<mcp / glab-fallback (gap: <named gap>) / n/a>` |
+| Transport | `<identified opaque target transport evidence; no missing-value default>` |
 | Gate owner | |
 | Gate coverage | |
-| Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
-| CI pipeline | |
+| Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt: <opaque locator>>` |
+| CI pipeline | `<evidence=opaque locator; status=opaque status; commit=40-hex SHA, or N/A — reason>` |
 | Local gate | `<status + exact command; parent-owned: not-run until the Gate Receipt>` |
 | RED | `<behavior-touching implementation: failing native test; else N/A with rationale; do not fake tests>` |
 | GREEN | |

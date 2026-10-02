@@ -5,7 +5,7 @@
   "version": "1",
   "owner": "start-review",
   "human_resource": "skill://start-review/templates/filling-guide.md",
-  "summary": "Canonical reviewer verdict, blocker, and routing tokens, with forge-neutral crosswalks to GitLab guard and finish-result vocabularies.",
+  "summary": "Canonical reviewer verdict, blocker and routing tokens; native outcome mappings are owned by the invoked target's confirmed integration.",
   "review_verdict": [
     "pass",
     "request-changes",
@@ -44,72 +44,5 @@
     "partial-review",
     "secret-exposure-suspected",
     "other"
-  ],
-  "crosswalk": [
-    {
-      "action_blocker": "missing-authority",
-      "meaning": "Required authority or its verified source is absent or inconsistent.",
-      "mutation_guard_blocker_states": ["missing_authority", "authority_source_mismatch"],
-      "finish_result_blocker": ["authority"],
-      "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "changed-head-sha",
-      "meaning": "The change-request head differs from the reviewed or guarded commit.",
-      "mutation_guard_blocker_states": ["head_changed", "stale_head"],
-      "finish_result_blocker": ["head_changed"],
-      "finish_result_conflict_type": ["stale_head"],
-      "mcp_codes": ["stale_sha", "post_action_mismatch"]
-    },
-    {
-      "action_blocker": "merge-conflict",
-      "meaning": "The change request cannot be merged in its current state.",
-      "mutation_guard_blocker_states": ["merge_blocked"],
-      "finish_result_blocker": ["not_mergeable"],
-      "finish_result_conflict_type": ["merge_blocked"]
-    },
-    {
-      "action_blocker": "sha-bound-action-unsupported",
-      "meaning": "The provider cannot bind the requested action to the reviewed commit.",
-      "mutation_guard_blocker_states": [],
-      "finish_result_blocker": [],
-      "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "preflight-failure",
-      "meaning": "Provider binding, target re-read, or caller identity preflight failed.",
-      "mutation_guard_blocker_states": ["project_binding_mismatch", "target_reread_unavailable", "identity_unavailable", "identity_changed"],
-      "finish_result_blocker": ["identity_unavailable", "identity_changed"],
-      "finish_result_conflict_type": [],
-      "mcp_codes": ["branch_mismatch"]
-    },
-    {
-      "action_blocker": "permission-failure",
-      "meaning": "The actor's permission to take the requested action is unknown or denied.",
-      "mutation_guard_blocker_states": ["permission_uncertain"],
-      "finish_result_blocker": [],
-      "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "human-decision-needed",
-      "meaning": "A non-inferable human policy or authority decision is required.",
-      "mutation_guard_blocker_states": [],
-      "finish_result_blocker": [],
-      "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "partial-review",
-      "meaning": "The reviewer could not inspect every behavior-affecting changed surface.",
-      "mutation_guard_blocker_states": [],
-      "finish_result_blocker": [],
-      "finish_result_conflict_type": []
-    },
-    {
-      "action_blocker": "secret-exposure-suspected",
-      "meaning": "Potential credential or secret exposure requires fail-closed handling.",
-      "mutation_guard_blocker_states": [],
-      "finish_result_blocker": [],
-      "finish_result_conflict_type": []
-    }
   ]
 }

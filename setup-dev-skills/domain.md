@@ -2,11 +2,9 @@
 
 How dev skills consume the target repo's domain documentation.
 
-Use this file, or the target-specific replacement path recorded in
-`setup-dev-skills/reference/project-profile-facts.json`, as the default
-`project_profile.domain_docs` reference. Record the repo's context and ADR layout
-here so project-specific hooks can point agents at the right domain language
-without renaming delivery fields or weakening safety invariants.
+Use the target's confirmed `project_profile.domain_docs` pointer and custom
+context/ADR layout. Shared field guidance supplies no default target path.
+Record confirmed locations here without weakening safety invariants.
 
 ## Before exploring, read these
 

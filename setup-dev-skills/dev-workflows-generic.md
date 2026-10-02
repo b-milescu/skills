@@ -1,16 +1,16 @@
 # Dev Workflows
 
-Provider: `<gitlab | github | azure-devops>`
-Repository: `<canonical repository identifier>`
-Default branch: `<default branch>`
+Confirmed profile: `<target profile id>` at `<profile_path>`.
+Selected `provider.reference`: `<target-owned integration doc or section>`.
+Intended code/change, work-item and advisory CI scopes: `<independently verified scopes>`.
+Named fetch/push remotes and fork intent: `<confirmed target choices>`.
 
-Profile facts: `skill://setup-dev-skills/reference/project-profile-facts.json`.
-
-Shared delivery uses `/forge`, `/start-build`, `/start-review`, and
-`/issue-delivery-loop`. `/forge preflight` verifies the provider/profile/remote
-binding once and exposes only the selected provider reference. Common policy
-uses issue, change request, commit SHA, and CI run terminology; provider-native
-mechanics stay in that reference.
+Shared field guidance: `skill://setup-dev-skills/reference/project-profile-facts.json`
+(no default target profile). Shared delivery uses `/forge`, `/start-build`,
+`/start-review`, `/plan-to-issues`, `/issue-delivery-loop` and `/retro` through
+confirmed target pointers. Local work items bind filesystem scope. Refresh only
+systems required by the requested operation; missing or unsupported actions block
+only that operation. Configuration grants no action authority.
 
 Canonical resources:
 
@@ -21,14 +21,17 @@ Canonical resources:
 - `skill://start-build/reference/parent-owned-gate.md`
 - `skill://start-review/REVIEW-FLOW.md`
 
-This profile declares the target Check Gate, label/readiness policy, branch
-naming, observed advisory CI jobs, domain/ADR paths, release/deploy authority,
-manual validation, language families, acceptance surfaces, and auxiliary-index
-policy. These hooks never weaken the
-[safety-floor litany](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
-CI remains advisory.
+This profile declares confirmed custom Agent Setup Doc paths, exact Check Gate
+command/runtime/bootstrap, label/readiness vocabulary, branch policy, advisory CI,
+domain/ADR paths, release/deploy policy, manual acceptance evidence and auxiliary
+index ownership. Hooks preserve the
+[safety floors](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
 
-`/plan-to-issues` is the shared publisher for GitLab, GitHub, and Azure DevOps
-after `/forge preflight`. `/gitlab` remains GitLab-only transport. GitHub uses
-native REST/GraphQL or `gh` inside the selected forge reference; Azure DevOps uses
-mounted native Boards/Repos/Pipelines tools first. Add no provider SDK.
+Complete runtime-specific same-name project declarations point at canonical skill
+entries and preserve role/model/effort pins and task-selected specialists. Native
+tool selectors come only from confirmed available target tools; metadata is not
+hard confinement. Establish each runtime's precedence and selected-file/skill
+provenance separately from actual spawning and allocated/revision sessions.
+Resolve installed helper URIs to real filesystem paths before execution from a
+foreign target CWD. Installed `docs/` aliases keep underlying source ownership and
+never replace this target's profile, identity, paths, vocabulary or policy.

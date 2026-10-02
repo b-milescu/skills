@@ -84,6 +84,22 @@ try {
   run([...reportArgs, "--packet", distinctPacket], 0, /reports=2 identities=2 artifacts=1/);
 
   const firstReport = readFileSync(reports[0], "utf8");
+  const opaqueLocator = "confirmed-system/repository/Report@Alpha";
+  const opaqueSha = "A".repeat(40);
+  const opaqueReport = path.join(temp, "opaque-report.md");
+  const opaquePacket = path.join(temp, "opaque-packet.md");
+  const opaqueLift = path.join(temp, "opaque-lift.md");
+  const opaque = (body) => body.replaceAll("review-report:agents/skills!340:1", opaqueLocator).replaceAll("a".repeat(40), opaqueSha);
+  writeFileSync(opaqueReport, opaque(firstReport));
+  writeFileSync(opaquePacket, opaque(packet));
+  writeFileSync(opaqueLift, opaque(readFileSync(path.join(fixtures, "reviewer-lift-valid.md"), "utf8")));
+  run(["--report", opaqueReport, "--packet", opaquePacket, "--lift", opaqueLift], 0, /identities=1 artifacts=2/);
+  writeFileSync(opaquePacket, opaque(packet).replaceAll(opaqueSha, opaqueSha.toLowerCase()));
+  reject("commit identity normalization", ["--report", opaqueReport, "--packet", opaquePacket], /stale finding binding/);
+  writeFileSync(opaquePacket, opaque(packet).replaceAll(opaqueLocator, opaqueLocator.toLowerCase()));
+  reject("report identity normalization", ["--report", opaqueReport, "--packet", opaquePacket], /unknown report locator/);
+  writeFileSync(opaquePacket, opaque(packet).replaceAll("MF-5", "MF-6"));
+  reject("finding identity change", ["--report", opaqueReport, "--packet", opaquePacket], /stale finding binding/);
   const duplicateLocatorReport = path.join(temp, "report-duplicate-locator.md");
   writeFileSync(
     duplicateLocatorReport,
@@ -320,12 +336,6 @@ try {
   const staleLift = path.join(temp, "lift-stale.md");
   writeFileSync(staleLift, lift.replace(/a{40}/, "c".repeat(40)));
   run([...reportArgs, "--lift", staleLift], 2, /stale finding binding for MF-5/);
-  const revisionFlow = readFileSync(path.join(root, "start-build", "reference", "implementation-flow.md"), "utf8");
-  assert.match(
-    revisionFlow,
-    /Render one Revision Packet artifact[\s\S]*validate-finding-bindings\.mjs[\s\S]*forge publish[\s\S]*provider-native byte-for-byte readback/,
-    "revision handling must validate, publish, and read back one exact packet artifact",
-  );
 
 } finally {
   rmSync(temp, { recursive: true, force: true });

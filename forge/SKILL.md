@@ -1,44 +1,87 @@
 ---
 name: forge
 description: >-
-  Select and operate the native GitLab, GitHub, or Azure DevOps transport. Use
-  to bind a repository, read issue/change-request/CI evidence, publish a durable
-  artifact, take a guarded action, or verify merged state.
+  Operates the invoked project's confirmed integration. Use to bind scopes,
+  read work-item/change-request/CI evidence, publish a durable artifact,
+  take a guarded action, or verify merged state.
 ---
 
 # Forge
 
-This is a model-invoked transport seam. It selects the verified provider once,
-then exposes five operations; generic callers do not branch on provider afterward
-and never load an unselected provider reference.
+A model-invoked instruction seam with five operations. Obtain mechanics from
+**the invoked target's** confirmed `project_profile`, `profile_path` and selected
+`provider.reference`. Resolve that reference in the target checkout, not the
+skill installation or an installed `docs/` alias. No shared provider catalogue,
+host detector, default target profile or tool-presence inference is used.
+
+## Preflight
+
+1. Read the target rulebook's profile pointer and selected integration reference.
+   Missing/stale setup prompts the owner to invoke `/setup-dev-skills`; never
+   auto-run setup, authentication, installation or live label changes.
+2. Reconcile explicit owner intent, named fetch/push remotes and fork intent,
+   configured code/change, work-item and CI scopes, and referenced policy. A
+   tracker may be independent of code hosting; local work items bind verified
+   filesystem scope and need no invented remote identity.
+3. Follow the confirmed reference's available-tool documentation and read-only
+   native recipes. Verify canonical repository/default branch and operation's
+   required scopes against independent intended-target evidence. Compare IDs
+   and locators within verified system/repository scope, never by local ID alone.
+4. Capture immutable authenticated identity for each system this operation
+   requires. Refresh/authenticate only required systems: unrelated CI or tracker
+   authentication never blocks a supported operation. Record unavailable tools
+   without erasing known configuration.
+
+Ambiguous/conflicting binding blocks the affected operation. Unsupported actions
+return an explicit scoped blocker; no guessed transport, silent integration
+fallback or blanket refusal of unrelated supported operations. Configuration
+never grants authority.
 
 ## Operations
 
-1. **`preflight`** — bind the provider, canonical repository, default branch,
-   readiness policy, authenticated identity, and optional bounded item discovery.
-   Match the configured profile to normalized remotes. Unknown providers,
-   ambiguous remotes, and profile/remote mismatches fail closed.
-2. **`snapshot`** — return only the decision-grade evidence enumerated in
-   [snapshot evidence](reference/common-guard.md#snapshot-evidence). Evidence-only;
-   no routing field is added.
-3. **`publish`** — validate and publish one safe durable artifact — a tracker
-   issue or work item, or a change-request or review-report update — then require
-   provider-native byte-for-byte readback before reporting success.
-4. **`act`** — run the ordered [common guard](reference/common-guard.md), perform
-   exactly one provider mutation, and classify its provider-native readback.
-5. **`post_merge_snapshot`** — return read-only merged state, linked-item state,
-   result commit, advisory result-commit CI, and branch-cleanup evidence.
+- **`preflight`** — the binding above, operation-scoped readiness policy and
+  identity; optional bounded candidate discovery.
+- **`snapshot`** — evidence-only [snapshot contract](skill://forge/reference/common-guard.md#snapshot-evidence).
+  Follow target native pagination and lossless body recovery; lists are discovery,
+  not decision-grade single-record evidence. Complete requested diff/discussions/
+  reviews; unresolved truncation blocks the decision requiring completeness.
+- **`publish`** — validate one authored durable artifact through
+  [common guard](skill://forge/reference/common-guard.md), publish once using the selected
+  recipe, and require native byte-preserving authored-source readback with only
+  explicitly documented target normalization. Echoes and stored-body digests are
+  not submitted-source equality. Known-created artifacts recover GET-only;
+  unknown creation uses bounded reconciliation, never automatic repeat creation.
+- **`act`** — run the ordered common guard, exactly one native mutation, then
+  native post-read. Native protections/refusals are reported without bypass.
+- **`post_merge_snapshot`** — read-only merged/linked-item state, result commit,
+  containment, advisory result-bound CI and branch/worktree cleanup evidence.
+  Queued is not merged; closure intent/preview are not observed item closure.
 
-## Provider disclosure
+## Helpers
 
-`preflight` discloses exactly one branch after binding:
+Resolve this skill's real installed filesystem directory through the runtime
+resource resolver before executing `scripts/validate-text.mjs`; do not run
+`node skill://...` or resolve helpers relative to target CWD. Its JSON envelope
+validates exact string/finite role with no-body diagnostics before body-bearing
+writes. Target safe-write tools may add native checks, not replace common checks.
 
-- GitLab → [reference/gitlab.md](reference/gitlab.md)
-- GitHub → [reference/github.md](reference/github.md)
-- Azure DevOps → [reference/azure-devops.md](reference/azure-devops.md)
+```text
+node <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
+```
 
-That branch owns native identifiers, status vocabularies, pagination,
-draft/ready mechanics, comments or threads, advisory CI binding, approval or
-vote semantics, native protection/refusal behavior, fallback eligibility,
-closure rules, and readback. User-level verdict and action eligibility stay
-provider-neutral; the common workflow sees opaque identifiers and locators only.
+Exact envelope: `{"role":"review-packet","content":"authored string"}` with only
+those keys. Roles: `title`, `description`, `note`, `review-packet`, `receipt`,
+`report`, `body`. Reject invalid/lossy UTF-8 decoding, malformed UTF-16, NUL,
+non-whitespace C0 and DEL; allow tab/LF/CR and valid Unicode. Failures emit only
+role/offset/type, never body or parser excerpts. Valid envelope content errors use
+the supplied role and a UTF-16 content offset; envelope errors use `body`.
+
+The selected target reference owns native identifiers/locators, tools, pagination,
+normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
+expected-head guarantees and supported recovery. Shared records remain opaque;
+explicit verified bindings, not string shape, establish trust. Ready pre/post
+reads are observational unless the actual native operation guarantees atomicity;
+exact-head finish/queue must be guaranteed by that operation or refused as
+unsupported. Before finish re-read the recorded allocated open item and exact
+change/source/item relationship. Verifier cleanup retains dirty, foreign,
+unknown, unmerged and containment-unverified state.

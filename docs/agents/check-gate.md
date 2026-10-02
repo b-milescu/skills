@@ -28,7 +28,7 @@ gate is `npm run check`; configured advisory CI jobs are described in
 [CI parity](#ci-parity); manual validation rules are in
 [Manual validation rules](#manual-validation-rules).
 
-These facts are verified against `setup-dev-skills/reference/project-profile-facts.json`: refs, command, runtime, and observed CI jobs.
+These project-owned facts are declared here and in the confirmed [profile](dev-workflows.md#project-profile-hooks), never inferred from installed shared field guidance.
 
 Project-profile hooks may specialize project policy, but they must not weaken
 the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
@@ -58,8 +58,8 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only repository agent parity, workflow/prompt drift and schema/generated-copy checks; no external specialist dependency check. |
-| Agent schema validation | `npm run check:agents-schema` | Validates Claude/OMP agent frontmatter parsing, required fields, name/filename matches, runtime-only field drift, retired bridge wording in Claude/OMP bodies, dialect-specific tool names, OMP MCP tool inventory, and canonical OMP multiword keys. |
+| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; no external specialist dependency or prose/copy pins. |
+| Agent schema validation | `npm run check:agents-schema` | Runtime-specific complete declarations, names/model/effort/role pins and exact/server-scoped selector syntax; native locations accepted, empty requested validation rejected. Metadata is not hard confinement. |
 | Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
@@ -67,6 +67,9 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.omp/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
 | Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.omp/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
+| Gate/finding/text behavior | `node --test tests/gate-receipt-validator.mjs tests/finding-identity-bindings.mjs tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
+| Installed foreign-CWD helpers | `bash tests/installer-smoke-requirement.sh` | Real disposable-HOME installation, resolved helper execution and read-only HOME snapshot; no live operator HOME writes. |
+| Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution or hard MCP confinement. Claude precedence requires separate runtime proof. |
 | Stale naming check | `rg -n "<old-name>\|<rejected-term>" .` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
@@ -79,44 +82,16 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | Script |
 | --- |
 | `tests/agent-check.sh` |
-| `tests/agent-handoff-templates.sh` |
 | `tests/agents-schema.sh` |
-| `tests/authority-verification-schema.sh` |
-| `tests/builder-prompt-dedupe.sh` |
 | `tests/check-gate-inventory.sh` |
 | `tests/check-gate-runner.sh` |
-| `tests/delivery-schema.sh` |
 | `tests/executable-bit-policy.sh` |
-| `tests/finish-result-schema.sh` |
-| `tests/forge-neutral-workflows.sh` |
-| `tests/gitlab-build-cards.sh` |
-| `tests/gitlab-ci-finish-guards.sh` |
-| `tests/gitlab-help-cache.sh` |
-| `tests/gitlab-mcp-first-workflows.sh` |
-| `tests/gitlab-mutation-guard.sh` |
-| `tests/gitlab-review-cards.sh` |
-| `tests/gitlab-snippet-metadata.sh` |
-| `tests/gitlab-split-snippets.sh` |
-| `tests/handoff-tokens-schema.sh` |
 | `tests/install-symlink-ownership.sh` |
 | `tests/installer-smoke-requirement.sh` |
 | `tests/md-links.sh` |
 | `tests/omp-agent-loader-smoke.sh` |
-| `tests/parent-subagent-placement.sh` |
-| `tests/post-merge-verifier-read-only.sh` |
-| `tests/project-profile-facts.sh` |
-| `tests/project-profile-hooks.sh` |
-| `tests/queued-auto-merge-default-finish.sh` |
 | `tests/regression-harness.sh` |
-| `tests/reviewer-lift-schema.sh` |
-| `tests/reviewer-lift-transport.sh` |
-| `tests/reviewer-prompt-dedupe.sh` |
 | `tests/runtime-shared-resources.sh` |
-| `tests/setup-dev-skills-guardrails.sh` |
-| `tests/setup-dev-skills-invocation.sh` |
-| `tests/start-build-mode-cards.sh` |
-| `tests/start-review-mode-cards.sh` |
-| `tests/token-grep-invariants.sh` |
 
 ## CI parity
 
