@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import yaml from "js-yaml";
@@ -15,7 +15,7 @@ const foreign = join(work, "foreign");
 const skills = ["cleanup-codebase", "forge", "issue-delivery-loop", "plan-to-issues", "retro", "setup-dev-skills", "start-build", "start-review"];
 const sha = "1".repeat(40);
 function run(command, args, cwd = foreign) {
-  return spawnSync(command, args, { cwd, encoding: "utf8", env: { ...process.env, HOME: join(work, "home"), npm_config_userconfig: join(work, "empty.npmrc"), npm_config_cache: join(work, "cache"), NODE_PATH: "" } });
+  return spawnSync(command, args, { cwd, encoding: "utf8", env: { PATH: process.env.PATH, HOME: join(work, "home"), npm_config_userconfig: join(work, "empty.npmrc"), npm_config_cache: join(work, "cache"), NODE_PATH: "" } });
 }
 function pass(result) {
   assert.equal(result.status, 0, result.stderr || result.stdout);
@@ -47,11 +47,17 @@ try {
     }
   }
   const tarball = pack(source, true);
-  // Package dependencies from the bootstrapped checkout into a disposable cache;
-  // never borrow its node_modules while executing installed helpers.
-  const dependencies = Object.fromEntries(["argparse", "js-yaml"].map((name) => [name, `file:${pack(join(root, "node_modules", name))}`]));
-  writeFileSync(join(foreign, "package.json"), JSON.stringify({ private: true, overrides: dependencies }));
-  pass(run("npm", ["install", "--offline", "--ignore-scripts", "--omit=dev", "--no-audit", "--no-fund", tarball]));
+  // Seed local tarball/cache resolution, then remove direct dependency roots.
+  // The clean production reinstall must retain YAML only through core's runtime graph.
+  const dependencies = ["argparse", "js-yaml"].map((name) => pack(join(root, "node_modules", name)));
+  pass(run("npm", ["install", "--offline", "--ignore-scripts", "--no-audit", "--no-fund", tarball, ...dependencies]));
+  const manifest = JSON.parse(readFileSync(join(foreign, "package.json"), "utf8"));
+  delete manifest.dependencies["js-yaml"];
+  delete manifest.dependencies.argparse;
+  writeFileSync(join(foreign, "package.json"), JSON.stringify(manifest));
+  pass(run("npm", ["install", "--package-lock-only", "--offline", "--ignore-scripts", "--no-audit", "--no-fund"]));
+  rmSync(join(foreign, "node_modules"), { recursive: true });
+  pass(run("npm", ["ci", "--offline", "--ignore-scripts", "--omit=dev", "--no-audit", "--no-fund"]));
   const installed = join(foreign, "node_modules/@agents/skills");
   const core = join(installed, "core");
   assert.deepEqual(readdirSync(core).filter((name) => existsSync(join(core, name, "SKILL.md"))).sort(), skills);
@@ -65,7 +71,8 @@ try {
       const document = readFileSync(join(core, "agents", dialect, `${route}.md`), "utf8");
       const metadata = yaml.load(document.split("---")[1]);
       assert.equal(metadata.name, route);
-      assert.deepEqual(metadata[dialect === "omp" ? "autoload-skills" : "skills"], [route === "mr-builder" ? "start-build" : "start-review", "forge"]);
+      const preloads = dialect === "omp" ? metadata["autoload-skills"] : metadata.skills.split(",").map((name) => name.trim());
+      assert.deepEqual(preloads, [route === "mr-builder" ? "start-build" : "start-review", "forge"]);
     }
   }
   const setup = readFileSync(join(core, "setup-dev-skills/SKILL.md"), "utf8");
