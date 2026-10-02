@@ -9,7 +9,7 @@ foreign-project configuration. Read this document from the verified target clone
 ## Scope and transport
 
 Code, merge requests, work items and advisory CI use GitLab instance
-`https://gitlab.example.com`, canonical repository `agents/skills`, project 16,
+<https://gitlab.example.com>, canonical repository `agents/skills`, project 16,
 default branch `main`. Named `origin` fetch/push intent must agree; resolve fork or
 alternate-remote intent explicitly rather than selecting the first remote.
 Authentication is supplied by the mounted `gitlab-mcp` connection; never inspect
