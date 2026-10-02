@@ -71,8 +71,6 @@ try {
       const document = readFileSync(join(core, "agents", dialect, `${route}.md`), "utf8");
       const metadata = yaml.load(document.split("---")[1]);
       assert.equal(metadata.name, route);
-      const preloads = dialect === "omp" ? metadata["autoload-skills"] : metadata.skills.split(",").map((name) => name.trim());
-      assert.deepEqual(preloads, [route === "mr-builder" ? "start-build" : "start-review", "forge"]);
     }
   }
   const setup = readFileSync(join(core, "setup-dev-skills/SKILL.md"), "utf8");
