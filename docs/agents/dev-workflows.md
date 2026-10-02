@@ -15,7 +15,7 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 | Dialect | Declared on the agent by | Activated at runtime by | Activation verb in agent bodies/prompts |
 | --- | --- | --- | --- |
 | Claude (`agents/claude/*.md`) | `skills:` frontmatter preloads bodies; it is not an invocation allowlist. | Invoke additional eligible installed skills via the `Skill` tool at their entry. | "Invoke it via the `Skill` tool" / "invoke `<skill>` via the Skill tool". |
-| OMP (`agents/omp/*.md`) | `autoload-skills:` frontmatter preloads bodies at session start, separately from inherited discovery inventory. | The OMP skill-load mechanism enters preloads; eligible unpreloaded entries remain available through runtime entry resolution (`skill://<name>`). | "Invoke it through the OMP skill-load mechanism (its `autoload-skills` frontmatter)" for preloads; "invoke its entry through the OMP skill-load mechanism" on demand. |
+| OMP (`agents/*.md`, excluding README) | `autoload-skills:` frontmatter preloads bodies at session start, separately from inherited discovery inventory. | The OMP skill-load mechanism enters preloads; eligible unpreloaded entries remain available through runtime entry resolution (`skill://<name>`). | "Invoke it through the OMP skill-load mechanism (its `autoload-skills` frontmatter)" for preloads; "invoke its entry through the OMP skill-load mechanism" on demand. |
 
 Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch prompt (or agent body) names the skill and instructs invocation; per the [#320 minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Reserve the word "load" for reference reads and other file/context loads, never for skill activation.
 
@@ -172,7 +172,7 @@ evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
 | `docs` | Documentation files changed or read as evidence. |
 | `prompt` | Agent prompt / SKILL.md / agent definition file changed. |
 | `agent_inventory` | Agent inventory manifest or registry changed. |
-| `install_surface` | Install script, symlink, or deploy artifact changed. |
+| `install_surface` | Native marketplace/plugin discovery, installed resources/dependencies or deploy artifact changed. |
 | `transport` | `/forge` selection or provider-native transport logic changed. |
 | `authority` | Authority verification, approval, vote, or finish logic changed. |
 | `ci_finish` | Bound CI or finish-verdict logic changed. |

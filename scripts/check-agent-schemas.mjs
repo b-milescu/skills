@@ -185,7 +185,7 @@ function collectInputFiles() {
       if (dialect && absolute.endsWith('.md')) {
         collected.push(agentFile(absolute, dialect));
       } else {
-        diagnostics.push(`${displayPath(absolute)}:1: expected Markdown agent under agents/claude, agents/omp, .claude/agents or .omp/agents`);
+        diagnostics.push(`${displayPath(absolute)}:1: expected Markdown agent under agents, agents/claude, .claude/agents or .omp/agents`);
       }
       continue;
     }
@@ -204,6 +204,11 @@ function collectInputFiles() {
       continue;
     }
 
+    if (absolute === path.join(REPO_ROOT, 'agents')) {
+      collected.push(...markdownFiles(absolute)
+        .filter((file) => path.basename(file) !== 'README.md')
+        .map((file) => agentFile(file, 'omp')));
+    }
     for (const dialect of DIALECTS) {
       for (const dialectDir of [path.join(absolute, dialect), path.join(absolute, `.${dialect}`, 'agents')]) {
         if (fs.existsSync(dialectDir) && fs.statSync(dialectDir).isDirectory()) {
@@ -236,6 +241,9 @@ function agentFile(absolute, dialect) {
 }
 
 function inferDialect(file) {
+  if (path.dirname(file) === path.join(REPO_ROOT, 'agents') && path.basename(file) !== 'README.md') {
+    return 'omp';
+  }
   const parts = path.resolve(file).split(path.sep);
   for (let index = parts.length - 1; index > 0; index -= 1) {
     if (parts[index - 1] === 'agents' && DIALECTS.has(parts[index])) {

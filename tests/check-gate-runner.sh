@@ -21,7 +21,6 @@ make_repo() {
   local repo="$1"
   mkdir -p "$repo/scripts" "$repo/agents" "$repo/tests"
   cp "$REPO_ROOT/scripts/check.sh" "$repo/scripts/check.sh"
-  : > "$repo/install.sh"
   : > "$repo/agents/check.sh"
   printf 'touch ran-z-pass\n' > "$repo/tests/z-pass.sh"
   printf 'import { writeFileSync } from "node:fs";\nwriteFileSync("ran-z-pass-mjs", "");\n' > "$repo/tests/z-pass.mjs"

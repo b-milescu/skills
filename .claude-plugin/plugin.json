@@ -1,0 +1,17 @@
+{
+  "name": "skills",
+  "skills": [
+    "./setup-dev-skills",
+    "./forge",
+    "./start-build",
+    "./start-review",
+    "./issue-delivery-loop",
+    "./plan-to-issues",
+    "./cleanup-codebase",
+    "./retro"
+  ],
+  "agents": [
+    "./agents/claude/mr-builder.md",
+    "./agents/claude/mr-reviewer-final.md"
+  ]
+}

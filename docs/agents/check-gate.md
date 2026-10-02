@@ -50,33 +50,28 @@ that provider outcome and never bypass it.
 
 ## Executable-bit policy
 
-Only these tracked entrypoints keep executable bits: `install.sh`;
-`scripts/check.sh` (via `npm run check`).
+Only `scripts/check.sh` (via `npm run check`) keeps its tracked executable bit.
 Shell, Node, and regression helpers stay non-executable (`100644`).
 
 ## Targeted checks
 
 | Area | Command | Notes |
 | --- | --- | --- |
-| Agent/install consistency | `./install.sh --check` or `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; no external specialist dependency or prose/copy pins. |
+| Agent consistency | `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; disposable HOME remains unchanged. |
 | Agent schema validation | `npm run check:agents-schema` | Runtime-specific complete declarations, names/model/effort/role pins and exact/server-scoped selector syntax; native locations accepted, empty requested validation rejected. Metadata is not hard confinement. |
-| Install script syntax | `bash -n install.sh` | Verifies shell syntax without mutating repo state. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | JavaScript tests | `node --test 'tests/*.mjs'` | Node 22 built-in runner over every top-level `tests/*.mjs` (plain `node:assert/strict` files); runs in parallel, continues past failures, prints a failure summary. Keep the glob quoted: an empty match then runs nothing instead of Node's repo-wide default patterns, and a directory argument fails on Node 22. |
-| Skill install smoke | `./install.sh` then `test -L "$HOME/.claude/skills/<skill>"` and/or `test -L "$HOME/.omp/agent/skills/<skill>"` | Safe local symlink update; confirms new skill is surfaced to installed agents. |
-| Agent install smoke | `./install.sh` then `test -L "$HOME/.claude/agents/<agent>.md"` and/or `test -L "$HOME/.omp/agent/agents/<agent>.md"` | Safe local symlink update; confirms new agent dialect file is surfaced to installed agents. |
+| Native install/lifecycle smoke | Native commands in [README](../../README.md#install-on-a-new-machine), with disposable HOME/config/profile | Observe installation, update/removal, exposed skill/agent identities and foreign-CWD helper/resource execution; preserve unrelated user/site content. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
 | Gate/finding/text behavior | `node --test tests/gate-receipt-validator.mjs tests/finding-identity-bindings.mjs tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
-| Portable npm core | `node --test tests/portable-core.mjs` | Real offline production npm installation; materialized aliases/core dependencies; reusable-only dialects; valid/invalid helper behavior from foreign CWD. Public immutable HTTPS acquisition is a separate isolated smoke, not a network dependency of this regression. |
-| Installed foreign-CWD helpers | `bash tests/installer-smoke-requirement.sh` | Real disposable-HOME installation, resolved helper execution and read-only HOME snapshot; no live operator HOME writes. |
 | Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution or hard MCP confinement. Claude precedence requires separate runtime proof. |
 | Stale naming check | `rg -n "<old-name>\|<rejected-term>" .` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
 ## Shipped shell regression inventory
 
-`scripts/check.sh` runs `node --test 'tests/*.mjs'` and then every top-level `tests/*.sh` file, keeps going after a failing step, and ends with the failing set (the Node step is listed as `tests/*.mjs`) and a non-zero exit; the pre-loop steps (`bash -n install.sh`, agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
+`scripts/check.sh` runs `node --test 'tests/*.mjs'` and then every top-level `tests/*.sh` file, keeps going after a failing step, and ends with the failing set (the Node step is listed as `tests/*.mjs`) and a non-zero exit; the pre-loop steps (agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
 
 Each script states its own coverage in a `# Focus:` header comment directly below its shebang; read the script rather than a paraphrase kept here.
 
@@ -87,12 +82,9 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/check-gate-inventory.sh` |
 | `tests/check-gate-runner.sh` |
 | `tests/executable-bit-policy.sh` |
-| `tests/install-symlink-ownership.sh` |
-| `tests/installer-smoke-requirement.sh` |
 | `tests/md-links.sh` |
 | `tests/omp-agent-loader-smoke.sh` |
 | `tests/regression-harness.sh` |
-| `tests/runtime-shared-resources.sh` |
 
 ## CI parity
 
@@ -110,26 +102,18 @@ change. Record exact commands or observations, redact secrets, and bind the
 evidence to the reviewed SHA. Manual validation does not replace `npm run check`
 for ready-marking unless the MR records a specific, reviewed exception.
 
-## Installer smoke requirement
+## Native install smoke requirement
 
-When a change alters the **install surface** — the topology the installer actually materializes — declare `install_surface` in `Acceptance surfaces` and include installer smoke evidence. The install surface is the set of inputs that change what `./install.sh` links or exposes, not every file under `agents/`. A change is on the install surface when it touches any of:
+Declare `install_surface` when native marketplace/plugin metadata, exposed skill or agent paths/identities, resource/dependency closure, or runtime-read frontmatter changes discovery or installed behavior. Agent body-only prose changes with unchanged discovery inputs do not trigger this surface.
 
-- agent **frontmatter** that the installer or runtime routing reads: an agent's `name`, its routing identity (route filename / basename), or its `skills:` / `autoload-skills:` lists;
-- `install.sh` itself, or the runtime agent routing / symlink topology it produces (which agent and skill symlinks exist, and where they point);
-- adding, removing, renaming, or moving a tracked file under `agents/` (a new agent dialect file, a deleted route, a renamed skill), since that changes which symlinks the installer creates.
+Schema validation and read-only consistency are not installation evidence. In disposable HOME/config/profile paths, use each affected native manager to install the exact candidate, observe its exposed inventory and selected agent provenance in fresh processes, execute valid and invalid installed helpers from a foreign CWD without coordinator dependencies, and observe native update/remove lifecycle. Preserve unrelated skills, agents, extensions, MCP settings and credentials; legacy user links remain operator-owned.
 
-A change is **not** on the install surface — and does not by itself require installer smoke — when it edits only an agent file's prose **body** while leaving that file's frontmatter (`name`/routing/`skills:`/`autoload-skills:`), filename, and symlink topology byte-identical. A body-prose-only edit under `agents/` therefore does not trigger this requirement on its own.
+For parent-owned evidence, name the affected native manager's isolated installation/discovery/lifecycle scenario as the expected confirmation. `tests/omp-agent-loader-smoke.sh` retains actual OMP marketplace installation and fresh discovery/resource checks when its source and Bun are available; `OMP_REQUIRE_LOADER=1` fails instead of reporting N/A. Claude selection needs independent native proof.
 
-This requirement cannot be satisfied by `npm run check:agents-schema` or `./install.sh --check` alone; an actual `./install.sh` run in a temp HOME confirms installer output behavior.
-
-Required evidence: run `HOME=<tmpdir> ./install.sh` and verify that expected agent and skill symlinks exist and no unintended additions or removals occurred. Use a safe temp HOME to avoid mutating the live `$HOME`.
-
-For parent-owned gate evidence, name `./install.sh` or a temp-HOME installer smoke as the expected confirmation when `install_surface` is present.
-
-`tests/install-symlink-ownership.sh` regression covers default MR route symlink ownership in both runtime dialects under `npm run check`. A live temp-HOME installer smoke supplements rather than replaces it.
+Installation/discovery does not prove live model routing or hard MCP confinement. Those remain explicit operator observations from the real spawning session; never infer them from metadata or widen selectors to manufacture proof.
 
 **Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 
 ## When the gate cannot be run
 
-If agent directories do not exist on a host, `./install.sh` skips them. Treat skipped agent targets as N/A and report the observed `skip:` lines rather than failing the change.
+If an affected native runtime is unavailable, record the exact missing prerequisite and installation/discovery evidence as N/A. Required runtime proof remains incomplete; a schema pass or source inspection is not a substitute.

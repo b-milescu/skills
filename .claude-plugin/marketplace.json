@@ -1,0 +1,5 @@
+{
+  "name": "nja-skills",
+  "owner": { "name": "agents/skills" },
+  "plugins": [{ "name": "skills", "source": "./" }]
+}

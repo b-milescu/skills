@@ -10,6 +10,8 @@ description: >-
 
 # Retro
 
+Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
+
 Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/plan-to-issues` and ship through the normal build/review workflow.
 
 This skill runs from the invoked target. Facts and policy come from its confirmed `project_profile`, `profile_path`, selected `provider.reference` and declared Agent Setup Doc paths; never from installed aliases or this repository's vocabulary. Bind only systems required by collection/publication through `/forge preflight`; absent/stale setup prompts explicit owner setup, never automatic login/setup/install or live label mutation.

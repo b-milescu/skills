@@ -18,15 +18,25 @@ When the parent coordinator, not the child builder, owns the final local gate an
 
 ## Default builder routing
 
-Parent-loop deliveries use the shared model-free `mr-builder` basename, resolved
-in the current runtime dialect directory, plus the mandatory independent final
-reviewer `mr-reviewer-final`. Model and effort pins live in frontmatter, never in
-route names.
+Parent-loop deliveries use canonical `mr-builder` and mandatory independent
+`mr-reviewer-final` role basenames. Model and effort pins remain in frontmatter.
 
-When either exact route is unavailable in the current dialect directory, stop
+### Native route selection
+
+Resolve each role from the current spawning session's effective runtime inventory,
+not a guessed source filename or a basename-only inventory equality check.
+Reusable sources are `agents/claude/<role>.md` for Claude and `agents/<role>.md`
+for OMP; complete target-owned project declarations remain separate.
+Claude's native plugin exposes `skills:<role>`, while OMP exposes bare `<role>`.
+Select the actual inventory identifier with verified runtime/source provenance.
+An effective same-name project declaration may expose a bare role and take native
+precedence; verify that selection independently in each runtime from the intended
+checkout. A native namespace qualifies the same canonical role, not a new alias
+or a substitute. Preserve the basename, model/effort pins and reviewer independence.
+
+If the required role is unavailable or its effective source is ambiguous, stop
 with a route-unavailable blocker and explicit parent/operator decision. Never
-select a generic specialist, shim, old filename, cross-runtime route, or cost
-downgrade.
+select a generic specialist, shim, old filename, cross-runtime route or downgrade.
 
 ## Fresh default and cleanup order
 
@@ -86,7 +96,7 @@ per-branch invariant, not a one-time batch preflight:
    `issue-delivery-loop` specifies: one child per item and one isolated
    worktree/branch/Draft change request/Review Packet per child.
 2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
-3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Launch the exact shared `mr-builder` route basename in the current dialect directory. If the runtime exposes the route inventory API, call `subagent({ action: "list" })` and verify the exact route is available; generic specialists, aliases, shims, old filenames, and cross-runtime substitutes are invalid.
+3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Resolve canonical `mr-builder` under [Native route selection](#native-route-selection). If the runtime exposes an inventory API, call it (for example `subagent({ action: "list" })`), verify source/runtime provenance and launch the returned identifier, including its native namespace. Generic specialists, shim aliases, old filenames and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
 4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence, applying [stage-correct handoff verification](parent-owned-gate.md#stage-correct-handoff-verification) at the applicable stage. `not-created` is a valid pre-gate return, not a receipt.
    Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing its route.
@@ -122,8 +132,8 @@ routing/evidence instructions:
 
 ```text
 Review change request: <provider-native Change request locator>
-Agent: mr-reviewer-final (resolve basename in current dialect directory: agents/claude/mr-reviewer-final.md or agents/omp/mr-reviewer-final.md)
-Route-resolved-at-launch: <confirmed from current runtime inventory, or manual direct selection>
+Agent: <inventory-resolved identifier for canonical mr-reviewer-final; Claude reusable skills:mr-reviewer-final, OMP reusable mr-reviewer-final>
+Route-resolved-at-launch: <effective runtime inventory identifier and source, or verified manual direct selection>
 Mode: mr-reviewer
 Skills: invoke start-review and forge via the Skill tool before any review step.
 Project rulebook path: <rulebook path>
@@ -147,7 +157,7 @@ When the parent starts a child builder, pass only the issue-specific routing fac
 
 ```text
 Build issue: <provider-native issue locator>
-Agent: mr-builder (resolve basename in current dialect directory: agents/claude/mr-builder.md or agents/omp/mr-builder.md)
+Agent: <inventory-resolved identifier for canonical mr-builder; Claude reusable skills:mr-builder, OMP reusable mr-builder>
 Worktree: <absolute worktree path>
 Target branch: <default branch>
 Mode: child mr-builder

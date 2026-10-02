@@ -6,8 +6,8 @@ or metadata overlay is involved.
 
 ## Reusable presets and complete project declarations
 
-`claude/*.md` and `omp/*.md` are the reusable presets installed into each
-runtime's user agent root. They pin roles/models/effort and canonical workflow
+`claude/*.md` and root `mr-*.md` are reusable presets distributed by their native
+marketplaces. They pin roles/models/effort and canonical workflow
 skills without selecting native servers. The invoked target's confirmed
 integration determines its native tools and action-scoped authority.
 
@@ -17,7 +17,7 @@ They select this project's confirmed servers and point to canonical
 `start-build`/`start-review` and `forge`, plus
 [the project integration](../docs/agents/native-integration.md). These are whole
 runtime definitions, not overlays on installed presets or copies of skill
-procedures. The installer does not publish them globally. For another target,
+procedures. Native marketplace metadata excludes these project declarations. For another target,
 manual confirmed setup writes that target's complete declarations from its
 own configuration/evidence; strings alone do not establish scoped identity.
 
@@ -33,7 +33,7 @@ neither route unconditionally preloads TDD. See
   `.omp/agents` before user `~/.omp/agent/agents`, then extension-package agents,
   installed plugins/Claude marketplace agents and bundled agents. It does not
   load `.claude/agents` as an OMP-native agent root. The actual loader harness
-  below verifies the selected project file against a same-name installed user
+  below verifies the selected project file against a same-name native marketplace
   preset in fresh processes.
 - **Claude Code:** [its scope documentation](https://code.claude.com/docs/en/subagents.md#choose-the-subagent-scope)
   independently specifies managed definitions, CLI `--agents`, nearest project
@@ -78,8 +78,8 @@ of native declarations, and labels that narrower proof. The harness uses a
 fresh process for each discovery, and separately checks available canonical
 entries through actual skill discovery and `skill://` access, including an
 unpreloaded entry and absent-inventory rejection. Entries resolve to the
-candidate repository used by the disposable installation; selected project
-agent provenance and canonical installed-entry provenance are separate facts.
+native manager's disposable installed cache; project agent provenance and
+canonical installed-entry provenance are separate facts.
 
 No harness claim covers live model routing, native mutation, reviewer
 obedience, Claude execution or hard MCP confinement. OMP's child executor
@@ -88,18 +88,19 @@ isolation boundary. Verify actually available tools and scoped read-only
 native identity from the real spawning session separately. Do not widen to a
 generic `mcp_*` selector or patch an external runtime to manufacture proof.
 
-For installation ownership and read-only HOME evidence run
-`bash tests/install-symlink-ownership.sh` and
-`bash tests/installer-smoke-requirement.sh`; both use disposable HOME paths.
-The existing ownership-sensitive pruning removes obsolete repo-owned links
-while preserving foreign/dangling foreign links and unmanaged regular files.
-Skill-local installed `docs/` aliases retain their underlying source ownership:
-this repository's native docs do not become another target's configuration.
+Native installation and lifecycle commands live in [README](../README.md#install-on-a-new-machine);
+[Check Gate](../docs/agents/check-gate.md#native-install-smoke-requirement)
+owns the required isolated proof. Native managers own removal; existing user
+links and other unmanaged content are not automatically migrated or deleted.
 
-The standard npm core payload exposes only `core/agents/claude/*.md` and
-`core/agents/omp/*.md`, preserving these distinct reusable dialects and route
-names. It never packages complete `.claude/agents` or `.omp/agents` declarations.
-Keep the dialect appropriate to the selected runtime; portable packaging is not
-proof of runtime selection, model execution or inherited-tool confinement.
-See the [portable core recipe](../README.md#portable-core-payload-not-an-executable-release)
-for package/dependency placement before any downstream runtime projection.
+Claude exposes reusable agents as `skills:mr-builder` and
+`skills:mr-reviewer-final`; use qualified IDs for deterministic plugin routing.
+OMP exposes bare `mr-builder` and `mr-reviewer-final`, with project-native
+same-name declarations taking precedence. Its root `agents/*.md` files select
+only OMP dialect files; Claude metadata explicitly selects its two dialect files.
+
+Canonical logical skill IDs stay stable. OMP natively resolves `skill://`;
+Claude entry and agent bodies map logical resources through
+`${CLAUDE_PLUGIN_ROOT}`. See the bootstrap in each installed skill entry before
+reading or executing resources from a foreign CWD. Shared docs retain their
+source ownership and never become another target's configuration.

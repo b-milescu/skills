@@ -22,7 +22,6 @@ run() {
   "$@"
 }
 
-run "install.sh syntax" bash -n install.sh
 run "Agent schema validation" npm run check:agents-schema
 run "agent consistency" bash agents/check.sh
 run "Markdown lint" npm run check:md

@@ -25,6 +25,9 @@ minimal prompt from
 [parent-orchestrator](parent-orchestrator.md#minimal-reviewer-launch-prompt):
 Change request locator, Reviewer Lift pointer, project rulebook path, Context
 Firewall, stop condition, finish owner, and any sourced authority grant.
+Resolve the canonical final-reviewer role through
+[native route selection](parent-orchestrator.md#native-route-selection), including
+the exposed namespace and effective project/reusable source.
 Invoke `start-review` and `forge` through the Skill tool. The reviewer independently
 verifies current/reviewed commit, exact-candidate local Gate Receipt, publication
 evidence, advisory CI attribution, and the `/forge` common guard.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Focus: Actual OMP discovery in fresh processes, not current-session caches or a child
-# execution-CWD switch. Proves selected file/pins and canonical skill access;
-# does not launch models, execute native operations or prove MCP confinement.
+# Focus: Native local-marketplace installation and actual OMP discovery in fresh
+# processes. Proves selected file/pins and canonical resource access, not hosted
+# acquisition, live models, native operations or hard MCP confinement.
 set -euo pipefail
 shopt -s nullglob
 TEST_NAME="omp-agent-loader-smoke"
@@ -11,13 +11,6 @@ TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/omp-agent-loader-smoke.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 TMP_HOME="$TMP_ROOT/home"
 mkdir -p "$TMP_HOME/.omp/agent" "$TMP_ROOT/foreign"
-HOME="$TMP_HOME" "$REPO_ROOT/install.sh" >"$TMP_ROOT/install.out" 2>&1 || {
-  cat "$TMP_ROOT/install.out" >&2; fail 'disposable-HOME install failed';
-}
-for file in "$REPO_ROOT/agents/omp"/*.md; do
-  link="$TMP_HOME/.omp/agent/agents/$(basename "$file")"
-  [[ -L "$link" && "$link" -ef "$file" ]] || fail "missing installed route: $link"
-done
 pkg_dir="${OMP_CODING_AGENT_PKG:-}"
 for candidate in "$pkg_dir" "${PI_PACKAGE_DIR:-}" \
   "$HOME/.bun/install/global/node_modules/@oh-my-pi/pi-coding-agent" \
@@ -27,9 +20,38 @@ for candidate in "$pkg_dir" "${PI_PACKAGE_DIR:-}" \
 done
 if [[ -z "$pkg_dir" || ! -f "$pkg_dir/src/task/discovery.ts" ]] || ! command -v bun >/dev/null 2>&1; then
   [[ "${OMP_REQUIRE_LOADER:-0}" != 1 ]] || fail 'required actual OMP loader unavailable'
-  printf '%s: loader proof N/A (OMP source/bun unavailable); installer exposure only\n' "$TEST_NAME"
+  printf '%s: native install/discovery proof N/A (OMP source/bun unavailable)\n' "$TEST_NAME"
   exit 0
 fi
+
+# Native marketplace manager copies the candidate into its disposable cache;
+# no custom projection into user agent/skill directories.
+candidate="$TMP_ROOT/candidate"
+mkdir -p "$candidate"
+(cd "$REPO_ROOT" && tar --exclude .git --exclude node_modules -cf - .) | (cd "$candidate" && tar -xf -)
+cat > "$TMP_ROOT/install.mjs" <<'BUN'
+import { pathToFileURL } from 'node:url';
+import path from 'node:path';
+const pkg = process.env.OMP_PACKAGE_DIR;
+const { MarketplaceManager } = await import(pathToFileURL(path.join(pkg, 'src/extensibility/plugins/marketplace/manager.ts')).href);
+const registry = await import(pathToFileURL(path.join(pkg, 'src/extensibility/plugins/marketplace/registry.ts')).href);
+const manager = new MarketplaceManager({
+  marketplacesRegistryPath: registry.getMarketplacesRegistryPath(),
+  installedRegistryPath: registry.getInstalledPluginsRegistryPath(),
+  marketplacesCacheDir: registry.getMarketplacesCacheDir(),
+  pluginsCacheDir: registry.getPluginsCacheDir(),
+});
+const marketplace = await manager.addMarketplace(process.env.CANDIDATE_ROOT);
+const installed = await manager.installPlugin('skills', marketplace.name, { scope: 'user' });
+console.log(installed.installPath);
+BUN
+native_root="$(cd "$TMP_ROOT/foreign" && env -u PI_PROFILE -u OMP_PROFILE \
+  HOME="$TMP_HOME" PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \
+  XDG_DATA_HOME="$TMP_ROOT/xdg-data" XDG_STATE_HOME="$TMP_ROOT/xdg-state" \
+  XDG_CONFIG_HOME="$TMP_ROOT/xdg-config" XDG_CACHE_HOME="$TMP_ROOT/xdg-cache" \
+  OMP_PACKAGE_DIR="$pkg_dir" CANDIDATE_ROOT="$candidate" bun "$TMP_ROOT/install.mjs")" \
+  || fail 'native disposable marketplace installation failed'
+[[ -d "$native_root" ]] || fail 'native installed root missing'
 
 spawn_cwd="${OMP_SPAWN_CWD:-$REPO_ROOT}"
 allocated_cwd="${OMP_ALLOCATED_CWD:-}"
@@ -67,7 +89,7 @@ function assert(value, message) { if (!value) throw new Error(message); }
 const cwd = process.env.DISCOVER_CWD;
 const project = process.env.EXPECT_PROJECT === '1';
 const result = await discoverAgents(cwd, process.env.HOME);
-const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.HOME, '.omp/agent/agents');
+const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.CANONICAL_ROOT, 'agents');
 const routes = [
   { name: 'mr-builder', thinking: 'medium', entry: 'start-build' },
   { name: 'mr-reviewer-final', thinking: 'xhigh', entry: 'start-review' },
@@ -101,6 +123,15 @@ for (const name of ['start-build', 'start-review', 'forge']) {
   assert(resource.content === fs.readFileSync(source, 'utf8'), `${name}: canonical entry bytes differ`);
   console.log(JSON.stringify({ proof: 'available-entry-access', phase: process.env.PROOF_PHASE, name, filePath: skill.filePath, realPath: fs.realpathSync(skill.filePath) }));
 }
+for (const [name, resourcePath] of [
+  ['start-build', 'docs/decoupling-contract.md'],
+  ['start-review', 'shared-templates/filling-guide.md'],
+  ['plan-to-issues', 'docs/agents/agent-readiness-scorecard.md'],
+]) {
+  const resource = await handler.resolve(new URL(`skill://${name}/${resourcePath}`), { skills });
+  assert(resource.content === fs.readFileSync(path.join(process.env.CANONICAL_ROOT, name, resourcePath), 'utf8'),
+    `${name}: installed resource bytes differ`);
+}
 const builder = result.agents.find(agent => agent.name === 'mr-builder');
 assert(!builder.autoloadSkills.includes('start-review'), 'cross-entry scenario should be unpreloaded');
 let rejected = false;
@@ -111,10 +142,13 @@ BUN
 fresh_discovery() {
   local phase="$1" cwd="$2" project="$3"
   # A new Bun process means discovery is anchored to this spawning-session CWD.
-  (cd "$cwd" && HOME="$TMP_HOME" PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \
+  (cd "$cwd" && env -u PI_PROFILE -u OMP_PROFILE \
+    HOME="$TMP_HOME" PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \
+    XDG_DATA_HOME="$TMP_ROOT/xdg-data" XDG_STATE_HOME="$TMP_ROOT/xdg-state" \
+    XDG_CONFIG_HOME="$TMP_ROOT/xdg-config" XDG_CACHE_HOME="$TMP_ROOT/xdg-cache" \
     PI_PACKAGE_DIR="$pkg_dir" OMP_PACKAGE_DIR="$pkg_dir" \
     DISCOVER_CWD="$cwd" EXPECT_PROJECT="$project" PROOF_PHASE="$phase" \
-    CANONICAL_ROOT="$REPO_ROOT" bun "$assertions_js") || fail "fresh $phase discovery failed"
+    CANONICAL_ROOT="$native_root" bun "$assertions_js") || fail "fresh $phase discovery failed"
 }
 fresh_discovery foreign "$TMP_ROOT/foreign" 0
 fresh_discovery spawning "$spawn_cwd" 1
