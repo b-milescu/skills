@@ -77,7 +77,7 @@ values. A second target with other mechanics needs only its own confirmed docs.
 
 Runtime declarations are **complete shallow files**, not metadata overlays:
 canonical builder/reviewer entry pointers, role/authority bounds, runtime-specific
-model/effort pins and confirmed exact/server-scoped tools. Determine each runtime's
+model/effort neutrality per [native selection](skill://start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and confirmed exact/server-scoped tools. Determine each runtime's
 native project location and precedence independently from runtime evidence. Keep
 shared presets free of native server catalogues; do not widen to generic `mcp_*`.
 Selected-file/skill provenance from the actual spawning session and independently

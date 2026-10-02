@@ -58,7 +58,7 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent consistency | `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; disposable HOME remains unchanged. |
-| Agent schema validation | `npm run check:agents-schema` | Runtime-specific complete declarations, names/model/effort/role pins and exact/server-scoped selector syntax; native locations accepted, empty requested validation rejected. Metadata is not hard confinement. |
+| Agent schema validation | `npm run check:agents-schema` | Runtime-specific declarations, canonical names, optional model/effort metadata and exact/server-scoped selector syntax; native locations accepted, empty requested validation rejected. Metadata is not hard confinement or effective model/effort proof. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | JavaScript tests | `node --test 'tests/*.mjs'` | Node 22 built-in runner over every top-level `tests/*.mjs` (plain `node:assert/strict` files); runs in parallel, continues past failures, prints a failure summary. Keep the glob quoted: an empty match then runs nothing instead of Node's repo-wide default patterns, and a directory argument fails on Node 22. |
@@ -110,7 +110,7 @@ Schema validation and read-only consistency are not installation evidence. In di
 
 For parent-owned evidence, name the affected native manager's isolated installation/discovery/lifecycle scenario as the expected confirmation. `tests/omp-agent-loader-smoke.sh` retains actual OMP marketplace installation and fresh discovery/resource checks when its source and Bun are available; `OMP_REQUIRE_LOADER=1` fails instead of reporting N/A. Claude selection needs independent native proof.
 
-Installation/discovery does not prove live model routing or hard MCP confinement. Those remain explicit operator observations from the real spawning session; never infer them from metadata or widen selectors to manufacture proof.
+Installation/discovery does not prove live model/effort selection or hard MCP confinement. Follow [native model and effort selection](../../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and record explicit operator observations from the real fresh spawning session; never infer them from metadata or widen selectors to manufacture proof.
 
 **Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 

@@ -1,10 +1,9 @@
 ---
 name: mr-builder
-description: Project change-request builder for agents/skills. Pins Opus 4.8 at medium effort; child-builder authority remains in start-build.
+description: Project change-request builder for agents/skills; child-builder authority remains in start-build.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__codebase-memory-mcp__*"
 skills: start-build, forge
-model: claude-opus-4-8
-effort: medium
+model: inherit
 color: blue
 ---
 

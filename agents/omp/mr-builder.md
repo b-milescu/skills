@@ -1,9 +1,7 @@
 ---
 name: mr-builder
-description: Routed default forge-neutral change-request builder for child-builder work. Pins pi/task at medium thinking while preserving start-build child-builder authority boundaries.
+description: Routed default forge-neutral change-request builder for child-builder work, preserving start-build child-builder authority boundaries.
 tools: "read, grep, glob, bash, edit, write, todo, irc"
-model: pi/task
-thinking-level: medium
 autoload-skills: start-build, forge
 ---
 

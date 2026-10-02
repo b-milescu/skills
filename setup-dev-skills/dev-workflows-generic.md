@@ -28,7 +28,8 @@ index ownership. Hooks preserve the
 [safety floors](skill://start-build/SAFETY.md#safety-floors).
 
 Complete runtime-specific same-name project declarations point at canonical skill
-entries and preserve role/model/effort pins and task-selected specialists. Native
+entries and preserve role bounds and task-selected specialists. Follow
+[native model and effort selection](skill://start-build/reference/parent-orchestrator.md#native-model-and-effort-selection). Native
 tool selectors come only from confirmed available target tools; metadata is not
 hard confinement. Establish each runtime's precedence and selected-file/skill
 provenance separately from actual spawning and allocated/revision sessions.

@@ -1,10 +1,9 @@
 ---
 name: mr-builder
-description: Routed default forge-neutral change-request builder for child-builder work. Pins Opus 4.8 at medium effort while preserving start-build child-builder authority boundaries.
+description: Routed default forge-neutral change-request builder for child-builder work, preserving start-build child-builder authority boundaries.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion"
 skills: skills:start-build, skills:forge
-model: claude-opus-4-8
-effort: medium
+model: inherit
 color: blue
 ---
 

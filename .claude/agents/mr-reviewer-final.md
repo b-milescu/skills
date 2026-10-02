@@ -1,10 +1,9 @@
 ---
 name: mr-reviewer-final
-description: Mandatory independent final project change-request reviewer for agents/skills. Pins Opus 4.8 at xhigh effort.
+description: Mandatory independent final project change-request reviewer for agents/skills.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__codebase-memory-mcp__*"
 skills: start-review, forge
-model: claude-opus-4-8
-effort: xhigh
+model: inherit
 color: green
 ---
 

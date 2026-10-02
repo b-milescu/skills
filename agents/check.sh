@@ -79,9 +79,8 @@ check_agent_variant_parity() {
   local name file rel declared claude_declared omp_declared token
 
   # MR builder/reviewer routes share model-free basenames across Claude and
-  # OMP dialects. Model/provider pins stay in frontmatter/body prose, so any
-  # missing counterpart is a hard parity error rather than an allowed
-  # runtime-specific exception.
+  # OMP dialects. Runtime-owned model/effort selection does not make a
+  # missing counterpart an allowed runtime-specific exception.
 
   list_agent_names "$claude_dir" > "$claude_names"
   list_agent_names "$omp_dir" > "$omp_names"

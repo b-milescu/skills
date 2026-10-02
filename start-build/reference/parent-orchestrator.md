@@ -19,7 +19,7 @@ When the parent coordinator, not the child builder, owns the final local gate an
 ## Default builder routing
 
 Parent-loop deliveries use canonical `mr-builder` and mandatory independent
-`mr-reviewer-final` role basenames. Model and effort pins remain in frontmatter.
+`mr-reviewer-final` role basenames. Model and effort selection is runtime-owned.
 
 ### Native route selection
 
@@ -32,11 +32,32 @@ Select the actual inventory identifier with verified runtime/source provenance.
 An effective same-name project declaration may expose a bare role and take native
 precedence; verify that selection independently in each runtime from the intended
 checkout. A native namespace qualifies the same canonical role, not a new alias
-or a substitute. Preserve the basename, model/effort pins and reviewer independence.
+or a substitute. Preserve the basename, canonical skills and reviewer independence.
 
 If the required role is unavailable or its effective source is ambiguous, stop
 with a route-unavailable blocker and explicit parent/operator decision. Never
 select a generic specialist, shim, old filename, cross-runtime route or downgrade.
+
+### Native model and effort selection
+
+Shipped Claude MR declarations use `model: inherit` and omit `effort`. The parent
+may select a supported model through the native Agent invocation's model override;
+without it, the model inherits the parent conversation. Omitted effort inherits
+the session subject to native model support and limits; there is no per-invocation
+Agent effort parameter or `effort: inherit` declaration.
+
+Shipped OMP MR declarations omit `model` and `thinking-level`. Native parent/runtime
+task selection and defaults resolve them. Use only overrides exposed by the actual
+callable runtime interface, not internal executor arguments. Installed OMP exposes
+per-task `effort` (`lo`/`med`/`hi`) only behind `task.enableEffort`; this workflow
+neither enables that setting nor adds a model parameter to task. Operator overrides
+and supported levels remain runtime-owned.
+
+Prompt prose is not model/effort enforcement. Selection never relaxes canonical
+role routing, independent review, exact-candidate gates or authority boundaries.
+Installation/selected-source metadata is not live execution proof: after a
+frontmatter/routing cutover, require a fresh spawning-session operator observation
+of effective model/effort, and report unavailable or unauthorized execution.
 
 ## Fresh default and cleanup order
 

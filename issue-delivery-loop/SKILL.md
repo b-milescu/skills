@@ -32,7 +32,8 @@ Default: fan out every provably decoupled subset.
 3. Resolve canonical `mr-builder` and fresh `mr-reviewer-final` roles through
    [native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection).
    Use the exposed inventory identifier, including a native plugin namespace;
-   canonical basenames/model pins and child/reviewer/verifier boundaries stay unchanged.
+   canonical basenames and child/reviewer/verifier boundaries stay unchanged.
+   Follow [native model and effort selection](skill://start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
    Leave specialist selection to the build/review entries under
    [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists).
    Fresh-reviewer prompts prescribe neither specialist names nor internal-reference hints.

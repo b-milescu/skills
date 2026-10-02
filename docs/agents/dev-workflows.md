@@ -41,7 +41,9 @@ policy; coordinators leave that choice to each actor.
 
 `/issue-delivery-loop` launches `mr-builder` and independent `mr-reviewer-final`
 using the active runtime's effective same-name project declarations when present,
-otherwise provider-neutral shared routes. Model/effort pins remain in complete files.
+otherwise provider-neutral shared routes. Follow the existing
+[native model and effort selection](../../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection)
+contract; complete declarations do not force model/effort overrides.
 
 Mandatory independent review uses `mr-reviewer-final` from the same dialect
 directory. A missing route remains a route-unavailable blocker; no review scout,
@@ -121,7 +123,7 @@ project_profile:
 
 Shared installed routes are provider-neutral. This repository's complete
 same-name declarations live in `.claude/agents/` and `.omp/agents/`, retaining
-canonical entries, builder/reviewer bounds, model/effort pins and task-selected
+canonical entries, builder/reviewer bounds, model/effort neutrality and task-selected
 specialists; only these target-owned files name confirmed native servers.
 
 OMP's installed discovery selects nearest project `.omp/agents` before user
