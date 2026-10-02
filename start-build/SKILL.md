@@ -26,7 +26,7 @@ worktrees, and one Review Packet/gate/handoff per change request.
   to its stable report locator, originating reviewed commit, and finding ID;
   any push invalidates prior candidate-bound commit/CI/gate evidence.
 
-Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
+Behavior-changing work follows TDD: one observable RED→GREEN slice at a time.
 Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
 Tests run on the project's **native test framework**: the harness its default
 branch already runs through the Check Gate, CI, or a documented test command
@@ -61,6 +61,8 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    snapshot`; reconcile contradictions before planning. Re-read state/ownership
    immediately before work. Select [source lifecycle](skill://start-build/reference/implementation-flow.md#source-lifecycle):
    initialize only a new source; reuse allocated worktrees and revision heads.
+   Follow [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists)
+   before planning or edits, including standalone and revision entries.
 4. Write a compact [Build Plan Packet](skill://start-build/templates/build-plan-packet.md):
    behavior, surfaces, test plan, risks, non-goals, and loaded context. For a new
    source (including a parent allocation), push and use `forge publish` to open
