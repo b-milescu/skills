@@ -39,6 +39,11 @@ Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engin
 
 ## Install on a new machine
 
+The approved replacement distribution/lifecycle contract and bounded runtime
+compatibility evidence live in [the public installer contract](docs/installer-contract.md).
+That contract is not a released executable; the current installation below remains
+in force until the separately reviewed clean cutover.
+
 ```bash
 git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
 ~/.agent-skills/install.sh --check
