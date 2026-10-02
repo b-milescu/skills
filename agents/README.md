@@ -95,3 +95,11 @@ The existing ownership-sensitive pruning removes obsolete repo-owned links
 while preserving foreign/dangling foreign links and unmanaged regular files.
 Skill-local installed `docs/` aliases retain their underlying source ownership:
 this repository's native docs do not become another target's configuration.
+
+The standard npm core payload exposes only `core/agents/claude/*.md` and
+`core/agents/omp/*.md`, preserving these distinct reusable dialects and route
+names. It never packages complete `.claude/agents` or `.omp/agents` declarations.
+Keep the dialect appropriate to the selected runtime; portable packaging is not
+proof of runtime selection, model execution or inherited-tool confinement.
+See the [portable core recipe](../README.md#portable-core-payload-not-an-executable-release)
+for package/dependency placement before any downstream runtime projection.

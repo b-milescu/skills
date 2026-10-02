@@ -29,6 +29,41 @@ Retain the eight canonical entries: `setup-dev-skills`, `forge`, `start-build`, 
 
 [#510](https://gitlab.example.com/agents/skills/-/work_items/510) must materialize portable resource closure and prove helper runtime dependencies from a foreign CWD before complete installation parity is claimed. Recorded baseline failures (upstream collision deletion, missing `js-yaml` for a copied helper, npm-pack resource-alias omission) are authoritative issue evidence, not failures rerun here. Entry discovery alone cannot satisfy helper readiness. Production installer/cutover, live operator installation/authentication/model invocation, runtime patches and releases remain outside #509.
 
+### Portable core packaging boundary
+
+The [source-packaging recipe](../README.md#portable-core-payload-not-an-executable-release)
+materializes `core/` during `npm pack`, using an explicit source allowlist.
+Keep the installed package plus npm's production dependency tree intact:
+`js-yaml` is a package runtime dependency, not a coordinator devDependency.
+Helpers are resolved from the installed skill directory and run from the invoked
+target CWD. Shared aliases become directories, not new skill entries.
+
+This payload is not the downstream catalog/client installer. Its private
+repository-only `0.0.0` version has no executable and is not advertised as a
+published npm download. Anonymous immutable HTTPS archive acquisition followed
+by real local npm packaging/installation proves this bounded payload; executable
+publication and registry-download proof retain the downstream release boundary.
+No native project declaration is in the allowlist. Materialized native-policy
+documents retain source ownership and cannot configure an unrelated target.
+
+The #510 isolated smoke acquired the entire immutable source archive at
+`c2f032ac256e54f3928c1e1720335bb28921fcac` with curl config disabled, verified
+HTTPS and no credentials (HTTP 200). `npm pack` and production-only npm install
+then installed the core and its two runtime dependency packages into a foreign
+root; the acquired source had no `node_modules`. Installed OMP discovery found
+all eight entries and the two user reusable routes; its actual resolver read
+canonical entries, declared core URIs, shared templates/docs and helper paths.
+The installed gate accepted a valid receipt and rejected a stale candidate;
+finding binding accepted the valid revision and rejected a stale origin SHA;
+text validation accepted Unicode and rejected a control without echoing its body.
+An additional offline clean production reinstall retained dependencies solely
+through core's runtime graph, with symlink-disabled aliases materialized.
+
+These are payload/helper and OMP loader observations, not a test-suite/gate run,
+Claude standalone/workflow/model execution, public executable publication or
+remote-consumer reachability. The final candidate's acquisition/helper evidence
+is bound in its native Review Packet; the parent owns its exact-candidate gate.
+
 ## Isolated observations — 2026-10-02
 
 Source baseline: `90c046df551f5a1de7ba761b83d4a996128692e4`; observed runtimes: Claude Code `2.1.285`, OMP `18.4.10`. Five separate disposable roots were used: Claude standalone/bundle and OMP standalone/Claude-layout bundle/native-layout bundle. Every process used a foreign CWD and `env -i` with only disposable HOME/config roots, executable PATH (and TERM for the terminal observation). No credentials, project-native agents, MCP configuration, hooks or model prompt were supplied. Payloads copied unchanged skill/agent files and dereferenced resource aliases solely for these probes; this is not a portable release or the #510 dependency fix.
