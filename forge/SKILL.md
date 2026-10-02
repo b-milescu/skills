@@ -73,7 +73,8 @@ Exact envelope: `{"role":"review-packet","content":"authored string"}` with only
 those keys. Roles: `title`, `description`, `note`, `review-packet`, `receipt`,
 `report`, `body`. Reject invalid/lossy UTF-8 decoding, malformed UTF-16, NUL,
 non-whitespace C0 and DEL; allow tab/LF/CR and valid Unicode. Failures emit only
-role/offset/type, never body or parser excerpts.
+role/offset/type, never body or parser excerpts. Valid envelope content errors use
+the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
 normalization, closure syntax, draft/ready, receipt extraction, approval/finish,

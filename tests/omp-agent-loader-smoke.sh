@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Actual OMP discovery in fresh processes, not current-session caches or a child
+# Focus: Actual OMP discovery in fresh processes, not current-session caches or a child
 # execution-CWD switch. Proves selected file/pins and canonical skill access;
 # does not launch models, execute native operations or prove MCP confinement.
 set -euo pipefail

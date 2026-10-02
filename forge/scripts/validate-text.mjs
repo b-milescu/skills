@@ -11,7 +11,7 @@ try { bytes = readFileSync(process.argv[3]); } catch { fail("body", 0, "read"); 
 let source;
 try { source = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes); }
 catch { fail("body", 0, "decoding"); }
-const rawControl = source.search(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/);
+const rawControl = source.search(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/);
 if (rawControl >= 0) fail("body", rawControl, "control");
 // Exact two-key shape rejects duplicate keys; never expose parser diagnostics.
 const string = String.raw`"(?:[^"\\\u0000-\u001f]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*"`;
