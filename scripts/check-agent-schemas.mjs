@@ -221,14 +221,14 @@ function collectInputFiles() {
     }
   }
 
-  return [...new Map(collected.map((file) => [file.absolute, file])).values()]
+  return [...new Map(collected.map((file) => [`${file.dialect}:${fs.realpathSync(file.absolute)}`, file])).values()]
     .sort((left, right) => left.absolute.localeCompare(right.absolute));
 }
 
 function markdownFiles(dir) {
   return fs
     .readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+    .filter((entry) => (entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith('.md'))
     .map((entry) => path.join(dir, entry.name));
 }
 

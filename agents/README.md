@@ -6,8 +6,9 @@ or metadata overlay is involved.
 
 ## Reusable presets and complete project declarations
 
-`claude/*.md` and root `mr-*.md` are reusable presets distributed by their native
-marketplaces. They pin roles/models/effort and canonical workflow
+`claude/*.md` and `omp/*.md` are canonical reusable presets. Native OMP's
+root `mr-*.md` entrypoints are symlinks into `omp/`, preserving existing
+checkout-backed agent links. Native marketplaces pin roles/models/effort and canonical workflow
 skills without selecting native servers. The invoked target's confirmed
 integration determines its native tools and action-scoped authority.
 
