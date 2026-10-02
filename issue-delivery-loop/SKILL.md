@@ -7,6 +7,8 @@ description: >-
 
 # Issue Delivery Loop
 
+Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
+
 Coordinate a bounded ready-issue batch. Invoke `forge preflight` once, then use
 the selected provider for every snapshot, publication, action, and post-merge
 read. Generic callers do not branch on provider afterward.
@@ -27,10 +29,10 @@ Default: fan out every provably decoupled subset.
    Never serialize otherwise decoupled items. Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP.
    Preserve coordinator checkout isolation;
    children must not copy auxiliary-index artifacts between worktrees.
-3. Resolve the retained internal routes from the current dialect directory:
-   one default `mr-builder` and one fresh `mr-reviewer-final`. Route
-   basenames/model pins do not name a provider; distinct routes preserve
-   child/reviewer/verifier boundaries.
+3. Resolve canonical `mr-builder` and fresh `mr-reviewer-final` roles through
+   [native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection).
+   Use the exposed inventory identifier, including a native plugin namespace;
+   canonical basenames/model pins and child/reviewer/verifier boundaries stay unchanged.
    Leave specialist selection to the build/review entries under
    [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists).
    Fresh-reviewer prompts prescribe neither specialist names nor internal-reference hints.

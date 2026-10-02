@@ -32,6 +32,12 @@ entries and preserve role/model/effort pins and task-selected specialists. Nativ
 tool selectors come only from confirmed available target tools; metadata is not
 hard confinement. Establish each runtime's precedence and selected-file/skill
 provenance separately from actual spawning and allocated/revision sessions.
+Resolve canonical builder/final-reviewer roles through the effective spawning
+inventory, preserving native qualified IDs and verified target-project precedence
+under [native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection).
+Keep logical skill IDs stable; use Claude's `skills:<name>` for plugin invocation
+and preloads, and OMP's canonical names. Entry bodies supply Claude's filesystem
+mapping; resource access does not supply target policy or prove preload execution.
 Resolve installed helper URIs to real filesystem paths before execution from a
 foreign target CWD. Installed `docs/` aliases keep underlying source ownership and
 never replace this target's profile, identity, paths, vocabulary or policy.

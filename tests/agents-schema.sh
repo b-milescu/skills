@@ -42,6 +42,14 @@ expect_fail() {
 node "$checker" "$TMP_ROOT/project/.claude/agents/neutral-worker.md" "$TMP_ROOT/project/.omp/agents/neutral-worker.md"
 node "$checker" "$TMP_ROOT/project"
 bash "$REPO_ROOT/agents/check.sh" "$TMP_ROOT/project/.claude/agents" "$TMP_ROOT/project/.omp/agents"
+# One source interpreted in two runtime scopes must still reject the wrong dialect.
+mkdir -p "$TMP_ROOT/alias/.omp/agents"
+ln -s "$TMP_ROOT/project/.claude/agents/neutral-worker.md" "$TMP_ROOT/alias/.omp/agents/neutral-worker.md"
+expect_fail "$TMP_ROOT/alias/.omp/agents" "$TMP_ROOT/project/.claude/agents"
+if ! grep -Fq 'Claude-only frontmatter field' "$TMP_ROOT/diagnostic"; then
+  echo 'cross-dialect symlink concealed invalid OMP metadata' >&2
+  exit 1
+fi
 expect_fail "$TMP_ROOT/empty/.omp/agents"
 if bash "$REPO_ROOT/agents/check.sh" "$TMP_ROOT/empty/.omp/agents" >"$TMP_ROOT/native-empty.out" 2>&1; then
   echo 'real native-location checker accepted an empty request' >&2

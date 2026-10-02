@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Setup Dev Skills
 
+Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
+
 User-invoked and human-confirmed: inspect, resolve only missing choices, present
 complete draft, confirm, write. Other skills may recommend this entry for absent
 or stale setup, but never auto-run it, login, install or mutate live labels.
@@ -81,6 +83,11 @@ shared presets free of native server catalogues; do not widen to generic `mcp_*`
 Selected-file/skill provenance from the actual spawning session and independently
 invoked allocated/revision checkouts must be verified separately from accessible
 entries/tools. Metadata is not hard confinement; no external runtime patch.
+Resolve canonical roles through the effective runtime inventory under
+[native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection);
+record exposed identifiers separately from canonical basenames and source files.
+Preserve deterministic native preload identifiers without changing logical skill
+IDs; discovery metadata does not prove preload execution or effort enforcement.
 
 Done when confirmed pointers resolve in the invoked target, recipes support its
 real available operations, docs/declarations preserve custom facts and all limits

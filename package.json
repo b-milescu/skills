@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Agent Skill repository for the gitlab.example.com/agents/skills project.",
-  "files": ["core"],
   "scripts": {
-    "prepack": "node scripts/pack-core.mjs",
     "check": "scripts/check.sh",
     "check:agents-schema": "node scripts/check-agent-schemas.mjs",
     "check:md": "git ls-files -z '*.md' | xargs -0 markdownlint-cli2",
@@ -14,10 +12,8 @@
   "engines": {
     "node": ">=22 <23"
   },
-  "dependencies": {
-    "js-yaml": "4.1.1"
-  },
   "devDependencies": {
+    "js-yaml": "4.1.1",
     "markdownlint-cli2": "0.22.1"
   }
 }

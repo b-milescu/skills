@@ -1,5 +1,5 @@
 import { accessSync, constants, readFileSync } from "node:fs";
-import yaml from "js-yaml";
+import yaml from "./vendor/js-yaml.mjs";
 
 const commonFlags = ["--receipt", "--change-id", "--issue-id", "--reviewed-commit", "--gate-command"];
 const postFlags = ["--review-packet", "--gate-receipt-locator", "--gate-policy-ref"];

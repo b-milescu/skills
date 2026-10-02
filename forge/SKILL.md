@@ -8,6 +8,8 @@ description: >-
 
 # Forge
 
+Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
+
 A model-invoked instruction seam with five operations. Obtain mechanics from
 **the invoked target's** confirmed `project_profile`, `profile_path` and selected
 `provider.reference`. Resolve that reference in the target checkout, not the

@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # Focus: Executable-bit policy enforcement: reads `git ls-files -s` index modes
 # (not filesystem perms) and fails closed when any tracked `100755` file falls
-# outside the documented allowlist (`install.sh`, `scripts/check.sh`); fixture
-# self-tests prove a stray executable test, a non-allowlisted top-level script,
-# and an executable non-allowlisted helper all FAIL while the two documented
-# entrypoints PASS.
+# outside the documented allowlist (`scripts/check.sh`); fixture self-tests
+# prove executable tests and other helpers FAIL while the gate entrypoint PASSes.
 set -euo pipefail
 
 # Policy source: docs/agents/check-gate.md §Executable-bit policy. Every other
@@ -21,7 +19,6 @@ trap 'rm -rf "$TMPDIR"' EXIT
 is_allowed_executable() {
  local path="$1"
  case "$path" in
- install.sh) return 0 ;;
  scripts/check.sh) return 0 ;;
  *) return 1 ;;
  esac
@@ -48,7 +45,7 @@ check_repo() {
 
   if [[ -s "$violations_file" ]]; then
     echo "Executable-bit policy violation: tracked files with mode 100755 outside the allowlist" >&2
- echo "(allowed: install.sh, scripts/check.sh; everything else must be 100644):" >&2
+ echo "(allowed: scripts/check.sh; everything else must be 100644):" >&2
     cat "$violations_file" >&2
     return 1
   fi
@@ -112,7 +109,7 @@ assert_repo_passes() {
 # A stray executable test script must fail (the exact drift this guard prevents).
 stray_test_repo="$TMPDIR/stray-test"
 make_fixture_repo "$stray_test_repo" \
-  100644:install.sh 100755:tests/regression.sh
+  100644:scripts/check.sh 100755:tests/regression.sh
 assert_repo_fails "$stray_test_repo" "tests/regression.sh" "executable tests/*.sh"
 
 # executable non-allowlisted helper path must fail.
@@ -130,7 +127,6 @@ assert_repo_fails "$stray_root_repo" "scripts/extra.sh" "executable outside allo
 # only the two documented entrypoints pass.
 allowed_repo="$TMPDIR/allowed"
 make_fixture_repo "$allowed_repo" \
- 100755:install.sh \
  100755:scripts/check.sh \
  100644:tests/regression.sh
 assert_repo_passes "$allowed_repo" "documented entrypoints"

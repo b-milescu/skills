@@ -37,6 +37,7 @@ list_agent_names() {
   [[ -d "$dir" ]] || return 0
   for file in "$dir"/*.md; do
     [[ -f "$file" ]] || continue
+    [[ "$(basename "$file")" != README.md ]] || continue
     basename "$file" .md
   done | sort
 }
@@ -69,7 +70,7 @@ forbidden_route_name_token() {
 
 check_agent_variant_parity() {
   local claude_dir="$REPO_ROOT/agents/claude"
-  local omp_dir="$REPO_ROOT/agents/omp"
+  local omp_dir="$REPO_ROOT/agents"
   local claude_names="$TMPDIR_CHECK/claude-agent-names"
   local omp_names="$TMPDIR_CHECK/omp-agent-names"
   local missing_omp="$TMPDIR_CHECK/missing-omp"
@@ -95,16 +96,17 @@ check_agent_variant_parity() {
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
-    error "agent dialect parity: agents/claude/$name.md has no agents/omp/$name.md"
+    error "agent dialect parity: agents/claude/$name.md has no agents/$name.md"
   done < "$missing_omp"
 
   while IFS= read -r name; do
     [[ -n "$name" ]] || continue
-    error "agent dialect parity: agents/omp/$name.md has no agents/claude/$name.md"
+    error "agent dialect parity: agents/$name.md has no agents/claude/$name.md"
   done < "$missing_claude"
 
   for file in "$claude_dir"/*.md "$omp_dir"/*.md; do
     [[ -f "$file" ]] || continue
+    [[ "$(basename "$file")" != README.md ]] || continue
     name="$(basename "$file" .md)"
     rel="$(relpath "$file")"
     declared="$(frontmatter_name "$file" || true)"
@@ -126,7 +128,7 @@ check_agent_variant_parity() {
     claude_declared="$(frontmatter_name "$claude_dir/$name.md" || true)"
     omp_declared="$(frontmatter_name "$omp_dir/$name.md" || true)"
     if [[ -n "$claude_declared" && -n "$omp_declared" && "$claude_declared" != "$omp_declared" ]]; then
-      error "agent dialect parity: agents/claude/$name.md name '$claude_declared' differs from agents/omp/$name.md name '$omp_declared'"
+      error "agent dialect parity: agents/claude/$name.md name '$claude_declared' differs from agents/$name.md name '$omp_declared'"
     fi
   done < "$shared_names"
 }

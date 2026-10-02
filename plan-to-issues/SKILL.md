@@ -8,6 +8,8 @@ description: >-
 
 # plan-to-issues
 
+Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
+
 Turn an approved plan into tracker issues or work items for the current target repository using that repo's Agent Setup Docs and triage labels.
 
 ## Quick start

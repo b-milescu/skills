@@ -1,6 +1,6 @@
 # agent-skills
 
-Loose collection of agent skills. The developer install surfaces skills via symlinks to Claude Code (`~/.claude/skills/`) and OMP (`~/.omp/agent/skills/`). The portable npm core payload contains materialized snapshots instead.
+Eight reusable agent skills and runtime-specific builder/final-reviewer presets, distributed through native Claude Code and OMP marketplaces.
 
 ## Layout
 
@@ -39,65 +39,61 @@ Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engin
 
 ## Install on a new machine
 
-The approved replacement distribution/lifecycle contract and bounded runtime
-compatibility evidence live in [the public installer contract](docs/installer-contract.md).
-That contract is not a released executable; the current installation below remains
-in force until the separately reviewed clean cutover.
+The public Git source is `https://gitlab.example.com/agents/skills.git`.
+Acquisition requires Git, reachable DNS and trusted TLS for this origin; public
+project access does not imply public-internet reachability. Native clients own
+installation, updates and removal. No npm executable or custom installer is
+published, and no MCP catalogue/configuration is automatically installed.
+Installed Node helpers require Node.js 22.x. Keep each native installation's
+complete resource tree; copying standalone helpers is not supported.
 
-```bash
-git clone git@gitlab.example.com:agents/skills.git ~/.agent-skills
-~/.agent-skills/install.sh --check
-~/.agent-skills/install.sh
-```
-
-GitLab project namespace is `agents/skills`; the npm package name `@agents/skills` is intentionally unchanged.
-
-`install.sh` is idempotent and discovers top-level directories containing `SKILL.md`. Shared `docs/` and `templates/` are not installed as sibling skills. Skill-local resource aliases keep the underlying source's ownership; project-native content remains exposed but never supplies a foreign target's profile/identity/vocabulary/policy. Resolve helper URIs to installed filesystem paths before execution from target CWD. Installer-owned retired links are pruned while foreign/unknown files and links are retained. See [project native integration](docs/agents/native-integration.md) for this repository's actual tools and operation recipes.
-
-Installer reruns also remove stale installer-owned skill and agent symlinks from their runtime roots. In an existing `~/.omp/agent/extensions/` directory, they remove only dangling installer-owned symlinks, resolving both absolute and relative targets with the same repository ownership rules. Working extensions, external symlinks (even dangling ones), and regular files are preserved. Extension cleanup creates no missing directory and never scans HOME recursively.
-
-Requires GNU `realpath` (Linux ships it by default; macOS: `brew install coreutils`).
-
-## Portable core payload (not an executable release)
-
-`npm pack` prepares an explicit `core/` allowlist containing all eight skills,
-materialized skill-local docs/templates, sibling cross-skill resources and
-`core/agents/{claude,omp}` reusable routes. It excludes complete project-native
-`.claude/agents` and `.omp/agents`, development tooling and checkout dependencies.
-Git's symlink-disabled resource-alias files are materialized too. Generated
-`core/` and tarballs are disposable build output, not new policy owners.
-
-Acquire a reviewed immutable source archive anonymously over verified HTTPS,
-then pack and install it in an isolated package root with Node 22/npm:
+### Claude Code
 
 ```sh
-snapshot=<reviewed-full-commit-SHA>
-curl -q --fail --silent --show-error --proto '=https' --tlsv1.2 \
-  --output source.tar.gz \
-  "https://gitlab.example.com/agents/skills/-/archive/$snapshot/skills-$snapshot.tar.gz"
-mkdir source
-tar -xzf source.tar.gz --strip-components=1 -C source
-npm pack ./source --pack-destination .
-npm install --prefix ./installed --omit=dev --ignore-scripts ./ai-trading-skills-0.0.0.tgz
+claude plugin marketplace add https://gitlab.example.com/agents/skills.git
+claude plugin install skills@nja-skills --scope user
+claude plugin marketplace update nja-skills
+claude plugin update skills@nja-skills --scope user
+claude plugin uninstall skills@nja-skills --scope user
 ```
 
-This archive recipe requires curl, tar, Node 22 and npm, not Git/SSH or private
-registry credentials. DNS/reachability and trusted TLS for the approved origin
-are prerequisites. npm installs the helper's `js-yaml` runtime dependency with
-the package; no developer checkout or devDependencies are needed. Keep the whole
-installed package and its dependency tree: copying a helper or projecting skills
-without their package-owned dependencies is not a portable install.
+The plugin exposes all eight skills and only the two reusable Claude agent
+files. Agent identifiers are `skills:mr-builder` and `skills:mr-reviewer-final`;
+prefer qualified plugin IDs when selecting reusable routes. Skill commands use
+the `skills:<logical-name>` namespace. Native Git marketplace installation
+prepares package dependencies; local `--plugin-dir` development loading does
+not, so it is not equivalent installation/dependency proof.
 
-Resolve `skill://` entries/resources against
-`installed/node_modules/@agents/skills/core/<skill>` and execute the resolved
-helper paths from the target CWD. Shared docs/templates are resources, not sibling
-skills. Included repository-native policy remains source-owned evidence, never
-a foreign target's profile/configuration. User-only invocation restrictions,
-independent review and safety floors remain authoritative.
+### OMP
 
-The retained `0.0.0` package is private and has no executable; this command is a
-source-packaging recipe, not a released `npx` installer or public npm download.
-The first complete executable release remains `0.1.0`, through the explicit
-project-16 registry in the [approved contract](docs/installer-contract.md).
-Downstream delivery owns catalog/client projection and publication; no live
-installation, MCP registration or installer cutover happens here.
+```sh
+omp plugin marketplace add https://gitlab.example.com/agents/skills.git
+omp plugin install skills@nja-skills --scope user
+omp plugin marketplace update nja-skills
+omp plugin upgrade skills@nja-skills --scope user
+omp plugin uninstall skills@nja-skills --scope user
+```
+
+OMP uses the same marketplace and the OMP dialect marker. Its reusable agent
+IDs stay bare: `mr-builder` and `mr-reviewer-final`; skills use
+`/skill:<logical-name>` and native `skill://<logical-name>[/resource]`.
+OMP Git marketplace installation does not install npm dependencies. Installed
+workflow helpers therefore carry their minimal static YAML dependency and
+license; they do not require a developer checkout's `node_modules`.
+
+Both native surfaces expose shared docs/templates as resources, not additional
+skills, and exclude complete project-native agent declarations from reusable
+defaults. Canonical logical skill IDs remain unchanged. Claude does not natively
+resolve `skill://`: installed entry/agent bodies bootstrap its filesystem mapping
+through `${CLAUDE_PLUGIN_ROOT}`. Follow that entry contract before executing
+resolved helper paths from the target CWD; see
+[agent dialect/resource guidance](agents/README.md#validate-and-observe-separately).
+Source-owned native docs never become a foreign target's profile or policy.
+
+Existing legacy user links, user/site agents, extensions, MCP settings and
+credentials are preserved; installation does not automatically migrate or delete
+them. Operators own native configuration and any intentional legacy cleanup.
+Start a fresh runtime session after installation or route/frontmatter updates.
+[Check Gate](docs/agents/check-gate.md#native-install-smoke-requirement) owns
+isolated installation/discovery/lifecycle proof; discovery metadata alone does
+not prove live model routing, authentication or hard tool confinement.

@@ -1,6 +1,6 @@
 # agents/skills
 
-Repository of agent skills for the canonical GitLab project `gitlab.example.com/agents/skills`. Each top-level directory is a self-contained skill installed by `install.sh` into agent runtime skill directories.
+Repository of agent skills for the canonical GitLab project `gitlab.example.com/agents/skills`. Native Claude and OMP marketplaces distribute the reusable skills and runtime-specific agents.
 
 ## Agent skills
 
