@@ -13,8 +13,7 @@ name: neutral-worker
 description: Claude project worker
 tools: Read, Bash, Skill, mcp__custom-server__*, mcp__independent_tracker__read_item
 skills: start-build, forge
-model: claude-opus-4-8
-effort: medium
+model: inherit
 ---
 
 Invoke start-build via Skill; use the target's confirmed integration.
@@ -24,8 +23,6 @@ cat > "$TMP_ROOT/project/.omp/agents/neutral-worker.md" <<'MD'
 name: neutral-worker
 description: OMP project worker
 tools: read, bash, mcp__custom_server_*, mcp__independent_tracker_read_item
-model: pi/task
-thinking-level: medium
 autoload-skills: start-build, forge
 ---
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Focus: Native local-marketplace installation and actual OMP discovery in fresh
-# processes. Proves selected file/pins and canonical resource access, not hosted
+# processes. Proves selected source and canonical resource access, not hosted
 # acquisition, live models, native operations or hard MCP confinement.
 set -euo pipefail
 shopt -s nullglob
@@ -91,16 +91,15 @@ const project = process.env.EXPECT_PROJECT === '1';
 const result = await discoverAgents(cwd, process.env.HOME);
 const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.CANONICAL_ROOT, 'agents');
 const routes = [
-  { name: 'mr-builder', thinking: 'medium', entry: 'start-build' },
-  { name: 'mr-reviewer-final', thinking: 'xhigh', entry: 'start-review' },
+  { name: 'mr-builder', entry: 'start-build' },
+  { name: 'mr-reviewer-final', entry: 'start-review' },
 ];
-for (const { name, thinking, entry } of routes) {
+for (const { name, entry } of routes) {
   const agent = result.agents.find(agent => agent.name === name);
   assert(agent, `missing ${name}`);
   const expected = path.join(expectedDir, `${name}.md`);
   assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
   assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
-  assert(agent.model?.[0] === 'pi/task' && agent.thinkingLevel === thinking, `${name}: runtime pins changed`);
   assert(agent.autoloadSkills.includes(entry) && agent.autoloadSkills.includes('forge'), `${name}: canonical entry preload absent`);
   assert(!agent.autoloadSkills.includes('tdd'), `${name}: retired unconditional TDD preload`);
   if (project) {

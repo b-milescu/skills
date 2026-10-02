@@ -1,9 +1,7 @@
 ---
 name: mr-reviewer-final
-description: Mandatory independent final project change-request reviewer for agents/skills. Pins pi/task at xhigh thinking.
+description: Mandatory independent final project change-request reviewer for agents/skills.
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__codebase_memory_mcp_*"
-model: pi/task
-thinking-level: xhigh
 autoload-skills: start-review, forge
 ---
 

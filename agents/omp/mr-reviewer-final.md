@@ -1,9 +1,7 @@
 ---
 name: mr-reviewer-final
-description: Routed final forge-neutral change-request reviewer. Pins pi/task at xhigh thinking mandatory independent single-MR review.
+description: Routed final forge-neutral change-request reviewer for mandatory independent single-MR review.
 tools: "read, grep, glob, bash, edit, write, todo, irc"
-model: pi/task
-thinking-level: xhigh
 autoload-skills: start-review, forge
 ---
 

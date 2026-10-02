@@ -1,10 +1,9 @@
 ---
 name: mr-reviewer-final
-description: Routed final forge-neutral change-request reviewer. Pins Opus 4.8 xhigh effort mandatory independent single-MR review.
+description: Routed final forge-neutral change-request reviewer for mandatory independent single-MR review.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite"
 skills: skills:start-review, skills:forge
-model: claude-opus-4-8
-effort: xhigh
+model: inherit
 color: green
 ---
 

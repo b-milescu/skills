@@ -8,7 +8,7 @@ or metadata overlay is involved.
 
 `claude/*.md` and `omp/*.md` are canonical reusable presets. Native OMP's
 root `mr-*.md` entrypoints are symlinks into `omp/`, preserving existing
-checkout-backed agent links. Native marketplaces pin roles/models/effort and canonical workflow
+checkout-backed agent links. Native marketplaces preserve roles and canonical workflow
 skills without selecting native servers. The invoked target's confirmed
 integration determines its native tools and action-scoped authority.
 
@@ -23,10 +23,11 @@ manual confirmed setup writes that target's complete declarations from its
 own configuration/evidence; strings alone do not establish scoped identity.
 
 Builder and mandatory independent final-reviewer roles remain distinct.
-Claude pins `claude-opus-4-8` with medium/xhigh effort; OMP pins `pi/task` with
-medium/xhigh thinking. Canonical workflows own task-selected specialists;
-neither route unconditionally preloads TDD. See
-[the default-builder policy](../start-build/reference/parent-orchestrator.md#default-builder-routing).
+Model/effort selection follows
+[the parent-routing contract](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection):
+Claude inherits unless its native Agent model override is used; OMP selection
+and optionally exposed effort overrides remain runtime-controlled. Canonical
+workflows own task-selected specialists; neither route unconditionally preloads TDD.
 
 ## Runtime-specific precedence
 
@@ -46,7 +47,7 @@ Launch the spawning session from the intended checkout after declarations are
 present. A child execution-CWD change is not discovery or proof that a cached
 same-name route was reselected. Repeat fresh discovery independently from
 allocated and revision checkouts. Record selected `source`, `filePath`, real
-path, pins and canonical skill-entry source/bytes, not just a route name.
+path, declared metadata and canonical skill-entry source/bytes, not just a route name.
 
 ## Validate and observe separately
 
