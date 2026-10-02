@@ -30,6 +30,9 @@ Default: fan out every provably decoupled subset.
    one default `mr-builder` and one fresh `mr-reviewer-final`. Route
    basenames/model pins do not name a provider; distinct routes preserve
    child/reviewer/verifier boundaries.
+   Leave specialist selection to the build/review entries under
+   [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists).
+   Fresh-reviewer prompts prescribe neither specialist names nor internal-reference hints.
 4. Run the canonical parent loop from
    [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
    Pass explicit `Gate owner`; runtime notices never become scope stop instructions.

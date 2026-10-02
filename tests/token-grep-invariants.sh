@@ -137,7 +137,6 @@ re|start-build/reference/context-and-planning.md|active mode-specific flow
 re|start-build/reference/context-and-planning.md|child-builder.md
 re|start-build/reference/context-and-planning.md|standalone-gate.md
 re|start-build/reference/context-and-planning.md|parent-orchestrator.md
-re|start-build/reference/context-and-planning.md|compact invocation-mode procedure
 re|start-build/reference/issue-pickup.md|read its description and all current discussion before planning or editing
 re|start-build/reference/issue-pickup.md|source precedence
 re|start-build/reference/issue-pickup.md|human escalation
@@ -205,44 +204,6 @@ absent|start-build/reference/parent-orchestrator.md|within 10 minutes
 absent|start-build/reference/parent-orchestrator.md|Timeout: 10 minutes per round
 absent|start-build/reference/parent-orchestrator.md|try one fresh reviewer session, then escalate
 absent|start-build/reference/parent-orchestrator.md|Start one fresh reviewer session with the same task prompt
-# start-build-tdd-trigger-policy
-contain|start-build/SKILL.md|Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
-contain|start-build/SKILL.md|Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
-absent|start-build/SKILL.md|For runtime/operator/safety behavior changes, load and follow the `tdd` skill.
-contain|start-build/reference/child-builder.md|Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the change request.
-contain|start-build/reference/implementation-flow.md|Behavior-touching implementation follows TDD unless impossible or explicitly N/A with rationale in the change request.
-contain|start-build/reference/child-builder.md|Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger.
-contain|start-build/reference/implementation-flow.md|Runtime/operator/safety changes are examples of behavior-touching implementation, not a narrower TDD trigger.
-contain|start-build/reference/child-builder.md|Exception categories require a recorded rationale and must not allow fake tests or meaningless checks.
-contain|start-build/reference/implementation-flow.md|Exception categories require a recorded rationale and must not allow fake tests or meaningless checks.
-contain|start-build/reference/child-builder.md|Work-item-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice.
-contain|start-build/reference/implementation-flow.md|Work-item-driven work with sufficient acceptance criteria does not need a separate user-approval prompt before the first TDD slice.
-contain|start-build/reference/child-builder.md|Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions.
-contain|start-build/reference/implementation-flow.md|Missing or ambiguous behavior scope still routes back to triage with exact unanswered questions.
-contain|start-build/templates/reviewer-lift-schema.md|behavior-touching implementation
-contain|start-build/templates/review-packet.md|behavior-touching implementation
-contain|start-build/templates/review-packet-compact.md|behavior-touching implementation
-contain|start-review/templates/review-report.md|behavior-touching implementation
-contain|start-build/templates/reviewer-lift-schema.md|N/A with rationale
-contain|start-build/templates/review-packet.md|N/A with rationale
-contain|start-build/templates/review-packet-compact.md|N/A with rationale
-contain|start-review/templates/review-report.md|N/A with rationale
-contain|start-build/templates/reviewer-lift-schema.md|do not fake tests
-contain|start-build/templates/review-packet.md|do not fake tests
-contain|start-build/templates/review-packet-compact.md|do not fake tests
-contain|start-review/templates/review-report.md|do not fake tests
-contain|start-build/SAFETY.md|For behavior-touching work, each headline claim in the MR body must name the mutation that kills its defending assertion.
-contain|start-build/SAFETY.md|This is scoped to headline claims, not every assertion; do not run a full mutation battery per MR.
-contain|start-build/SAFETY.md|An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
-contain|start-build/SAFETY.md|A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result.
-contain|start-build/SAFETY.md|The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.
-contain|start-build/SKILL.md|Tests run on the project's **native test framework**
-contain|start-build/SKILL.md|adoption and needs its own work item.
-contain|start-build/SKILL.md|framework, record `TDD: N/A — no native test framework` with manual dry-run
-contain|start-build/SKILL.md|branch already runs through the Check Gate, CI, or a documented test command
-contain|start-build/SKILL.md|its native-test rules, including when to block,
-contain|start-build/templates/reviewer-lift-schema.md|the same native test command passing
-contain|start-build/templates/reviewer-lift-schema.md|failing command on the native test framework
 # start-build-ready-gate-push-semantics
 contain|start-build/SAFETY.md|The exact-candidate local Check Gate is the quality gate before ready/review.
 contain|start-build/reference/implementation-flow.md|**Early Draft change-request push.**
@@ -696,11 +657,6 @@ contain|start-build/templates/review-packet.md|parent-owned-gate.md
 contain|start-build/templates/review-packet-compact.md|parent-owned-gate.md
 contain|start-review/templates/review-report.md|parent-owned-gate.md
 contain|docs/agents/check-gate.md|tests/token-grep-invariants.sh
-# check-gate-fabricated-home-doc
-contain|docs/agents/check-gate.md|fabricated disposable HOME containing stub required external skills
-contain|docs/agents/check-gate.md|not the operator's real HOME
-contain|docs/agents/check-gate.md|no `AGENT_SKILLS_CHECK_HOME` override
-contain|docs/agents/check-gate.md|only that real-HOME operator run detects installed-runtime external-skill drift
 # triage-labels-human-decision-exit
 contain|docs/agents/triage-labels.md|reconcile the issue body in that same step
 contain|docs/agents/triage-labels.md|point it at the durable decision note

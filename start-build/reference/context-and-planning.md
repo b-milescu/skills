@@ -1,12 +1,43 @@
 # Context and planning flow
 
-Detailed discovery, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance for `start-build`. This file is the canonical owner of these sections; [SKILL.md](../SKILL.md) routes here from its compact invocation-mode procedure.
+Detailed discovery, task-selected specialists, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance. This file owns the shared specialist-selection policy for build, review and issue delivery; workflow entries refer to it after establishing their task evidence.
 
 ## Discovery Budget
 
 Keep discovery bounded before edits. Read the issue and project rulebook index first, then expand only from evidence. Load affected docs/source/tests needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Load ADRs, architecture docs, domain docs, and `CONTEXT.md` only when evidence triggers them: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each loaded context source and why it mattered in the Build Plan Packet, MR Review Packet, or reviewer-facing Context Capsule. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
 
 If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
+
+### Task-selected specialists
+
+After evidence establishes the current actor's work item, verified project policy,
+changed surfaces and requested activity, and before planning/edits or substantive
+review judgment, select the smallest relevant set of available model-invokable
+specialists. Prefer surface-specific guidance over overlapping generic guidance;
+use multiple specialists only for distinct relevant surfaces or duties.
+
+Catalog descriptions are routing hints. Resolve ambiguous or shortened likely
+candidates against their full authoritative description/frontmatter, triggers,
+exclusions and invocation eligibility before applying or ruling them out. Invoke
+selected skills at their entry through the current runtime's skill mechanism,
+not by jumping to internal references. Record selected sources and relevance in
+existing Build Plan Packet, Review Packet or review Context Capsule fields.
+
+Reviewers select independently from the verified issue/diff, not from builder
+selections as a mandate, and apply only review-relevant guidance. Specialists
+grant no edit, live-system, deployment, approval or finish authority. User-only
+skills require user invocation; do not autonomously invoke them or bypass that
+restriction. Policy-required unavailable or actor-ineligible guidance is an
+explicit prerequisite; required user-only guidance not yet user-invoked requires
+that human invocation, not a substitute.
+
+With no optional match, use the existing workflow/native-test rules and public
+behavior seam. Optional test-layer taxonomy is not a prerequisite. For example,
+a Terraform authoring/testing task can select an available applicable specialist
+after verifying its full triggers and eligibility; a mixed infrastructure/UI task
+may need distinct specialists. Docs-only work selects applicable authoring or
+review guidance for the actor; a task with no optional match proceeds under the
+workflow rules. These are examples, not a language-to-skill mapping.
 
 ## Build Plan Packet
 

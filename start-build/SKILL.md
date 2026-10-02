@@ -26,20 +26,22 @@ worktrees, and one Review Packet/gate/handoff per change request.
   to its stable report locator, originating reviewed commit, and finding ID;
   any push invalidates prior candidate-bound commit/CI/gate evidence.
 
-Behavior-changing work follows `tdd`: one observable RED→GREEN slice at a time.
+Behavior-changing work follows TDD: one observable RED→GREEN slice at a time.
 Docs/config/mechanical work records `TDD: N/A — <reason>` rather than fake tests.
 Tests run on the project's **native test framework**: the harness its default
 branch already runs through the Check Gate, CI, or a documented test command
 for the changed surface's language or tool; else that language or tool's
-built-in test runner, adding no dependency. Invoke any skill that owns the
-changed surface's testing; its native-test rules, including when to block,
-override this paragraph. Add cases, fixtures, fakes, and helpers where that
+built-in test runner, adding no dependency. When an applicable selected
+specialist owns the changed surface's testing, its native-test rules, including
+when to block, override this paragraph. Add cases, fixtures, fakes, and helpers where that
 framework already discovers them. Committing anything it would not run (a
 new runner, standalone script, harness, or test dependency) is framework
 adoption and needs its own work item. When the changed surface has no native
 framework, record `TDD: N/A — no native test framework` with manual dry-run
 [regression evidence](skill://start-build/SAFETY.md#behavior-touching-refactors)
 and raise framework adoption as an open question.
+Test at the smallest public behavior seam without coupling to internals,
+whether or not an optional specialist supplies test-layer advice.
 
 Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
 [parent gate](skill://start-build/reference/parent-owned-gate.md),
@@ -61,6 +63,8 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    snapshot`; reconcile contradictions before planning. Re-read state/ownership
    immediately before work. Select [source lifecycle](skill://start-build/reference/implementation-flow.md#source-lifecycle):
    initialize only a new source; reuse allocated worktrees and revision heads.
+   Follow [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists)
+   before planning or edits, including standalone and revision entries.
 4. Write a compact [Build Plan Packet](skill://start-build/templates/build-plan-packet.md):
    behavior, surfaces, test plan, risks, non-goals, and loaded context. For a new
    source (including a parent allocation), push and use `forge publish` to open

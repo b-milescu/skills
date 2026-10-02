@@ -16,7 +16,7 @@ cat > "$TMPDIR/good/agents/claude/neutral-worker.md" <<'MD'
 name: neutral-worker
 description: Claude worker fixture
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__azure-devops__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
-skills: start-build, tdd, forge
+skills: start-build, forge
 model: inherit
 effort: high
 ---
@@ -31,7 +31,7 @@ description: OMP worker fixture
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: anthropic/claude-opus-4-8
 thinking-level: high
-autoload-skills: start-build, tdd, forge
+autoload-skills: start-build, forge
 ---
 
 OMP body may mention irc coordination.

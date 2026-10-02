@@ -2,7 +2,7 @@
 name: mr-reviewer-final
 description: Routed final forge-neutral change-request reviewer. Pins Opus 4.8 xhigh effort mandatory independent single-MR review.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__azure-devops__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
-skills: start-review, tdd, forge
+skills: start-review, forge
 model: claude-opus-4-8
 effort: xhigh
 color: green

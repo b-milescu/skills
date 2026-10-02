@@ -4,7 +4,7 @@ description: Routed final forge-neutral change-request reviewer. Pins pi/task at
 tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__azure_devops_*, mcp__wowtools_*, mcp__codebase_memory_mcp_*"
 model: pi/task
 thinking-level: xhigh
-autoload-skills: start-review, tdd, forge
+autoload-skills: start-review, forge
 ---
 
 You are the routed final MR reviewer variant for mandatory independent bound-provider review. This agent exists only to pin the runtime route.

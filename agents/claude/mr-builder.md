@@ -2,7 +2,7 @@
 name: mr-builder
 description: Routed default forge-neutral change-request builder for child-builder work. Pins Opus 4.8 at medium effort while preserving start-build child-builder authority boundaries.
 tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__azure-devops__*, mcp__wowtools__*, mcp__codebase-memory-mcp__*"
-skills: start-build, tdd, forge
+skills: start-build, forge
 model: claude-opus-4-8
 effort: medium
 color: blue
