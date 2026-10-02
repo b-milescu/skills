@@ -220,6 +220,11 @@ missing authority: return verdict/evidence to the parent with approval
 `not-approved`, finish `none`, action blocker `none`, and next action
 `finish-by-authorized-actor` when review is valid. Review blockers still apply.
 
+In standalone review without a parent coordinator, the approving reviewer
+performs an authorized finish in-session rather than spawning a separate
+finisher for one mutation. Parent-orchestrated work always retains
+`Finish owner: parent`; up-front finish authority does not change that owner.
+
 Classify the failed predicate, not the blocker token alone:
 
 | Failed predicate | Review judgment | Action and routing |

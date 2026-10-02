@@ -23,7 +23,7 @@ defaults. Record the exact local gate/runtime/bootstrap, targeted checks,
 independently scoped advisory CI and allowed manual evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-the [safety-floor litany](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
+the [safety-floor litany](skill://start-build/SAFETY.md#safety-floors).
 
 ## Targeted checks
 

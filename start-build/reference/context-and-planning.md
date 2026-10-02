@@ -8,6 +8,17 @@ Keep discovery bounded before edits. Read the issue and project rulebook index f
 
 If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
 
+### Economy
+
+Match investigation to observed risk and blast radius. Use one analysis pass
+when the approach is settled; fan out design analysis only for genuinely wide
+solution spaces, and verification only when distinct risks need it. Compact
+packet eligibility remains owned by its template, not a change label.
+
+Gather shared builder-side facts once and reuse the evidence digest when
+delegating. Independent reviewers still re-derive their own evidence; builder
+conclusions cannot cross the Context Firewall as facts.
+
 ### Task-selected specialists
 
 After evidence establishes the current actor's work item, verified project policy,
@@ -79,7 +90,7 @@ Before marking ready or requesting review, validate the MR handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
 - Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
-- `delivery.project_profile` hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
+- `delivery.project_profile` hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
 - `Reviewed SHA` equals the MR head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
 - `Gate owner`, `Gate coverage`, `Gate coverage rationale`, and the advisory `CI pipeline` cell follow their `../templates/reviewer-lift-schema.md` rows; an unattributable pipeline commit records its binding limitation instead of a status.
 - Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).

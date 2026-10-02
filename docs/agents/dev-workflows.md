@@ -158,7 +158,7 @@ part of this declaration.
 Triage Role names map through this repo's live label vocabulary in `docs/agents/triage-labels.md`; reusable skills must read that mapping instead of assuming a global label string.
 
 Project-profile hooks may specialize this repo's policy, but they must not
-weaken the [safety-floor litany](../effort-scaling.md#hard-floors-never-scaled-away).
+weaken the [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 
 ### Acceptance-surface vocabulary
 

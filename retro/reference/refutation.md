@@ -13,7 +13,7 @@ Walk every row against every `RF-N`. Re-open at least one cited source per findi
 | **Root cause** — a cause, or a symptom of another `RF-N`? | no other finding shares its cause | `merge` |
 | **Owner** — does causal evidence support the implementation, configuration, documentation, or skill owner and its repository/locator? | the evidenced Owner holds the cause, or unresolved ownership is explicitly `unknown` | `reroute` |
 | **Counterfactual** — would this proposal have prevented the friction actually observed? | the mechanism connects proposal to observed friction | `drop` |
-| **Ceremony price** — does the fix cost more per run than the friction it removes (per [Effort Scaling](skill://retro/docs/effort-scaling.md))? | the recurring cost is smaller than the recurring friction | `demote` |
+| **Ceremony price** — does the fix cost more per run than the observed friction it removes? | the recurring cost is smaller than the recurring friction, supported by scoped work evidence | `demote` |
 | **Floor erosion** — does it thin a hard floor while claiming not to? | every floor stands untouched | `escalate` |
 | **Status-quo steel-man** — is current behavior right and this run atypical? | the friction survives the best case for leaving things alone | `demote` |
 
@@ -40,4 +40,4 @@ Prefer `demote` to `drop` when the friction was observed but its cause is unclea
 
 - **Verdicts only.** The refuter judges the drafted findings; it does not add findings, rewrite bounded proposals, or re-run the signal catalogue.
 - **Read-only.** Re-reading cited sources, the repo, and the tracker is the whole toolkit; it mutates nothing and files nothing. Apply [SKILL.md](../SKILL.md)'s session-first/privacy bounds; evaluate the supplied evidence rather than performing a separate debugging investigation.
-- **The safety floor check is the refuter's attestation**, not the drafter's: it confirms the floor list in [Effort Scaling](skill://retro/docs/effort-scaling.md) and lists every finding it escalated.
+- **The safety floor check is the refuter's attestation**, not the drafter's: it confirms every floor in [Start Build Safety floors](skill://start-build/SAFETY.md#safety-floors) and lists every finding it escalated.

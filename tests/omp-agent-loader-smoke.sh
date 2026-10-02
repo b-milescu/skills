@@ -124,6 +124,7 @@ for (const name of ['start-build', 'start-review', 'forge']) {
   console.log(JSON.stringify({ proof: 'available-entry-access', phase: process.env.PROOF_PHASE, name, filePath: skill.filePath, realPath: fs.realpathSync(skill.filePath) }));
 }
 for (const [name, resourcePath] of [
+  ['start-build', 'SAFETY.md'],
   ['start-build', 'docs/decoupling-contract.md'],
   ['start-review', 'shared-templates/filling-guide.md'],
   ['plan-to-issues', 'docs/agents/agent-readiness-scorecard.md'],

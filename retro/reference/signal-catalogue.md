@@ -5,7 +5,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 ## Category definitions
 
 - **flow** — ordering, handoff, or routing problems between roles (builder / reviewer / parent / verifier): steps that ran in the wrong order, handoffs that bounced, missing or skipped stages, cleanup that never ran.
-- **process** — ceremony/effort miscalibration and policy friction: packets heavier than the tier warrants, rounds spent on avoidable defects, reports produced but never consumed.
+- **process** — unnecessary ceremony and policy friction: packets or fan-out that did not improve a decision or address an evidenced risk, rounds spent on avoidable defects, reports produced but never consumed.
 - **context** — context loading and size problems: the same files read repeatedly across agents, canonical bodies restated in prompts, required reads that never influenced a decision, launch prompts beyond the minimal shape.
 - **taxonomy** — vocabulary gaps and collisions: events forced into `other`, metrics without definitions, enum values missing, the same concept under several names across docs.
 - **tooling** — transport/helper/runtime defects and repeated workarounds in the target's confirmed integration, local git or advisory CI.
@@ -23,7 +23,7 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 | Timeout / stale / interrupted reviewer or builder rounds | Review Gate Summary, parent loop records | flow |
 | Leftover local state after the run — worktrees, `refs/tmp/review/*` temp refs, undeleted source branches, dirty checkouts | `git worktree list`, `git for-each-ref refs/tmp`, `git branch`, `git status --porcelain` | flow |
 | Check Gate failing on the default branch after merges | gate command on a fresh default-branch checkout | process |
-| Ceremony/tier mismatch — trivial work carrying a full packet or agent fan-out, or high-risk work routed through the trivial path | issue tier vs the packets/agents actually used; Effort Scaling tiers | process |
+| Unnecessary ceremony — packets, analysis/verification fan-out or repeated context reads that added cost without addressing an observed risk or decision | scoped work, packets/agents/reads actually used, decisions they influenced and ceremony cost | process |
 | Handoff defects — missing or stale Reviewer Lift fields, placeholder `OQ-N`, generated-copy drift against the canonical schema | change request descriptions, schema regression tests, Review Reports | docs-drift |
 | Context bloat — repeated reads of the same sources across agents, canon restated instead of pointed to, oversized launch prompts | builder/reviewer launch prompts, context-expansion rows, token warnings | context |
 | Required reads that never influenced a decision, or Tier 3 reads that did | Build Plan Packet and Review Context Capsule context rows | context |
@@ -47,6 +47,6 @@ Route proposals to the implementation, configuration, documentation, or skill th
 - Native integration tools/recipes/fallback guidance → the invoked target's selected `provider.reference` owner when causally evidenced; common binding/guard contracts → `forge`.
 - Build behavior, TDD/safety policy, builder handoffs → `start-build` (mode reference docs own mode detail).
 - Review behavior, verdict/CI/OQ policy, reviewer handoffs → `start-review`.
-- Batch coordination, tier routing, batch metrics → `issue-delivery-loop`.
+- Batch coordination, batch metrics → `issue-delivery-loop`.
 - Target-repo policy (labels, Check Gate, branch naming, workflows) → that repo's confirmed Agent Setup Doc paths, never installed aliases/defaults.
-- Shared contracts (effort scaling, decoupling) → the shared docs both flows point at.
+- Safety floors → `start-build/SAFETY.md#safety-floors`; shared decoupling contract → the shared doc both flows point at.

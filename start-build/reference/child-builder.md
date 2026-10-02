@@ -8,7 +8,7 @@ The launch prompt's `Gate owner` line is the **sole binding source** of the gate
 
 The child builder implements one work item and opens/maintains one Draft change request, marking ready only after the local gate is green or explicitly N/A with rationale. The parent orchestrator owns the mandatory review gate and any approval, finish, source-ref cleanup, or post-merge verification allowed by policy; the child must not start a reviewer, approve, finish, clean source refs, or claim the review gate is complete unless explicitly delegated.
 
-Project-profile hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
+Project-profile hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
 
 Auxiliary project-index policy defaults to parent/coordinator ownership. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child, and child worktrees must not copy index artifacts between worktrees.
 
@@ -41,7 +41,7 @@ Credential handling discipline applies before every local shell or provider step
 
 ## Reviewer Lift child-seam rule
 
-The Reviewer Lift block is a hard child seam: copy the tier's generated-copy Reviewer Lift block verbatim and fill **every** row.
+The Reviewer Lift block is a hard child seam: copy the selected packet's generated-copy Reviewer Lift block verbatim and fill **every** row.
 
 - Start from the approved generated-copy block delimited by `REVIEWER-LIFT-SCHEMA:BEGIN ... REVIEWER-LIFT-SCHEMA:END` in `../templates/review-packet.md` or `../templates/review-packet-compact.md`. Copy the whole block and replace each placeholder with a verified value; a re-derived subset that silently drops rows (for example omitting `Acceptance surfaces`) is not acceptable, and fail-closed values (`none`, `N/A — <why>`) are.
 - Authority rows need verifiable sources per `../templates/reviewer-lift-schema.md`. `docs/agents/check-gate.md` does not own authority policy, so it is not a valid authority source.

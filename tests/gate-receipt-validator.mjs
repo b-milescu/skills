@@ -13,7 +13,7 @@ const locator = "verified-system/repository/review-note@opaque-alpha";
 const policy = "docs/check-gate.md#ready";
 const rows = {
   "Reviewed SHA": sha, "Finding bindings": "none", "Review gate": "mandatory",
-  "Change tier": "moderate — validator change", Transport: "project-confirmed-transport@repository",
+  Transport: "project-confirmed-transport@repository",
   "Gate owner": "parent", "Gate coverage": "exact-candidate-local",
   "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS`,
   "CI pipeline": `evidence=scoped-ci/run@alpha; status=observed-green; commit=${sha}`,
@@ -88,6 +88,22 @@ try {
   pass({ document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: log, summary: "original run" }] }) }, "local custody");
   for (const mode of ["pre-post", "post-note"]) reject({ mode, document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: join(work, "absent.log"), summary: "original run" }] }) }, "missing custody");
   pass({ mode: "pre-post", body: packet({ "Local gate": "not-run — parent-owned" }) }, "candidate before note");
+  for (const mode of ["pre-post", "post-note"]) {
+    for (const name of ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"]) {
+      for (const value of [undefined, ""]) {
+        reject({ mode, body: packet({ [name]: value }) }, `${mode} requires nonempty ${name}`);
+      }
+    }
+    for (const [name, value] of [
+      ["Review gate", "optional"], ["Gate owner", "builder"],
+      ["Gate coverage", "parent-owned"], ["Transport", "unknown"],
+      ["Approval authority", "approved"], ["Finish authority", "merge whenever"],
+      ["Touched safety surfaces", "everything"], ["Acceptance surfaces", "gate:unverified"],
+    ]) {
+      reject({ mode, body: packet({ [name]: value }) }, `${mode} rejects invalid ${name}`);
+    }
+  }
+  reject({ mode: "pre-post", document: receipt({ checkout_commit: "2".repeat(40) }) }, "pre-post rejects wrong receipt candidate");
   reject({ body: packet({ "Local gate": "not-run — parent-owned" }) }, "post note requires receipt");
   for (const name of ["Transport", "CI pipeline"]) for (const value of [undefined, "", "pending", "<placeholder>"]) reject({ body: packet({ [name]: value }) }, "absent/placeholder evidence rejected");
   for (const ci of [`evidence=x; status=running`, `status=green; commit=${sha}`, `evidence=<pending>; status=green; commit=${sha}`]) reject({ body: packet({ "CI pipeline": ci }) }, "unbound CI rejected");
