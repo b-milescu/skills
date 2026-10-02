@@ -33,11 +33,11 @@ downgrade.
 The parent/coordinator Dev Workflow must treat default-branch freshness as a
 per-branch invariant, not a one-time batch preflight:
 
-- Immediately before each source-branch creation or `git worktree add`, run
-  `git fetch origin`, read the default branch with the Agent Setup Docs or
-  `forge preflight`, and verify the exact
-  `git rev-parse origin/<default_branch>` SHA that will seed the branch.
-- Create the source branch/worktree from that verified `origin/<default_branch>`
+- Immediately before each source/worktree creation, fetch the confirmed named
+  code remote from target preflight, read its verified default branch and exact
+  remote/default SHA. Named fetch/push and fork intent must already be resolved;
+  never select a remote by position or silently assume `origin`.
+- Create the source branch/worktree from that verified remote/default
   SHA. Abort instead of branching if the SHA cannot be read, changes before
   creation, or the command would fall back to a local/stale default branch.
 - For multi-issue work, repeat fetch plus default-branch SHA verification before
@@ -69,9 +69,9 @@ per-branch invariant, not a one-time batch preflight:
   and `--worktree-path "$child_worktree_path"` when the recorded child is in
   cleanup scope. Missing, relative, colliding, unknown, or no-longer-bound
   paths stay untouched.
-- After merge, local cleanup stays ordered around default-branch safety: fetch origin, fast-forward local default in a clean checkout, then remove clean local worktrees and delete local source branches.
-- Remote source-branch cleanup remains guarded. First confirm the real remote source branch is already gone (`git ls-remote origin <source_branch>` returns nothing) or delete it only after `forge post_merge_snapshot` proves the provider result commit is contained by the fast-forwarded default branch. If containment cannot be proved, retain the local worktree/branch and report `cleanup_pending`.
-- After the real remote branch deletion/absence checks pass, run the `git remote prune --dry-run origin` equivalent stale-ref check. Cleanup is complete only when that stale-ref result is empty. If stale local remote-tracking refs remain, report `cleanup_pending` with the stale refs listed instead of claiming branch cleanup complete.
+- After merge, fetch the confirmed named code remote, fast-forward local default in a clean checkout, then remove only clean session-owned local worktrees and source branches.
+- Confirm remote source absence through that verified source scope or delete it only after authorized `forge` guards and native containment evidence. Unknown/foreign/dirty/unmerged/containment-unverified state is retained and reported `cleanup_pending`.
+- Check stale remote-tracking refs with `git remote prune --dry-run <confirmed-remote>` only after real remote absence/deletion proof. A nonempty result is `cleanup_pending`, not complete cleanup.
 
 ## Parent loop
 
@@ -139,7 +139,7 @@ Finish authority grant (only when granted): <orchestrator/parent finish-authorit
 
 No launch prompt carries parent/builder planning details, summaries, hypotheses, cross-issue context, prior conversation, or hidden reasoning. Do not name or directly read a skill's internal reference files in the prompt; invoke the skill through the Skill tool so the subagent enters through its entry procedure. Pass a required coordination constraint or specific risk only as a claim/source pointer for independent verification.
 
-A finish-authority **grant** the human/parent gave the orchestrator is the one accepted exception, and it is not builder reasoning: relay it as an explicit orchestrator/parent finish-authority grant with its source provenance — an accepted `parent task prompt` (`parent-explicit`) source per [common-guard.md §Authority Verification](../../forge/reference/common-guard.md#authority-verification), which GitLab binds to `gitlab/reference/authority-verification.md` — so the reviewer has a verifiable finish-authority source and can finish in the same session instead of blocking as `missing-authority`. The reviewer still verifies the relayed source before any finish action and never treats it as evidence about the code. Standalone `/start-build` mode relays the same grant through [standalone-gate.md §Reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
+A finish-authority grant the human/parent gave the orchestrator is the accepted exception to the Context Firewall, not builder reasoning. Relay the explicit quotable grant and verifiable source per [common guard Authority Verification](../../forge/reference/common-guard.md#authority-verification); the target's confirmed reference owns native mechanics. In parent-owned finish mode reviewers verify the source as a claim and hand off; they do not finish. Standalone mode relays the same grant through [reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 
 ## Minimal child-builder launch prompt
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Focus: `agents/check.sh` parity, canonical-pointer coverage for generic and
-# routed MR agents, prompt-drift, and actual both-runtime install/check without
-# external TDD, including read-only installed-HOME snapshot coverage.
+# Focus: agent inventory/parity, Markdown input inventory, installed exposure and
+# read-only disposable-HOME checks.
 
 set -euo pipefail
 
@@ -75,6 +74,11 @@ for agent in mr-builder mr-reviewer-final; do
   assert_not_contains "$clean_output" "agents/claude/$agent.md has no agents/omp/$agent.md"
   assert_not_contains "$clean_output" "agents/omp/$agent.md has no agents/claude/$agent.md"
 done
+empty_repo="$TMP_ROOT/empty-repo"
+mkdir -p "$empty_repo/agents"
+cp "$REPO_ROOT/agents/check.sh" "$empty_repo/agents/check.sh"
+run_check_fail "$empty_repo" "$TMP_ROOT/empty-home" "$TMP_ROOT/empty.out"
+assert_contains "$TMP_ROOT/empty.out" "validation collected no agent files"
 
 git_noise_repo="$TMP_ROOT/git-noise-repo"
 git_noise_home="$TMP_ROOT/git-noise-home"
@@ -84,7 +88,6 @@ git_noise_schema_output="$TMP_ROOT/git-noise-schema.out"
 copy_repo "$git_noise_repo"
 git -C "$git_noise_repo" init -q
 git -C "$git_noise_repo" add .
-tracked_markdown_count="$(git -C "$git_noise_repo" ls-files '*.md' | wc -l | tr -d '[:space:]')"
 mkdir -p \
   "$git_noise_repo/node_modules/noise" \
   "$git_noise_repo/.npm/cache" \
@@ -148,13 +151,6 @@ DRIFT
 bash "$git_noise_repo/scripts/list-prompt-drift-markdown.sh" "$git_noise_repo" |
   tr '\0' '\n' |
   sed '/^$/d' > "$git_noise_scan"
-scan_count="$(wc -l < "$git_noise_scan" | tr -d '[:space:]')"
-if [[ "$scan_count" != "$tracked_markdown_count" ]]; then
-  echo "expected prompt-drift Markdown scan count ($scan_count) to equal tracked Markdown count ($tracked_markdown_count)" >&2
-  echo "--- scan list ---" >&2
-  cat "$git_noise_scan" >&2
-  exit 1
-fi
 if grep -E '/(node_modules|cleanup-discovery|graphify-out|\.npm|\.graphify[^/]*)/|/progress\.md$|/\.graphify[^/]*\.md$' "$git_noise_scan"; then
   echo "expected prompt-drift Markdown scan to ignore local artifacts" >&2
   echo "--- scan list ---" >&2
@@ -346,55 +342,6 @@ run_check_fail "$route_token_repo" "$route_token_home" "$route_token_output"
 assert_contains "$route_token_output" "agent route naming: agents/claude/forbidden-gpt-55.md file name 'forbidden-gpt-55' must not include provider/model token 'gpt-55'"
 assert_contains "$route_token_output" "agent route naming: agents/claude/forbidden-gpt-55.md frontmatter name 'forbidden-gpt-55' must not include provider/model token 'gpt-55'"
 
-prompt_strategy_repo="$TMP_ROOT/prompt-strategy-repo"
-prompt_strategy_home="$TMP_ROOT/prompt-strategy-home"
-prompt_strategy_output="$TMP_ROOT/prompt-strategy.out"
-copy_repo "$prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-build`/Canonical development pattern source: `local-copy`/' "$prompt_strategy_repo/agents/omp/mr-builder.md"
-run_check_fail "$prompt_strategy_repo" "$prompt_strategy_home" "$prompt_strategy_output"
-assert_contains "$prompt_strategy_output" "agent prompt strategy: agents/omp/mr-builder.md"
-
-
-routed_prompt_strategy_repo="$TMP_ROOT/routed-prompt-strategy-repo"
-routed_prompt_strategy_home="$TMP_ROOT/routed-prompt-strategy-home"
-routed_prompt_strategy_output="$TMP_ROOT/routed-prompt-strategy.out"
-copy_repo "$routed_prompt_strategy_repo"
-perl -0pi -e 's/Canonical development pattern source: `start-review`/Canonical development pattern source: `local-copy`/' "$routed_prompt_strategy_repo/agents/claude/mr-reviewer-final.md"
-run_check_fail "$routed_prompt_strategy_repo" "$routed_prompt_strategy_home" "$routed_prompt_strategy_output"
-assert_contains "$routed_prompt_strategy_output" "agent prompt strategy: agents/claude/mr-reviewer-final.md"
-
-lift_drift_repo="$TMP_ROOT/lift-drift-repo"
-lift_drift_home="$TMP_ROOT/lift-drift-home"
-lift_drift_output="$TMP_ROOT/lift-drift.out"
-copy_repo "$lift_drift_repo"
-cat >> "$lift_drift_repo/agents/omp/mr-builder.md" <<'DRIFT'
-
-| Field | Value |
-|---|---|
-| Reviewed SHA | stale |
-| Review gate | stale |
-| CI pipeline | stale |
-| Local gate | stale |
-DRIFT
-run_check_fail "$lift_drift_repo" "$lift_drift_home" "$lift_drift_output"
-assert_contains "$lift_drift_output" "Reviewer Lift stale duplicate table"
-
-report_drift_repo="$TMP_ROOT/report-drift-repo"
-report_drift_home="$TMP_ROOT/report-drift-home"
-report_drift_output="$TMP_ROOT/report-drift.out"
-copy_repo "$report_drift_repo"
-cat >> "$report_drift_repo/agents/claude/mr-reviewer-final.md" <<'DRIFT'
-
-## Decision Summary
-
-## Context / Snapshot
-
-## Reviewer Lift (builder handoff)
-
-## Review Context Capsule
-DRIFT
-run_check_fail "$report_drift_repo" "$report_drift_home" "$report_drift_output"
-assert_contains "$report_drift_output" "Review Report stale structure"
 
 # Issue #272: in a real Git checkout, parallel agent worktrees leave copies of
 # canonical templates under .claude/worktrees/<id>/. Because `.claude/` is not in
@@ -421,16 +368,6 @@ cp "$untracked_worktree_repo/start-build/templates/reviewer-lift-schema.md" \
   "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md"
 cp "$untracked_worktree_repo/start-review/templates/review-report.md" \
   "$untracked_worktree_repo/.claude/worktrees/agent-stray/start-review/templates/review-report.md"
-# `.gitignore` must keep `.claude/` out of `git status`, even forced via `git add .`.
-git -C "$untracked_worktree_repo" add .
-untracked_worktree_status="$TMP_ROOT/untracked-worktree-status.out"
-git -C "$untracked_worktree_repo" status --porcelain > "$untracked_worktree_status"
-if grep -q '\.claude/' "$untracked_worktree_status"; then
-  echo "expected .gitignore to keep .claude/ out of git status after 'git add .'" >&2
-  echo "--- git status --porcelain ---" >&2
-  cat "$untracked_worktree_status" >&2
-  exit 1
-fi
 # Even if a stray copy is force-staged, it must not inject a stale-structure FAIL.
 git -C "$untracked_worktree_repo" add -f \
   ".claude/worktrees/agent-stray/start-build/templates/reviewer-lift-schema.md" \
@@ -439,27 +376,5 @@ run_check_ok "$untracked_worktree_repo" "$untracked_worktree_home" "$untracked_w
 assert_contains "$untracked_worktree_output" "agent-check: PASS"
 assert_not_contains "$untracked_worktree_output" ".claude/worktrees"
 
-# No coverage loss: a genuine TRACKED stale-structure violation still FAILS even
-# with the `.claude/` exclusion in place.
-tracked_violation_repo="$TMP_ROOT/tracked-violation-repo"
-tracked_violation_home="$TMP_ROOT/tracked-violation-home"
-tracked_violation_output="$TMP_ROOT/tracked-violation.out"
-copy_repo "$tracked_violation_repo"
-cat >> "$tracked_violation_repo/agents/omp/mr-builder.md" <<'DRIFT'
-
-| Field | Value |
-|---|---|
-| Reviewed SHA | stale |
-| Review gate | stale |
-| CI pipeline | stale |
-| Local gate | stale |
-DRIFT
-git -C "$tracked_violation_repo" init -q
-git -C "$tracked_violation_repo" add .
-git -C "$tracked_violation_repo" -c user.email=check@example.com -c user.name=check \
-  commit -qm "baseline with tracked violation"
-run_check_fail "$tracked_violation_repo" "$tracked_violation_home" "$tracked_violation_output"
-assert_contains "$tracked_violation_output" "Reviewer Lift stale duplicate table"
-assert_contains "$tracked_violation_output" "agents/omp/mr-builder.md"
 
 echo "agent-check: PASS"

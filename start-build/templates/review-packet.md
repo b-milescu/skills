@@ -36,11 +36,11 @@ Child runs: `gate_owner_received: <literal launch value, or absent>` per
 | Finding bindings | `<per reviewer-lift-schema.md: none or validated report/SHA/finding-ID tuples>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | Change tier | `<trivial / moderate / high-risk + one-clause rationale; per reviewer-lift-schema.md>` |
-| Transport | `<mcp / eligible glab-fallback gap / n/a; per reviewer-lift-schema.md>` |
+| Transport | `<identified opaque target transport evidence; no missing-value default>` |
 | Gate owner | `<builder / parent; parent-owned child records parent-owned/not-run and candidate SHA only>` |
 | Gate coverage | `<exact-candidate-local>` |
-| Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt <locator>>` |
-| CI pipeline | `<advisory provider-native CI locator + ID + status + commit when available, or N/A — why>` |
+| Gate coverage rationale | `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \| PASS — Gate Receipt: <opaque locator>>` |
+| CI pipeline | `<evidence=opaque locator; status=opaque status; commit=40-hex SHA, or N/A — reason>` |
 | Local gate | `<status + exact command per reviewer-lift-schema.md; parent-owned: not-run until Gate Receipt per ../reference/parent-owned-gate.md>` |
 | RED | `<behavior-touching implementation: failing native test; or N/A with rationale; do not fake tests; per reviewer-lift-schema.md>` |
 | GREEN | `<same native test passing, or N/A with rationale; per reviewer-lift-schema.md>` |

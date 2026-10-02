@@ -4,7 +4,7 @@ const BEGIN = "<!-- FINDING-IDENTITY-SCHEMA:BEGIN -->";
 const END = "<!-- FINDING-IDENTITY-SCHEMA:END -->";
 const ID = /\b(?:MF|SF|C)-\d+\b/g;
 const SHA = /^[0-9a-f]{40}$/i;
-const LOCATOR = /^(?:review-report:[^;\s]+|https?:\/\/[^;\s]+)$/;
+const LOCATOR = /^(?!pending$|unknown$|tbd$|todo$|<[^>]*>$|\[[^\]]*\]$)[^;\s|`]+$/i;
 const SUMMARY = /^MF: (?:0|MF-\d+(?:, MF-\d+)*); SF: (?:0|SF-\d+(?:, SF-\d+)*); C: (?:0|C-\d+(?:, C-\d+)*)$/;
 
 function fail(message, status = 2) {
@@ -26,7 +26,9 @@ function parseArgs(argv) {
 
 function read(file) {
   try {
-    return readFileSync(file, "utf8").replace(/\r\n?/g, "\n");
+    const body = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(readFileSync(file));
+    if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(body)) fail("unsafe input");
+    return body.replace(/\r\n?/g, "\n");
   } catch {
     fail(`cannot read ${file}`, 64);
   }
@@ -64,7 +66,7 @@ function ids(body) {
 function rejectDuplicateBindings(bindings, file) {
   const seen = new Set();
   for (const binding of bindings) {
-    const key = `${binding.report}\u0000${binding.sha.toLowerCase()}\u0000${binding.id}`;
+    const key = `${binding.report}\u0000${binding.sha}\u0000${binding.id}`;
     if (seen.has(key)) fail(`${file}: duplicate finding identity ${binding.id}`);
     seen.add(key);
   }
@@ -117,8 +119,8 @@ for (const file of args.report) {
   const shaFields = fields(snapshot, "Reviewed commit");
   if (shaFields.length !== 1) fail(`${file}: report must contain exactly one Reviewed commit`);
   const decisionShas = fields(decision, "Reviewed commit");
-  const sha = shaFields[0].toLowerCase();
-  if (decisionShas.some((value) => value.toLowerCase() !== sha)) {
+  const sha = shaFields[0];
+  if (decisionShas.some((value) => value !== sha)) {
     fail(`${file}: report contains contradictory Reviewed commits`);
   }
   if (!report || !LOCATOR.test(report)) fail(`${file}: missing or invalid stable Report locator`);
@@ -130,7 +132,7 @@ for (const file of args.report) {
 
   rejectDuplicateBindings(bindings, file);
   for (const binding of bindings) {
-    if (binding.report !== report || binding.sha.toLowerCase() !== sha) fail(`${file}: finding identity contradicts report locator or reviewed SHA`);
+    if (binding.report !== report || binding.sha !== sha) fail(`${file}: finding identity contradicts report locator or reviewed SHA`);
     if (!/^(?:MF|SF|C)-\d+$/.test(binding.id)) fail(`${file}: invalid finding ID`);
     const key = `${report}\u0000${sha}\u0000${binding.id}`;
     if (registry.has(key)) fail(`${file}: duplicate finding identity ${binding.id}`);
@@ -158,7 +160,6 @@ function classify(binding, file) {
   }
   if (!binding.sha) fail(`${file}: missing reviewed SHA for ${binding.id}`);
   if (!SHA.test(binding.sha)) fail(`${file}: invalid reviewed SHA for ${binding.id}`);
-  binding.sha = binding.sha.toLowerCase();
   if (registry.has(`${binding.report}\u0000${binding.sha}\u0000${binding.id}`)) return;
   if (locatorShas.has(binding.report) && shaLocators.has(binding.sha) && !shaLocators.get(binding.sha).has(binding.report)) {
     fail(`${file}: contradictory finding binding for ${binding.id}`);

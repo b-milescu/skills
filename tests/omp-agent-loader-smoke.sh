@@ -1,161 +1,123 @@
 #!/usr/bin/env bash
-# Focus: actual installed OMP agent discovery and unpreloaded skill entry access.
-#
-# Metadata and resolver evidence are separate from source-verified child inventory
-# inheritance/policy and live model selection. This harness proves neither live
-# child selection, user-only enforcement, reviewer obedience nor Claude execution.
-
+# Actual OMP discovery in fresh processes, not current-session caches or a child
+# execution-CWD switch. Proves selected file/pins and canonical skill access;
+# does not launch models, execute native operations or prove MCP confinement.
 set -euo pipefail
 shopt -s nullglob
-
 TEST_NAME="omp-agent-loader-smoke"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-# shellcheck source=tests/lib/assertions.sh
 source "$REPO_ROOT/tests/lib/assertions.sh"
-
-
-# GNU realpath for symlink resolution (matches install.sh and sibling tests).
-if realpath --relative-to=/ / >/dev/null 2>&1; then
-  REALPATH=realpath
-elif command -v grealpath >/dev/null 2>&1; then
-  REALPATH=grealpath
-else
-  fail "GNU realpath required"
-fi
-
-OMP_SOURCE_DIR="$REPO_ROOT/agents/omp"
-[[ -d "$OMP_SOURCE_DIR" ]] || fail "missing OMP agent source dir: $OMP_SOURCE_DIR"
-
-expected_names=()
-for f in "$OMP_SOURCE_DIR"/*.md; do
-  expected_names+=("$(basename "$f" .md)")
-done
-[[ ${#expected_names[@]} -gt 0 ]] || fail "no OMP agent files found in $OMP_SOURCE_DIR"
-
 TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/omp-agent-loader-smoke.XXXXXX")"
 trap 'rm -rf "$TMP_ROOT"' EXIT
 TMP_HOME="$TMP_ROOT/home"
-DISCOVER_CWD="$TMP_ROOT/project"
-mkdir -p \
-  "$TMP_HOME/.omp/agent/agents" \
-  "$TMP_HOME/.omp/agent/skills" \
-  "$DISCOVER_CWD"
-
-install_out="$TMP_ROOT/install.out"
-HOME="$TMP_HOME" "$REPO_ROOT/install.sh" >"$install_out" 2>&1 \
-  || { cat "$install_out" >&2; fail "install.sh failed against temp OMP runtime"; }
-
-agents_dir="$TMP_HOME/.omp/agent/agents"
-
-# Installer-exposure proof: every expected OMP agent is a symlink in the temp
-# runtime resolving back into agents/omp/.
-for name in "${expected_names[@]}"; do
-  link="$agents_dir/$name.md"
-  [[ -L "$link" ]] || fail "missing installed OMP agent symlink: $link"
-  resolved="$($REALPATH -m "$link")"
-  expected="$($REALPATH -m "$OMP_SOURCE_DIR/$name.md")"
-  [[ "$resolved" == "$expected" ]] || fail "$link resolves to $resolved, expected $expected"
+mkdir -p "$TMP_HOME/.omp/agent" "$TMP_ROOT/foreign"
+HOME="$TMP_HOME" "$REPO_ROOT/install.sh" >"$TMP_ROOT/install.out" 2>&1 || {
+  cat "$TMP_ROOT/install.out" >&2; fail 'disposable-HOME install failed';
+}
+for file in "$REPO_ROOT/agents/omp"/*.md; do
+  link="$TMP_HOME/.omp/agent/agents/$(basename "$file")"
+  [[ -L "$link" && "$link" -ef "$file" ]] || fail "missing installed route: $link"
 done
-
 pkg_dir="${OMP_CODING_AGENT_PKG:-}"
-for cand in \
-  "$pkg_dir" \
-  "${PI_PACKAGE_DIR:-}" \
+for candidate in "$pkg_dir" "${PI_PACKAGE_DIR:-}" \
   "$HOME/.bun/install/global/node_modules/@oh-my-pi/pi-coding-agent" \
   "$HOME/.bun/install/global/node_modules/@oh-my-pi/coding-agent"; do
-  [[ -n "$cand" && -f "$cand/src/task/discovery.ts" ]] || continue
-  pkg_dir="$cand"
-  break
+  [[ -n "$candidate" && -f "$candidate/src/task/discovery.ts" ]] || continue
+  pkg_dir="$candidate"; break
 done
-
-if [[ -z "$pkg_dir" || ! -f "$pkg_dir/src/task/discovery.ts" ]]; then
-  printf '%s: loader assertions N/A (OMP package not found); installer exposure checked\n' "$TEST_NAME"
+if [[ -z "$pkg_dir" || ! -f "$pkg_dir/src/task/discovery.ts" ]] || ! command -v bun >/dev/null 2>&1; then
+  [[ "${OMP_REQUIRE_LOADER:-0}" != 1 ]] || fail 'required actual OMP loader unavailable'
+  printf '%s: loader proof N/A (OMP source/bun unavailable); installer exposure only\n' "$TEST_NAME"
   exit 0
 fi
 
-if ! command -v bun >/dev/null 2>&1; then
-  printf '%s: loader assertions N/A (bun not found); installer exposure checked\n' "$TEST_NAME"
-  exit 0
+spawn_cwd="${OMP_SPAWN_CWD:-$REPO_ROOT}"
+allocated_cwd="${OMP_ALLOCATED_CWD:-}"
+revision_cwd="${OMP_REVISION_CWD:-}"
+proof_scope='independently supplied checkouts'
+if [[ -z "$allocated_cwd" || -z "$revision_cwd" ]]; then
+  [[ -z "$allocated_cwd" && -z "$revision_cwd" ]] || fail 'supply both allocated and revision checkout paths'
+  proof_scope='disposable filesystem checkout copies (not live allocated/revision sessions)'
+  allocated_cwd="$TMP_ROOT/allocated"
+  revision_cwd="$TMP_ROOT/revision"
+  for checkout in "$allocated_cwd" "$revision_cwd"; do
+    mkdir -p "$checkout/.omp/agents"
+    cp "$REPO_ROOT/.omp/agents/"*.md "$checkout/.omp/agents/"
+  done
+else
+  for checkout in "$allocated_cwd" "$revision_cwd"; do
+    root="$(git -C "$checkout" rev-parse --show-toplevel)" || fail "not a Git checkout: $checkout"
+    [[ "$root" == "$(cd "$checkout" && pwd -P)" ]] || fail "expected checkout root, not a nested directory: $checkout"
+    printf 'OMP checkout binding: %s head=%s\n' "$root" "$(git -C "$checkout" rev-parse HEAD)"
+  done
 fi
-
-expected_names_nl="$(printf '%s\n' "${expected_names[@]}")"
-assertions_js="$TMP_ROOT/omp-loader-assertions.mjs"
+for checkout in "$spawn_cwd" "$allocated_cwd" "$revision_cwd"; do
+  [[ "$checkout" == /* && -d "$checkout/.omp/agents" ]] || fail "native project declarations missing: $checkout"
+done
+assertions_js="$TMP_ROOT/discovery.mjs"
 cat > "$assertions_js" <<'BUN'
-import { pathToFileURL } from "node:url";
-import fs from "node:fs";
-import path from "node:path";
-
-const pkgDir = process.env.OMP_PACKAGE_DIR;
-const { discoverAgents } = await import(pathToFileURL(path.join(pkgDir, "src/task/discovery.ts")).href);
-const { loadSkillsFromDir } = await import(pathToFileURL(path.join(pkgDir, "src/extensibility/skills.ts")).href);
-const { SkillProtocolHandler } = await import(pathToFileURL(path.join(pkgDir, "src/internal-urls/skill-protocol.ts")).href);
-const expectedNames = process.env.EXPECTED_NAMES.split("\n").filter(Boolean).sort();
-const result = await discoverAgents(process.env.DISCOVER_CWD, process.env.HOME);
-const loaded = new Map(result.agents.filter(agent => expectedNames.includes(agent.name)).map(agent => [agent.name, agent]));
-
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
-}
-
-assert(loaded.size === expectedNames.length, `loaded ${loaded.size} expected OMP agents, wanted ${expectedNames.length}`);
-const requiredTools = ["read", "grep", "glob", "bash", "edit", "write", "todo", "irc", "yield"];
-const forbiddenTools = ["search", "find", "ls", "intercom", "mcp:gitlab-mcp", "mcp:wowtools", "mcp:codebase-memory-mcp", "mcp", "mcp:*", "mcp__*", "mcp__gitlab-mcp__*", "mcp__codebase-memory-mcp__*", "mcp__gitlab_mcp_get_issue", "mcp__codebase_memory_mcp_search_graph"];
-const requiredMcp = [
-  "mcp__gitlab_mcp_*",
-  "mcp__azure_devops_*",
-  "mcp__wowtools_*",
-  "mcp__codebase_memory_mcp_*",
+import { pathToFileURL } from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+const pkg = process.env.OMP_PACKAGE_DIR;
+const { discoverAgents } = await import(pathToFileURL(path.join(pkg, 'src/task/discovery.ts')).href);
+const { loadSkills } = await import(pathToFileURL(path.join(pkg, 'src/extensibility/skills.ts')).href);
+const { SkillProtocolHandler } = await import(pathToFileURL(path.join(pkg, 'src/internal-urls/skill-protocol.ts')).href);
+function assert(value, message) { if (!value) throw new Error(message); }
+const cwd = process.env.DISCOVER_CWD;
+const project = process.env.EXPECT_PROJECT === '1';
+const result = await discoverAgents(cwd, process.env.HOME);
+const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.HOME, '.omp/agent/agents');
+const routes = [
+  { name: 'mr-builder', thinking: 'medium', entry: 'start-build' },
+  { name: 'mr-reviewer-final', thinking: 'xhigh', entry: 'start-review' },
 ];
-function expectedPinFor(agent) {
-  const content = fs.readFileSync(agent.filePath, "utf8");
-  return {
-    model: content.match(/^model:\s*(.+)$/m)?.[1]?.trim(),
-    thinking: content.match(/^thinking-level:\s*(.+)$/m)?.[1]?.trim(),
-  };
+for (const { name, thinking, entry } of routes) {
+  const agent = result.agents.find(agent => agent.name === name);
+  assert(agent, `missing ${name}`);
+  const expected = path.join(expectedDir, `${name}.md`);
+  assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
+  assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
+  assert(agent.model?.[0] === 'pi/task' && agent.thinkingLevel === thinking, `${name}: runtime pins changed`);
+  assert(agent.autoloadSkills.includes(entry) && agent.autoloadSkills.includes('forge'), `${name}: canonical entry preload absent`);
+  assert(!agent.autoloadSkills.includes('tdd'), `${name}: retired unconditional TDD preload`);
+  if (project) {
+    assert(agent.tools.includes('mcp__gitlab_mcp_*') && agent.tools.includes('mcp__codebase_memory_mcp_*'), `${name}: project-native selection missing`);
+  } else {
+    assert(!agent.tools.some(tool => tool.startsWith('mcp')), `${name}: shared route leaks native selection`);
+  }
+  console.log(JSON.stringify({ proof: 'selected-metadata', phase: process.env.PROOF_PHASE, cwd, name, source: agent.source, filePath: agent.filePath, realPath: fs.realpathSync(agent.filePath), model: agent.model, thinking: agent.thinkingLevel, tools: agent.tools }));
 }
-
-for (const name of expectedNames) {
-  const agent = loaded.get(name);
-  assert(agent, `missing agent ${name}`);
-  assert(agent.source === "user", `${name} source ${agent.source} !== user`);
-  assert(agent.filePath.includes("/.omp/agent/agents/"), `${name} filePath not under temp OMP agents: ${agent.filePath}`);
-  for (const tool of requiredTools) assert(agent.tools.includes(tool), `${name} missing tool ${tool}`);
-  for (const tool of forbiddenTools) assert(!agent.tools.includes(tool), `${name} retained forbidden tool ${tool}`);
-  for (const tool of requiredMcp) assert(agent.tools.includes(tool), `${name} missing MCP tool ${tool}`);
-  const pin = expectedPinFor(agent);
-  assert(pin.model, `${name} frontmatter missing model pin`);
-  assert(pin.thinking, `${name} frontmatter missing thinking-level pin`);
-  assert(agent.model?.[0] === pin.model, `${name} model ${agent.model?.[0]} !== ${pin.model}`);
-  assert(agent.thinkingLevel === pin.thinking, `${name} thinking ${agent.thinkingLevel} !== ${pin.thinking}`);
-}
-console.log("OMP metadata: installed user-scope routes and runtime pins checked");
-
-const { skills } = await loadSkillsFromDir({
-  dir: path.join(process.env.HOME, ".omp/agent/skills"),
-  source: "omp:user",
-});
-const builder = loaded.get("mr-builder");
-const entry = skills.find(skill => skill.name === "start-review");
-assert(entry && !entry.hide, "installed start-review missing from discoverable inventory");
-assert(!builder.autoloadSkills?.includes(entry.name), "entry-access scenario must be unpreloaded");
+// This is actual session skill discovery with isolated HOME, not a fabricated
+// inventory. Canonical entry identity is independent of agent metadata intent.
+const { skills } = await loadSkills({ cwd });
 const handler = new SkillProtocolHandler();
-const resource = await handler.resolve(new URL("skill://start-review"), { skills });
-assert(resource.content === fs.readFileSync(entry.filePath, "utf8"), "resolved entry differs from installed entry bytes");
-let missingRejected = false;
-try {
-  await handler.resolve(new URL("skill://start-review"), { skills: [] });
-} catch (error) {
-  missingRejected = /not found|unknown skill/i.test(error.message);
+for (const name of ['start-build', 'start-review', 'forge']) {
+  const skill = skills.find(skill => skill.name === name);
+  assert(skill && !skill.hide, `canonical ${name} absent from available inventory`);
+  const source = path.join(process.env.CANONICAL_ROOT, name, 'SKILL.md');
+  assert(fs.realpathSync(skill.filePath) === fs.realpathSync(source), `${name}: canonical entry source mismatch: ${skill.filePath}`);
+  const resource = await handler.resolve(new URL(`skill://${name}`), { skills });
+  assert(resource.content === fs.readFileSync(source, 'utf8'), `${name}: canonical entry bytes differ`);
+  console.log(JSON.stringify({ proof: 'available-entry-access', phase: process.env.PROOF_PHASE, name, filePath: skill.filePath, realPath: fs.realpathSync(skill.filePath) }));
 }
-assert(missingRejected, "absent inventory must reject entry access");
-console.log("OMP entry access: unpreloaded installed start-review resolved; absent inventory rejected");
+const builder = result.agents.find(agent => agent.name === 'mr-builder');
+assert(!builder.autoloadSkills.includes('start-review'), 'cross-entry scenario should be unpreloaded');
+let rejected = false;
+try { await handler.resolve(new URL('skill://start-review'), { skills: [] }); }
+catch (error) { rejected = /not found|unknown skill/i.test(error.message); }
+assert(rejected, 'entry access must fail for absent inventory');
 BUN
-HOME="$TMP_HOME" \
-PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \
-PI_PACKAGE_DIR="$pkg_dir" \
-OMP_PACKAGE_DIR="$pkg_dir" \
-DISCOVER_CWD="$DISCOVER_CWD" \
-EXPECTED_NAMES="$expected_names_nl" \
-bun "$assertions_js" || fail "OMP loader assertions failed"
-
-printf '%s: PASS\n' "$TEST_NAME"
+fresh_discovery() {
+  local phase="$1" cwd="$2" project="$3"
+  # A new Bun process means discovery is anchored to this spawning-session CWD.
+  (cd "$cwd" && HOME="$TMP_HOME" PI_CODING_AGENT_DIR="$TMP_HOME/.omp/agent" \
+    PI_PACKAGE_DIR="$pkg_dir" OMP_PACKAGE_DIR="$pkg_dir" \
+    DISCOVER_CWD="$cwd" EXPECT_PROJECT="$project" PROOF_PHASE="$phase" \
+    CANONICAL_ROOT="$REPO_ROOT" bun "$assertions_js") || fail "fresh $phase discovery failed"
+}
+fresh_discovery foreign "$TMP_ROOT/foreign" 0
+fresh_discovery spawning "$spawn_cwd" 1
+fresh_discovery allocated "$allocated_cwd" 1
+fresh_discovery revision "$revision_cwd" 1
+printf '%s: PASS (%s); no live model, native action, Claude or hard-confinement proof\n' "$TEST_NAME" "$proof_scope"

@@ -6,7 +6,7 @@
 |---|---|
 | Number | 0002 |
 | Title | Phase-grouped GitLab snippet disclosure |
-| Status | `Accepted` |
+| Status | `Superseded` on 2026-10-02 by issue #508's project-owned integration decision below. |
 | Date | 2026-09-15 |
 | Author | agents/skills maintainers |
 | Deciders | Human decision recorded on issue #469 |
@@ -15,7 +15,7 @@
 
 ## Context
 
-`gitlab/SKILL.md` is the selected GitLab transport branch reached through `/forge` disclosure. The skill-activation mechanic documented in [`docs/agents/dev-workflows.md`](../agents/dev-workflows.md#skill-activation-mechanism) makes a `SKILL.md` body **all-or-nothing** on invocation, while files under `reference/` are read per-need.
+At adoption, `gitlab/SKILL.md` was the selected GitLab transport branch reached through `/forge` disclosure. The skill-activation mechanic documented in [`docs/agents/dev-workflows.md`](../agents/dev-workflows.md#skill-activation-mechanism) made a `SKILL.md` body **all-or-nothing** on invocation, while files under `reference/` were read per-need. Names in this record describe historical files, not live resource pointers.
 
 Measured at baseline commit `e2dbcd266f44b4aa1acac254914654415ef7e9c9`:
 
@@ -71,7 +71,7 @@ None. Guard order, the Mutation Guard pointer, the help-first rule, and the mult
 
 Landed in one change: bodies moved, index added, and the assertions that pinned `SKILL.md` as the snippet home re-homed against the group file that now holds each text. The hard count of 21 survives as a sum across the three group files, so the name-stability guarantee is preserved rather than dropped.
 
-## Compliance / Enforcement
+## Historical Compliance / Enforcement
 
 - `tests/gitlab-split-snippets.sh` and `tests/gitlab-mcp-first-workflows.sh` assert the 21 stable names and per-snippet bodies against the group files, and sum the count to exactly 21.
 - `tests/gitlab-snippet-metadata.sh` keeps the group-file name set equal to `snippet-metadata.json` and the `snippet-transports.md` table.
@@ -87,5 +87,16 @@ Landed in one change: bodies moved, index added, and the assertions that pinned 
 
 - Issue #469 — decision record and acceptance criteria.
 - [`docs/agents/dev-workflows.md`](../agents/dev-workflows.md#skill-activation-mechanism) — skill activation mechanic.
-- [`gitlab/reference/snippet-transports.md`](../../gitlab/reference/snippet-transports.md) — per-snippet transport contracts.
+- Historical `gitlab/reference/snippet-transports.md` — per-snippet transport contracts at adoption; retired by issue #508.
 - [ADR-0001](0001-authored-agent-docs-stay-markdown.md) — authored agent docs stay Markdown.
+
+## Superseding ownership decision — 2026-10-02
+
+Issue #508 replaces active transport ownership with the invoked target's confirmed
+`project_profile`, `profile_path` and `provider.reference`. Forge retains five
+operations and common guards; actual native recipes belong to target-owned docs.
+This repository's recipes are in [native integration](../agents/native-integration.md).
+The retired skill, fixed provider branches and catalogue assertions no longer own
+current policy. Dates, measured baseline, snippet names and adoption facts above
+remain historical evidence, not current requirements. No migration or historical
+artifact rewriting is performed.

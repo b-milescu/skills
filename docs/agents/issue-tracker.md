@@ -2,18 +2,18 @@
 
 Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills` (`https://gitlab.example.com/agents/skills`).
 
-Use `/gitlab` from inside this repository clone so GitLab API actions follow its MCP-first transport order; guarded `glab` fallback is second and only under the conditions `/gitlab` documents. Do not duplicate transport snippets in this guide.
-
-This repo's tracker path, host, project path, and label-profile ref are verified against `setup-dev-skills/reference/project-profile-facts.json`; generated target repos may use different repo-relative Agent Setup Doc paths.
+Use `/forge` from this verified target clone with the selected
+[project-native recipes](native-integration.md). These are this project's facts,
+not an installed shared profile or a default for foreign targets.
 
 ## Repo conventions
 
 - GitLab issues are the tracker items for tasks and PRDs.
 - GitLab merge requests are the review vehicle for code, docs, and workflow changes.
-- Comments are GitLab notes; use `/gitlab` for the exact MCP/fallback note contract.
+- Comments are native notes; the [project integration](native-integration.md) owns exact tools, complete reads and publication readback.
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
-- For machine-readable issue lists and pagination caveats, use `/gitlab` **Snippet: issue-pickup** and its centralized known-pitfalls section; do not restate syntax here.
-- Infer the project from `git remote`; pass an explicit project/repo target only when `/gitlab` says it is needed to avoid host/project ambiguity.
+- Follow native cursor recovery for complete discovery; lists are not single-item guard evidence.
+- Verify intended repository against named fetch/push/fork configuration and native project metadata; never infer work-item scope solely from code-host branding.
 - Branch naming is project policy, not a GitLab schema rename. This repo declares
   it in [`docs/agents/dev-workflows.md`](dev-workflows.md#branch-naming) as
   `project_profile.branch_naming`; delivery fields remain `source_branch` and
@@ -45,11 +45,11 @@ target project's rulebook documents such a convention) conditionally requires.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a GitLab issue on `gitlab.example.com/agents/skills` using the workflow and transport contract from `/gitlab`. If publishing an approved plan, spec, PRD, or conversation as multiple vertical slices, use `/plan-to-issues`.
+Create a native issue in this verified project using `/forge publish` and the [project integration](native-integration.md). Approved plans/specs/PRDs use `/plan-to-issues`.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the referenced GitLab issue, including comments/notes, using `/gitlab` for the exact MCP primary / guarded fallback contract.
+Read the full referenced issue and all discussions through `/forge snapshot` and the [project integration](native-integration.md).
 
 ## Reconcile on unblock
 

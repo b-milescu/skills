@@ -12,7 +12,7 @@ description: >-
 
 Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to `/plan-to-issues` and ship through the normal build/review workflow.
 
-This skill is project-agnostic and runs from any target repo. Project-specific facts — live labels, Check Gate commands, doc ownership, workflow policy — come from the target repo's Agent Setup Docs and `project_profile` hooks at run time; never assume the skills repo's own layout or vocabulary in a finding.
+This skill runs from the invoked target. Facts and policy come from its confirmed `project_profile`, `profile_path`, selected `provider.reference` and declared Agent Setup Doc paths; never from installed aliases or this repository's vocabulary. Bind only systems required by collection/publication through `/forge preflight`; absent/stale setup prompts explicit owner setup, never automatic login/setup/install or live label mutation.
 
 ## Use when
 

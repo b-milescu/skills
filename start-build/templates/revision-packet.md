@@ -20,7 +20,7 @@
 
 ## Finding bindings
 
-Repeat the canonical tuple from each originating Review Report for every short ID addressed below. The contract and marker format are owned by `../../start-review/reference/finding-identities.md`. Before publication run `node start-review/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --packet <this-revision-packet.md>`; missing, stale, ambiguous, or contradictory bindings fail closed.
+Repeat the original report/SHA/finding tuple exactly for every addressed ID per `../../start-review/reference/finding-identities.md`. Resolve installed start-review to `<start-review-dir>` and run `node <start-review-dir>/scripts/validate-finding-bindings.mjs --report <originating-report.md> ... --packet <this-packet.md>`. Missing/stale/ambiguous/duplicate/mismatched bindings fail; native scope verification remains separate.
 
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |

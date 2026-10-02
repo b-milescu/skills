@@ -3,7 +3,7 @@ name: plan-to-issues
 description: >-
   Break an approved plan, spec, PRD, or conversation into tracker issues as
   vertical slices. Use when the user asks for /plan-to-issues, "break this into
-  issues", GitLab/GitHub/Azure DevOps issue creation, or an AFK/HITL breakdown.
+  issues", work-item creation in the target integration, or an AFK/HITL breakdown.
 ---
 
 # plan-to-issues
@@ -14,8 +14,8 @@ Turn an approved plan into tracker issues or work items for the current target r
 
 1. Invoke `/forge preflight` from the intended target repository before any publishing work.
 2. Resolve the target repo root with `git rev-parse --show-toplevel`; treat that path as `<repo-root>` for all repo-local docs.
-3. From the selected `project_profile`, bind `<issue-tracker-doc>` to `<repo-root>/<project_profile.agent_setup_docs.issue_tracker>` and `<triage-labels-doc>` to `<repo-root>/<project_profile.agent_setup_docs.triage_labels>`. Reuse these bindings for every target-repo tracker or label read; `docs/agents/issue-tracker.md` and `docs/agents/triage-labels.md` are only the default profile's values.
-4. Read `<issue-tracker-doc>` and `<triage-labels-doc>`. If either file is missing, stop and ask the user to set up or choose the correct workflow. Fail closed unless the tracker is GitLab, GitHub, or Azure DevOps; if it is local markdown, Other, or silent, stop and ask. Do not fall back to default-profile paths or read target docs from the skill installation directory.
+3. From the invoked target's confirmed `project_profile`, bind `<issue-tracker-doc>` and `<triage-labels-doc>` to its declared Agent Setup Doc paths under `<repo-root>`. Preserve custom roots; shared field guidance supplies no default paths.
+4. Read those target docs and selected `provider.reference`. Missing/stale/conflicting setup prompts explicit owner setup/choice; never auto-run setup or read installed aliases as target configuration. Configured local work items use verified filesystem scope and supported file recipes. Unsupported publication blocks only that operation with an explicit reason, not by backend name.
 5. Before drafting or publishing, display the preflight target (provider and canonical repository from `/forge`) and ask the user to confirm it if there is any ambiguity.
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.

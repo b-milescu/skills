@@ -1,12 +1,10 @@
 # Triage Labels
 
-This file records the target repo's tracker labels and is the default
-`project_profile.label_profile_ref`. `/setup-dev-skills` keeps it aligned with the
-live tracker label set on every run, using
-`setup-dev-skills/reference/project-profile-facts.json` as the fact source for
-`label_profile_ref` and Triage Role mapping. Project-profile hooks may specialize
-label vocabulary by pointing here, but must not create live labels, rely on lazy
-label creation, hardcode a reusable skill's preferred label string, or weaken the
+Neutral seed: record only the invoked target's confirmed live vocabulary and
+`project_profile.label_profile_ref` at its chosen path. Shared field guidance at
+`skill://setup-dev-skills/reference/project-profile-facts.json` supplies neither
+labels nor paths. Preserve custom choices/additions; no live label mutation,
+lazy creation or global label-string assumption. Keep the
 [safety-floor litany](skill://setup-dev-skills/docs/effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Live label inventory

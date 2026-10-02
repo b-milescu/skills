@@ -1,7 +1,7 @@
 # Review Flow
 
-Canonical mandatory independent review policy for one bound GitLab, GitHub, or
-Azure DevOps change request. Provider mechanics live behind `/forge`; this file
+Canonical mandatory independent review policy for one change request in the
+invoked target's confirmed integration. Native mechanics live behind `/forge`; this file
 owns review judgment, evidence, severity, advisory CI/Open Question classifications,
 authority, and action separation.
 On missing mechanics or provider drift, fall back to the selected `/forge`
@@ -88,7 +88,7 @@ Single-change-request review is the default and preferred mode: one change
 request per fresh reviewer session. Before local commands or targeted checks,
 use an isolated checkout where `git status --porcelain` is empty and the observed
 `git rev-parse HEAD` equals the exact reviewed commit from a fresh
-`forge snapshot`. If either check differs, the selected provider branch
+`forge snapshot`. If either check differs, the confirmed target integration recipe
 materializes that exact commit and the reviewer recreates a detached isolated
 worktree, then repeats both checks. Never run an arbitrary `git pull`.
 
@@ -250,9 +250,9 @@ auto-merge through one guarded `forge act`. Provider CI remains advisory.
 Native protection may hold or refuse the request; report that provider outcome.
 Queued is non-terminal and is never reported as merged.
 
-GitHub auto-merge and merge queue are distinct. Azure DevOps auto-complete lacks
-a documented expected-head binding, so an exact-commit queue request returns
-`sha-bound-action-unsupported`. GitLab queue behavior remains in `/gitlab`.
+Queue, auto-completion and direct finish semantics belong to the confirmed target
+reference. An operation without the requested exact-head guarantee returns
+`sha-bound-action-unsupported`; observational reads cannot manufacture atomicity.
 
 ## Publication and actions
 

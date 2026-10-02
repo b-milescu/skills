@@ -1,7 +1,7 @@
 ---
 name: issue-delivery-loop
 description: >-
-  Parent coordinator for bounded GitLab, GitHub, or Azure DevOps issue delivery:
+  Parent coordinator for bounded issue delivery through the invoked target's integration:
   fans out decoupled ready items and routes builders/reviewers.
 ---
 
@@ -13,9 +13,10 @@ read. Generic callers do not branch on provider afterward.
 
 Default: fan out every provably decoupled subset.
 
-1. Bind provider/repository/default branch/readiness profile through `forge`.
-   Read the bounded ready queue and default-branch CI health. Unknown red health
-   is surfaced before fan-out; a recorded known-red baseline may proceed.
+1. Bind intended repository/work-item/CI scopes and operation-specific readiness
+   through the target's confirmed profile/reference. Read its bounded ready queue;
+   default-branch CI health is advisory when configured and available, not an
+   unrelated global authentication prerequisite. Surface unavailable/stale evidence.
    Ready selection respects dependency ordering.
 2. For a multi-item ready batch, evaluate the shared
    [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md)

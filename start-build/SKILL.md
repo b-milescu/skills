@@ -2,7 +2,7 @@
 name: start-build
 description: >-
   Implements issues test-first with an early Draft change request and review
-  revisions. Use for GitLab, GitHub, or Azure DevOps issue delivery.
+  revisions. Use for issue delivery through the invoked target's confirmed integration.
 ---
 
 # Start Build
@@ -55,10 +55,11 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
    then follow the active mode reference. Child mode reads
    [child-builder.md](skill://start-build/reference/child-builder.md) and, when
    selected, [parent-owned-gate.md](skill://start-build/reference/parent-owned-gate.md).
-2. Invoke `forge preflight`. It binds provider, canonical repository, default
-   branch, readiness policy, caller identity, and optional bounded discovery.
-   Unknown/ambiguous/profile-mismatched providers fail closed. Generic workflow
-   code does not branch on provider after this point.
+2. Invoke `forge preflight` through the target's confirmed profile/reference.
+   Bind intended code/work-item/CI scopes together, canonical repository/default
+   branch and operation-specific policy/identity; refresh only required systems.
+   Missing/ambiguous/conflicting setup or unsupported actions block only the
+   affected operation. No shared catalogue/default or silent fallback is used.
 3. Read the supplied issue description and all current notes through `forge
    snapshot`; reconcile contradictions before planning. Re-read state/ownership
    immediately before work. Select [source lifecycle](skill://start-build/reference/implementation-flow.md#source-lifecycle):

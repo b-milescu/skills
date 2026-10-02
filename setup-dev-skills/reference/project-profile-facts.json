@@ -5,195 +5,35 @@
   "version": "1",
   "owner": "setup-dev-skills",
   "machine_resource": "skill://setup-dev-skills/reference/project-profile-facts.json",
-  "provider_detection": {
-    "executable": "skill://setup-dev-skills/scripts/detect-provider.mjs",
-    "input_fields": ["remote", "profile_provider", "profile_id"],
-    "fail_closed": ["unknown", "ambiguous", "profile-remote-mismatch"]
-  },
   "required_project_profile_fields": [
-    "provider",
-    "tracker",
-    "agent_setup_docs",
-    "label_vocabulary",
-    "check_gate",
-    "dev_workflows",
-    "branch_naming",
-    "ci_parity",
-    "domain_docs",
-    "release_deploy_policy",
-    "manual_validation_rules",
-    "skill_resources",
-    "resource_addressing"
+    "profile_id", "profile_path", "provider", "tracker", "agent_setup_docs",
+    "label_vocabulary", "check_gate", "dev_workflows", "branch_naming",
+    "ci_parity", "domain_docs", "release_deploy_policy", "manual_validation_rules",
+    "skill_resources", "resource_addressing"
   ],
-  "triage_roles": {
-    "afk_ready": { "name": "AFK-ready" },
-    "needs_info": { "name": "needs-info" },
-    "human_decision": { "name": "human-decision" }
+  "field_guidance": {
+    "provider": "Opaque confirmed integration name; reference resolves the target-owned integration document or section.",
+    "profile_path": "Confirmed invoked-target profile pointer, never an installed default.",
+    "tracker": "Independently confirmed work-item system/repository or local filesystem scope, tools and operation limits.",
+    "agent_setup_docs": "Confirmed target-relative paths preserving custom roots and additions.",
+    "label_vocabulary": "Live target vocabulary and target triage-role mapping; no shared label default.",
+    "check_gate": "Target policy ref, exact local command, runtime and bootstrap route.",
+    "dev_workflows": "Target policy and runtime-specific complete declaration pointers.",
+    "branch_naming": "Target source-branch policy, not a native identifier validator.",
+    "ci_parity": "Independently scoped configured advisory CI and binding limits.",
+    "domain_docs": "Target context and ADR locations.",
+    "release_deploy_policy": "Target policy; configuration alone never grants action authority.",
+    "manual_validation_rules": "Target acceptance surfaces, evidence and feasibility limits."
   },
   "resource_addressing": {
     "target_repo_docs": { "mode": "repo-relative" },
-    "runtime_skill_resources": { "mode": "skill-uri" }
-  },
-  "default_profile": {
-    "profile_id": "default",
-    "profile_path": "docs/agents/dev-workflows.md#project-profile-hooks",
-    "provider": {
-      "kind": "gitlab",
-      "reference": "skill://forge/reference/gitlab.md"
-    },
-    "tracker": {
-      "kind": "gitlab",
-      "host": "gitlab.example.com",
-      "project_path": "agents/skills",
-      "repo_url": "git@gitlab.example.com:agents/skills.git",
-      "issue_tracker_doc": "docs/agents/issue-tracker.md"
-    },
-    "agent_setup_docs": {
-      "root": "docs/agents",
-      "issue_tracker": "docs/agents/issue-tracker.md",
-      "triage_labels": "docs/agents/triage-labels.md",
-      "domain": "docs/agents/domain.md",
-      "check_gate": "docs/agents/check-gate.md",
-      "coding_guardrails": "docs/agents/coding-guardrails.md",
-      "dev_workflows": "docs/agents/dev-workflows.md"
-    },
-    "label_vocabulary": {
-      "label_profile_ref": "docs/agents/triage-labels.md#live-label-inventory",
-      "triage_role_labels": {
-        "afk_ready": "ready-for-agent",
-        "needs_info": "needs-info",
-        "human_decision": "human-decision"
-      },
-      "kind_labels": {
-        "docs": "docs",
-        "refactor": "refactor"
-      },
-      "status_labels": {
-        "ready": "ready"
-      }
-    },
-    "check_gate": {
-      "gate_policy_ref": "docs/agents/check-gate.md#full-local-gate",
-      "command": "npm run check",
-      "runtime": "Node.js 22.x"
-    },
-    "dev_workflows": {
-      "path": "docs/agents/dev-workflows.md",
-      "branch_naming_ref": "docs/agents/dev-workflows.md#branch-naming",
-      "release_deploy_policy_ref": "docs/agents/dev-workflows.md#release-deploy-policy",
-      "auxiliary_index_policy_ref": "docs/agents/dev-workflows.md#auxiliary-project-index-policy",
-      "acceptance_surfaces_ref": "docs/agents/dev-workflows.md#acceptance-surface-vocabulary"
-    },
-    "branch_naming": {
-      "pattern": "issue-<iid>-<slug>"
-    },
-    "ci_parity": {
-      "ci_jobs_ref": "docs/agents/check-gate.md#ci-parity",
-      "observed_jobs": ["check"],
-      "mirrors_local_gate": true
-    },
-    "domain_docs": {
-      "ref": "docs/agents/domain.md",
-      "context": "CONTEXT.md",
-      "adr": "docs/adr/"
-    },
-    "manual_validation_rules": {
-      "ref": "docs/agents/check-gate.md#manual-validation-rules",
-      "required": []
-    },
-    "release_deploy_policy": {
-      "ref": "docs/agents/dev-workflows.md#release-deploy-policy",
-      "policy": "No product deploy path; release actions require explicit human or workflow authority."
-    }
+    "runtime_skill_resources": { "mode": "skill-uri", "execution": "resolve installed filesystem path before invoking helpers" },
+    "installed_aliases": "Classify by underlying source; project-owned native aliases never establish the invoked target's profile."
   },
   "skill_resources": {
-    "gitlab_snippet_metadata": "skill://gitlab/reference/snippet-metadata.json",
-    "gitlab_mutation_guard": "skill://gitlab/reference/mutation-guard.md",
-    "gitlab_authority_verification": "skill://gitlab/reference/authority-verification.md",
-    "start_build_parent_owned_gate": "skill://start-build/reference/parent-owned-gate.md",
-    "start_build_delivery_schema": "skill://start-build/templates/delivery-schema.md",
-    "start_build_reviewer_lift_schema": "skill://start-build/templates/reviewer-lift-schema.md",
-    "plan_to_issues_readiness_scorecard": "skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md",
-    "plan_to_issues_issue_body_template": "skill://plan-to-issues/templates/issue-body.md"
-  },
-  "provider_fixtures": [
-    {
-      "kind": "github",
-      "remote": "https://github.com/example/project.git",
-      "reference": "skill://forge/reference/github.md"
-    },
-    {
-      "kind": "azure-devops",
-      "remote": "https://dev.azure.com/example/project/_git/repository",
-      "reference": "skill://forge/reference/azure-devops.md"
-    }
-  ],
-  "cross_project_fixtures": [
-    {
-      "profile_id": "non-default-docs-and-labels",
-      "purpose": "Covers a target repo whose Agent Setup Docs are not under docs/agents and whose AFK-ready Triage Role maps to a label other than ready-for-agent.",
-      "tracker": {
-        "kind": "gitlab",
-        "host": "gitlab.example.test",
-        "project_path": "platform/example",
-        "repo_url": "https://gitlab.example.test/platform/example.git",
-        "issue_tracker_doc": "engineering/agent-docs/tracker.md"
-      },
-      "agent_setup_docs": {
-        "root": "engineering/agent-docs",
-        "issue_tracker": "engineering/agent-docs/tracker.md",
-        "triage_labels": "engineering/agent-docs/labels.md",
-        "domain": "engineering/context/domain.md",
-        "check_gate": "engineering/agent-docs/local-gate.md",
-        "coding_guardrails": "engineering/agent-docs/coding.md",
-        "dev_workflows": "engineering/agent-docs/workflows.md"
-      },
-      "label_vocabulary": {
-        "label_profile_ref": "engineering/agent-docs/labels.md#live-label-inventory",
-        "triage_role_labels": {
-          "afk_ready": "agent-ready",
-          "needs_info": "needs-human-input"
-        },
-        "kind_labels": {
-          "docs": "documentation",
-          "refactor": "structure"
-        },
-        "status_labels": {
-          "ready": "backlog-ready"
-        }
-      },
-      "check_gate": {
-        "gate_policy_ref": "engineering/agent-docs/local-gate.md#full-local-gate",
-        "command": "make verify",
-        "runtime": "target repo documented runtime"
-      },
-      "dev_workflows": {
-        "path": "engineering/agent-docs/workflows.md",
-        "branch_naming_ref": "engineering/agent-docs/workflows.md#branch-naming",
-        "release_deploy_policy_ref": "engineering/agent-docs/workflows.md#releasedeploy-policy",
-        "auxiliary_index_policy_ref": "engineering/agent-docs/workflows.md#auxiliary-project-index-policy"
-      },
-      "branch_naming": {
-        "pattern": "work-item-<iid>-<slug>"
-      },
-      "ci_parity": {
-        "ci_jobs_ref": "engineering/agent-docs/local-gate.md#ci-parity",
-        "observed_jobs": ["verify"],
-        "mirrors_local_gate": true
-      },
-      "domain_docs": {
-        "ref": "engineering/context/domain.md",
-        "context": "ENGINEERING-CONTEXT.md",
-        "adr": "engineering/adr/"
-      },
-      "manual_validation_rules": {
-        "ref": "engineering/agent-docs/local-gate.md#manual-validation-rules",
-        "required": ["documented-manual-smoke"]
-      },
-      "release_deploy_policy": {
-        "ref": "engineering/agent-docs/workflows.md#releasedeploy-policy",
-        "policy": "Target repo policy decides release/deploy authority."
-      }
-    }
-  ]
+    "forge": "skill://forge/SKILL.md",
+    "common_guard": "skill://forge/reference/common-guard.md",
+    "delivery_schema": "skill://start-build/templates/delivery-schema.md",
+    "reviewer_lift": "skill://start-build/templates/reviewer-lift-schema.md"
+  }
 }

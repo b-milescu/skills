@@ -4,7 +4,10 @@
 #   Skills:  <repo>/<skill>/  → ~/.claude/skills/<skill>   (Claude Code)
 #                            → ~/.omp/agent/skills/<skill> (OMP agent)
 #
-#   Agents:  <repo>/agents/<name>.md → ~/.claude/agents/<name>.md   (Claude Code)
+#   Agents: <repo>/agents/<dialect>/*.md → each runtime's user agent root.
+#
+# Complete project declarations in .claude/agents and .omp/agents are not
+# installed globally: native selections belong to the invoked project.
 #
 # Each destination is skipped if its parent directory (e.g. ~/.claude/,
 # ~/.omp/agent/) doesn't exist — that agent simply isn't installed on this host.
@@ -73,9 +76,7 @@ for dir in "$REPO_ROOT"/*/; do
 done
 
 # Agents are organised per target dialect under agents/<target>/.
-# AGENT_NAMES is populated per target from that target's own source directory so
-# OMP-only routed agents remain installed while Claude Code omits unsupported
-# agent definitions.
+# Install only reusable presets, never this repository's native project agents.
 AGENT_NAMES=()
 
 collect_agent_names() {

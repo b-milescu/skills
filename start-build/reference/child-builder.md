@@ -45,8 +45,8 @@ The Reviewer Lift block is a hard child seam: copy the tier's generated-copy Rev
 
 - Start from the approved generated-copy block delimited by `REVIEWER-LIFT-SCHEMA:BEGIN ... REVIEWER-LIFT-SCHEMA:END` in `../templates/review-packet.md` or `../templates/review-packet-compact.md`. Copy the whole block and replace each placeholder with a verified value; a re-derived subset that silently drops rows (for example omitting `Acceptance surfaces`) is not acceptable, and fail-closed values (`none`, `N/A — <why>`) are.
 - Authority rows need verifiable sources per `../templates/reviewer-lift-schema.md`. `docs/agents/check-gate.md` does not own authority policy, so it is not a valid authority source.
-- Lint the Lift before handoff with the pure-local presence checker `validate_reviewer_lift`; it fails closed on any missing required row and never judges row values.
-- Validate every non-`none` `Finding bindings` tuple against all originating Review Report files with `node start-review/scripts/validate-finding-bindings.mjs --report <report.md> ... --lift <review-packet.md>` per `../../start-review/reference/finding-identities.md`. A bare `MF-N`/`SF-N`/`C-N` is never sufficient.
+- Resolve installed `start-build` and `start-review` skill directories through runtime resource resolution to real filesystem paths (not target CWD or `node skill://...`). Before handoff run `node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>`: canonical full-row presence/nonempty/one-block/duplicate checks only, independent of future receipt and either owner context.
+- Validate non-`none` finding tuples against all originating reports with `node <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> ... --lift <packet>` per `../../start-review/reference/finding-identities.md`. Bare short IDs are insufficient; native artifact/scope verification remains separate.
 - Validate the work-item relationship/closure preview and published description readback through the selected `/forge` provider. Missing, incomplete, or mismatched evidence blocks handoff and the ready transition.
 
 ## Post-ready push rule

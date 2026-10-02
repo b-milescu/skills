@@ -6,8 +6,15 @@ graphify-out/
 .graphify*
 .trace-mcp/
 
-# Claude Code agent runtime state and isolation worktrees. Parallel agent
-# worktrees live under .claude/worktrees/<id>/ and carry copies of canonical
-# templates; keeping .claude/ untracked stops `git add .` from staging those
-# copies and injecting false Check Gate findings (issue #272).
-.claude/
+# Runtime state and isolation worktrees remain ignored; complete project agents
+# are deliberately tracked at their native locations.
+.claude/*
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/mr-builder.md
+!.claude/agents/mr-reviewer-final.md
+.omp/*
+!.omp/agents/
+.omp/agents/*
+!.omp/agents/mr-builder.md
+!.omp/agents/mr-reviewer-final.md

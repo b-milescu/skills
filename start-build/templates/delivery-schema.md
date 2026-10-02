@@ -47,18 +47,18 @@ delivery:
   version: "1"
   role: "builder"
   provider:
-    name: "gitlab"
-    profile: "default"
-    reference: "skill://forge/reference/gitlab.md"
+    name: "<confirmed opaque integration name>"
+    profile: "<confirmed target profile id>"
+    reference: "<target-owned integration doc or section>"
   repository:
-    host: "gitlab.example"
-    id: "group/project"
-    locator: "https://gitlab.example/group/project.git"
+    host: "<verified system scope, when remote>"
+    id: "<verified repository or local filesystem scope>"
+    locator: "<opaque verified repository locator>"
     default_branch: "main"
-    profile_path: "docs/agents/dev-workflows.md#project-profile-hooks"
-    gate_policy_ref: "docs/agents/check-gate.md#full-local-gate"
-    label_profile_ref: "docs/agents/triage-labels.md#live-label-inventory"
-    acceptance_surfaces_ref: "docs/agents/dev-workflows.md#acceptance-surface-vocabulary"
+    profile_path: "<confirmed target profile pointer>"
+    gate_policy_ref: "<confirmed target gate policy>"
+    label_profile_ref: "<confirmed target label vocabulary>"
+    acceptance_surfaces_ref: "<confirmed target surface vocabulary>"
     language_families: ["typescript", "shell", "markdown"]
     auxiliary_index_policy:
       owner: "parent"
@@ -136,11 +136,11 @@ delivery:
   blockers: []
 ```
 
-Authority Verification uses `skill://forge/reference/common-guard.md` on GitLab and the selected provider equivalent on other forges.
+Authority Verification uses `skill://forge/reference/common-guard.md` and native mechanics from the invoked target's selected confirmed reference.
 
 ## Provider and repository binding
 
-`forge preflight` fills `provider` and `repository` once. Profile hooks may specialize project policy but must preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
+`forge preflight` binds intended scopes together through the invoked target's confirmed profile/reference, refreshing only systems required by the requested operation. Independently scoped work items/code/CI and local filesystem work items require explicit verified scope, not invented remote identity. Configuration grants no authority. Profile hooks preserve the [Hard floors (never scaled away)](../../docs/effort-scaling.md#hard-floors-never-scaled-away).
 
 ## Trust and evidence tiers
 
@@ -167,5 +167,5 @@ Authority Verification uses `skill://forge/reference/common-guard.md` on GitLab 
 ## Generated-copy contract
 
 This schema is not copied into builder-final or reviewer-final handoffs.
-Those templates emit the two-line locator/note-id contract. Run
-`bash tests/delivery-schema.sh` after changing this schema.
+Those templates emit the two-line locator/note-id contract. Native verification,
+gate/finding helpers and resource-link checks cover the current consumers.

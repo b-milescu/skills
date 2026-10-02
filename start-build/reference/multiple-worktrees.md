@@ -6,7 +6,7 @@ or contradicted decoupling evidence means serial work.
 
 1. Use the original checkout as coordinator only. Require clean status and run
    `forge preflight` for provider/repository/default-branch binding.
-2. Immediately before each child worktree, fetch origin, record the verified
+2. Immediately before each child worktree, fetch the confirmed named code remote, record the verified
    remote-default commit, create the branch/worktree from that commit, and verify
    its `HEAD`. Stop and remove only a clean newly-created worktree on mismatch.
 3. Run one work item, branch, Draft change request, Check Gate, and Review Packet

@@ -121,9 +121,9 @@ Retained local-log custody (issue #490): when a `local-gate` evidence row's
 `source` names the retained local log by absolute filesystem path, the
 validator requires that exact file to be readable — at pre-post validation,
 before any publication or ready action, and again at post-note validation.
-Native/remote evidence locators (`scheme://` URLs) keep their documented
-behavior and are never opened as local filenames. A missing or unreadable
-retained log refuses the receipt with a diagnostic naming the source and the
+Only absolute filesystem evidence sources are opened for custody. Opaque
+non-filesystem locators are validated through the target integration separately.
+A missing or unreadable retained log refuses the receipt with a diagnostic naming the source and the
 corrective action: retain and verify the original run's evidence before
 publication, and if custody failed, recover it with explicit original-run
 provenance — never pass a replacement run off as the historical one. A
@@ -135,49 +135,42 @@ Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:
 
+Resolve the installed `start-build` directory to an actual filesystem path as
+`<start-build-dir>` through runtime resource resolution before invoking Node:
+
 ```text
-node skill://start-build/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <candidate description> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
-node skill://start-build/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <the sole URL in the Reviewer Lift `Local gate` row> --gate-command <command> --gate-policy-ref <policy>
+node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
+node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+node <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
 ```
 
-Pre-post with `--review-packet` checks the candidate Lift's structure before
-anything is posted (issue #503): the exact BEGIN/END markers, unique rows, the
-required rows, and the closed-set values below. It performs no mutation and
-needs no receipt locator; `Local gate` may still read `not-run — parent-owned`.
+`lift-only` is receipt-independent **presence-only** validation: every canonical
+Lift row is nonempty, exactly one marker block exists and duplicate rows fail.
+It works before a parent receipt exists and in either owner context. It does not
+judge row values, authority, execution or native identity.
 
-`--gate-receipt-locator` is not an opaque value: it must equal, byte for byte,
-the sole `scheme://` URL the Reviewer Lift's `Local gate` row carries — the
-published note's full URL, not a bare note id. Sole, not first: a row carrying
-two or more URLs extracts no locator at all and fails. A mismatch is reported as
-`Gate Receipt pointer mismatch`, naming the argument and the token read from the
-row, separately from the row's missing-`PASS`, contradictory-token, and
-missing-gate-command failures.
+Stronger pre-post and post-note modes remain separate. Pre-post validates receipt
+and candidate Lift before mutation without requiring a future receipt locator;
+`Local gate` may read `not-run — parent-owned`. Post-note still validates only a
+parent-owned Lift and refuses builder ownership; builder receipt pre-post remains
+its own restricted shape. Neither mode is replaced by lift-only.
 
-Post-note validation also refuses off-schema values (issue #501) in every
-Reviewer Lift row whose value set
-[reviewer-lift-schema.md](../templates/reviewer-lift-schema.md) closes:
-`Review gate`, `Change tier`, `Transport` (may be absent), `Gate owner`,
-`Gate coverage`, `CI pipeline`, `Touched safety surfaces`,
-`Acceptance surfaces`, `Decoupling proof`, `Open Questions`,
-`Approval authority`, and `Finish authority`; pre-post runs the same check. Post-note validates a
-parent-owned Lift, so `Gate owner` must lead with `parent`; the annotation after
-it (for example `parent — parent-owned/not-run; candidate <sha>`) may stay after
-the receipt, while `builder`, `parent-owned`, or `both` is refused (issue #502).
-A separator must be followed by a note with at least one character other than
-whitespace or parentheses (`moderate — (one validator)` is accepted; `moderate ()`,
-`moderate — ()`, and `N/A ()` are refused), and a `Change tier` rationale is not
-another tier token. `CI pipeline`
-needs a locator or a `#<n>`/`pipeline <n>`/`run <n>`/`build <n>` ID (a bare
-count is not one) and a SHA; a hex-letter word such as `defaced` is not a SHA.
-`Decoupling proof` names a co-running change request (`!<n>`, `#<n>`,
-`MR <n>`, or a `merge_requests/<n>`, `pull/<n>`, or `pullrequest/<n>` locator)
-or a branch-shaped name (`issue-<n>…`, or after `branch` a code span or a token
-with `/`, `-`, `_`, or a digit; never `none`). Each refused row is listed once
-with its accepted forms; cell values are not echoed. Free-text rows are not
-judged, and `Finding bindings` stays with `validate-finding-bindings.mjs`.
+`--gate-receipt-locator` equals the sole explicitly labelled `Gate Receipt: <opaque
+locator>` in `Local gate`, byte for byte. Semicolon/end delimit the pointer;
+backticks may surround it. Duplicate, missing, ambiguous or placeholder pointers
+fail separately from missing PASS, contradictory not-run or wrong command.
+Native extraction and verified artifact scope remain independent proofs.
+
+Closed workflow values retain their canonical checks; transport is required
+explicit non-placeholder opaque evidence with no default. CI is reasoned N/A or
+`evidence=<opaque>; status=<opaque>; commit=<40-hex SHA>`, with native attribution
+verified separately. Decoupling names `single change request` or an explicit
+`co-running <opaque>; <summary>`, not a backend identifier shape. Full canonical
+rows must remain present and nonempty. Diagnostics do not echo row bodies.
+Finding equality stays with `validate-finding-bindings.mjs`.
 
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
-For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt <locator>`.
+For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt: <opaque locator>`.
 Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged.
 `Local gate` still requires `PASS`, the gate command, exactly one literal
 `Gate Receipt` pointer (the label once, with one locator), and no `not-run`.
@@ -231,7 +224,7 @@ are rejected in this mode; full post-note Reviewer Lift validation stays scoped
 to parent-owned mode):
 
 ```text
-node skill://start-build/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
 ```
 
 Fail-closed floors are unchanged: a receipt bound to any commit other than the

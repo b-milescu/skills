@@ -26,7 +26,12 @@ function parseArgs(argv) {
   const owner = args.get("--owner") ?? "parent";
   if (!["parent", "builder"].includes(owner)) fail("invalid --owner");
   const mode = args.get("--mode") ?? "post-note";
-  if (!["pre-post", "post-note"].includes(mode)) fail("invalid --mode");
+  if (!["lift-only", "pre-post", "post-note"].includes(mode)) fail("invalid --mode");
+  if (mode === "lift-only") {
+    if (!args.has("--review-packet")) fail("missing --review-packet");
+    if ([...commonFlags, "--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) fail("receipt binding flags are invalid in lift-only mode");
+    return { args, mode, owner };
+  }
   if (owner === "builder" && mode === "post-note") {
     fail("post-note Reviewer Lift validation is scoped to parent-owned mode; validate builder-owned receipts with --owner builder --mode pre-post");
   }
@@ -48,7 +53,7 @@ function parseArgs(argv) {
 function readSafe(path, label) {
   let body;
   try {
-    body = readFileSync(path, "utf8");
+    body = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(readFileSync(path));
   } catch {
     fail(`cannot read ${label}`);
   }
@@ -128,6 +133,7 @@ function validateReceipt(body, expected) {
   for (const row of receipt.evidence) {
     if (!isObject(row)) fail("invalid evidence row");
     for (const field of ["tier", "kind", "source", "summary"]) requireString(row, field);
+    if (!opaque(row.source)) fail("invalid gate_receipt.evidence source");
     if (!/^tier-[12]$/.test(row.tier)) fail("invalid evidence tier");
     if (row.kind === "local-gate") {
       hasLocalGate = true;
@@ -220,13 +226,7 @@ function namesShortReviewedCommit(value, commit) {
     .some((match) => commit.startsWith(match[1].toLowerCase()));
 }
 
-// Rows with a closed value set in start-build/templates/reviewer-lift-schema.md
-// (issue #501). Each entry: row, accepted-value test, accepted forms for the
-// refusal, and whether the schema lets the row be absent (Transport defaults
-// to mcp). One surrounding code span is stripped from every cell first.
-// A note after a separator must contain a character other than whitespace or
-// parentheses, so `moderate ()` and `N/A ()` are refused (issue #502 C-2) while
-// `moderate — (one validator)` is accepted (issue #504).
+// Stronger stage validation is separate from presence-only lift validation.
 const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)[\s()]*[^\s()].*`;
 const naText = new RegExp(`^N/A${noteText}$`, "i");
 const tierOnly = /^(?:trivial|moderate|high-risk)(?:[\s\W]*(?:trivial|moderate|high-risk))*[\s\W]*$/;
@@ -236,19 +236,11 @@ const acceptanceEntry = new RegExp(String.raw`^[^\s:,\`]+:(?:test|smoke|docs-rea
 // like `defaced` are not SHAs), a full 40-hex token, or an all-digit one after
 // `sha`/`commit` (a bare all-digit token reads as a pipeline ID).
 const ciSha = /\b(?=[0-9a-f]*[a-f])(?=[0-9a-f]*\d)[0-9a-f]{7,39}\b|\b[0-9a-f]{40}\b|\b(?:sha|commit)\s*[:=]?\s*[0-9]{7,40}\b/i;
-// A pipeline locator (URL) or ID: `#<n>` or `pipeline|run|build <n>`; a bare
-// number such as a retry count is not an ID (issue #502 C-2).
-const ciPipelineId = /[a-z][a-z0-9+.-]*:\/\/\S+|#\d+\b|\b(?:pipeline|run|build)\s+#?\d+\b/i;
-// A co-running change-request/branch identifier (docs/decoupling-contract.md):
-// a URL only as a change-request locator, and after `branch` only a
-// branch-shaped name, never `none` (issue #502 SF-1).
-const coRunningId = new RegExp([
-  String.raw`[!#]\d+`,
-  String.raw`\b(?:MR|PR|merge request|pull request|change request)\s+#?\d+\b`,
-  String.raw`[a-z][a-z0-9+.-]*:\/\/\S*\/(?:merge_requests|pull|pullrequest)\/\d+`,
-  String.raw`\bissue-\d+`,
-  String.raw`\bbranch(?:es)?\b[\s:]+(?:\`(?!none\`)[^\`\s]+\`|[\w./-]*[/_\d-][\w./-]*)`,
-].join("|"), "i");
+const identifiedCI = /^evidence=([^;]+);\s*status=([^;]+);\s*commit=([0-9a-f]{40})$/i;
+const placeholder = /^(?:pending|unknown|tbd|todo|<[^>]*>|\[[^\]]*\])$/i;
+function opaque(value) {
+  return isNonEmptyString(value) && !placeholder.test(value.trim());
+}
 const liftValueForms = [
   ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
   // The rationale is not a second tier token (`moderate; high-risk`, #502 C-2).
@@ -257,14 +249,15 @@ const liftValueForms = [
     return new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(tier) && !tierOnly.test(tier);
   },
     "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
-  ["Transport", (v) => /^(?:mcp|n\/a|glab-fallback \(gap: [^()]+\))$/.test(v), "`mcp`, `n/a`, or `glab-fallback (gap: <named gap>)`", true],
+  ["Transport", opaque, "identified transport evidence (required; no default)"],
   // Post-note mode validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
   ["Gate owner", (v) => /^parent(?:$|[\s.,;:(—–])/.test(v), "`parent`, optionally followed by the ownership-contract annotation"],
   ["Gate coverage", (v) => v === "exact-candidate-local", "`exact-candidate-local`"],
-  // ponytail: status is not checked — the schema names no provider-neutral
-  // status vocabulary; add one here if the schema ever enumerates it.
-  ["CI pipeline", (v) => naText.test(v) || (ciSha.test(v) && ciPipelineId.test(v.replace(ciSha, ""))),
-    "pipeline locator/ID, status, and commit SHA, or `N/A — <why>`"],
+  ["CI pipeline", (v) => {
+    if (naText.test(v)) return true;
+    const match = v.match(identifiedCI);
+    return !!match && opaque(match[1]) && opaque(match[2]);
+  }, "`evidence=<opaque>; status=<opaque>; commit=<40-hex SHA>`, or `N/A — <why>`"],
   ["Touched safety surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?![^(]*\))/).every((item) => safetySurface.test(item.trim())),
     "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
   // Entries split only at a comma that starts a new `surface:evidence` entry
@@ -272,8 +265,8 @@ const liftValueForms = [
   // an `N/A — <reason>` may itself contain commas and `, word: text` (#502 C-2).
   ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?=\s*`?[^\s:,`]+:\S)/).every((entry) => acceptanceEntry.test(entry.trim())),
     "`none`, `[]`, or comma-separated bare `surface:evidence` entries with evidence test, smoke, docs-read, ci, or `N/A — <reason>`"],
-  ["Decoupling proof", (v) => /^single (?:MR|PR|change request)$/.test(v) || (!/^single\b/i.test(v) && coRunningId.test(v)),
-    "`single MR` (or `single PR` / `single change request`), or the co-running change-request IDs/locators/branches plus the Decoupling Contract summary"],
+  ["Decoupling proof", (v) => /^single (?:MR|PR|change request)$/.test(v) || /^co-running [^;]+;\s*\S.+$/.test(v) && opaque(v.slice(11).split(";")[0]),
+    "`single change request`, or `co-running <opaque identifiers>; <Decoupling Contract summary>`"],
   ["Open Questions", (v) => v === "none" || /\bOQ-\d+\b/.test(v), "`none` or a count/list of `OQ-N` IDs"],
   ["Approval authority", (v) => /^(?:default-after-pass|restricted:\s*\S.*)$/.test(v), "`default-after-pass` or `restricted: <source/reason>`"],
   ["Finish authority", (v) => /^(?:none — requires explicit human\/parent instruction|approval-only|reviewer may merge|queue auto-merge|human release|project default:\s*\S.*)$/.test(v.replace(/^"(.*)"$/, "$1")),
@@ -289,6 +282,24 @@ function offSchemaLiftRows(rows) {
     if (!accepts(value)) refused.push(`- Reviewer Lift ${name} is off-schema; accepted: ${forms}`);
   }
   return refused;
+}
+
+const fullLiftRows = [
+  "Reviewed SHA", "Finding bindings", "Review gate", "Change tier", "Transport",
+  "Gate owner", "Gate coverage", "Gate coverage rationale", "CI pipeline", "Local gate",
+  "RED", "GREEN", "Changed paths", "Touched safety surfaces", "Acceptance surfaces",
+  "Decoupling proof", "Reviewer Focus", "Open Questions", "Approval authority",
+  "Approval authority source", "Finish authority", "Finish authority source",
+  "Delta since last ready push",
+];
+
+function liftPresence(body) {
+  const rows = tableRows(body);
+  for (const name of fullLiftRows) {
+    const value = (rows.get(name) ?? "").trim().replace(/^`([^`]*)`$/, "$1").trim();
+    if (!isNonEmptyString(value)) fail(`missing Reviewer Lift ${name}`);
+  }
+  return rows;
 }
 
 // Receipt-independent Lift checks, shared by pre-post (before the receipt note
@@ -325,18 +336,13 @@ function validateLift(body, expected) {
   }
 
   const localGate = rows.get("Local gate");
-  const locatorTokens = localGate.match(/\b(?:https?:\/\/|[a-z][a-z0-9+.-]*:\/\/)[^\s|)>,;`]+/gi) ?? [];
-  // The pointer binding is the row's SOLE locator token: zero or several tokens
-  // collapse to "" and never match the expected argument (issue #458).
-  const locator = locatorTokens.length === 1 ? locatorTokens[0] : "";
+  const pointers = [...localGate.matchAll(/Gate Receipt:\s*(`[^`]+`|[^;]+)(?=;|$)/g)];
+  const locator = pointers.length === 1 ? pointers[0][1].trim().replace(/^`([^`]*)`$/, "$1") : "";
   if (!/\bPASS\b/.test(localGate)) fail("Reviewer Lift local gate does not record PASS");
   if (/(?<!\d\s)\b(?:FAIL|pending|not-run|N\/A)\b/i.test(localGate)) fail("Reviewer Lift local gate carries a contradictory FAIL/pending/not-run/N/A token");
   if ((localGate.match(/Gate Receipt/gi) ?? []).length !== 1) fail("Reviewer Lift local gate needs exactly one Gate Receipt pointer");
   if (!localGate.includes(expected.gateCommand)) fail(`Reviewer Lift local gate does not name the gate command ${expected.gateCommand}`);
-  if (locator !== expected.receiptLocator) {
-    const observed = locator || `none — the row carries ${locatorTokens.length} locator tokens: ${locatorTokens.join(", ") || "(none)"}`;
-    fail(`Gate Receipt pointer mismatch: --gate-receipt-locator ${expected.receiptLocator} vs Local gate sole locator token ${observed}`);
-  }
+  if (!opaque(locator) || locator !== expected.receiptLocator) fail("Gate Receipt pointer mismatch: expected one exact identified receipt locator");
 
   const delta = rows.get("Delta since last ready push");
   if (!/^(?:N\/A before ready|`N\/A before ready`)$/i.test(delta.trim())) {
@@ -352,6 +358,11 @@ function validateLift(body, expected) {
 }
 
 const { args, mode, owner } = parseArgs(process.argv.slice(2));
+if (mode === "lift-only") {
+  liftPresence(readSafe(args.get("--review-packet"), "review packet"));
+  console.log("gate-receipt lift-only validation: PASS (presence only; no receipt or native verification)");
+  process.exit(0);
+}
 const expected = {
   changeId: args.get("--change-id"),
   issueId: args.get("--issue-id"),

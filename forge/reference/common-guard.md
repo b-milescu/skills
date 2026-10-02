@@ -6,7 +6,7 @@ stops without trying another provider or transport:
 1. provider/repository binding;
 2. current target re-read;
 3. reviewed commit binding when relevant;
-4. advisory CI observation: attribute status only when bound to that commit or a provider-proven integration candidate; absence, failure, or a binding mismatch is recorded and does not fail the guard;
+4. advisory CI observation: attribute status only when bound to that commit or a native-proven integration candidate; absence, failure, or a binding mismatch is recorded and does not fail the guard;
 5. exact-candidate local Gate Receipt when the action requires quality-gate evidence;
 6. action-specific authority and provenance;
 7. caller identity/context;
@@ -23,8 +23,8 @@ and the post-read classification. Binding failure, stale head, missing or stale
 Gate Receipt, missing authority, unsafe body, unsupported commit binding, or
 failed post-read blocks without transport fallback. CI status never blocks.
 
-Provider branches validate native identifier and locator shapes; shared callers
-and validators preserve their values as opaque strings.
+The target's confirmed integration reference validates native identifiers and
+locators; shared callers and validators preserve opaque values and verified scope.
 
 ## Snapshot evidence
 
@@ -59,5 +59,23 @@ project policy take precedence over defaults; a builder claim never grants
 authority, and silence never grants approval, merge, queue, release, cleanup, or
 deploy authority. Conflicting, missing, restricted, unverifiable, identity-
 changed, or self-finish evidence returns a blocker or handoff rather than trying
-another transport. Provider branches own native approval/vote mechanics and
+another transport. The target reference owns native approval/vote mechanics and
 post-action readback.
+
+Capture authenticated caller identity at entry in each required system scope and
+retain it immutably; re-read immediately before writing. Missing/changed identity,
+permission uncertainty or same-session self-review/self-finish stops the action.
+Account equality alone does not establish session independence. Commit authors
+and CI variables are not authenticated identity. Verify author/context separately.
+
+Body publication requires exact string/role validation using the installed
+`forge/scripts/validate-text.mjs` filesystem path before native checks. Resolve
+skill paths through runtime resource resolution, not target CWD. No diagnostic
+may echo submitted body or parser excerpts. Require complete lossless native
+readback against authored source; record only documented normalization.
+
+If creation is known, retain its locator and recover GET-only. If its outcome is
+unknown, reconcile bounded native reads without repeating creation; ambiguous or
+absent matches require a human decision. Never silently repair submitted fields.
+Receipt local validity, native extraction/candidate binding, and post-note
+receipt/Lift validation are independent proofs.

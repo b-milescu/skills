@@ -54,7 +54,7 @@ bootstrap route (including runtime and dependencies). Discover them in this orde
 
 1. Project rulebook / contributor docs (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README).
 2. Build scripts (`Makefile`, `package.json`, task runner config, language-specific project files).
-3. CI configuration (`.gitlab-ci.yml`, included pipeline files) to mirror the project gate locally where practical.
+3. Configured CI definitions and included pipeline files to mirror the target's project gate locally where practical; unrelated CI authentication is not a prerequisite.
 4. If still ambiguous, ask the user or state the limitation in the MR before requesting review.
 
 For parent-mode selection, record the applicable case in the Build Plan Packet:

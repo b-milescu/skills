@@ -5,7 +5,6 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 ## Skills
 
 - **`/forge`** — the one provider seam; every shared workflow binds through it.
-- **`/gitlab`** — GitLab-specific MCP-first transport, used only by the selected GitLab branch.
 - **`/issue-delivery-loop`** — coordinates bounded batches using the internal `mr-builder` and `mr-reviewer-final` routes.
 - **`/plan-to-issues`**, **`/start-build`**, **`/start-review`**, **`/retro`** — each skill's own `description:` states its scope; invoke them per [Usage rules](#usage-rules).
 
@@ -29,7 +28,7 @@ policy; coordinators leave that choice to each actor.
 
 ## Active recipes
 
-- `skill://forge/SKILL.md` — this profile selects `skill://forge/reference/gitlab.md`.
+- `skill://forge/SKILL.md` — this target selects [native-integration.md](native-integration.md).
 - `skill://forge/reference/common-guard.md`
 - `skill://issue-delivery-loop/SKILL.md`
 - `skill://start-build/reference/parent-orchestrator.md`
@@ -37,13 +36,12 @@ policy; coordinators leave that choice to each actor.
 - `skill://start-build/reference/post-merge-verifier.md`
 - `skill://start-build/templates/delivery-schema.md`
 - `skill://setup-dev-skills/reference/project-profile-facts.json`
-- `skill://gitlab/SKILL.md` — selected GitLab transport branch only.
 
 ## Default MR routes
 
-`/issue-delivery-loop` launches the shared model-free `mr-builder` basename,
-resolved in the current dialect directory (`agents/claude/mr-builder.md` or
-`agents/omp/mr-builder.md`). Model and effort pins live in frontmatter.
+`/issue-delivery-loop` launches `mr-builder` and independent `mr-reviewer-final`
+using the active runtime's effective same-name project declarations when present,
+otherwise provider-neutral shared routes. Model/effort pins remain in complete files.
 
 Mandatory independent review uses `mr-reviewer-final` from the same dialect
 directory. A missing route remains a route-unavailable blocker; no review scout,
@@ -57,11 +55,95 @@ outside the selected provider. This repo's profile binds them to GitLab and
 declares policy hooks through
 [`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
 
-This repo uses the default profile from `skill://setup-dev-skills/reference/project-profile-facts.json`: repo-local policy docs stay under `docs/agents/...`, while reusable cross-project resources use explicit `skill://...` URIs.
+This repo's confirmed profile is declared here, not in installed shared facts.
+`provider.reference: docs/agents/native-integration.md` resolves from the invoked
+target clone. Code/work-item/CI scopes are this repository's GitLab instance and
+agents/skills repository, verified through that document's native preflight.
+Installed `docs/` aliases retain this source ownership and expose native facts;
+they never supply foreign targets with defaults.
+
+Confirmed project declaration (owned by this target, not shared field guidance):
+
+```yaml
+project_profile:
+  profile_id: agents-skills
+  profile_path: docs/agents/dev-workflows.md#project-profile-hooks
+  provider:
+    name: gitlab-nja
+    reference: docs/agents/native-integration.md
+  tracker:
+    scope: https://gitlab.example.com/agents/skills
+    reference: docs/agents/issue-tracker.md
+  agent_setup_docs:
+    root: docs/agents
+    issue_tracker: docs/agents/issue-tracker.md
+    triage_labels: docs/agents/triage-labels.md
+    domain: docs/agents/domain.md
+    check_gate: docs/agents/check-gate.md
+    coding_guardrails: docs/agents/coding-guardrails.md
+    dev_workflows: docs/agents/dev-workflows.md
+  label_profile_ref: docs/agents/triage-labels.md
+  label_vocabulary:
+    reference: docs/agents/triage-labels.md
+  gate_policy_ref: docs/agents/check-gate.md#full-local-gate
+  check_gate:
+    command: npm run check
+    runtime: Node.js 22.x
+    bootstrap: npm ci
+  dev_workflows:
+    reference: docs/agents/dev-workflows.md
+  acceptance_surfaces_ref: docs/agents/dev-workflows.md#acceptance-surface-vocabulary
+  language_families: [javascript, shell, markdown, yaml]
+  branch_naming:
+    pattern: issue-<id>-<slug>
+  ci_parity:
+    reference: docs/agents/check-gate.md#ci-parity
+  domain_docs:
+    reference: docs/agents/domain.md
+  release_deploy_policy:
+    reference: docs/agents/dev-workflows.md#releasedeploy-policy
+  manual_validation_rules:
+    reference: docs/agents/check-gate.md#manual-validation-rules
+  auxiliary_index_policy:
+    owner: parent
+    child_worktree_mode: read-only-unless-assigned
+    copy_between_worktrees: forbidden
+  skill_resources:
+    forge: skill://forge/SKILL.md
+    builder: skill://start-build/SKILL.md
+    reviewer: skill://start-review/SKILL.md
+  resource_addressing:
+    target_repo_docs: repo-relative
+    runtime_skill_resources: skill-uri
+```
+
+### Runtime project declarations and provenance
+
+Shared installed routes are provider-neutral. This repository's complete
+same-name declarations live in `.claude/agents/` and `.omp/agents/`, retaining
+canonical entries, builder/reviewer bounds, model/effort pins and task-selected
+specialists; only these target-owned files name confirmed native servers.
+
+OMP's installed discovery selects nearest project `.omp/agents` before user
+`~/.omp/agent/agents`, then extension/plugin/bundled entries. Establish this from
+the actual installed loader using `tests/omp-agent-loader-smoke.sh`, not by
+assuming Claude's precedence. Claude documents managed/CLI definitions ahead of
+nearest project `.claude/agents`, then user and plugin definitions; verify the
+actual effective selection in a fresh Claude spawning session independently.
+See [Claude subagents](https://code.claude.com/docs/en/subagents.md).
+
+Launch/relaunch the **spawning session** from the intended checkout. Changing a
+child's execution CWD does not reselect a cached route. Independently invoke
+allocated and revision checkout sessions; record selected file/source and exact
+canonical skill-entry provenance separately from entry access, available tools
+and live model behavior. A readable file or intended frontmatter proves neither
+actual selection nor hard MCP confinement; OMP inherited tool proxies are a
+distinct runtime property. No external runtime patch or generic MCP wildcard is
+part of this declaration.
 
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
-| `profile_id` / `profile_path` | `default` / this section. |
+| `profile_id` / `profile_path` | `agents-skills` / `docs/agents/dev-workflows.md#project-profile-hooks`. |
 | `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) exact-candidate full local gate, ready handoff, CI parity, and when-gate-cannot-run sections. |
 | `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
 | `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
@@ -135,7 +217,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Invoke `/forge` before shared workflow reads or actions; this repo's verified GitLab branch then invokes `/gitlab`.
+- Invoke `/forge` before shared workflow reads or actions; this target's confirmed integration is [native-integration.md](native-integration.md).
 - Before converting an approved plan into tracker issues, invoke `/plan-to-issues` after `/forge preflight`.
 - Before implementation, invoke `/start-build`; before independent review, invoke `/start-review`.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

@@ -1,477 +1,104 @@
-// Focus: Cross-platform pure-local Gate Receipt validator: accepts the
-// canonical exact-SHA receipt; rejects
-// missing/malformed/stale/prose-only/unsafe receipt and Reviewer Lift evidence
-// without body leakage; rejects changed tracked files and any tracked-change
-// waiver; proves Windows/UNC path plus CRLF handling; enforces pre-ready
-// ordering; refuses off-schema values in closed-set Reviewer Lift rows, row by
-// row, against frozen live midnight packets (!534 refused, !585 accepted);
-// validates both packet templates' Lift blocks, pre-post Lift structure, and
-// the narrowed Delta `pending` rule (#503); and keeps build/review cards and
-// generated templates pointed at the canonical helper.
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import yaml from "js-yaml";
 
-const root = resolve(import.meta.dirname, "..");
-const validator = join(root, "start-build/scripts/validate-gate-receipt.mjs");
+const validator = resolve(import.meta.dirname, "../start-build/scripts/validate-gate-receipt.mjs");
 const work = mkdtempSync(join(tmpdir(), "gate-receipt-"));
-const commit = "1".repeat(40);
-const locator = "ado://organization/project/repository/pullRequest/42/comment/9001";
-const expected = {
-  changeId: "PR-42",
-  issueId: "WI-381",
-  reviewedCommit: commit,
-  gateCommand: "npm run check",
-  gatePolicy: "docs/agents/check-gate.md#gate-coverage-for-ready-handoff",
-  receiptLocator: locator,
+const sha = "1".repeat(40);
+const command = "npm run check";
+const locator = "verified-system/repository/review-note@opaque-alpha";
+const policy = "docs/check-gate.md#ready";
+const rows = {
+  "Reviewed SHA": sha, "Finding bindings": "none", "Review gate": "mandatory",
+  "Change tier": "moderate — validator change", Transport: "project-confirmed-transport@repository",
+  "Gate owner": "parent", "Gate coverage": "exact-candidate-local",
+  "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS`,
+  "CI pipeline": `evidence=scoped-ci/run@alpha; status=observed-green; commit=${sha}`,
+  "Local gate": `PASS — ${command} — Gate Receipt: ${locator}`,
+  RED: "N/A with rationale — mechanical", GREEN: "N/A with rationale — mechanical",
+  "Changed paths": "git diff --name-only base...HEAD; validator.mjs", "Touched safety surfaces": "gates",
+  "Acceptance surfaces": "gate:test", "Decoupling proof": "co-running repository/branch@alpha; no shared paths or locks",
+  "Reviewer Focus": "receipt bindings", "Open Questions": "none", "Approval authority": "default-after-pass",
+  "Approval authority source": "project policy#approval", "Finish authority": "none — requires explicit human/parent instruction",
+  "Finish authority source": "project policy#finish", "Delta since last ready push": "N/A before ready",
 };
-
+const begin = "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->";
+const end = "<!-- REVIEWER-LIFT-SCHEMA:END -->";
+function packet(overrides = {}) {
+  return `${begin}\n| Field | Value |\n|---|---|\n${Object.entries({ ...rows, ...overrides }).filter(([, value]) => value !== undefined).map(([name, value]) => `| ${name} | ${value} |`).join("\n")}\n${end}`;
+}
 function receipt(overrides = {}) {
   return { gate_receipt: {
-    kind: "gate-receipt", version: "1", owner: "parent",
-    change_id: expected.changeId, issue_id: expected.issueId,
-    checkout_path: "/tmp/worktree", checkout_commit: commit,
-    status_before: "draft", status_after: "ready",
-    command: expected.gateCommand, result: "PASS", summary: "gate passed",
-    preflight_checks: [
-      { name: "clean-status-before", command: "git status --porcelain", result: "PASS", summary: "empty" },
-      { name: "tracked-files-unchanged-after", command: "git status --porcelain", result: "PASS", summary: "empty" },
-    ],
-    evidence: [{ tier: "tier-1", kind: "local-gate", source: "artifact://gate", summary: "exact candidate" }],
-    ...overrides,
+    kind: "gate-receipt", version: "1", owner: "parent", change_id: "repo/change@alpha", issue_id: "tracker/item@beta",
+    checkout_path: "/tmp/worktree", checkout_commit: sha, status_before: "draft", status_after: "ready",
+    command, result: "PASS", summary: "exact candidate passed",
+    preflight_checks: ["clean-status-before", "tracked-files-unchanged-after"].map((name) => ({ name, command: "git status --porcelain", result: "PASS", summary: "empty" })),
+    evidence: [{ tier: "tier-1", kind: "local-gate", source: "scoped-evidence@alpha", summary: "original run" }], ...overrides,
   } };
 }
-
-function preflights(command) {
-  return ["clean-status-before", "tracked-files-unchanged-after"].map((name) => ({
-    name, command, result: "PASS", summary: "empty",
-  }));
+function builder(overrides = {}) {
+  return { gate_receipt: { kind: "gate-receipt", version: "1", owner: "builder", checkout_commit: sha, command, result: "PASS", ...overrides } };
 }
-
-function builderReceipt(overrides = {}) {
-  return { gate_receipt: {
-    kind: "gate-receipt", version: "1", owner: "builder",
-    checkout_commit: commit,
-    command: expected.gateCommand, result: "PASS",
-    ...overrides,
-  } };
-}
-
-function packet(localGate = `PASS — ${expected.gateCommand} — Gate Receipt: ${locator}`, rationale = `${expected.gatePolicy}; exact-candidate-local; command ${expected.gateCommand}; candidate ${commit}; result PASS`) {
-  return `<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
-| Field | Value |
-|---|---|
-| Reviewed SHA | \`${commit}\` |
-| Finding bindings | \`none\` |
-| Review gate | mandatory |
-| Change tier | moderate — validator change |
-| Transport | mcp |
-| Gate owner | parent |
-| Gate coverage | exact-candidate-local |
-| Gate coverage rationale | ${rationale} |
-| CI pipeline | N/A — unavailable |
-| Local gate | ${localGate} |
-| Touched safety surfaces | gates |
-| Acceptance surfaces | none |
-| Decoupling proof | single MR |
-| Open Questions | none |
-| Approval authority | default-after-pass |
-| Finish authority | none — requires explicit human/parent instruction |
-| Delta since last ready push | N/A before ready |
-<!-- REVIEWER-LIFT-SCHEMA:END -->`;
-}
-
-function withRow(name, value, body = packet()) {
-  const row = new RegExp(`^\\| ${name} \\| .* \\|$`, "m");
-  assert.match(body, row, `packet carries a ${name} row`);
-  return value === undefined ? body.replace(new RegExp(`${row.source}\\n`, "m"), "") : body.replace(row, `| ${name} | ${value} |`);
-}
-
-function liftWithSha(sha) {
-  return packet().replace(`| Reviewed SHA | \`${commit}\` |`, `| Reviewed SHA | ${sha} |`);
-}
-
-// The template's own Lift block (markers and row names verbatim), each
-// placeholder replaced by the conforming packet() value for that row.
-function filledTemplate(path, values = packet()) {
-  const rowValues = new Map([...values.matchAll(/^\| ([^|]+?) \| (.*) \|$/gm)].map((match) => [match[1], match[2]]));
-  const body = readFileSync(join(root, path), "utf8");
-  const block = body.slice(body.indexOf("<!-- REVIEWER-LIFT-SCHEMA:BEGIN"), body.indexOf("<!-- REVIEWER-LIFT-SCHEMA:END -->") + "<!-- REVIEWER-LIFT-SCHEMA:END -->".length);
-  return block.replace(/^\| ([^|]+?) \|.*\|$/gm, (line, name) => (name === "Field" ? line : `| ${name} | ${rowValues.get(name) ?? "N/A — template test"} |`));
-}
-
-function run({ document = receipt(), reviewPacket = packet(), locatorValue = locator, mode = "post-note", bind = {} } = {}) {
-  const { reviewedCommit = commit, gateCommand = expected.gateCommand, gatePolicy = expected.gatePolicy } = bind;
+function run({ mode = "post-note", owner = "parent", body = packet(), document = receipt(), extra = [] } = {}) {
   const receiptPath = join(work, "receipt.yml");
   const packetPath = join(work, "packet.md");
-  writeFileSync(receiptPath, yaml.dump(document));
-  writeFileSync(packetPath, reviewPacket);
-  const argv = ["--receipt", receiptPath,
-    "--change-id", expected.changeId, "--issue-id", expected.issueId,
-    "--reviewed-commit", reviewedCommit, "--gate-command", gateCommand];
-  if (mode === "post-note") {
-    argv.push("--review-packet", packetPath,
-      "--gate-policy-ref", gatePolicy,
-      "--gate-receipt-locator", locatorValue);
-  } else {
-    argv.unshift("--mode", mode);
-    argv.push("--review-packet", packetPath);
+  writeFileSync(receiptPath, typeof document === "string" ? document : yaml.dump(document));
+  writeFileSync(packetPath, body);
+  const args = ["--mode", mode, "--owner", owner];
+  if (mode === "lift-only") args.push("--review-packet", packetPath);
+  else {
+    args.push("--receipt", receiptPath, "--reviewed-commit", sha, "--gate-command", command);
+    if (owner === "parent") {
+      args.push("--change-id", "repo/change@alpha", "--issue-id", "tracker/item@beta", "--review-packet", packetPath);
+      if (mode === "post-note") args.push("--gate-policy-ref", policy, "--gate-receipt-locator", locator);
+    }
   }
-  return spawnSync(process.execPath, [validator, ...argv], { encoding: "utf8" });
+  return spawnSync(process.execPath, [validator, ...args, ...extra], { cwd: tmpdir(), encoding: "utf8" });
 }
-
-// A frozen live midnight Review Packet, validated against a receipt bound to
-// the packet's own candidate, command, policy, and Local gate locator.
-function runMidnight(fixture, { reviewedCommit, note }) {
-  const gateCommand = "bun tools/isolated-gate/index.ts";
-  return run({
-    document: receipt({ checkout_commit: reviewedCommit, command: gateCommand }),
-    reviewPacket: readFileSync(join(root, "tests/fixtures/reviewer-lift-values", fixture), "utf8"),
-    locatorValue: `https://gitlab.example.com/group/project/-/merge_requests/${note}`,
-    bind: { reviewedCommit, gateCommand, gatePolicy: "docs/agents/check-gate.md" },
-  });
-}
-
-function offSchemaRows(stderr) {
-  return [...stderr.matchAll(/^- Reviewer Lift (.+?) is off-schema; accepted: /gm)].map((match) => match[1]);
-}
-
-function runBuilder({ document = builderReceipt(), rawBody, mode = "pre-post", extraFlags = [] } = {}) {
-  const receiptPath = join(work, "builder-receipt.yml");
-  writeFileSync(receiptPath, rawBody ?? yaml.dump(document));
-  const argv = ["--owner", "builder", "--mode", mode, "--receipt", receiptPath,
-    "--reviewed-commit", commit, "--gate-command", expected.gateCommand, ...extraFlags];
-  return spawnSync(process.execPath, [validator, ...argv], { encoding: "utf8" });
-}
-
+const pass = (options, label) => { const result = run(options); assert.equal(result.status, 0, `${label}: ${result.stderr}`); };
+const reject = (options, label) => { const result = run(options); assert.notEqual(result.status, 0, label); return result; };
 try {
-  assert.equal(run().status, 0, "opaque Azure DevOps-style IDs and locator pass");
-  assert.equal(run({ reviewPacket: liftWithSha(commit) }).status, 0, "bare 40-hex Reviewed SHA passes");
-  assert.equal(run({ reviewPacket: packet() }).status, 0, "code-span Reviewed SHA passes");
-  assert.notEqual(run({ reviewPacket: liftWithSha("2".repeat(40)) }).status, 0, "wrong Reviewed SHA fails");
-  assert.notEqual(run({ reviewPacket: liftWithSha(`${commit} extra`) }).status, 0, "mixed extra text around Reviewed SHA fails");
-  assert.notEqual(run({ reviewPacket: liftWithSha(`\`${commit}\` extra`) }).status, 0, "code-span plus extra text fails");
-  assert.notEqual(run({ reviewPacket: liftWithSha("") }).status, 0, "empty Reviewed SHA fails");
-  assert.notEqual(run({ reviewPacket: packet().replace(`| Reviewed SHA | \`${commit}\` |\n`, "") }).status, 0, "missing Reviewed SHA fails");
-  const schema = readFileSync(join(root, "start-build/templates/reviewer-lift-schema.md"), "utf8");
-  assert.match(schema, /\| Reviewed SHA \| MR head SHA at ready-marking; update on every post-ready push before asking for review\. \|/, "schema does not require a fenced Reviewed SHA");
-  assert.notEqual(run({ document: receipt({ checkout_commit: "2".repeat(40) }) }).status, 0, "stale commit fails");
-  assert.notEqual(run({ document: receipt({ change_id: "" }) }).status, 0, "empty opaque ID fails");
-  assert.notEqual(run({ document: receipt({
-    preflight_checks: [
-      { name: "clean-status-before", command: "git status --porcelain", result: "PASS", summary: "empty" },
-      { name: "tracked-files-unchanged-after", command: "git status --porcelain", result: "FAIL", summary: "tracked files changed" },
-    ],
-  }) }).status, 0, "tracked file changes fail the Receipt");
-  assert.notEqual(run({ document: receipt({ tracked_changes_waiver: "accepted" }) }).status, 0, "tracked file changes cannot be waived");
-  assert.equal(run({ document: receipt({ status_before: "ready" }) }).status, 0, "re-gate of an already-ready change request may record status_before: ready");
-  assert.notEqual(run({ document: receipt({ status_before: "merged" }) }).status, 0, "genuinely wrong status_before still fails");
-  assert.equal(run({ document: receipt({ preflight_checks: preflights("git status --porcelain --untracked-files=all") }) }).status, 0, "stronger --untracked-files=all preflight accepted");
-  assert.notEqual(run({ document: receipt({ preflight_checks: preflights("git status") }) }).status, 0, "weaker preflight without --porcelain fails");
-  assert.notEqual(run({ document: receipt({ preflight_checks: preflights("git status --porcelain --untracked-files=all; echo anything") }) }).status, 0, "preflight command is not widened to any string");
-  assert.equal(runBuilder().status, 0, "valid builder-owned anchor receipt accepted in pre-post mode");
-  assert.notEqual(runBuilder({ document: builderReceipt({ owner: "parent" }) }).status, 0, "wrong owner fails in builder mode");
-  assert.notEqual(runBuilder({ document: builderReceipt({ command: undefined }) }).status, 0, "malformed builder receipt missing command fails");
-  assert.notEqual(runBuilder({ document: builderReceipt({ checkout_commit: "2".repeat(40) }) }).status, 0, "stale builder receipt commit fails");
-  assert.notEqual(runBuilder({ rawBody: "gate_receipt: &gate_receipt\n  kind: gate-receipt\n" }).status, 0, "YAML alias anchor form fails");
-  assert.notEqual(runBuilder({ document: builderReceipt({ change_id: expected.changeId }) }).status, 0, "builder receipt with parent-only extra field fails");
-  assert.notEqual(runBuilder({ mode: "post-note", extraFlags: ["--review-packet", join(work, "packet.md")] }).status, 0, "post-note Lift validation stays scoped to parent-owned mode");
-
-  // Issue #453: parent-owned rationale form is documented and validateLift
-  // accepts a row written exactly to that example.
-  const parentOwnedForm = "Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <not-run — parent-owned \\| PASS — Gate Receipt <locator>>";
-  const schemaForRationale = readFileSync(join(root, "start-build/templates/reviewer-lift-schema.md"), "utf8");
-  assert.ok(schemaForRationale.includes(parentOwnedForm), "schema documents parent-owned Gate coverage rationale form");
-  for (const copy of [
-    "start-build/templates/review-packet.md",
-    "start-build/templates/review-packet-compact.md",
-  ]) {
-    assert.ok(readFileSync(join(root, copy), "utf8").includes(parentOwnedForm), `${copy} pastes the documented parent-owned rationale form`);
-  }
-  const filledForm = `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; coverage exact-candidate-local; result: PASS — Gate Receipt ${locator}`;
-  assert.equal(run({ reviewPacket: packet(undefined, filledForm) }).status, 0, "documented parent-owned rationale example passes validateLift");
-  assert.notEqual(
-    run({ reviewPacket: packet(undefined, `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; result: PASS — Gate Receipt ${locator}`) }).status,
-    0,
-    "policy/command/commit without exact-candidate-local fail",
-  );
-  const parentOwnedGuide = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
-  assert.ok(parentOwnedGuide.includes("rebind both `Local gate` and `Gate coverage rationale`"), "parent-owned-gate rebinds both Local gate and Gate coverage rationale");
-  assert.ok(parentOwnedGuide.includes("replace only the `result:` token"), "parent-owned-gate names the single result: token to replace");
-
-  // Issue #455: numeric fail counts and one surrounding code span on N/A before ready.
-  const countGate = `PASS — ${expected.gateCommand} — bun test 1913 pass, 1 skip, 0 fail — Gate Receipt: ${locator}`;
-  assert.equal(run({ reviewPacket: packet(countGate) }).status, 0, "0 fail count in Local gate passes");
-  assert.equal(
-    run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — 1 fail — Gate Receipt: ${locator}`) }).status,
-    0,
-    "1 fail count in Local gate passes",
-  );
-  assert.notEqual(
-    run({ reviewPacket: packet(`PASS — ${expected.gateCommand} —  FAIL  — Gate Receipt: ${locator}`) }).status,
-    0,
-    "standalone FAIL in Local gate still fails",
-  );
-  const withDelta = (delta) => packet().replace("| Delta since last ready push | N/A before ready |", `| Delta since last ready push | ${delta} |`);
-  assert.equal(run({ reviewPacket: withDelta("`N/A before ready`") }).status, 0, "backticked N/A before ready passes");
-  assert.notEqual(
-    run({ reviewPacket: withDelta("`" + "2".repeat(40) + " -> " + "3".repeat(40) + ", files, gate, no`") }).status,
-    0,
-    "backticked delta naming a different commit still fails",
-  );
-  // Issue #489: short-form reviewed SHA is a form error, not stale.
-  const shortSha = commit.slice(0, 7);
-  const shortDelta = run({ reviewPacket: withDelta(`${shortSha} -> files, gate, no`) });
-  assert.notEqual(shortDelta.status, 0, "short-form delta fails");
-  assert.match(shortDelta.stderr, /full 40-hex form is required/, "short-form names the 40-hex requirement");
-  assert.doesNotMatch(shortDelta.stderr, /delta is stale/, "short-form is not reported as stale");
-  const staleDelta = run({ reviewPacket: withDelta("2".repeat(40) + " -> files, gate, no") });
-  assert.notEqual(staleDelta.status, 0, "different-commit delta fails");
-  assert.match(staleDelta.stderr, /Reviewer Lift delta is stale/, "different commit keeps the stale message");
-  assert.doesNotMatch(staleDelta.stderr, /full 40-hex form is required/, "stale is not the short-form message");
-  const pendingDelta = run({ reviewPacket: withDelta("pending") });
-  assert.notEqual(pendingDelta.status, 0, "pending delta fails");
-  assert.match(pendingDelta.stderr, /Reviewer Lift delta is stale: .* pending/, "bare pending is refused by the pending rule");
-  const fullDelta = run({ reviewPacket: withDelta(`${commit} -> files, gate, no`) });
-  assert.equal(fullDelta.status, 0, "full 40-hex delta still passes");
-  // Issue #503: `pending` is stale only when it leaves a gate rerun, Gate
-  // Receipt, or commit unbound; ordinary prose (the !558 Delta) is accepted.
-  const oldSha = "2".repeat(40);
-  const staleDeltas = {
-    "pending gate rerun": `${oldSha} → ${commit}: fix; files x; gate rerun pending; substantive yes`,
-    "pending Gate Receipt": `${oldSha} → ${commit}: fix; files x; gate rerun npm run check, Gate Receipt: pending; substantive yes`,
-    "unrebound new SHA": `${commit} → pending: fix; files x; gate rerun PASS; substantive yes`,
-    // Review report agents/skills!484:1 MF-1: a SHA token or a bare slot.
-    "bare pending slot": `${oldSha} -> ${commit}; fix; files x; pending; substantive yes`,
-    "other SHA pending": `${commit}: fix; files x; gate rerun PASS; ${"3".repeat(40)} pending; substantive yes`,
-    "reviewed SHA pending": `${commit} pending; fix; files x; gate rerun PASS; substantive yes`,
-    // SF-1: inflections, synonyms, and the gate command itself.
-    "receipts pending": `${oldSha} → ${commit}: fix; files x; receipts pending; substantive yes`,
-    "new head pending rebind": `${oldSha} → ${commit}: fix; files x; new head pending rebind; substantive yes`,
-    "gate command pending": `${oldSha} → ${commit}: fix; files x; ${expected.gateCommand} pending; substantive yes`,
-    // Issue #505: a clause that starts with `pending` is an annotated slot, and
-    // `re-running` is a rerun pointer.
-    "annotated pending slot": `${oldSha} → ${commit}: fix; files x; pending — parent-owned; substantive yes`,
-    "parenthesized pending slot": `${oldSha} → ${commit}: fix; files x; pending (parent); substantive yes`,
-    "re-running pending": `${oldSha} → ${commit}: fix; files x; check re-running, pending; substantive yes`,
-  };
-  for (const [name, delta] of Object.entries(staleDeltas)) {
-    const result = run({ reviewPacket: withDelta(delta) });
-    assert.notEqual(result.status, 0, `${name} Delta is refused`);
-    assert.match(result.stderr, /Reviewer Lift delta is stale: Delta since last ready push leaves a gate rerun, Gate Receipt, or commit pending/, `${name} refusal names the row and rule`);
-    assert.doesNotMatch(result.stderr, /substantive yes/, `${name} refusal does not echo the cell`);
-  }
-  const delta558 = `2c72ffb83537718fc2c9f72978551994e64f4d4d → ${commit}: revision for review-report:group/project!558:2 SF-1, C-1 and C-2 (per-kind remainder sources with the pre-rollback master for pin-agnostic policy, and the complementary over-restore diff; the bound-or-pending wording; registry paths in the §5b rollback path set); file .claude/skills/move-pin/SKILL.md (Rollback text plus one §5b sentence); substantive docs wording; gate rerun: PASS — Gate Receipt https://gitlab.example.com/group/project/-/merge_requests/558#note_55375`;
-  const prose558 = run({ reviewPacket: withDelta(delta558) });
-  assert.equal(prose558.status, 0, `!558 Delta whose only pending is prose is accepted: ${prose558.stderr}`);
-  const proseClause = run({ reviewPacket: withDelta(`${oldSha} → ${commit}: review fix; fix the bound-or-pending wording; files x; gate rerun PASS; substantive yes`) });
-  assert.equal(proseClause.status, 0, `a prose-only pending clause is accepted: ${proseClause.stderr}`);
-
-  // Doc/validator agreement (issue #450): the example a parent copies must teach
-  // exactly the accepted status_before values and preflight commands.
-  const validatorSource = readFileSync(validator, "utf8");
-  const guide = readFileSync(join(root, "start-build/reference/parent-owned-gate.md"), "utf8");
-  const acceptedStatuses = [...validatorSource.matchAll(/receipt\.status_before !== "(\w+)"/g)].map((match) => match[1]);
-  const acceptedCommands = [...validatorSource.matchAll(/"(git status --porcelain[^"]*)"/g)].map((match) => match[1]);
-  assert.deepEqual(acceptedStatuses.slice().sort(), ["draft", "ready"], "validator accepts exactly draft and ready");
-  assert.deepEqual(acceptedCommands.slice().sort(), ["git status --porcelain", "git status --porcelain --untracked-files=all"], "validator accepts exactly the two preflight forms");
-  for (const status of acceptedStatuses) {
-    assert.ok(guide.includes(`\`${status}\``), `parent-owned-gate.md documents status_before: ${status}`);
-  }
-  for (const command of acceptedCommands) {
-    assert.ok(guide.includes(command), `parent-owned-gate.md documents preflight command: ${command}`);
-  }
-  for (const [, status] of guide.matchAll(/^\s*status_before: "(\w+)"/gm)) {
-    assert.ok(acceptedStatuses.includes(status), `documented status_before is accepted: ${status}`);
-  }
-  for (const [, command] of guide.matchAll(/^\s*command: "(git status[^"]*)"/gm)) {
-    assert.ok(acceptedCommands.includes(command), `documented preflight command is accepted: ${command}`);
-  }
-  // Issue #458: the locator argument must equal the Local gate row's sole
-  // scheme:// token, and that mismatch is distinguishable from the other three
-  // Local gate conditions, naming both compared values.
-  const twoUrls = run({ reviewPacket: packet(`PASS — ${expected.gateCommand} — Gate Receipt: ${locator} — https://gitlab.example/x`) });
-  assert.notEqual(twoUrls.status, 0, "two locator tokens in Local gate fail: the mechanism is the sole token, not the first");
-  assert.match(twoUrls.stderr, /Gate Receipt pointer mismatch/, "two-URL row reports a pointer mismatch, not the shared stale message");
-  assert.match(twoUrls.stderr, /2 locator tokens/, "two-URL row reports that no sole token could be extracted");
-  const wrongLocator = run({ locatorValue: "github://owner/repo/pull/42/comment/9" });
-  assert.notEqual(wrongLocator.status, 0, "wrong locator fails");
-  assert.match(wrongLocator.stderr, /github:\/\/owner\/repo\/pull\/42\/comment\/9/, "mismatch names the expected argument");
-  assert.ok(wrongLocator.stderr.includes(locator), "mismatch names the token extracted from the row");
-  const localGateFailures = {
-    noPass: run({ reviewPacket: packet(`done — ${expected.gateCommand} — Gate Receipt: ${locator}`) }),
-    contradictory: run({ reviewPacket: packet(`PASS — not-run — ${expected.gateCommand} — Gate Receipt: ${locator}`) }),
-    noCommand: run({ reviewPacket: packet(`PASS — npm run other — Gate Receipt: ${locator}`) }),
-  };
-  for (const [name, result] of Object.entries(localGateFailures)) {
-    assert.notEqual(result.status, 0, `${name} Local gate fails`);
-    assert.doesNotMatch(result.stderr, /Gate Receipt pointer mismatch/, `${name} is not reported as a pointer mismatch`);
-  }
-  assert.equal(
-    new Set(Object.values(localGateFailures).map((result) => result.stderr)).size,
-    3,
-    "the three non-locator Local gate conditions no longer share one message",
-  );
-  assert.ok(
-    guide.includes("--gate-receipt-locator <the sole URL in the Reviewer Lift `Local gate` row>"),
-    "parent-owned-gate.md documents the locator argument as the row's sole URL",
-  );
-  assert.ok(!/opaque provider locator/.test(guide), "parent-owned-gate.md no longer calls the locator opaque");
-
-  // Issue #490: a parent receipt naming a retained local log must point at a
-  // readable file at the pre-publication step; remote/native evidence
-  // locators keep their documented behavior and are never opened as local
-  // paths.
-  const retainedLog = join(work, "gate-run.log");
-  writeFileSync(retainedLog, "gate output\n");
-  const retainedEvidence = [{ tier: "tier-1", kind: "local-gate", source: retainedLog, summary: "exact candidate" }];
-  assert.equal(run({ document: receipt({ evidence: retainedEvidence }), mode: "pre-post" }).status, 0, "readable retained local log passes pre-publication validation");
-  assert.equal(run({ document: receipt({ evidence: retainedEvidence }) }).status, 0, "readable retained local log passes post-note validation");
-  const missingEvidence = [{ tier: "tier-1", kind: "local-gate", source: join(work, "absent-gate-run.log"), summary: "exact candidate" }];
-  const missingPre = run({ document: receipt({ evidence: missingEvidence }), mode: "pre-post" });
-  assert.notEqual(missingPre.status, 0, "missing retained local log is refused before publication");
-  assert.match(missingPre.stderr, /retained local log .*absent-gate-run\.log.* is not readable/, "refusal names the unreadable evidence source");
-  assert.match(missingPre.stderr, /original-run provenance/, "refusal names the recovery action");
-  assert.notEqual(run({ document: receipt({ evidence: missingEvidence }) }).status, 0, "missing retained local log also fails post-note validation");
-  assert.equal(run({ document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: "https://gitlab.example/-/notes/53817", summary: "exact candidate" }] }) }).status, 0, "remote evidence locator is not opened as a local file");
-
-  // Issue #501 (midnight #557 owner decision): Lift rows with a closed value
-  // set in reviewer-lift-schema.md refuse off-schema values, each by name.
-  const live534 = runMidnight("mr-534-description.txt", { reviewedCommit: "871f82381ba3e5d97ff4e51c72388a42bd500efb", note: "534#note_54548" });
-  assert.notEqual(live534.status, 0, "live !534 Lift is refused");
-  assert.deepEqual(
-    offSchemaRows(live534.stderr),
-    ["Review gate", "CI pipeline", "Touched safety surfaces", "Acceptance surfaces", "Decoupling proof"],
-    "live !534 Lift is refused once per offending row, and only those rows",
-  );
-  assert.doesNotMatch(live534.stderr, /parent-owned independent review|not observed by the builder|only one test file/, "refusal does not echo Lift body values");
-  const live585 = runMidnight("mr-585-description.txt", { reviewedCommit: "1126607b886bfc0eb9060c2e355e16ebeaa1f30e", note: "585#note_56387" });
-  assert.equal(live585.status, 0, `current real midnight !585 Lift is accepted: ${live585.stderr}`);
-
-  const conforming = {
-    "Review gate": ["mandatory", "bypassed (human override)"],
-    "Change tier": [
-      "trivial — docs only", "moderate: one validator", "high-risk - gate semantics", "`trivial — docs only`",
-      "`moderate` — one validator", "moderate (one validator)", "moderate; one validator", "moderate — (one validator)",
-    ],
-    Transport: ["mcp", "n/a", "glab-fallback (gap: approvals endpoint)", undefined],
-    // Post-note validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
-    "Gate owner": [
-      "parent", "`parent`",
-      `parent — parent-owned/not-run; candidate ${commit}`,
-      `parent. The builder has not run the gate (parent-owned). Candidate ${commit}.`,
-    ],
-    "Gate coverage": ["exact-candidate-local", "`exact-candidate-local`"],
-    "CI pipeline": [
-      "N/A — no CI configured",
-      "N/A: no pipeline observed for 1126607b by the builder; advisory only",
-      "advisory: pipeline 8053 (https://gitlab.example.com/group/project/-/pipelines/8053), status running at publication, sha 6081f11337676723a591037f82a4e03c38a82089",
-      `pipeline #412 success at ${"a".repeat(40)}`,
-      "N/A (no CI configured)", "N/A — (no CI configured)",
-      "pipeline 8053 success, sha 1234567",
-    ],
-    "Touched safety surfaces": ["none", "[]", "`none`", "gates, locks", "other (one new read-only query, LAN panel)", "`state, other (x)`"],
-    "Acceptance surfaces": [
-      "none", "[]", "`none`", "gate-receipt:test, docs:docs-read", "panel:smoke, deploy:N/A — no deploy surface", "ci-parity:ci", "tooling:test, deploy:N/A — no deploy, no CI",
-      "deploy:N/A — out of scope, note: parent-owned", "deploy:N/A — (none)",
-    ],
-    // One value per co-running identifier alternative, each matching only that alternative (#502 SF-1).
-    "Decoupling proof": [
-      "single MR", "`single MR`", "single change request", "single PR",
-      "co-running !583; no shared paths, locks, or migrations",
-      "co-running #583; no shared paths",
-      "co-running PR 42; no ordering relation or shared files",
-      "co-running https://gitlab.example/g/p/-/merge_requests/590; Decoupling Contract: no shared paths",
-      "co-running https://github.example/o/r/pull/12; no shared paths",
-      "co-running https://dev.azure.example/o/p/_git/r/pullrequest/7; no shared paths",
-      "co-running issue-621-panel-build; no shared paths",
-      "co-running branch `lexer`; no shared paths",
-      "co-running branch feat/lexer; no shared paths",
-      "co-running branches: fix_lexer; no shared paths",
-    ],
-    "Open Questions": ["none", "1: OQ-1", "OQ-1, OQ-2"],
-    "Approval authority": ["default-after-pass", "restricted: release freeze until 2026-10-01"],
-    "Finish authority": [
-      "none — requires explicit human/parent instruction", "approval-only", "reviewer may merge",
-      "queue auto-merge", "human release", "project default: merge train", "\"queue auto-merge\"",
-    ],
-  };
-  assert.equal(run().status, 0, "conforming packet is accepted");
-  for (const [name, values] of Object.entries(conforming)) {
-    for (const value of values) {
-      const result = run({ reviewPacket: withRow(name, value) });
-      assert.equal(result.status, 0, `${name} accepts ${value ?? "(absent)"}: ${result.stderr}`);
+  pass({}, "opaque transport/CI/receipt accepted from foreign CWD");
+  for (const owner of ["parent", "builder"]) {
+    const presence = { mode: "lift-only", owner, document: "not a receipt", body: packet({ "Gate owner": owner, "Local gate": "not-run — parent-owned", "Review gate": "awaiting parent review" }) };
+    pass(presence, "presence mode does not validate partial parent values or receipt");
+    for (const name of Object.keys(rows)) {
+      for (const value of [undefined, "", "` `"]) reject({ ...presence, body: packet({ [name]: value }) }, `${owner} requires nonempty ${name}`);
     }
-  }
-  const offSchema = {
-    "Review gate": ["pending — parent-owned independent review after Gate Receipt", "mandatory — pending", "bypassed", undefined],
-    "Change tier": ["trivial", "small — docs", "moderate-ish change", "moderate ()", "moderate — ()", "moderate (", "moderate;", "moderate; high-risk", undefined],
-    Transport: ["MCP", "glab", "glab-fallback", "mcp via glab"],
-    "Gate owner": ["parent-owned", "both", "parents", "owner: parent", "builder", "builder (full local gate on the candidate)", "builder / parent; parent-owned/not-run", undefined],
-    "Gate coverage": ["parent-owned", "exact-candidate-local; plus CI", undefined],
-    "CI pipeline": [
-      "advisory; not observed by the builder", "advisory — unavailable", "N/A", "N/A ()", "N/A;", "N/A — ( )", "pipeline 8053 running", "sha 6081f11337676723a591037f82a4e03c38a82089 running", "success", "sha 1234567 running",
-      "not observed; 1 retry, sha 1234567", "pipeline 8053 success, commit defaced",
-    ],
-    "Touched safety surfaces": ["none — test only", "`gates`, `locks`", "gates; locks", "database", "other: x", undefined],
-    "Acceptance surfaces": [
-      "AC1 test; AC2 test (mutant run); AC3 docs-read (diff name-only); AC4 N/A — parent-owned gate", "gate:tested", "`gate:test`, `docs:docs-read`", "gate: test", "gate:N/A", "gate:N/A ()", "gate:N/A — ()",
-      "docs:N/A — none, `gate:test`", "deploy:N/A — no deploy, gate:tested",
-    ],
-    "Decoupling proof": [
-      "single issue; only one test file touched; #555 still open and not asserted", "single MR; one file", "single change request; one file", "N/A", "independent", "co-running; no overlap", undefined,
-      "independent — no other branch in flight", "co-running branches: none", "N/A — this branch only", "only one branch touched; no siblings",
-      "co-running branch `none`; no overlap", "independent; see https://gitlab.example.com/agents/skills/-/blob/main/docs/decoupling-contract.md",
-    ],
-    "Open Questions": ["maybe the timeout", "0", undefined],
-    "Approval authority": ["approve after pass", "restricted", undefined],
-    "Finish authority": ["merge when green", "none", "project default", undefined],
-  };
-  for (const [name, values] of Object.entries(offSchema)) {
-    for (const value of values) {
-      const result = run({ reviewPacket: withRow(name, value) });
-      assert.notEqual(result.status, 0, `${name} refuses ${value ?? "(absent)"}`);
-      assert.deepEqual(offSchemaRows(result.stderr), [name], `${name} refusal names only that row for ${value ?? "(absent)"}`);
+    for (const body of [packet() + packet(), packet().replace(end, ""), packet().replace(begin, "<!-- REVIEWER-LIFT-SCHEMA:BEGIN -->"), packet().replace("| Gate owner | parent |", "| Gate owner | parent |\n| Gate owner | PRIVATE-SENTINEL |")]) {
+      const result = reject({ ...presence, body }, "unique exact markers and rows");
+      assert.ok(!result.stderr.includes("PRIVATE-SENTINEL"));
     }
+    reject({ ...presence, extra: ["--receipt", join(work, "receipt.yml")] }, "presence refuses receipt flags");
   }
-  const reviewGate = run({ reviewPacket: withRow("Review gate", "pending") });
-  assert.match(reviewGate.stderr, /Review gate is off-schema; accepted: `mandatory` or `bypassed \(human override\)`/, "refusal names the accepted forms");
-
-  // Issue #503: a Lift copied from either packet template validates first
-  // time, and pre-post mode refuses a bad Lift before anything is posted.
-  for (const template of ["start-build/templates/review-packet.md", "start-build/templates/review-packet-compact.md"]) {
-    const filled = filledTemplate(template);
-    for (const mode of ["pre-post", "post-note"]) {
-      const result = run({ reviewPacket: filled, mode });
-      assert.equal(result.status, 0, `${template} Lift passes ${mode}: ${result.stderr}`);
-    }
-  }
-  const oldMarker = filledTemplate("start-build/templates/review-packet-compact.md")
-    .replace(/^<!-- REVIEWER-LIFT-SCHEMA:BEGIN .* -->$/m, "<!-- REVIEWER-LIFT-SCHEMA:BEGIN generated copy; schema reviewer-lift-schema.md -->");
-  const oldMarkerPre = run({ reviewPacket: oldMarker, mode: "pre-post" });
-  assert.notEqual(oldMarkerPre.status, 0, "pre-post refuses the old compact-template BEGIN marker");
-  assert.match(oldMarkerPre.stderr, /BEGIN marker/, "marker refusal names the BEGIN marker rule");
-  const candidate = packet(`not-run — parent-owned; command ${expected.gateCommand}`, `Policy ${expected.gatePolicy}; command ${expected.gateCommand}; candidate ${commit}; coverage exact-candidate-local; result: not-run — parent-owned`);
-  assert.equal(run({ reviewPacket: candidate, mode: "pre-post" }).status, 0, "pre-post accepts the not-yet-receipted candidate Lift");
-  assert.notEqual(run({ reviewPacket: candidate }).status, 0, "post-note still requires the receipted Local gate");
-  const sentinel = "SENTINEL-CELL-VALUE";
-  const structureRefusals = {
-    "missing END marker": [packet().replace("<!-- REVIEWER-LIFT-SCHEMA:END -->", ""), /Reviewer Lift END marker must appear exactly once/],
-    "missing required row": [withRow("CI pipeline", undefined), /missing Reviewer Lift CI pipeline/],
-    "duplicate row": [packet().replace("| Gate owner | parent |", `| Gate owner | parent |\n| Gate owner | ${sentinel} |`), /Reviewer Lift Gate owner row appears more than once/],
-    "off-schema closed-set value": [withRow("Decoupling proof", sentinel), /Reviewer Lift Decoupling proof is off-schema/],
-  };
-  for (const [name, [body, rule]] of Object.entries(structureRefusals)) {
-    const result = run({ reviewPacket: body, mode: "pre-post" });
-    assert.notEqual(result.status, 0, `pre-post refuses ${name}`);
-    assert.match(result.stderr, rule, `${name} refusal names the row and rule`);
-    assert.ok(!result.stderr.includes(sentinel), `${name} refusal does not echo cell values`);
-  }
-
+  pass({ owner: "builder", mode: "pre-post", document: builder() }, "builder receipt");
+  for (const override of [{ owner: "parent" }, { checkout_commit: "2".repeat(40) }, { command: "other" }, { result: "FAIL" }, { change_id: "extra" }]) reject({ owner: "builder", mode: "pre-post", document: builder(override) }, "builder exact receipt restrictions");
+  reject({ owner: "builder", document: builder() }, "builder post-note stays prohibited");
+  reject({ owner: "builder", mode: "pre-post", document: "gate_receipt: &gate_receipt\n  kind: gate-receipt" }, "alias anchor rejected");
+  for (const override of [{ owner: "builder" }, { checkout_commit: "2".repeat(40) }, { change_id: "other" }, { issue_id: "other" }, { command: "other" }, { result: "FAIL" }, { tracked_changes_waiver: "accepted" }, { status_before: "merged" }, { status_after: "draft" }]) reject({ document: receipt(override) }, "parent exact receipt restrictions");
+  pass({ document: receipt({ status_before: "ready" }) }, "regate ready");
+  for (const path of ["C:\\work\\checkout", "\\\\server\\share\\checkout"]) pass({ document: receipt({ checkout_path: path }), body: packet().replaceAll("\n", "\r\n") }, "portable path and CRLF");
+  for (const cmd of ["git status", "git status --porcelain; echo ignored"]) reject({ document: receipt({ preflight_checks: receipt().gate_receipt.preflight_checks.map((r) => ({ ...r, command: cmd })) }) }, "strict preflight");
+  pass({ document: receipt({ preflight_checks: receipt().gate_receipt.preflight_checks.map((r) => ({ ...r, command: "git status --porcelain --untracked-files=all" })) }) }, "stronger preflight");
+  reject({ document: receipt({ preflight_checks: receipt().gate_receipt.preflight_checks.map((r) => ({ ...r, result: "FAIL" })) }) }, "changed files rejected");
+  const log = join(work, "original.log"); writeFileSync(log, "original gate output\n");
+  pass({ document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: log, summary: "original run" }] }) }, "local custody");
+  for (const mode of ["pre-post", "post-note"]) reject({ mode, document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: join(work, "absent.log"), summary: "original run" }] }) }, "missing custody");
+  pass({ mode: "pre-post", body: packet({ "Local gate": "not-run — parent-owned" }) }, "candidate before note");
+  reject({ body: packet({ "Local gate": "not-run — parent-owned" }) }, "post note requires receipt");
+  for (const name of ["Transport", "CI pipeline"]) for (const value of [undefined, "", "pending", "<placeholder>"]) reject({ body: packet({ [name]: value }) }, "absent/placeholder evidence rejected");
+  for (const ci of [`evidence=x; status=running`, `status=green; commit=${sha}`, `evidence=<pending>; status=green; commit=${sha}`]) reject({ body: packet({ "CI pipeline": ci }) }, "unbound CI rejected");
+  pass({ body: packet({ "CI pipeline": "N/A — no configured CI" }) }, "reasoned unavailable CI");
+  for (const local of [`PASS — ${command}`, `PASS — ${command} — Gate Receipt: pending`, `PASS — ${command} — Gate Receipt: wrong`, `PASS — ${command} — Gate Receipt: ${locator}; Gate Receipt: other`, `PASS — ${command} — Gate Receipt: ${locator} other`, `FAIL — ${command} — Gate Receipt: ${locator}`, `PASS — not-run — ${command} — Gate Receipt: ${locator}`, `PASS — other — Gate Receipt: ${locator}`]) reject({ body: packet({ "Local gate": local }) }, "sole exact receipt pointer and result/command");
+  pass({ body: packet({ "Local gate": `PASS — ${command} — 0 fail — Gate Receipt: \`${locator}\`` }) }, "quoted opaque receipt and fail count");
+  for (const value of ["2".repeat(40), `${sha} prose`]) reject({ body: packet({ "Reviewed SHA": value }) }, "exact candidate");
+  reject({ body: packet({ "Gate coverage rationale": `${command}; ${sha}; exact-candidate-local` }) }, "policy binding");
+  for (const delta of ["pending", `${sha}; gate rerun pending`, `${sha}; receipts pending`, `${sha}; pending (parent)`, `${sha.slice(0, 7)} -> files`, `${"2".repeat(40)} -> files`]) reject({ body: packet({ "Delta since last ready push": delta }) }, "stale delta");
+  pass({ body: packet({ "Delta since last ready push": `${sha}; bound-or-pending wording fixed; gate rerun PASS` }) }, "pending prose not pointer");
+  const unsafe = reject({ body: packet() + "PRIVATE-SENTINEL\u0000" }, "unsafe packet");
+  assert.ok(!unsafe.stderr.includes("PRIVATE-SENTINEL"));
   console.log("gate-receipt-validator: PASS");
-} finally {
-  rmSync(work, { recursive: true, force: true });
-}
+} finally { rmSync(work, { recursive: true, force: true }); }
