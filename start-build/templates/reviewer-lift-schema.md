@@ -32,4 +32,4 @@ Canonical schema for the builder-to-reviewer handoff block. This file owns the f
 
 ## Generated-copy contract
 
-Approved generated copies live in `start-build/templates/review-packet.md`, `start-build/templates/review-packet-compact.md`, and `start-review/templates/review-report.md`, each delimited by the `REVIEWER-LIFT-SCHEMA` markers. Run `bash tests/reviewer-lift-schema.sh` after editing this schema or any copy; it verifies field order and flags unmarked stale duplicate field-list tables.
+Approved generated copies live in `start-build/templates/review-packet.md`, `start-build/templates/review-packet-compact.md`, and `start-review/templates/review-report.md`, each delimited by the `REVIEWER-LIFT-SCHEMA` markers. Validate an authored packet through the resolved installed helper: `node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet.md>`. It requires one canonical marker block and every required nonempty row without pinning field order or source layout.

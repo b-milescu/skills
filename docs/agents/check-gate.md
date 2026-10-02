@@ -91,7 +91,6 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 | `tests/md-links.sh` |
 | `tests/omp-agent-loader-smoke.sh` |
 | `tests/regression-harness.sh` |
-| `tests/reviewer-lift-schema.sh` |
 | `tests/runtime-shared-resources.sh` |
 
 ## CI parity

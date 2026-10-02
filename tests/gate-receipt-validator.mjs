@@ -91,6 +91,7 @@ try {
   reject({ body: packet({ "Local gate": "not-run — parent-owned" }) }, "post note requires receipt");
   for (const name of ["Transport", "CI pipeline"]) for (const value of [undefined, "", "pending", "<placeholder>"]) reject({ body: packet({ [name]: value }) }, "absent/placeholder evidence rejected");
   for (const ci of [`evidence=x; status=running`, `status=green; commit=${sha}`, `evidence=<pending>; status=green; commit=${sha}`]) reject({ body: packet({ "CI pipeline": ci }) }, "unbound CI rejected");
+  pass({ body: packet({ "CI pipeline": `evidence=scoped-ci/run@alpha; status=pending; commit=${sha}` }) }, "bound pending CI remains advisory");
   pass({ body: packet({ "CI pipeline": "N/A — no configured CI" }) }, "reasoned unavailable CI");
   for (const local of [`PASS — ${command}`, `PASS — ${command} — Gate Receipt: pending`, `PASS — ${command} — Gate Receipt: wrong`, `PASS — ${command} — Gate Receipt: ${locator}; Gate Receipt: other`, `PASS — ${command} — Gate Receipt: ${locator} other`, `FAIL — ${command} — Gate Receipt: ${locator}`, `PASS — not-run — ${command} — Gate Receipt: ${locator}`, `PASS — other — Gate Receipt: ${locator}`]) reject({ body: packet({ "Local gate": local }) }, "sole exact receipt pointer and result/command");
   pass({ body: packet({ "Local gate": `PASS — ${command} — 0 fail — Gate Receipt: \`${locator}\`` }) }, "quoted opaque receipt and fail count");

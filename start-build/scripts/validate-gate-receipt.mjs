@@ -256,7 +256,7 @@ const liftValueForms = [
   ["CI pipeline", (v) => {
     if (naText.test(v)) return true;
     const match = v.match(identifiedCI);
-    return !!match && opaque(match[1]) && opaque(match[2]);
+    return !!match && opaque(match[1]) && isNonEmptyString(match[2]);
   }, "`evidence=<opaque>; status=<opaque>; commit=<40-hex SHA>`, or `N/A — <why>`"],
   ["Touched safety surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?![^(]*\))/).every((item) => safetySurface.test(item.trim())),
     "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
