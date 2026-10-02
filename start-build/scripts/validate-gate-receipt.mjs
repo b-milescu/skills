@@ -229,7 +229,6 @@ function namesShortReviewedCommit(value, commit) {
 // Stronger stage validation is separate from presence-only lift validation.
 const noteText = String.raw`(?:\s*[—–;(]|\s+-|:)[\s()]*[^\s()].*`;
 const naText = new RegExp(`^N/A${noteText}$`, "i");
-const tierOnly = /^(?:trivial|moderate|high-risk)(?:[\s\W]*(?:trivial|moderate|high-risk))*[\s\W]*$/;
 const safetySurface = /^(?:external-system|credentials|state|migration|gates|locks|deploy|wire-protocol|other(?:\s*\([^()]+\))?)$/;
 const acceptanceEntry = new RegExp(String.raw`^[^\s:,\`]+:(?:test|smoke|docs-read|ci|N/A${noteText})$`);
 // A commit SHA: a 7-39 hex token with a letter and a digit (so hex-letter words
@@ -243,12 +242,6 @@ function opaque(value) {
 }
 const liftValueForms = [
   ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
-  // The rationale is not a second tier token (`moderate; high-risk`, #502 C-2).
-  ["Change tier", (v) => {
-    const tier = v.replace(/^`(trivial|moderate|high-risk)`/, "$1");
-    return new RegExp(`^(?:trivial|moderate|high-risk)${noteText}$`).test(tier) && !tierOnly.test(tier);
-  },
-    "`trivial`, `moderate`, or `high-risk` plus a one-clause rationale"],
   ["Transport", opaque, "identified transport evidence (required; no default)"],
   // Post-note mode validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
   ["Gate owner", (v) => /^parent(?:$|[\s.,;:(—–])/.test(v), "`parent`, optionally followed by the ownership-contract annotation"],
@@ -285,7 +278,7 @@ function offSchemaLiftRows(rows) {
 }
 
 const fullLiftRows = [
-  "Reviewed SHA", "Finding bindings", "Review gate", "Change tier", "Transport",
+  "Reviewed SHA", "Finding bindings", "Review gate", "Transport",
   "Gate owner", "Gate coverage", "Gate coverage rationale", "CI pipeline", "Local gate",
   "RED", "GREEN", "Changed paths", "Touched safety surfaces", "Acceptance surfaces",
   "Decoupling proof", "Reviewer Focus", "Open Questions", "Approval authority",

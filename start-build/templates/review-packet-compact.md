@@ -23,7 +23,6 @@ Every row is required; `reviewer-lift-schema.md` owns their semantics and
 | Reviewed SHA | |
 | Finding bindings | |
 | Review gate | |
-| Change tier | `<trivial / moderate / high-risk + one-clause rationale>` |
 | Transport | `<identified opaque target transport evidence; no missing-value default>` |
 | Gate owner | |
 | Gate coverage | |

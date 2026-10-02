@@ -13,7 +13,7 @@ const locator = "verified-system/repository/review-note@opaque-alpha";
 const policy = "docs/check-gate.md#ready";
 const rows = {
   "Reviewed SHA": sha, "Finding bindings": "none", "Review gate": "mandatory",
-  "Change tier": "moderate — validator change", Transport: "project-confirmed-transport@repository",
+  Transport: "project-confirmed-transport@repository",
   "Gate owner": "parent", "Gate coverage": "exact-candidate-local",
   "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS`,
   "CI pipeline": `evidence=scoped-ci/run@alpha; status=observed-green; commit=${sha}`,
