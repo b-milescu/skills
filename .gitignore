@@ -1,5 +1,7 @@
 node_modules/
 .npm/
+core/
+*.tgz
 
 # Local agent/runtime artifacts
 graphify-out/
