@@ -289,7 +289,7 @@ const fullLiftRows = [
 function liftPresence(body) {
   const rows = tableRows(body);
   for (const name of fullLiftRows) {
-    const value = (rows.get(name) ?? "").trim().replace(/^`([^`]*)`$/, "$1").trim();
+    const value = (rows.get(name) ?? "").trim().replace(/^(`+)([^`]*)\1$/, "$2").trim();
     if (!isNonEmptyString(value)) fail(`missing Reviewer Lift ${name}`);
   }
   return rows;
@@ -298,9 +298,7 @@ function liftPresence(body) {
 // Receipt-independent Lift checks, shared by pre-post (before the receipt note
 // is posted) and post-note: markers, unique rows, required rows, closed sets.
 function liftStructure(body) {
-  const rows = tableRows(body);
-  const names = ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"];
-  for (const name of names) if (!isNonEmptyString(rows.get(name))) fail(`missing Reviewer Lift ${name}`);
+  const rows = liftPresence(body);
   const refused = offSchemaLiftRows(rows);
   if (refused.length > 0) fail(`Reviewer Lift values are off-schema per start-build/templates/reviewer-lift-schema.md:\n${refused.join("\n")}`);
   return rows;
@@ -326,6 +324,13 @@ function validateLift(body, expected) {
   const rationale = rows.get("Gate coverage rationale");
   for (const value of [expected.gatePolicy, expected.gateCommand, expected.reviewedCommit, "exact-candidate-local"]) {
     if (!rationale.includes(value)) fail("Reviewer Lift gate coverage rationale is incomplete");
+  }
+  // Bind the sole terminal result field, not PASS/receipt mentions elsewhere.
+  const result = rationale.trim().replace(/^`([^`]*)`$/, "$1")
+    .match(/(?:^|;)\s*result:\s*PASS — Gate Receipt:\s*(`[^`]+`|[^;`]+)$/);
+  const rationaleLocator = result?.[1].trim().replace(/^`([^`]*)`$/, "$1") ?? "";
+  if ((rationale.match(/\bresult:/g) ?? []).length !== 1 || !opaque(rationaleLocator) || rationaleLocator !== expected.receiptLocator) {
+    fail("Reviewer Lift gate coverage rationale needs one terminal PASS result with the exact Gate Receipt pointer");
   }
 
   const localGate = rows.get("Local gate");

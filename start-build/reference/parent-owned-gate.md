@@ -149,9 +149,11 @@ Lift row is nonempty, exactly one marker block exists and duplicate rows fail.
 It works before a parent receipt exists and in either owner context. It does not
 judge row values, authority, execution or native identity.
 
-Stronger pre-post and post-note modes remain separate. Pre-post validates receipt
-and candidate Lift before mutation without requiring a future receipt locator;
-`Local gate` may read `not-run — parent-owned`. Post-note still validates only a
+Stronger pre-post and post-note modes independently require every canonical Lift
+row to be present and nonempty, including whitespace-only code spans, before
+checking closed values. Pre-post validates receipt and candidate Lift before
+mutation without requiring a future receipt locator; `Local gate` and its
+rationale may read `not-run — parent-owned`. Post-note still validates only a
 parent-owned Lift and refuses builder ownership; builder receipt pre-post remains
 its own restricted shape. Neither mode is replaced by lift-only.
 
@@ -174,6 +176,11 @@ For `Gate coverage rationale`, replace only the `result:` token: `not-run — pa
 Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged.
 `Local gate` still requires `PASS`, the gate command, exactly one literal
 `Gate Receipt` pointer (the label once, with one locator), and no `not-run`.
+Post-note requires exactly one terminal `result: PASS — Gate Receipt: <opaque locator>`
+clause in the rationale, bound to the same expected locator as `Local gate`.
+Missing, duplicate, stale or contradictory result fields fail; PASS or receipt
+mentions in other clauses do not satisfy this binding. Quoted locators and a
+whole-cell code span remain accepted. Diagnostics do not echo authored values.
 
 `Delta since last ready push` must name the full reviewed commit. A `pending`
 refuses it when its `;`- or `<br>`-separated clause starts with the word

@@ -11,11 +11,12 @@ const sha = "1".repeat(40);
 const command = "npm run check";
 const locator = "verified-system/repository/review-note@opaque-alpha";
 const policy = "docs/check-gate.md#ready";
+const rationale = `Policy ${policy}; command ${command}; candidate ${sha}; coverage exact-candidate-local; result: PASS — Gate Receipt: ${locator}`;
 const rows = {
   "Reviewed SHA": sha, "Finding bindings": "none", "Review gate": "mandatory",
   Transport: "project-confirmed-transport@repository",
   "Gate owner": "parent", "Gate coverage": "exact-candidate-local",
-  "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS`,
+  "Gate coverage rationale": rationale,
   "CI pipeline": `evidence=scoped-ci/run@alpha; status=observed-green; commit=${sha}`,
   "Local gate": `PASS — ${command} — Gate Receipt: ${locator}`,
   RED: "N/A with rationale — mechanical", GREEN: "N/A with rationale — mechanical",
@@ -66,7 +67,7 @@ try {
     const presence = { mode: "lift-only", owner, document: "not a receipt", body: packet({ "Gate owner": owner, "Local gate": "not-run — parent-owned", "Review gate": "awaiting parent review" }) };
     pass(presence, "presence mode does not validate partial parent values or receipt");
     for (const name of Object.keys(rows)) {
-      for (const value of [undefined, "", "` `"]) reject({ ...presence, body: packet({ [name]: value }) }, `${owner} requires nonempty ${name}`);
+      for (const value of [undefined, "", " \t ", "` \t `", "`` \t ``"]) reject({ ...presence, body: packet({ [name]: value }) }, `${owner} requires nonempty ${name}`);
     }
     for (const body of [packet() + packet(), packet().replace(end, ""), packet().replace(begin, "<!-- REVIEWER-LIFT-SCHEMA:BEGIN -->"), packet().replace("| Gate owner | parent |", "| Gate owner | parent |\n| Gate owner | PRIVATE-SENTINEL |")]) {
       const result = reject({ ...presence, body }, "unique exact markers and rows");
@@ -77,6 +78,10 @@ try {
   pass({ owner: "builder", mode: "pre-post", document: builder() }, "builder receipt");
   for (const override of [{ owner: "parent" }, { checkout_commit: "2".repeat(40) }, { command: "other" }, { result: "FAIL" }, { change_id: "extra" }]) reject({ owner: "builder", mode: "pre-post", document: builder(override) }, "builder exact receipt restrictions");
   reject({ owner: "builder", document: builder() }, "builder post-note stays prohibited");
+  for (const [flag, value] of [["--change-id", "repo/change@alpha"], ["--issue-id", "tracker/item@beta"], ["--review-packet", join(work, "packet.md")], ["--gate-receipt-locator", locator], ["--gate-policy-ref", policy]]) {
+    const result = reject({ owner: "builder", mode: "pre-post", document: builder(), extra: [flag, value] }, "builder refuses parent-only flags");
+    assert.match(result.stderr, /parent-owned binding flags are invalid in builder mode/);
+  }
   reject({ owner: "builder", mode: "pre-post", document: "gate_receipt: &gate_receipt\n  kind: gate-receipt" }, "alias anchor rejected");
   for (const override of [{ owner: "builder" }, { checkout_commit: "2".repeat(40) }, { change_id: "other" }, { issue_id: "other" }, { command: "other" }, { result: "FAIL" }, { tracked_changes_waiver: "accepted" }, { status_before: "merged" }, { status_after: "draft" }]) reject({ document: receipt(override) }, "parent exact receipt restrictions");
   pass({ document: receipt({ status_before: "ready" }) }, "regate ready");
@@ -87,12 +92,24 @@ try {
   const log = join(work, "original.log"); writeFileSync(log, "original gate output\n");
   pass({ document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: log, summary: "original run" }] }) }, "local custody");
   for (const mode of ["pre-post", "post-note"]) reject({ mode, document: receipt({ evidence: [{ tier: "tier-1", kind: "local-gate", source: join(work, "absent.log"), summary: "original run" }] }) }, "missing custody");
-  pass({ mode: "pre-post", body: packet({ "Local gate": "not-run — parent-owned" }) }, "candidate before note");
   for (const mode of ["pre-post", "post-note"]) {
-    for (const name of ["Reviewed SHA", "Gate coverage rationale", "CI pipeline", "Local gate", "Delta since last ready push"]) {
-      for (const value of [undefined, ""]) {
-        reject({ mode, body: packet({ [name]: value }) }, `${mode} requires nonempty ${name}`);
+    const candidate = mode === "pre-post" ? {
+      "Local gate": `not-run — parent-owned; ${command}`,
+      "Gate coverage rationale": rationale.replace(`PASS — Gate Receipt: ${locator}`, "not-run — parent-owned"),
+    } : {};
+    pass({ mode, body: packet(candidate) }, `${mode} accepts its documented stage`);
+    for (const name of Object.keys(rows)) {
+      for (const value of [undefined, "", " \t ", "` \t `", "`` \t ``"]) {
+        const result = reject({ mode, body: packet({ ...candidate, [name]: value }) + "\nPRIVATE-SENTINEL" }, `${mode} requires nonempty ${name}`);
+        assert.match(result.stderr, new RegExp(`missing Reviewer Lift ${name}`));
+        assert.ok(!result.stdout.includes("validation: PASS"));
+        assert.ok(!result.stderr.includes("PRIVATE-SENTINEL"));
       }
+    }
+    for (const body of [packet(candidate) + packet(candidate), packet(candidate).replace(end, ""), packet(candidate).replace(begin, "<!-- REVIEWER-LIFT-SCHEMA:BEGIN -->"), packet(candidate).replace("| Gate owner | parent |", "| Gate owner | parent |\n| Gate owner | PRIVATE-SENTINEL |")]) {
+      const result = reject({ mode, body }, `${mode} preserves unique markers and rows`);
+      assert.match(result.stderr, /must appear exactly once|row appears more than once/);
+      assert.ok(!result.stderr.includes("PRIVATE-SENTINEL"));
     }
     for (const [name, value] of [
       ["Review gate", "optional"], ["Gate owner", "builder"],
@@ -102,6 +119,10 @@ try {
     ]) {
       reject({ mode, body: packet({ [name]: value }) }, `${mode} rejects invalid ${name}`);
     }
+  }
+  for (const [flag, value] of [["--gate-receipt-locator", locator], ["--gate-policy-ref", policy]]) {
+    const result = reject({ mode: "pre-post", extra: [flag, value] }, "pre-post refuses future receipt/policy flags");
+    assert.match(result.stderr, /post-note flags, invalid in pre-post mode/);
   }
   reject({ mode: "pre-post", document: receipt({ checkout_commit: "2".repeat(40) }) }, "pre-post rejects wrong receipt candidate");
   reject({ body: packet({ "Local gate": "not-run — parent-owned" }) }, "post note requires receipt");
@@ -113,6 +134,25 @@ try {
   pass({ body: packet({ "Local gate": `PASS — ${command} — 0 fail — Gate Receipt: \`${locator}\`` }) }, "quoted opaque receipt and fail count");
   for (const value of ["2".repeat(40), `${sha} prose`]) reject({ body: packet({ "Reviewed SHA": value }) }, "exact candidate");
   reject({ body: packet({ "Gate coverage rationale": `${command}; ${sha}; exact-candidate-local` }) }, "policy binding");
+  for (const result of [
+    "PASS", "not-run — parent-owned", "FAIL", "pending",
+    "PASS — Gate Receipt: PRIVATE-SENTINEL", "PASS — Gate Receipt: pending",
+    `PASS — Gate Receipt: ${locator} other`,
+    `not-run — parent-owned; note: PASS — Gate Receipt: ${locator}`,
+    `not-run — parent-owned; result: PASS — Gate Receipt: ${locator}`,
+    `FAIL; result: PASS — Gate Receipt: ${locator}`,
+    `PASS — Gate Receipt: other; note: ${locator}`,
+    `PASS — Gate Receipt: ${locator}; result: not-run — parent-owned`,
+    `PASS — Gate Receipt: ${locator}; note: PASS`,
+  ]) {
+    const refused = reject({ body: packet({ "Gate coverage rationale": rationale.replace(`PASS — Gate Receipt: ${locator}`, result) }) + "\nPRIVATE-SENTINEL" }, "terminal rationale requires actual PASS and exact receipt");
+    assert.match(refused.stderr, /Reviewer Lift gate coverage rationale/);
+    assert.ok(!refused.stdout.includes("validation: PASS"));
+    assert.ok(!refused.stderr.includes("PRIVATE-SENTINEL"));
+  }
+  reject({ body: packet({ "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS` }) }, "old terminal shorthand is not a result/receipt binding");
+  pass({ body: packet({ "Gate coverage rationale": rationale.replace(locator, `\`${locator}\``) }) }, "terminal rationale accepts quoted opaque receipt");
+  pass({ body: packet({ "Gate coverage rationale": `\`${rationale}\`` }) }, "terminal rationale accepts whole-cell code span");
   for (const delta of ["pending", `${sha}; gate rerun pending`, `${sha}; receipts pending`, `${sha}; pending (parent)`, `${sha.slice(0, 7)} -> files`, `${"2".repeat(40)} -> files`]) reject({ body: packet({ "Delta since last ready push": delta }) }, "stale delta");
   pass({ body: packet({ "Delta since last ready push": `${sha}; bound-or-pending wording fixed; gate rerun PASS` }) }, "pending prose not pointer");
   const unsafe = reject({ body: packet() + "PRIVATE-SENTINEL\u0000" }, "unsafe packet");
