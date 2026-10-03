@@ -32,13 +32,15 @@ Slice *toward* the shared [Decoupling Contract](skill://plan-to-issues/docs/deco
 
 ## Slice types and labels
 
-Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy label creation. That selected-profile file owns the live vocabulary; this section only describes when to look there. Apply a slice's kind label only when `<triage-labels-doc>` defines one; otherwise state `Type: <slice type>` in the issue body.
+Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy label creation. That selected-profile file owns the live vocabulary; this section only describes when to look there.
+
+Readiness **Type** is exclusively **AFK / HITL / Needs info**:
 
 - **AFK**: ready for an agent to implement; see the skill-owned [Agent Readiness scorecard](skill://plan-to-issues/docs/agents/agent-readiness-scorecard.md#scorecard) for what that requires, and fill the [Agent Readiness](skill://plan-to-issues/templates/issue-body.md#agent-readiness) section.
-- **Docs**: documentation-only or documentation-focused slice.
-- **Refactor**: structure-improvement slice.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent.
 - **Needs info**: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet; name the blocker in the issue body.
+
+Optional **kind**, such as documentation-focused or refactoring work, is separate from Type. Apply a kind label only when `<triage-labels-doc>` defines one; otherwise optionally describe the kind in ordinary prose or omit it. Missing kind labels never replace readiness Type or change the existing Agent Readiness requirements.
 
 ## Draft workflow
 

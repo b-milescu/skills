@@ -16,8 +16,8 @@ not an installed shared profile or a default for foreign targets.
 - Verify intended repository against named fetch/push/fork configuration and native project metadata; never infer work-item scope solely from code-host branding.
 - Branch naming is project policy, not a GitLab schema rename. This repo declares
   it in [`docs/agents/dev-workflows.md`](dev-workflows.md#branch-naming) as
-  `project_profile.branch_naming`; delivery fields remain `source_branch` and
-  `target_branch`.
+  `project_profile.branch_naming`; shared delivery fields remain
+  `change_request.source` and `change_request.target`.
 
 ## Claiming convention
 
