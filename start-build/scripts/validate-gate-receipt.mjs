@@ -321,15 +321,15 @@ function validateLift(body, expected) {
   const reviewedSha = rows.get("Reviewed SHA").trim();
   if (reviewedSha !== expected.reviewedCommit && reviewedSha !== `\`${expected.reviewedCommit}\``) fail("Reviewer Lift Reviewed SHA is stale");
 
-  const rationale = rows.get("Gate coverage rationale");
+  const rationale = rows.get("Gate coverage rationale").trim().replace(/^`([^`]*)`$/, "$1");
   for (const value of [expected.gatePolicy, expected.gateCommand, expected.reviewedCommit, "exact-candidate-local"]) {
     if (!rationale.includes(value)) fail("Reviewer Lift gate coverage rationale is incomplete");
   }
   // Bind the sole terminal result field, not PASS/receipt mentions elsewhere.
-  const result = rationale.trim().replace(/^`([^`]*)`$/, "$1")
-    .match(/(?:^|;)\s*result:\s*PASS — Gate Receipt:\s*(`[^`]+`|[^;`]+)$/);
+  const result = rationale.match(/(?:^|;)\s*result:\s*PASS — Gate Receipt:\s*(`[^`]+`|[^;`]+)$/);
   const rationaleLocator = result?.[1].trim().replace(/^`([^`]*)`$/, "$1") ?? "";
-  if ((rationale.match(/(?:^|;)\s*result:/g) ?? []).length !== 1 || !opaque(rationaleLocator) || rationaleLocator !== expected.receiptLocator) {
+  // Count earlier clauses only; the captured terminal locator is opaque data.
+  if ((rationale.slice(0, result?.index ?? rationale.length).match(/(?:^|;)\s*result:/g) ?? []).length !== 0 || !opaque(rationaleLocator) || rationaleLocator !== expected.receiptLocator) {
     fail("Reviewer Lift gate coverage rationale needs one terminal PASS result with the exact Gate Receipt pointer");
   }
 

@@ -179,8 +179,10 @@ Leave policy, command, candidate, and `coverage exact-candidate-local` unchanged
 Post-note requires exactly one terminal `result: PASS — Gate Receipt: <opaque locator>`
 clause in the rationale, bound to the same expected locator as `Local gate`.
 Missing, duplicate, stale or contradictory result fields fail; PASS or receipt
-mentions in other clauses do not satisfy this binding. Quoted locators and a
-whole-cell code span remain accepted. Diagnostics do not echo authored values.
+mentions in other clauses do not satisfy this binding. Semicolons and result-like
+text inside a captured quoted locator remain opaque data, not additional result
+clauses. Quoted locators and a whole-cell code span remain accepted.
+Diagnostics do not echo authored values.
 
 `Delta since last ready push` must name the full reviewed commit. A `pending`
 refuses it when its `;`- or `<br>`-separated clause starts with the word

@@ -158,6 +158,23 @@ try {
     "Gate coverage rationale": rationale.replace(locator, opaqueLocator),
     "Local gate": `PASS — ${command} — Gate Receipt: ${opaqueLocator}`,
   }) }, "result-like text inside the opaque locator is not a result field");
+  for (const suffix of ["status:published", "result:published"]) {
+    const quotedLocator = `${locator};${suffix}`;
+    const quotedRationale = rationale.replace(locator, `\`${quotedLocator}\``);
+    const quotedLocalGate = `PASS — ${command} — Gate Receipt: \`${quotedLocator}\``;
+    pass({ receiptLocator: quotedLocator, body: packet({
+      "Gate coverage rationale": quotedRationale, "Local gate": quotedLocalGate,
+    }) }, "semicolon/result-like text inside a quoted opaque locator is data");
+    for (const priorResult of ["FAIL", "not-run — parent-owned"]) {
+      const refused = reject({ receiptLocator: quotedLocator, body: packet({
+        "Gate coverage rationale": quotedRationale.replace("result: PASS", `result: ${priorResult}; result: PASS`),
+        "Local gate": quotedLocalGate,
+      }) + "\nPRIVATE-SENTINEL" }, "real contradictory result clauses still reject with quoted locators");
+      assert.match(refused.stderr, /Reviewer Lift gate coverage rationale/);
+      assert.ok(!refused.stdout.includes("validation: PASS"));
+      assert.ok(!refused.stderr.includes("PRIVATE-SENTINEL"));
+    }
+  }
   for (const delta of ["pending", `${sha}; gate rerun pending`, `${sha}; receipts pending`, `${sha}; pending (parent)`, `${sha.slice(0, 7)} -> files`, `${"2".repeat(40)} -> files`]) reject({ body: packet({ "Delta since last ready push": delta }) }, "stale delta");
   pass({ body: packet({ "Delta since last ready push": `${sha}; bound-or-pending wording fixed; gate rerun PASS` }) }, "pending prose not pointer");
   const unsafe = reject({ body: packet() + "PRIVATE-SENTINEL\u0000" }, "unsafe packet");
