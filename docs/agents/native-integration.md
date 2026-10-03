@@ -56,12 +56,46 @@ advisory CI; status is attributable only to that SHA or proven integration commi
 Failed/missing/pending CI does not affect eligibility, though native protection
 can refuse writes. `watch_pipeline` is advisory progress only, not a local gate.
 
-Resolve installed gate helper to its actual filesystem path, then separately:
-(1) locally validate receipt and candidate packet; (2) read native handoff evidence
-and verify exact extracted checkout_commit/command/result and artifact binding;
-(3) post-note validate the same receipt, sole opaque pointer and current Lift.
-The local gate owner, execution log and exact-candidate `npm run check` policy stay
-in [Check Gate](check-gate.md); no extractor/digest substitutes for those proofs.
+Resolve the installed gate helper to its actual filesystem path. Follow the
+[canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
+selecting the recipe from the actual `Gate owner`:
+
+- **Parent:** validate the receipt and current candidate Lift before publication:
+
+  ```text
+  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+  ```
+
+  No future `--gate-receipt-locator` or `--gate-policy-ref` flags are allowed.
+  After publication/readback, validate the same receipt and current Lift against
+  the sole labelled opaque `Gate Receipt` pointer and policy:
+
+  ```text
+  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode post-note --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
+  ```
+
+- **Builder:** validate only the existing restricted builder receipt shape:
+
+  ```text
+  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+  ```
+
+  Builder `post-note` and parent-only binding flags, including `--review-packet`,
+  remain refused. Verify native `present_anchor` and `receipt_commit_eq_head`
+  independently; parent-only post-note validation is not builder proof.
+
+Receipt-independent `--mode lift-only --review-packet <packet>` checks required
+nonempty rows, unique markers and duplicate rows in either owner context. It is
+presence-only: it validates neither row values nor authority, execution or native
+identity, and replaces neither receipt validation nor native verification.
+
+Separately verify native extraction of exact `checkout_commit`, `command` and
+`result`, candidate binding and artifact author/custody/scope. Actual
+exact-candidate `npm run check` execution and original-log custody follow
+[Check Gate](check-gate.md); readable custody alone is not execution proof.
+[Authored-source publication readback](#publish-one-artifact) is another required
+proof. Local validity, native extraction or a stored-body digest substitutes for
+none of these proofs.
 
 ## Publish one artifact
 
