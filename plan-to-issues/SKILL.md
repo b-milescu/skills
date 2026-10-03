@@ -16,11 +16,11 @@ Turn an approved plan into tracker issues or work items for the current target r
 
 1. Invoke `/forge preflight` from the intended target repository before any publishing work.
 2. Resolve the target repo root with `git rev-parse --show-toplevel`; treat that path as `<repo-root>` for all repo-local docs.
-3. From the invoked target's confirmed `project_profile`, bind `<issue-tracker-doc>` and `<triage-labels-doc>` to its declared Agent Setup Doc paths under `<repo-root>`. Preserve custom roots; shared field guidance supplies no default paths.
+3. From the invoked target's confirmed `project_profile`, bind `<issue-tracker-doc>` and `<triage-labels-doc>` to its declared Agent Setup Doc paths, and `<domain-doc>` to its `domain_docs` reference. Resolve repo-relative target references under `<repo-root>` and preserve custom roots; shared field guidance supplies no default paths.
 4. Read those target docs and selected `provider.reference`. Missing/stale/conflicting setup prompts explicit owner setup/choice; never auto-run setup or read installed aliases as target configuration. Configured local work items use verified filesystem scope and supported file recipes. Unsupported publication blocks only that operation with an explicit reason, not by backend name.
 5. Before drafting or publishing, display the preflight target (provider and canonical repository from `/forge`) and ask the user to confirm it if there is any ambiguity.
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
-7. Explore only enough context to name slices accurately: glossary terms from `<repo-root>/CONTEXT.md` when present, relevant ADRs under `<repo-root>/docs/adr/` when present, current seams, and coupling risk.
+7. Explore only enough context to name slices accurately: read the glossary/context map and relevant ADR locations declared by `<domain-doc>`, following any map to only topic-relevant scopes. Use the applicable glossary vocabulary and flag ADR conflicts. If optional context/ADR documents are absent, proceed quietly without fabricating them, proposing creation solely for their absence, or substituting installed aliases. Inspect current seams and coupling risk.
 8. Draft vertical slices; ask the user to approve the breakdown before publishing.
 9. After explicit publish approval, publish each approved slice as one `forge publish` tracker-issue or work-item artifact and require provider-native readback. The disclosed provider reference owns native create, labels, comments, safe-body, and fallback.
 
