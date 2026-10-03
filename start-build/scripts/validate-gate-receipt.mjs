@@ -329,7 +329,7 @@ function validateLift(body, expected) {
   const result = rationale.trim().replace(/^`([^`]*)`$/, "$1")
     .match(/(?:^|;)\s*result:\s*PASS — Gate Receipt:\s*(`[^`]+`|[^;`]+)$/);
   const rationaleLocator = result?.[1].trim().replace(/^`([^`]*)`$/, "$1") ?? "";
-  if ((rationale.match(/\bresult:/g) ?? []).length !== 1 || !opaque(rationaleLocator) || rationaleLocator !== expected.receiptLocator) {
+  if ((rationale.match(/(?:^|;)\s*result:/g) ?? []).length !== 1 || !opaque(rationaleLocator) || rationaleLocator !== expected.receiptLocator) {
     fail("Reviewer Lift gate coverage rationale needs one terminal PASS result with the exact Gate Receipt pointer");
   }
 

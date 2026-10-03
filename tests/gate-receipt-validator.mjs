@@ -43,7 +43,7 @@ function receipt(overrides = {}) {
 function builder(overrides = {}) {
   return { gate_receipt: { kind: "gate-receipt", version: "1", owner: "builder", checkout_commit: sha, command, result: "PASS", ...overrides } };
 }
-function run({ mode = "post-note", owner = "parent", body = packet(), document = receipt(), extra = [] } = {}) {
+function run({ mode = "post-note", owner = "parent", body = packet(), document = receipt(), receiptLocator = locator, extra = [] } = {}) {
   const receiptPath = join(work, "receipt.yml");
   const packetPath = join(work, "packet.md");
   writeFileSync(receiptPath, typeof document === "string" ? document : yaml.dump(document));
@@ -54,7 +54,7 @@ function run({ mode = "post-note", owner = "parent", body = packet(), document =
     args.push("--receipt", receiptPath, "--reviewed-commit", sha, "--gate-command", command);
     if (owner === "parent") {
       args.push("--change-id", "repo/change@alpha", "--issue-id", "tracker/item@beta", "--review-packet", packetPath);
-      if (mode === "post-note") args.push("--gate-policy-ref", policy, "--gate-receipt-locator", locator);
+      if (mode === "post-note") args.push("--gate-policy-ref", policy, "--gate-receipt-locator", receiptLocator);
     }
   }
   return spawnSync(process.execPath, [validator, ...args, ...extra], { cwd: tmpdir(), encoding: "utf8" });
@@ -153,6 +153,11 @@ try {
   reject({ body: packet({ "Gate coverage rationale": `${policy}; exact-candidate-local; ${command}; ${sha}; PASS` }) }, "old terminal shorthand is not a result/receipt binding");
   pass({ body: packet({ "Gate coverage rationale": rationale.replace(locator, `\`${locator}\``) }) }, "terminal rationale accepts quoted opaque receipt");
   pass({ body: packet({ "Gate coverage rationale": `\`${rationale}\`` }) }, "terminal rationale accepts whole-cell code span");
+  const opaqueLocator = `${locator}/result:published`;
+  pass({ receiptLocator: opaqueLocator, body: packet({
+    "Gate coverage rationale": rationale.replace(locator, opaqueLocator),
+    "Local gate": `PASS — ${command} — Gate Receipt: ${opaqueLocator}`,
+  }) }, "result-like text inside the opaque locator is not a result field");
   for (const delta of ["pending", `${sha}; gate rerun pending`, `${sha}; receipts pending`, `${sha}; pending (parent)`, `${sha.slice(0, 7)} -> files`, `${"2".repeat(40)} -> files`]) reject({ body: packet({ "Delta since last ready push": delta }) }, "stale delta");
   pass({ body: packet({ "Delta since last ready push": `${sha}; bound-or-pending wording fixed; gate rerun PASS` }) }, "pending prose not pointer");
   const unsafe = reject({ body: packet() + "PRIVATE-SENTINEL\u0000" }, "unsafe packet");
