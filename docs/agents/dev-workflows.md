@@ -151,7 +151,7 @@ part of this declaration.
 | `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
 | `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
 | `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
-| `ci_jobs` | [`docs/agents/check-gate.md`](check-gate.md) configured advisory CI parity jobs. |
+| `ci_parity.reference` | [`docs/agents/check-gate.md`](check-gate.md#ci-parity) configured advisory CI parity jobs. |
 | `domain_docs` | [`docs/agents/domain.md`](domain.md) context and ADR layout. |
 | `release_deploy_policy` | This doc's [Release/deploy policy](#releasedeploy-policy) section. |
 | `manual_validation_rules` | [`docs/agents/check-gate.md`](check-gate.md) manual validation rules section. |

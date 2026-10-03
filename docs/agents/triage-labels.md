@@ -29,7 +29,7 @@ Verified on 2026-06-11 with `glab label list`:
 | `needs_info` | `needs-info` | Issue needs more information before AFK work; apply the live label and state the missing information in issue/MR prose. |
 | `human_decision` | `human-decision` | Issue needs a maintainer decision before AFK work; apply the live label and state the decision request in issue/MR prose. |
 
-These values are this repo's project-specific vocabulary and match `setup-dev-skills/reference/project-profile-facts.json`; reusable skills must read `project_profile.label_profile_ref` instead of assuming these label strings globally.
+These values are this repo's project-specific vocabulary; reusable skills must read `project_profile.label_profile_ref` instead of assuming these label strings globally.
 
 ## Agent rules
 

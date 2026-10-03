@@ -22,11 +22,11 @@ owned by [Check gate discovery](../../start-build/reference/context-and-planning
 
 ## Project-profile refs
 
-Use this file as the default `project_profile.gate_policy_ref`, `ci_jobs.ref`,
-and `manual_validation_rules.ref` for this repo. The exact-candidate full local
-gate is `npm run check`; configured advisory CI jobs are described in
-[CI parity](#ci-parity); manual validation rules are in
+Use this file as this repo's confirmed `project_profile.gate_policy_ref`.
+The declared `ci_parity.reference` points to [CI parity](#ci-parity);
+`manual_validation_rules.reference` points to
 [Manual validation rules](#manual-validation-rules).
+The exact-candidate full local gate is `npm run check`; CI is advisory.
 
 These project-owned facts are declared here and in the confirmed [profile](dev-workflows.md#project-profile-hooks), never inferred from installed shared field guidance.
 

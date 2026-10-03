@@ -17,10 +17,11 @@ the best targeted checks and obtain project-owner confirmation.
 
 ## Project-profile refs
 
-Use the target's confirmed `project_profile.gate_policy_ref`, `ci_jobs.ref` and
-`manual_validation_rules.ref` paths. Shared field guidance supplies no target
-defaults. Record the exact local gate/runtime/bootstrap, targeted checks,
-independently scoped advisory CI and allowed manual evidence here.
+Use the target's confirmed `project_profile.gate_policy_ref` and its declared
+advisory-CI and manual-validation references, preserving custom profiles and paths.
+Shared field guidance supplies no target defaults. Record the exact local
+gate/runtime/bootstrap, targeted checks, independently scoped advisory CI and
+allowed manual evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
 the [safety-floor litany](skill://start-build/SAFETY.md#safety-floors).
