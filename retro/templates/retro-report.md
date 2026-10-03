@@ -2,7 +2,7 @@
 
 The Retro Report is the session deliverable; accepted follow-up issues are the durable record. Post or keep the report in the conversation (or a caller-provided run directory) — do not edit canonical skills/docs directly from a retro, and do not invent metric values: use `N/A — <why>` when a metric was not observable. Copy batch metrics from the delivery run's report when one exists, recompute from tracker evidence only when it does not, and say which you did.
 
-The report reaches the user only after the refuter pass ([reference/refutation.md](../reference/refutation.md)): counts, findings, and the safety floor check below are all post-verdict.
+A report is complete only after independent refutation assigns every finding a verdict, each survivor includes its strongest counter-argument and response, and the report carries the refuter's safety-floor attestation ([reference/refutation.md](../reference/refutation.md)). A zero-finding report still requires the refuter's report-level check and attestation. Unavailable evidence and metrics may be `N/A — <why>`; unavailable refutation leaves an explicitly unrefuted draft, not a final report. Only the refuted report reaches the user; counts, findings, and the safety floor check below are all post-verdict.
 
 ```markdown
 # Retro Report — <scope, e.g. batch issues #204–#207 / change requests !193–!196>
@@ -51,7 +51,7 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 | RF | Verdict | Why |
 |---|---|---|
 | RF-1 | survives | <counter-argument raised and why it lost> |
-| RF-3 | dropped | <which cited evidence failed> |
+| RF-3 | drop | <which cited evidence failed> |
 
 ## Safety floor check
 
