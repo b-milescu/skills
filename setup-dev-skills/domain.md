@@ -2,28 +2,34 @@
 
 How dev skills consume the target repo's domain documentation.
 
-Use the target's confirmed `project_profile.domain_docs` pointer and custom
-context/ADR layout. Shared field guidance supplies no default target path.
-Record confirmed locations here without weakening safety invariants.
+Read the invoked target's confirmed `project_profile.domain_docs` reference for
+its context/glossary and ADR layout. Resolve repo-relative references from the
+confirmed target root and preserve custom roots. Installed aliases and shared
+field guidance supply no target defaults. Record confirmed locations here
+without weakening safety invariants. Missing/stale/conflicting policy bindings
+require explicit owner setup/choice, not auto-running setup or creating absent
+setup docs.
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in. In multi-context repos, also check context-scoped `docs/adr/` directories.
+- Read glossary/context documents at the locations declared by that target policy.
+- If it declares a context map, follow it to only topic-relevant scoped context documents.
+- Read relevant ADRs from the declared system-wide and context-scoped locations.
 
-If any of these files don't exist, proceed silently. Don't flag their absence or suggest creating them upfront. Update `CONTEXT.md` and `docs/adr/` manually when needed.
+If an optional context or ADR document is absent, proceed silently. Don't flag its absence or propose creating it solely because it is absent. When a domain change needs a manual glossary or ADR update, use the target-declared locations and policy.
 
 ## File structure
 
-A single-context repo keeps `CONTEXT.md` and `docs/adr/` at the root. A
-multi-context repo keeps root `CONTEXT-MAP.md` plus root `docs/adr/` for
-system-wide decisions, and one `CONTEXT.md` with its own `docs/adr/` per context
-directory (for example `src/ordering/` and `src/billing/`).
+Illustrative layouts, not required roots: a single-context repo may keep root
+`CONTEXT.md` and `docs/adr/`. A multi-context repo may keep root
+`CONTEXT-MAP.md` plus root `docs/adr/` for system-wide decisions, and one
+`CONTEXT.md` with its own `docs/adr/` per context directory (for example
+`src/ordering/` and `src/billing/`). Actual reads and updates follow the
+confirmed target layout, not these examples.
 
 ## Use glossary vocabulary
 
-When your output names a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term as defined in `CONTEXT.md`; don't drift to synonyms the glossary explicitly avoids. If the concept isn't in the glossary yet, either reconsider the language or record the gap in the relevant project docs manually.
+When your output names a domain concept in an issue title, refactor proposal, hypothesis, or test name, use the term defined in the applicable target glossary; don't drift to synonyms it explicitly avoids. If the concept isn't in the glossary yet, either reconsider the language or record the gap in the relevant target domain docs manually.
 
 ## Flag ADR conflicts
 
