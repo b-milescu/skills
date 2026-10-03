@@ -21,16 +21,33 @@ uses the normal change-request path. Publish the Review Gate Summary with
 ## Reviewer launch protocol
 
 After the change request is ready, start the routed final reviewer with the
-minimal prompt from
-[parent-orchestrator](parent-orchestrator.md#minimal-reviewer-launch-prompt):
-Change request locator, Reviewer Lift pointer, project rulebook path, Context
-Firewall, stop condition, finish owner, and any sourced authority grant.
+bounded target/evidence fields from the
+[minimal reviewer prompt](parent-orchestrator.md#minimal-reviewer-launch-prompt).
+For both initial and revision launches, deliberately select the owner rather
+than copying that parent prompt's fixed `Finish owner: parent`:
+
+- **Standalone reviewer:** set `Finish owner: reviewer`. Replace the parent
+  no-action/stop instructions with publication/readback followed by only the
+  independently permitted guarded action and the two-line locator handoff.
+  Relay any affirmative action-specific grant and its verifiable source as a
+  claim, never as builder authority. No grant means no finish; independently
+  permitted approval remains subject to its own policy and guards.
+- **Intentional parent handoff:** set `Finish owner: parent` and retain that
+  prompt's unconditional no-action/return contract, even with a verified grant.
+  A grant never selects or changes the owner.
+
 Resolve the canonical final-reviewer role through
 [native route selection](parent-orchestrator.md#native-route-selection), including
-the exposed namespace and effective project/reusable source.
-Invoke `start-review` and `forge` through the Skill tool. The reviewer independently
-verifies current/reviewed commit, exact-candidate local Gate Receipt, publication
-evidence, advisory CI attribution, and the `/forge` common guard.
+the exposed namespace and effective project/reusable source. Invoke canonical
+`start-review` and `forge` at their entries through the selected runtime:
+Claude `Skill` with verified native identifiers (`skills:<name>` for the reusable
+plugin), or OMP skill-load/autoload and eligible `skill://` entry resolution.
+Entry access, preload metadata or a raw internal-reference read is not invocation
+proof; retain the Context Firewall and task-selected/user-only eligibility.
+The reviewer independently verifies current/reviewed commit, exact-candidate
+local Gate Receipt, publication evidence, advisory CI attribution, authority and
+the `/forge` common guard. Review blockers still apply, and the builder never
+approves or finishes.
 
 ## Timeout handling
 
@@ -45,8 +62,10 @@ duplicate, or replace an active reviewer.
    completion and follows [timeout handling](timeout-handling.md).
 3. On `pass`, keep verdict separate from approval and finish actions. On
    `request-changes`, push bounded fixes, publish one Revision Packet with
-   provider-native readback, refresh Reviewer Lift, and start a new reviewer. On
-   `reject` or unresolved `blocked`, stop and escalate.
+   provider-native readback, refresh Reviewer Lift, and start a new reviewer
+   under the same [reviewer launch protocol](#reviewer-launch-protocol), with an
+   explicit owner and selected-runtime entry invocation. On `reject` or
+   unresolved `blocked`, stop and escalate.
 4. Limit the loop to three rounds unless a human explicitly authorizes another
    bounded revision and fresh review. Record authorization provenance.
 

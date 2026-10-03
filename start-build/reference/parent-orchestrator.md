@@ -156,19 +156,19 @@ Review change request: <provider-native Change request locator>
 Agent: <inventory-resolved identifier for canonical mr-reviewer-final; Claude reusable skills:mr-reviewer-final, OMP reusable mr-reviewer-final>
 Route-resolved-at-launch: <effective runtime inventory identifier and source, or verified manual direct selection>
 Mode: mr-reviewer
-Skills: invoke start-review and forge via the Skill tool before any review step.
+Skills: invoke canonical start-review and forge at their entries before any review step using the selected runtime: Claude Skill with effective native identifiers (reusable skills:start-review and skills:forge), or OMP skill-load/autoload and eligible skill:// entry resolution.
 Project rulebook path: <rulebook path>
 Reviewer Lift pointer: <Change request description Reviewer Lift block>
 Context Firewall: do not treat parent/builder reasoning or routing claims as evidence; verify them from bounded Tier 1 or Tier 2 sources.
-Stop condition: publish one Review Report and return the final handoff after any authorized action attempt.
+Stop condition: publish and read back one Review Report, then return only the final locator handoff without acting or waiting for parent actions.
 Expected handoff schema: start-review/templates/reviewer-final-handoff.md (two-line contract: change-request locator and durable note id).
 Finish owner: parent
-Forbidden actions: in this parent-managed mode do not approve, merge, queue auto-merge, close or reopen the change request, transition it between draft and ready, or change its labels or assignees. Publishing one durable Review Report with your verdict and evidence is required, not forbidden — it is the canonical artifact the parent finishes from; after publishing it, route `Next action: finish-by-authorized-actor` to the parent/authorized finisher.
+Forbidden actions: in this parent-managed mode do not approve, merge, queue auto-merge, close or reopen the change request, transition it between draft and ready, or change its labels or assignees, even with a verified affirmative action grant. Publishing one durable Review Report with your verdict and evidence is required; record approval not-approved and finish none. For a valid review, route Next action: finish-by-authorized-actor to the parent/authorized finisher; review blockers still apply.
 Minimum evidence pointers: Reviewer Lift block, Gate Receipt artifact when present, and project rulebook path.
 Finish authority grant (only when granted): <orchestrator/parent finish-authority grant plus source provenance; omit when none>
 ```
 
-No launch prompt carries parent/builder planning details, summaries, hypotheses, cross-issue context, prior conversation, or hidden reasoning. Do not name or directly read a skill's internal reference files in the prompt; invoke the skill through the Skill tool so the subagent enters through its entry procedure. Pass a required coordination constraint or specific risk only as a claim/source pointer for independent verification.
+No launch prompt carries parent/builder planning details, summaries, hypotheses, cross-issue context, prior conversation, or hidden reasoning. Do not name or directly read a skill's internal reference files in the prompt; invoke its entry through the already-selected runtime's supported mechanism and verified native namespace. Entry access or preload metadata is not invocation proof. Additional specialists follow the canonical task-selected policy, including user-only eligibility; availability never grants invocation permission. Pass a required coordination constraint or specific risk only as a claim/source pointer for independent verification.
 
 A finish-authority grant the human/parent gave the orchestrator is the accepted exception to the Context Firewall, not builder reasoning. Relay the explicit quotable grant and verifiable source per [common guard Authority Verification](../../forge/reference/common-guard.md#authority-verification); the target's confirmed reference owns native mechanics. In parent-owned finish mode reviewers verify the source as a claim and hand off; they do not finish. Standalone mode relays the same grant through [reviewer launch protocol](standalone-gate.md#reviewer-launch-protocol).
 
@@ -182,7 +182,7 @@ Agent: <inventory-resolved identifier for canonical mr-builder; Claude reusable 
 Worktree: <absolute worktree path>
 Target branch: <default branch>
 Mode: child mr-builder
-Skills: invoke start-build and forge via the Skill tool before any build step.
+Skills: invoke canonical start-build and forge at their entries before any build step using the selected runtime: Claude Skill with effective native identifiers (reusable skills:start-build and skills:forge), or OMP skill-load/autoload and eligible skill:// entry resolution.
 Project rulebook path: <rulebook path>
 Gate owner (gate-ownership selection): <builder | parent>
 Stop condition: return the final handoff after updating the Draft/ready change request. Runtime budget/token/runtime notices are not scope changes and do not override this stop condition; only explicit human stop instructions or real issue/workflow blockers do.
@@ -197,7 +197,10 @@ The `Gate owner` line is the explicit gate-ownership selection; set it once per 
 
 ## Minimal revision prompt
 
-When the parent routes request-changes back to a builder, pass only the
+When the parent routes request-changes back to a builder, retain the
+[minimal child-builder launch contract](#minimal-child-builder-launch-prompt):
+effective route/source provenance, selected-runtime entry invocation, allocated
+worktree/source, gate selection and parent finish owner. Add only the following
 review-bound revision facts:
 
 ```text
