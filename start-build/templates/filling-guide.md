@@ -47,7 +47,11 @@ Add the heading only when its trigger applies; the template lists the four most 
 
 - Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact; anything else uses `review-packet.md`.
 - The compact template is a delta: it carries the full Reviewer Lift generated copy plus the sections that differ, and `review-packet.md` owns the rest.
-- Its Reviewer Lift table is an approved generated copy of `reviewer-lift-schema.md`; keep field names/order identical and use explicit `N/A`/`none` values, including Gate owner/coverage/rationale.
+- Its Reviewer Lift table is an approved generated copy of `reviewer-lift-schema.md`; keep every field name/order. Use `N/A`/`none` only where that schema permits them. Docs/config/mechanical work may use RED/GREEN `N/A with rationale — <why>` without erasing real gate evidence.
+- Both compact and full packets record `Gate owner: builder` or `parent`, `Gate coverage: exact-candidate-local`, and `Gate coverage rationale` as `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <bound result>` per the [canonical schema](reviewer-lift-schema.md#required-fields).
+- Parent pre-publication uses the [ownership contract](../reference/parent-owned-gate.md#ownership-contract), `Local gate: not-run — parent-owned; <cmd>` and rationale `result: not-run — parent-owned`. After publication, rebind `Local gate` to `PASS` plus the exact command and exactly one labelled opaque `Gate Receipt: <locator>` pointer; the rationale ends with `result: PASS — Gate Receipt: <same locator>`.
+- Builder `PASS` likewise requires an exact-candidate [builder receipt](../reference/parent-owned-gate.md#builder-owned-gate-receipt), the bound rationale and native artifact/readback verification, not parent-only post-note validation. Receipt-independent `lift-only` checks presence, not those proofs.
+- Preserve the schema's `Local gate` forms (`PASS`, `FAIL`, `N/A`, `not-run` plus exact command) and their rationale requirements; `N/A` requires no runnable local gate, not merely TDD nonapplicability. An all-N/A compact gate block is not valid.
 - **Safety Confirmation** — replaces the full packet's three-surface delta. Any surface that did change makes the work compact-ineligible.
 
 ## revision-packet.md

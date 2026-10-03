@@ -92,11 +92,10 @@ Canonical mode docs: [child](skill://start-build/reference/child-builder.md),
 9. Child mode stops. Standalone mode starts one fresh reviewer; verdict,
    approval, finish, and post-merge verification remain separate decisions.
 
-Every `forge act` runs the ordered common guard: provider/repository binding,
-current target re-read, reviewed-commit binding, exact-candidate Gate Receipt,
-advisory CI observation, authority provenance, caller context, safe body,
-provider fallback eligibility, exactly one mutation, and provider-native
-post-read. A failed mandatory phase never tries another transport.
+Every `forge act` must run the
+[canonical common guard](skill://forge/reference/common-guard.md) in its required
+order at this mutation boundary. A failed mandatory phase never tries another
+provider or transport; advisory CI alone does not block.
 
 ## Safety floors
 
