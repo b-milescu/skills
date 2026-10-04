@@ -255,7 +255,7 @@ function collectInputFiles() {
       continue;
     }
 
-    if (absolute === path.join(REPO_ROOT, 'agents')) {
+    if (isPluginAgentsDir(absolute)) {
       collected.push(...markdownFiles(absolute)
         .filter((file) => path.basename(file) !== 'README.md')
         .map((file) => agentFile(file, 'omp')));
@@ -295,9 +295,6 @@ function agentFile(absolute, dialect) {
 }
 
 function inferDialect(file) {
-  if (path.dirname(file) === path.join(REPO_ROOT, 'agents') && path.basename(file) !== 'README.md') {
-    return 'omp';
-  }
   const parts = path.resolve(file).split(path.sep);
   for (let index = parts.length - 1; index > 0; index -= 1) {
     if (parts[index - 1] === 'agents' && parts[index] === 'claude') {
@@ -307,7 +304,17 @@ function inferDialect(file) {
       return parts[index - 1].slice(1);
     }
   }
+  // A plugin's own `agents/<route>.md` presets are OMP-dialect: OMP scans `agents/*.md` and Claude Code lists `agents/claude/` explicitly.
+  if (file.endsWith('.md') && path.basename(file) !== 'README.md' && isPluginAgentsDir(path.dirname(file))) {
+    return 'omp';
+  }
   return null;
+}
+
+// Any `agents/` directory except the native project roots `.claude/agents` and `.omp/agents`, whatever checkout holds it.
+function isPluginAgentsDir(dir) {
+  const parent = path.basename(path.dirname(dir));
+  return path.basename(dir) === 'agents' && !(parent.startsWith('.') && DIALECTS.has(parent.slice(1)));
 }
 
 function displayPath(file) {
