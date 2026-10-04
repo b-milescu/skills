@@ -261,7 +261,10 @@ function collectInputFiles() {
         .map((file) => agentFile(file, 'omp')));
     }
     for (const dialect of DIALECTS) {
-      for (const dialectDir of [path.join(absolute, dialect), path.join(absolute, `.${dialect}`, 'agents')]) {
+      // OMP's presets sit directly in `agents/` (its loader scans `agents/*.md` only), so `claude/` is the one dialect subdirectory.
+      const dialectDirs = [path.join(absolute, `.${dialect}`, 'agents')];
+      if (dialect === 'claude') dialectDirs.push(path.join(absolute, 'claude'));
+      for (const dialectDir of dialectDirs) {
         if (fs.existsSync(dialectDir) && fs.statSync(dialectDir).isDirectory()) {
           collected.push(...markdownFiles(dialectDir).map((file) => agentFile(file, dialect)));
         }
@@ -297,8 +300,8 @@ function inferDialect(file) {
   }
   const parts = path.resolve(file).split(path.sep);
   for (let index = parts.length - 1; index > 0; index -= 1) {
-    if (parts[index - 1] === 'agents' && DIALECTS.has(parts[index])) {
-      return parts[index];
+    if (parts[index - 1] === 'agents' && parts[index] === 'claude') {
+      return 'claude';
     }
     if (parts[index] === 'agents' && DIALECTS.has(parts[index - 1].slice(1)) && parts[index - 1].startsWith('.')) {
       return parts[index - 1].slice(1);

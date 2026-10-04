@@ -101,6 +101,8 @@ for (const { name, entry } of routes) {
   const expected = path.join(expectedDir, `${name}.md`);
   assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
   assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
+  // An installer rewrites a symlink into an absolute link outside the install, so the entrypoint must be a regular file.
+  assert(fs.lstatSync(agent.filePath).isFile(), `${name}: selected agent is not a regular file: ${agent.filePath}`);
   assert([...agent.autoloadSkills].sort().join() === [entry, 'forge'].sort().join(), `${name}: preload must be exactly the canonical entry and forge`);
   // An omitted or empty `tools` list reaches the loader as undefined: the route inherits the
   // parent's tools. Any declared list would be a restriction.
