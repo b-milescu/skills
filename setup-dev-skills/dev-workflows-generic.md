@@ -26,12 +26,12 @@ index ownership. Hooks preserve the safety floors (`start-build` skill,
 `SAFETY.md#safety-floors`).
 
 Complete runtime-specific same-name project declarations point at canonical skill
-entries and preserve role bounds and task-selected specialists. Follow native model
+entries and preserve role bounds and task-selected specialists. They declare no
+tool allowlist and inherit every tool of the spawning session. Follow native model
 and effort selection (`start-build` skill,
-`reference/parent-orchestrator.md#native-model-and-effort-selection`). Native
-tool selectors come only from confirmed available target tools; metadata is not
-hard confinement. Establish each runtime's precedence and selected-file/skill
-provenance separately from actual spawning and allocated/revision sessions.
+`reference/parent-orchestrator.md#native-model-and-effort-selection`). Establish
+each runtime's precedence and selected-file/skill provenance separately from actual
+spawning and allocated/revision sessions.
 Resolve canonical builder/final-reviewer roles through the effective spawning
 inventory, preserving native qualified IDs and verified target-project precedence
 under native route selection (`start-build` skill,
@@ -39,7 +39,7 @@ under native route selection (`start-build` skill,
 Keep logical skill IDs stable: record each skill and route by its logical name;
 runtimes may namespace plugin entries, so each runtime-specific declaration uses
 the identifier its own inventory exposes. Resource access does not supply target
-policy or prove preload execution. Resolve helper paths relative to the owning
-skill's directory, not the target CWD, before execution. Installed aliases keep
-underlying source ownership and never replace this target's profile, identity,
-paths, vocabulary or policy.
+policy or prove preload execution. Relative paths resolve against the directory of
+the file that contains them; run helper scripts by their resolved absolute path,
+not from the target CWD. Installed aliases keep underlying source ownership and
+never replace this target's profile, identity, paths, vocabulary or policy.

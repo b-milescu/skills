@@ -1,7 +1,6 @@
 ---
 name: change-builder
 description: Project change-request builder for b-milescu/skills; child-builder authority remains in start-build.
-tools: "read, grep, glob, bash, edit, write, mcp__github_*"
 autoload-skills: start-build, forge
 ---
 

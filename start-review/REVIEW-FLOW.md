@@ -80,7 +80,8 @@ identities. Incomplete files/contexts, unresolved required review, stale head,
 or missing required evidence readback prevents pass. A provider `unknown/null`
 native action state denies that action, not an otherwise valid judgment.
 Missing, stale, wrong-commit, or red CI is advisory evidence, not a review or
-action blocker.
+action blocker; a provider's required checks may still hold a merge
+([Default finish](#default-finish)).
 
 ## Single-change request checkout mode
 
@@ -180,13 +181,14 @@ taste, speculative redesign, or out-of-scope cleanup.
 | stale, wrong-commit, incomplete, or unknown binding | do not attribute the status to the reviewed candidate; record the binding limitation |
 
 Every classification is advisory. No provider CI status changes the review
-verdict or approval, merge, queued-finish, or post-merge eligibility. The
-required quality predicate is a passing exact-candidate local Check Gate and,
+verdict, approval, authority, or merge, queued-finish, or post-merge eligibility.
+The required quality predicate is a passing exact-candidate local Check Gate and,
 in parent-owned mode, its durable Gate Receipt. Independent review, reviewed-SHA
 binding, authority/caller guards, exactly one mutation, and native readback are
 separate mandatory predicates. Native provider protection, including checks the
 target binding requires before a merge, may refuse or hold a mutation; report the
-refusal without bypassing it.
+outcome without bypassing it. Required checks can hold a merge, never authorize
+one ([Default finish](#default-finish)).
 
 ### Open Question decision table
 
@@ -237,7 +239,7 @@ Classify the failed predicate, not the blocker token alone:
 | Compromised reviewer independence | `blocked`; no pass | No approval/finish; `human-decision-needed`, `rerun-review` from a fresh context |
 | Authority/provenance absent, contradictory, or restricted only for the requested action | Retain the complete current review's judgment | Deny that action; `missing-authority`, `finish-by-authorized-actor` to the parent/authorized actor; a non-inferable authority decision uses `human-decision-needed`, `human-escalation` |
 | Permission unknown or denied only for the requested action | Retain the complete current review's judgment | Deny that action; `permission-failure`, `finish-by-authorized-actor` to an actor with verified permission |
-| Provider cannot bind the requested action to the reviewed commit | Retain the complete current review's judgment | Deny that action; `sha-bound-action-unsupported`, `fix-blocker` to the parent; no unbound substitute |
+| Provider cannot bind the requested action to the reviewed commit | Retain the complete current review's judgment | Deny that action; `sha-bound-action-unsupported`, `fix-blocker` to the parent; no unbound substitute and no direct merge under a `queue auto-merge` grant |
 
 An action-only classification requires all review-validity predicates to hold.
 Security and human-decision review blockers remain governed by the coverage,
@@ -250,18 +252,36 @@ align next action with the handoff's expected next actor/action.
 ## Default finish
 
 When verdict is pass, the exact-candidate Gate Receipt is valid, finish authority
-affirmatively allows it, and caller context is eligible, the default finish is one
-guarded `forge act` bound to the exact reviewed commit: queue auto-merge only when
-the selected provider reference guarantees exact-head queueing; otherwise the
-authorized finisher merges directly, bound to the reviewed head, once the binding's
-required checks pass. Those required checks are the target binding's native merge
-protection; every other CI observation stays advisory and never changes the verdict
-or approval. Native protection may hold or refuse the request; report that provider
-outcome. Queued is non-terminal and is never reported as merged.
+affirmatively allows it, and caller context is eligible, the finish is one guarded
+`forge act` bound to the exact reviewed commit. The verified grant selects the
+action, and no grant substitutes for another:
 
-Queue, auto-completion and direct finish semantics belong to the confirmed target
-reference. An operation without the requested exact-head guarantee returns
-`sha-bound-action-unsupported`; observational reads cannot manufacture atomicity.
+- `queue auto-merge` authorizes queueing, only where the selected provider
+  reference guarantees exact-head queueing.
+- `reviewer may merge`, or a verified project default that names direct merge for
+  the finisher, authorizes a direct merge bound to the reviewed head.
+
+With both granted, queue where exact-head queueing is guaranteed, otherwise merge
+directly. A `queue auto-merge` grant never authorizes a direct merge: where the
+provider cannot guarantee exact-head queueing, return `sha-bound-action-unsupported`
+instead of merging directly; with no grant at all, return `missing-authority`.
+Queued is non-terminal and is never reported as merged.
+
+CI status never changes the verdict, review, approval, or authority. A provider's
+required checks are native merge protection: they can hold a merge, never authorize
+one. When the direct merge is held only by pending required checks, the finisher
+waits on the check-completion signal the target's provider reference names
+(event-driven, bounded by the
+[wait cadence](../start-build/reference/parent-orchestrator.md#wait-cadence)), then
+re-runs the full guarded `forge act` from its first guard; the earlier refusal is
+not reused. Failed required checks, or a wait that elapses, leave the change
+blocked with the provider outcome. That bounded wait is the only CI wait, and it is
+never an eligibility oracle: a passing check authorizes nothing.
+
+Queue, auto-completion, direct finish and required-check semantics, including the
+check-completion signal, belong to the confirmed target reference. An operation
+without the requested exact-head guarantee returns `sha-bound-action-unsupported`;
+observational reads cannot manufacture atomicity.
 
 ## Publication and actions
 
@@ -294,10 +314,11 @@ in the Review Report's Action / Blocker section.
    Preserve the published judgment, original reviewed commit, and finding
    identities as historical evidence, not a pass for the new head.
 6. Perform exactly one authorized `forge act` only when its guards pass and the
-   finish owner permits it; otherwise emit the no-action result. An action-only
-   failure after publication does not change the valid historical judgment;
-   newly discovered invalid review evidence must be reported, not masked as
-   action-only.
+   finish owner permits it; otherwise emit the no-action result. A merge held only
+   by pending required checks ran no mutation, so its guarded re-run after the
+   bounded wait is still that one action. An action-only failure after publication
+   does not change the valid historical judgment; newly discovered invalid review
+   evidence must be reported, not masked as action-only.
 7. The authorized actor owns provider-native post-read and any required
    [action explanation](#post-report-action-evidence). Emit the two-line final
    handoff (change-request locator and Review Report note id); later action

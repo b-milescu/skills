@@ -49,12 +49,19 @@ Default: fan out every provably decoupled subset.
    `handoff_contract`, but finals need no delivery block.
 6. Launch independent review as soon as the exact-candidate gate contract
    allows. Provider CI may run in parallel; no CI status changes verdict,
-   approval, or finish eligibility.
-7. On reviewer pass, keep verdict, approval, and finish separate. The default
-   permitted finish queues auto-merge only when the target's provider reference
-   guarantees exact-head queueing; otherwise the authorized finisher merges
-   directly, bound to the reviewed head, once the binding's required checks pass.
-   The parent owns it when `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
+   approval, authority, or finish eligibility.
+7. On reviewer pass, keep verdict, approval, and finish separate. The verified
+   grant selects the finish: `queue auto-merge` queues only where the target's
+   provider reference guarantees exact-head queueing; `reviewer may merge`, or a
+   verified project default naming direct merge for the finisher, merges directly,
+   bound to the reviewed head. A `queue auto-merge` grant never authorizes a direct
+   merge (`sha-bound-action-unsupported`, or `missing-authority` with no grant).
+   Required checks are native merge protection: they can hold a direct merge,
+   never authorize it. When only pending required checks hold it, the finisher
+   waits per [wait cadence](../start-build/reference/parent-orchestrator.md#wait-cadence)
+   and re-runs the full guarded `forge act`; failed checks or an elapsed wait block
+   the change with the provider outcome.
+   The parent owns the finish when `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
    Immediately before that finish, use fresh `forge snapshot` evidence to re-read
    the allocated work item and require it to remain open. Verify that the current
    change request, source branch, and work-item relationship match the parent's
@@ -73,7 +80,8 @@ Default: fan out every provably decoupled subset.
    records the contradiction instead of inheriting it.
 8. Treat `auto-merge queued` as pending. It does not count as **change requests merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
-   boundary without polling CI. Provider merge-event evidence advances the
+   boundary: the bounded required-check wait in step 7 is the only CI wait, and it
+   is never an eligibility oracle. Provider merge-event evidence advances the
    existing handoff to phase: `post-merge-verify`,
    expected_next_actor: `verifier`, and
    expected_next_action: `post-merge-verify`; require a checked read-only

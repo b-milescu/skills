@@ -59,11 +59,12 @@ never grants authority.
 
 ## Helpers
 
-Paths in this skill are relative to this skill's directory. Resolve its real
-installed filesystem directory before executing `scripts/validate-text.mjs`;
-never resolve helpers relative to target CWD. Its JSON envelope
-validates exact string/finite role with no-body diagnostics before body-bearing
-writes. Target safe-write tools may add native checks, not replace common checks.
+Relative paths resolve against the directory of the file that contains them, not
+the target CWD; run helper scripts by their resolved absolute path. For
+`scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
+file's directory. Its JSON envelope validates exact string/finite role with
+no-body diagnostics before body-bearing writes. Target safe-write tools may add
+native checks, not replace common checks.
 
 ```text
 node <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
@@ -78,7 +79,8 @@ the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
 normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
-expected-head guarantees and supported recovery. Shared records remain opaque;
+expected-head guarantees, required-check holds with the signal that ends their
+wait, and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as

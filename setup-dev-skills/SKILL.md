@@ -42,7 +42,8 @@ repeat already-confirmed choices or require unrelated authentication.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, exact-head
-guarantees, normalization and lossless readback/recovery. Configuration is not an
+guarantees, required-check holds with the signal that ends their wait,
+normalization and lossless readback/recovery. Configuration is not an
 action-authority grant. Keep common safety floors with forge/delivery owners.
 
 For labels, document live names and triage-role mapping as-is; no automatic live
@@ -74,13 +75,14 @@ generator or adapter registry. `provider` names and records are opaque scoped
 values. A second target with other mechanics needs only its own confirmed docs.
 
 Runtime declarations are **complete shallow files**, not metadata overlays:
-canonical builder/reviewer entry pointers, role/authority bounds, runtime-specific
-model/effort neutrality per [native selection](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and confirmed exact/server-scoped tools. Determine each runtime's
-native project location and precedence independently from runtime evidence. Keep
-shared presets free of native server catalogues; do not widen to a blanket selector for all tool servers.
-Selected-file/skill provenance from the actual spawning session and independently
-invoked allocated/revision checkouts must be verified separately from accessible
-entries/tools. Metadata is not hard confinement; no external runtime patch.
+canonical builder/reviewer entry pointers, role/authority bounds and
+runtime-specific model/effort neutrality per [native selection](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
+They declare no tool allowlist, so each inherits every tool of the spawning
+session; the target's confirmed integration, not the declaration, names the tools
+its recipes need. Determine each runtime's native project location and precedence
+independently from runtime evidence. Selected-file/skill provenance from the actual
+spawning session and independently invoked allocated/revision checkouts must be
+verified separately from accessible entries/tools; no external runtime patch.
 Resolve canonical roles through the effective runtime inventory under
 [native route selection](../start-build/reference/parent-orchestrator.md#native-route-selection);
 record exposed identifiers separately from canonical basenames and source files.

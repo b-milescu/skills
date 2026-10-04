@@ -39,7 +39,7 @@ Add the heading only when its trigger applies; the template lists the four most 
 ## builder-final-handoff.md
 
 - Emit exactly the [two-line contract](builder-final-handoff.md), using `not-created` before a receipt exists for this candidate; no extra note is needed.
-- Validate canonical Lift presence through installed `start-build/scripts/validate-gate-receipt.mjs --mode lift-only`; verify native locator/artifact bindings independently.
+- Validate canonical Lift presence with `../scripts/validate-gate-receipt.mjs --mode lift-only` (relative to this file, run by its resolved absolute path); verify native locator/artifact bindings independently.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Recover absent/malformed handoffs from the bound change request and durable Review Packet; prose is a locator hint, not verified evidence.
 

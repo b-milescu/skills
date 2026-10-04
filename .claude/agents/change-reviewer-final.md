@@ -1,7 +1,6 @@
 ---
 name: change-reviewer-final
 description: Mandatory independent final project change-request reviewer for b-milescu/skills.
-tools: "Bash, Read, Edit, Write, Skill, mcp__github__*"
 skills: skills:start-review, skills:forge
 model: inherit
 color: green

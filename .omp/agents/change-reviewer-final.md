@@ -1,7 +1,6 @@
 ---
 name: change-reviewer-final
 description: Mandatory independent final project change-request reviewer for b-milescu/skills.
-tools: "read, grep, glob, bash, edit, write, mcp__github_*"
 autoload-skills: start-review, forge
 ---
 

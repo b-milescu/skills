@@ -1,43 +1,59 @@
 // Focus: the shipped skill stack (the 8 skill directories, templates/ and
 // reference/) names no code host, agent harness, model or skill outside this
-// plugin and carries no machine-specific path; every repo .mjs imports only
-// node: builtins or relative paths. All hits are reported together as path:line.
+// plugin, carries no machine-specific path and symlinks only into itself; every
+// repo .mjs imports only node: builtins or relative paths. The scan walks the
+// file system, not git, so it also runs in an installed copy. All hits are
+// reported together as path:line.
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { lstatSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 const root = path.dirname(import.meta.dirname);
 const SKILLS = ["setup-dev-skills", "forge", "start-build", "start-review", "issue-delivery-loop", "plan-to-issues", "cleanup-codebase", "retro"];
 const STACK = [...SKILLS, "templates", "reference"];
-const VENDORED = "start-build/scripts/vendor/";
+const SKILL = SKILLS.join("|");
+const VENDORED = "start-build/scripts/vendor";
+const SKIPPED = new Set([".git", "node_modules"]);
 
-// [name, pattern, example it must match, benign examples it must not match].
+// [name, pattern, examples it must match, benign examples it must not match]. Patterns run
+// over the whole file text, so a [\s_-]+ separator also catches a phrase wrapped across lines.
 // The `gitlab#` breadcrumb is covered by the code-host rule.
 const RULES = [
-  ["harness name", /\b(?:Claude|OMP|Codex|Cursor|Copilot)\b/, "Claude Code"],
-  ["harness name", /oh-my-pi/i, "Oh-My-Pi"],
-  ["internal URI", /\b(?:skill|local|agent|xd|artifact|history|mcp):\/\//, "skill://forge/SKILL.md", ["https://example.org"]],
-  ["plugin-root variable", /\$\{CLAUDE_/, "${CLAUDE_PLUGIN_ROOT}"],
-  ["MCP tool id", /\bmcp__/, "mcp__server__tool"],
-  ["harness config path", /\.claude\/|\.omp\/|CLAUDE\.md|AGENTS\.md/, ".claude/agents/x.md"],
-  ["harness tool id", /\b(?:TodoWrite|AskUserQuestion|ListAgents|SendMessage)\b/, "TodoWrite"],
-  ["harness tool call", /subagent\(/, "subagent(task)"],
-  ["harness tool name", /`(?:irc|hub|todo|Task|Agent|Skill)`/, "`Skill`", ["a task", "`task-list`"]],
-  // Wider than the bare model names on purpose: `gpt-55` and `gpt-4o` are model ids too.
-  ["model id", /\b(?:opus|sonnet|haiku|gemini)\b|\bgpt-[0-9]/i, "Sonnet"],
-  ["code host", /\b(?:github|gitlab|bitbucket|gitea|forgejo)\b/i, "GitHub"],
-  ["code-host CLI", /`(?:gh|glab) |^\s*(?:gh|glab) /, "`gh pr view`"],
-  ["change-request noun", /\b(?:MRs?|PRs?|IID)\b/, "the MR", ["PRIVATE", "a change request"]],
-  ["change-request noun", /\b(?:merge|pull) requests?\b/i, "Pull Request"],
-  ["bang reference", /(?<![\w/])![0-9]+\b/, "see !193", ["urgent!2", "!important"]],
-  ["outside skill", /\b(?:ponytail|mempalace|no-mistakes|caveman|graphify|mattpocock|grill-with-docs|diagnosing-bugs|improve-codebase-architecture|writing-great-skills|security-review|code-review)\b/i, "Ponytail", ["start-review"]],
-  ["outside skill", /`simplify`/, "`simplify`"],
-  ["slash invocation", new RegExp(`(?:^|[\\s(\`])/(?:${SKILLS.join("|")})\\b`), "run /forge", ["../forge/SKILL.md", "owner/retro"]],
-  ["absolute user path", /\/Users\/|\/home\/[a-z]|~\/\.(?:claude|omp|agents)/, "~/.claude/skills"],
+  ["harness name", /\b(?:claude(?:code)?|omp|codex|cursor|copilot)s?\b/i, ["Claude Code", "claude code", "claude plugin install skills@skills", "omp plugin install skills@skills", "OMPs", "ClaudeCode"], ["compile", "cursory"]],
+  ["harness name", /oh-my-pi/i, ["Oh-My-Pi"]],
+  ["internal URI", /\b(?:skill|local|agent|xd|artifact|history|mcp):\/\//, ["skill://forge/SKILL.md"], ["https://example.org"]],
+  ["harness env variable", /\$?\{?CLAUDE_[A-Z_]+/, ["${CLAUDE_PLUGIN_ROOT}", "$CLAUDE_PLUGIN_ROOT/forge/SKILL.md", "CLAUDE_CODE_SUBAGENT_MODEL"]],
+  ["MCP tool id", /\bmcp__/, ["mcp__server__tool"]],
+  ["harness config path", /\.claude(?:-plugin)?\b|\.omp(?:-plugin)?\b|CLAUDE\.md|AGENTS\.md/, [".claude/agents/x.md", ".claude-plugin/plugin.json", ".omp-plugin", ".omp/agents"]],
+  ["harness skill namespace", new RegExp(`\\bskills?:(?:${SKILL})\\b`), ["skills:start-build", "skill:retro"]],
+  ["harness frontmatter key", /\bautoload-skills\b/, ["autoload-skills: start-build, forge"]],
+  ["harness runtime key", /worktree:\s*true|isolation:\s*worktree|thinking-level|model:\s*inherit|subagent_type/, ["worktree: true", "isolation: worktree", "thinking-level", "model: inherit", "subagent_type"]],
+  ["harness tool id", /\b(?:TodoWrite|AskUserQuestion|ListAgents|SendMessage|TaskCreate|TaskList|TaskGet|TaskUpdate)\b/, ["TodoWrite", "TaskCreate", "TaskList", "TaskGet", "TaskUpdate"]],
+  ["harness tool call", /subagent\(/, ["subagent(task)"]],
+  ["harness tool prose", /\bthe (?:Read|Bash|Edit|Write|Grep|Glob|Agent|Skill) tool\b/i, ["the Read tool", "the Bash tool"], ["the tool"]],
+  ["harness tool name", /`(?:Bash|Read|Edit|Write|Glob|Grep|Agent|Skill|Task|task|read|bash|edit|write|grep|glob|ask|todo|hub|irc)`/, ["`Skill`", "`Bash`", "`task`", "`read`", "`bash`", "`todo`", "`hub`", "`irc`"], ["a task", "`task-list`"]],
+  // Wider than the bare model names on purpose: `gpt-55`, `gpt5` and `claude-fable-5` are model ids too.
+  ["model id", /\b(?:opus|sonnet|haiku|gemini|fable|anthropic|openai|grok|llama|mistral|deepseek|qwen)\b|\bgpt[- ]?[0-9]|\bclaude-[a-z]+-[0-9]|\bo[1-9]\b/i, ["Sonnet", "fable", "claude-fable-5", "Anthropic", "OpenAI", "gpt5", "GPT 5", "gpt-4o", "o3", "Grok", "Llama", "Mistral", "DeepSeek", "Qwen"]],
+  ["code host", /\b(?:github|gitlab|bitbucket|gitea|forgejo)\b/i, ["GitHub"]],
+  ["code-host CLI", /`(?:gh|glab) |^[ \t]*(?:gh|glab) /m, ["`gh pr view`", "text\n  gh pr view"]],
+  ["change-request noun", /\b(?:MRs?|PRs?|IID)\b/, ["the MR"], ["PRIVATE", "a change request"]],
+  ["change-request noun", /\b(?:merge|pull)[\s_-]+requests?\b/i, ["Pull Request", "pull-request", "merge_request", "merge-request", "merge\nrequest"]],
+  ["bang reference", /(?<![\w/])![0-9]+\b/, ["see !193"], ["urgent!2", "!important"]],
+  ["outside skill", /\b(?:ponytail|mempalace|no-mistakes|caveman|graphify|mattpocock|grill-with-docs|diagnosing-bugs|improve-codebase-architecture|writing-great-skills|security-review|code-review|codebase-memory|superpowers|hindsight)\b/i, ["Ponytail", "codebase-memory", "superpowers", "hindsight"], ["start-review"]],
+  ["outside skill", /`simplify`|\bsimplify skill\b|\btdd[\s-]+skill\b|\/(?:simplify|verify)\b/i, ["`simplify`", "simplify skill", "tdd skill", "TDD-skill", "/simplify", "/verify"], ["the `tdd` field", "tdd:", "| tdd | RED/GREEN |"]],
+  ["slash invocation", new RegExp(`(?<![\\w./-])/(?:skills?:)?(?:${SKILL})\\b`), ["run /forge", "Run **/forge preflight** first", "Run \"/retro\" after the batch", "[/plan-to-issues](x)", "/skills:forge", "/skill:retro"], ["../forge/SKILL.md", "owner/retro"]],
+  ["absolute user path", /\/Users\/|\/home\/[a-z]|~\/\.(?:claude|omp|agents)/, ["~/.claude/skills"]],
 ];
 const GLOBAL_RULES = RULES.map(([name, re]) => [name, new RegExp(re.source, `${re.flags}g`)]);
+
+// Contract tokens the stack keeps on purpose: no rule may flag them.
+const KEPT = [
+  "Roles: `title`, `description`, `note`, `review-packet`", "post-note receipt/Lift validation", "Durable note id", "CI pipeline",
+  "Change-request locator", "Report locator", "| tdd | RED/GREEN commands and outcomes |", "tdd:\n  red: targeted test failed",
+  "[forge](../forge/SKILL.md) and owner/retro",
+];
 
 // The only platform-noun exceptions: the gate-receipt validator accepts provider nouns as
 // aliases of `single change request`, and the schema line documents that alias.
@@ -46,76 +62,134 @@ const ALLOWED = [
   { file: "start-build/templates/reviewer-lift-schema.md", text: "`single MR`/`single PR`" },
 ];
 
-const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)(["'])([^"'\n]+)\1/g;
+const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*(?:\.resolve\s*)?\(\s*)(["'`])([^"'`\n]+)\1/g;
+// The require factory resolves packages at run time. Never spelled out in this file (it is itself scanned).
+const FACTORY = "create\u0052equire";
+const REQUIRE_FACTORY = new RegExp(`\\b${FACTORY}\\b`, "g");
 const isLocal = (specifier) => /^(?:node:|\.\.?\/)/.test(specifier);
+const lineAt = (text, offset) => text.slice(0, offset).split("\n").length;
+const inStack = (file) => STACK.some((dir) => file === dir || file.startsWith(`${dir}/`));
 
-const git = (...args) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8", maxBuffer: 1 << 28 }).split("\0").filter(Boolean);
+// Walks rootDir without git. Entries are read as directory entries (an lstat view): symlinks
+// are listed, never followed, so content is scanned once, at its source.
+function walk(rootDir) {
+  const texts = [];
+  const links = [];
+  const visit = (dir, prefix) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+      const file = prefix + entry.name;
+      if (SKIPPED.has(entry.name) || file === VENDORED) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) visit(full, `${file}/`);
+      else if (entry.isSymbolicLink()) links.push(file);
+      else if (entry.isFile()) {
+        const bytes = readFileSync(full);
+        if (!bytes.includes(0)) texts.push([file, bytes.toString("utf8")]);
+      }
+    }
+  };
+  visit(rootDir, "");
+  return { texts, links };
+}
 
-// Tracked entries carry their index mode (120000 = symlink, never followed). Untracked,
-// non-ignored files are scanned too, so a new file is checked before it is committed.
-function repoTextFiles() {
-  const tracked = git("ls-files", "-s", "-z").map((entry) => [entry.slice(entry.indexOf("\t") + 1), entry.startsWith("120000")]);
-  const untracked = git("ls-files", "-z", "--others", "--exclude-standard").map((file) => [file, lstatSync(path.join(root, file)).isSymbolicLink()]);
-  const files = [];
-  for (const [file, symlink] of [...tracked, ...untracked]) {
-    if (symlink) continue;
-    let bytes;
-    try { bytes = readFileSync(path.join(root, file)); } catch (error) { if (error.code === "ENOENT") continue; throw error; }
-    if (!bytes.includes(0)) files.push([file, bytes.toString("utf8")]);
-  }
-  return files;
+// A symlink inside the stack must resolve to a path inside the stack. Anything else ships a
+// repo directory (docs/, ...) whose content the stack scan never reads.
+function linkHits(rootDir, links) {
+  const realRoot = realpathSync(rootDir);
+  const inside = STACK.map((dir) => path.join(realRoot, dir));
+  return links.filter(inStack).flatMap((link) => {
+    let target;
+    try { target = realpathSync(path.join(rootDir, link)); } catch (error) { return [`${link}: symlink does not resolve (${error.code})`]; }
+    if (inside.some((dir) => target === dir || target.startsWith(dir + path.sep))) return [];
+    return [`${link}: symlink resolves outside the skill stack (${path.relative(realRoot, target)})`];
+  });
 }
 
 function findHits(file, text) {
-  const allowed = ALLOWED.filter((entry) => entry.file === file);
+  const spans = [];
+  for (const entry of ALLOWED) {
+    if (entry.file !== file) continue;
+    for (let at = text.indexOf(entry.text); at >= 0; at = text.indexOf(entry.text, at + entry.text.length)) spans.push([at, at + entry.text.length]);
+  }
   const hits = [];
-  text.split(/\r?\n/).forEach((line, index) => {
-    const spans = [];
-    for (const { text: needle } of allowed) for (let at = line.indexOf(needle); at >= 0; at = line.indexOf(needle, at + needle.length)) spans.push([at, at + needle.length]);
-    for (const [name, re] of GLOBAL_RULES) {
-      for (const match of line.matchAll(re)) {
-        if (spans.some(([from, to]) => match.index >= from && match.index + match[0].length <= to)) continue;
-        hits.push(`${file}:${index + 1}: ${name}: ${match[0].trim()}`);
-      }
+  for (const [name, re] of GLOBAL_RULES) {
+    for (const match of text.matchAll(re)) {
+      if (spans.some(([from, to]) => match.index >= from && match.index + match[0].length <= to)) continue;
+      hits.push([match.index, `${file}:${lineAt(text, match.index)}: ${name}: ${match[0].replace(/\s+/g, " ").trim()}`]);
     }
-  });
-  return hits;
+  }
+  return hits.sort((a, b) => a[0] - b[0]).map(([, hit]) => hit);
 }
 
-// [line, specifier] for every import/require target that is neither node: nor relative.
-const foreignSpecifiers = (text) => [...text.matchAll(SPECIFIER)]
-  .filter((match) => !isLocal(match[2]))
-  .map((match) => [text.slice(0, match.index).split("\n").length, match[2]]);
+const stackHits = (rootDir, { texts, links }) => [
+  ...texts.filter(([file]) => inStack(file)).flatMap(([file, text]) => findHits(file, text)),
+  ...linkHits(rootDir, links),
+];
 
-const files = repoTextFiles();
+// [line, finding] for every loader form that is neither a node: nor a relative specifier.
+const importHits = (text) => [
+  ...[...text.matchAll(SPECIFIER)].filter((match) => !isLocal(match[2])).map((match) => [lineAt(text, match.index), `${match[2]} (only node: builtins and relative paths are allowed)`]),
+  ...[...text.matchAll(REQUIRE_FACTORY)].map((match) => [lineAt(text, match.index), `${match[0]} (only node: builtins and relative paths are allowed)`]),
+].sort((a, b) => a[0] - b[0]);
 
-test("skill stack names no code host, harness, model, outside skill or machine path", () => {
-  const hits = files
-    .filter(([file]) => STACK.some((dir) => file.startsWith(`${dir}/`)) && !file.startsWith(VENDORED))
-    .flatMap(([file, text]) => findHits(file, text));
+const scanned = walk(root);
+
+test("skill stack names no code host, harness, model, outside skill or machine path and links only into itself", () => {
+  const hits = stackHits(root, scanned);
   assert.equal(hits.length, 0, `${hits.length} coupling hit(s) in the skill stack:\n${hits.join("\n")}`);
 });
 
 test("every .mjs imports only node: builtins and relative paths", () => {
-  const hits = files
-    .filter(([file]) => file.endsWith(".mjs") && !file.startsWith(VENDORED) && !file.startsWith("node_modules/"))
-    .flatMap(([file, text]) => foreignSpecifiers(text).map(([line, specifier]) => `${file}:${line}: ${specifier} (only node: builtins and relative paths are allowed)`));
-  assert.equal(hits.length, 0, `${hits.length} external specifier(s):\n${hits.join("\n")}`);
+  const hits = scanned.texts
+    .filter(([file]) => file.endsWith(".mjs"))
+    .flatMap(([file, text]) => importHits(text).map(([line, finding]) => `${file}:${line}: ${finding}`));
+  assert.equal(hits.length, 0, `${hits.length} external loader form(s):\n${hits.join("\n")}`);
 });
 
-test("scanner rules match their own examples and the allowlist stays path- and span-scoped", () => {
+test("scanner rules match their probes, spare benign text and kept contract tokens, and the allowlist stays path- and span-scoped", () => {
   for (const [name, re, bad, ok = []] of RULES) {
-    assert.match(bad, re, `${name} must match ${bad}`);
-    for (const text of ok) assert.doesNotMatch(text, re, `${name} must not match ${text}`);
+    for (const text of bad) assert.match(text, re, `${name} must match ${JSON.stringify(text)}`);
+    for (const text of ok) assert.doesNotMatch(text, re, `${name} must not match ${JSON.stringify(text)}`);
   }
+  for (const text of KEPT) assert.deepEqual(findHits("forge/SKILL.md", text), [], `kept token flagged: ${JSON.stringify(text)}`);
+  assert.deepEqual(findHits("forge/SKILL.md", "x\nmerge\nrequest"), ["forge/SKILL.md:2: change-request noun: merge request"], "a wrapped phrase is reported at its first line");
+  for (const { file, text } of ALLOWED) assert.deepEqual(findHits(file, `x ${text} y`), [], "allowlisted span is skipped");
   const [{ file, text }] = ALLOWED;
-  assert.deepEqual(findHits(file, `x ${text} y`), [], "allowlisted span is skipped");
   assert.equal(findHits(file, `x ${text} on GitHub`).length, 1, "other hits on an allowlisted line still count");
   assert.ok(findHits("start-build/SKILL.md", `x ${text}`).length > 0, "allowlist is scoped to its path");
+});
+
+test("loader scan flags every non-node:, non-relative form", () => {
   const sample = [
     "import a from \"node:fs\";", "import b from \"./b.mjs\";", "import c from \"left-pad\";", "import \"side-effect\";",
     "const d = require(\"fs\");", "const e = await import(\"pkg/sub\");", "export { f } from \"../g.mjs\";",
     "import {", "  h,", "} from \"yaml\";",
+    "const i = require.resolve(\"yaml\");", "const j = require.resolve(\"./k.cjs\");",
+    "const l = await import(\u0060js-yaml\u0060);", "const m = await import(\u0060./n.mjs\u0060);",
+    `import { ${FACTORY} } from \"node:module\";`,
   ].join("\n");
-  assert.deepEqual(foreignSpecifiers(sample).map(([, specifier]) => specifier), ["left-pad", "side-effect", "fs", "pkg/sub", "yaml"]);
+  assert.deepEqual(importHits(sample).map(([, finding]) => finding.split(" ")[0]), ["left-pad", "side-effect", "fs", "pkg/sub", "yaml", "yaml", "js-yaml", FACTORY]);
+});
+
+test("the walk skips .git, node_modules and vendored code; stack symlinks must resolve inside the stack", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "skill-stack-"));
+  const put = (file, body) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); writeFileSync(path.join(dir, file), body); };
+  const link = (file, target) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); symlinkSync(target, path.join(dir, file)); };
+  try {
+    put("docs/agents/x.md", "GitHub"); // outside the stack: only a link into it can ship this
+    put("templates/adr.md", "clean");
+    put("forge/note.md", "GitHub");
+    for (const skipped of [".git/HEAD", "node_modules/p/i.md", "forge/node_modules/p/i.md", `${VENDORED}/y.mjs`]) put(skipped, "GitHub");
+    link("forge/docs", "../docs"); // the regression: a skill shipping the repo docs
+    link("forge/gone", "../nowhere");
+    link("retro/x.md", "../docs/agents/x.md");
+    link("forge/shared-templates", "../templates"); // allowed: stays inside the stack
+    link("forge/adr.md", "../templates/adr.md"); // allowed
+    const walked = walk(dir);
+    assert.deepEqual(walked.texts.map(([file]) => file), ["docs/agents/x.md", "forge/note.md", "templates/adr.md"], "no .git, no node_modules, no vendor, no followed symlink");
+    assert.deepEqual(walked.links, ["forge/adr.md", "forge/docs", "forge/gone", "forge/shared-templates", "retro/x.md"]);
+    assert.deepEqual(stackHits(dir, walked).map((hit) => hit.split(":")[0]).sort(), ["forge/docs", "forge/gone", "forge/note.md", "retro/x.md"]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

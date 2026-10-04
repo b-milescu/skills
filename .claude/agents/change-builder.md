@@ -1,7 +1,6 @@
 ---
 name: change-builder
 description: Project change-request builder for b-milescu/skills; child-builder authority remains in start-build.
-tools: "Bash, Read, Edit, Write, Skill, AskUserQuestion, mcp__github__*"
 skills: skills:start-build, skills:forge
 model: inherit
 color: blue

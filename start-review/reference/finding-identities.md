@@ -14,19 +14,20 @@ One report locator maps to exactly one reviewed SHA. Review Reports expose the l
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |
 |---|---|---|
-| `review-report:owner/repo#123:2` | `1111111111111111111111111111111111111111` | `MF-5` |
+| `review-report:provider://change/123:2` | `1111111111111111111111111111111111111111` | `MF-5` |
 <!-- FINDING-IDENTITY-SCHEMA:END -->
 ```
 
 Reviewer Lift uses the same tuple in its single `Finding bindings` row. Use `none` when no report finding is in flight; otherwise serialize one or more entries as:
 
 ```text
-report=review-report:owner/repo#123:2; sha=1111111111111111111111111111111111111111; id=MF-5<br>report=review-report:owner/repo#123:3; sha=2222222222222222222222222222222222222222; id=SF-1
+report=review-report:provider://change/123:2; sha=1111111111111111111111111111111111111111; id=MF-5<br>report=review-report:provider://change/123:3; sha=2222222222222222222222222222222222222222; id=SF-1
 ```
 
-Resolve the installed start-review skill directory to an actual filesystem path,
-not target CWD. Before publication/ready validate every
-originating report:
+Run the validator by its resolved absolute path, not from the target CWD:
+`<start-review-dir>` is the absolute path of `..`, because relative paths resolve
+against the directory of the file that contains them. Before publication/ready
+validate every originating report:
 
 ```text
 node <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> [--report <report.md> ...] [--packet <revision.md> ...] [--lift <packet.md> ...]

@@ -135,8 +135,9 @@ Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:
 
-Resolve the installed `start-build` directory to an actual filesystem path as
-`<start-build-dir>` through runtime resource resolution before invoking Node:
+Relative paths resolve against the directory of the file that contains them, so
+`<start-build-dir>` below is the absolute path of `..`; run the helper by that
+resolved absolute path, not from the target CWD:
 
 ```text
 node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>

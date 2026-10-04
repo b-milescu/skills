@@ -6,7 +6,9 @@ import yaml from '../start-build/scripts/vendor/js-yaml.mjs';
 
 const REPO_ROOT = findRepoRoot();
 const DIALECTS = new Set(['claude', 'omp']);
-const REQUIRED_FIELDS = ['name', 'description', 'tools'];
+// `tools` is optional: omitting it inherits every parent tool in both runtimes. A declared
+// list is still validated name by name.
+const REQUIRED_FIELDS = ['name', 'description'];
 
 const CLAUDE_ALLOWED_FIELDS = new Set([
   'name',
@@ -116,21 +118,37 @@ const CLAUDE_TOOLS = new Set([
   'Workflow',
   'Write',
 ]);
+// Mirrors OMP 17.3.7 src/tools/builtin-names.ts: BUILTIN_TOOL_NAMES plus HIDDEN_TOOL_NAMES
+// (yield, goal, think). Static on purpose: the checker never imports OMP.
 const OMP_TOOLS = new Set([
   'ask',
   'ast_edit',
   'ast_grep',
   'bash',
   'browser',
+  'checkpoint',
+  'computer',
+  'debug',
   'edit',
   'eval',
+  'github',
   'glob',
+  'goal',
   'grep',
   'hub',
   'inspect_image',
+  'learn',
   'lsp',
+  'manage_skill',
+  'memory_edit',
   'read',
+  'recall',
+  'reflect',
+  'retain',
+  'rewind',
+  'security_scan',
   'task',
+  'think',
   'todo',
   'web_search',
   'write',

@@ -27,7 +27,7 @@
   },
   "resource_addressing": {
     "target_repo_docs": { "mode": "repo-relative" },
-    "runtime_skill_resources": { "mode": "skill-relative", "execution": "<skill-name>/<path> resolves against the directory holding the installed skill directories; resolve it to a real filesystem path before invoking helpers" },
+    "runtime_skill_resources": { "mode": "skill-qualified", "execution": "<skill-name>/<path> names a file inside an installed skill, not a path from the declaring file; resolve it to a real filesystem path before invoking helpers. Relative paths inside that file resolve against the directory of the file that contains them." },
     "installed_aliases": "Classify by underlying source; project-owned native aliases never establish the invoked target's profile."
   },
   "skill_resources": {

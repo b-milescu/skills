@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Focus: Native local-marketplace installation and actual OMP discovery in fresh
-# processes. Proves selected source and canonical resource access, not hosted
-# acquisition, live models, native operations or hard MCP confinement.
+# processes. Proves selected source, that no selected route restricts tools (each
+# inherits the parent's) and canonical resource access, not hosted acquisition,
+# live models or native operations.
 set -euo pipefail
 shopt -s nullglob
 TEST_NAME="omp-agent-loader-smoke"
@@ -101,11 +102,9 @@ for (const { name, entry } of routes) {
   assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
   assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
   assert([...agent.autoloadSkills].sort().join() === [entry, 'forge'].sort().join(), `${name}: preload must be exactly the canonical entry and forge`);
-  if (project) {
-    assert(agent.tools.includes('mcp__github_*') && !agent.tools.some(tool => tool.includes('codebase_memory')), `${name}: project-native selection must include github and exclude codebase-memory`);
-  } else {
-    assert(!agent.tools.some(tool => tool.startsWith('mcp')), `${name}: shared route leaks native selection`);
-  }
+  // An omitted or empty `tools` list reaches the loader as undefined: the route inherits the
+  // parent's tools. Any declared list would be a restriction.
+  assert(!agent.tools?.length, `${name}: route must not restrict tools, got ${JSON.stringify(agent.tools)}`);
   console.log(JSON.stringify({ proof: 'selected-metadata', phase: process.env.PROOF_PHASE, cwd, name, source: agent.source, filePath: agent.filePath, realPath: fs.realpathSync(agent.filePath), model: agent.model, thinking: agent.thinkingLevel, tools: agent.tools }));
 }
 // This is actual session skill discovery with isolated HOME, not a fabricated
@@ -153,4 +152,4 @@ fresh_discovery foreign "$TMP_ROOT/foreign" 0
 fresh_discovery spawning "$spawn_cwd" 1
 fresh_discovery allocated "$allocated_cwd" 1
 fresh_discovery revision "$revision_cwd" 1
-printf '%s: PASS (%s); no live model, native action, Claude or hard-confinement proof\n' "$TEST_NAME" "$proof_scope"
+printf '%s: PASS (%s); no live model, native action or Claude proof\n' "$TEST_NAME" "$proof_scope"

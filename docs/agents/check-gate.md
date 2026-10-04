@@ -44,10 +44,13 @@ The `check` provider job runs the same command after `npm ci`. It is an advisory
 parity signal, not another delivery gate. Record its locator, status, and SHA
 when available, and attribute the status only when its SHA matches the reviewed
 candidate or provider-proven integration commit. Pending, failed, canceled,
-skipped, missing, stale, wrong-SHA, or unavailable CI never changes verdict or
-action eligibility. Native GitHub branch protection on `main` (pull request
-required, `check` status required, force-push and deletion blocked) may still
-refuse a merge; report that provider outcome and never bypass it.
+skipped, missing, stale, wrong-SHA, or unavailable CI never changes verdict,
+authority, or action eligibility. Native GitHub branch protection on `main` (pull
+request required, `check` status required, force-push and deletion blocked) may
+still hold or refuse a merge; report that provider outcome and never bypass it. A
+merge held only by pending `check` is waited out as in
+[native integration](native-integration.md#wait-for-required-checks), then the
+guarded finish re-runs.
 
 ## Executable-bit policy
 
@@ -59,15 +62,15 @@ Shell, Node, and regression helpers stay non-executable (`100644`).
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent consistency | `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; disposable HOME remains unchanged. |
-| Agent schema validation | `npm run check:agents-schema` | Runtime-specific declarations, canonical names, optional model/effort metadata and exact/server-scoped selector syntax; native locations accepted, empty requested validation rejected. Metadata is not hard confinement or effective model/effort proof. |
+| Agent schema validation | `npm run check:agents-schema` | Runtime-specific declarations, canonical names and optional model/effort metadata; routes declare no `tools`, and a declared `tools` is checked for syntax only. Native locations accepted, empty requested validation rejected. Metadata is not effective model/effort proof. |
 | Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
 | Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
 | JavaScript tests | `node --test 'tests/*.mjs'` | Node 22 built-in runner over every top-level `tests/*.mjs` (`node:assert/strict` scripts or `node:test` files); runs in parallel, continues past failures, prints a failure summary. Keep the glob quoted: an empty match then runs nothing instead of Node's repo-wide default patterns, and a directory argument fails on Node 22. |
 | Native install/lifecycle smoke | Native commands in [README](../../README.md#install-on-a-new-machine), with disposable HOME/config/profile | Observe installation, update/removal, exposed skill/agent identities and foreign-CWD helper/resource execution; preserve unrelated user/site content. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
 | Gate/finding/text behavior | `node --test tests/gate-receipt-validator.mjs tests/finding-identity-bindings.mjs tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
-| Skill-stack agnosticism | `node --test tests/skill-stack-agnostic.mjs` | Scans the tracked and untracked non-ignored files of the eight skill directories, `templates/` and `reference/` (symlinks and `start-build/scripts/vendor/` skipped) and fails with every `path:line` that names a code host, agent harness, model or outside skill or carries a machine-specific path; also fails on any repo `.mjs` import that is neither a `node:` builtin nor a relative path. |
-| Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution or hard MCP confinement. Claude precedence requires separate runtime proof. |
+| Skill-stack agnosticism | `node --test tests/skill-stack-agnostic.mjs` | Walks the file system (no git; `.git`, `node_modules` and `start-build/scripts/vendor/` skipped) over the eight skill directories, `templates/` and `reference/` and fails with every `path:line` that names a code host, agent harness, model or vendor, outside skill or carries a machine-specific path; fails on any stack symlink that does not resolve inside the stack; also fails on any repo `.mjs` loader form that is neither a `node:` builtin nor a relative path. |
+| Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution. Claude precedence requires separate runtime proof. |
 | Stale naming check | `git grep -nE "<old-name>\|<rejected-term>"` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
@@ -112,7 +115,7 @@ Schema validation and read-only consistency are not installation evidence. In di
 
 For parent-owned evidence, name the affected native manager's isolated installation/discovery/lifecycle scenario as the expected confirmation. `tests/omp-agent-loader-smoke.sh` retains actual OMP marketplace installation and fresh discovery/resource checks when its source and Bun are available; `OMP_REQUIRE_LOADER=1` fails instead of reporting N/A. Claude selection needs independent native proof.
 
-Installation/discovery does not prove live model/effort selection or hard MCP confinement. Follow [native model and effort selection](../../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and record explicit operator observations from the real fresh spawning session; never infer them from metadata or widen selectors to manufacture proof.
+Installation/discovery does not prove live model/effort selection. Follow [native model and effort selection](../../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and record explicit operator observations from the real fresh spawning session; never infer them from metadata.
 
 **Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 

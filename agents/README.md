@@ -10,19 +10,23 @@ paths); the skills themselves stay runtime-neutral.
 
 `claude/*.md` and `omp/*.md` are canonical reusable presets. Native OMP's
 root `change-*.md` entrypoints are symlinks into `omp/`. Native marketplaces
-preserve roles and canonical workflow skills without selecting native servers.
-The invoked target's confirmed integration determines its native tools and
-action-scoped authority.
+preserve roles and canonical workflow skills.
+
+No route declares `tools`: every preset and every project declaration inherits all
+of the parent session's tools, MCP tools included (each runtime still withholds the
+few tools it never gives a subagent). The invoked target's confirmed integration
+therefore decides which native tools a route reaches, and action-scoped authority
+comes from the canonical workflows, not from frontmatter.
 
 This repository's complete same-name declarations live in
 [`.claude/agents/`](../.claude/agents/) and [`.omp/agents/`](../.omp/agents/).
-They select this project's confirmed servers and point to canonical
-`start-build`/`start-review` and `forge`, plus the target project's integration
-doc. These are whole runtime definitions, not overlays on installed presets or
-copies of skill procedures. Native marketplace metadata excludes these project
-declarations. For another target, manual confirmed setup writes that target's
-complete declarations from its own configuration/evidence; strings alone do not
-establish scoped identity.
+They point to canonical `start-build`/`start-review` and `forge`, plus the target
+project's integration doc, and reach GitHub through the parent session's github
+MCP server or `gh`. These are whole runtime definitions, not overlays on installed
+presets or copies of skill procedures. Native marketplace metadata excludes these
+project declarations. For another target, manual confirmed setup writes that
+target's complete declarations from its own configuration/evidence; strings alone
+do not establish scoped identity.
 
 Builder and mandatory independent final-reviewer roles remain distinct.
 Canonical workflows own task-selected specialists.
@@ -88,13 +92,14 @@ delivery record.
 
 ## Skill invocation and resource paths
 
-Skills name their own resources, the shared reference docs and the shared
-templates by paths relative to the skill's directory, so skill entries carry no
-per-runtime bootstrap. Resolve each skill's relative paths against that skill's
-own directory, including before running a bundled helper from a foreign CWD, and
-strip Markdown `#fragments` before filesystem reads or Node execution. Plugin
-skills live under `${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as
-`skill://<skill>/` in OMP.
+Skills link their own resources, the shared reference docs and the shared
+templates by relative paths. A relative path resolves against the directory of the
+file that contains it, as in standard Markdown, never against the skill directory,
+so skill entries carry no per-runtime bootstrap. Run helper scripts by their
+resolved absolute path, including from a foreign CWD, and strip Markdown
+`#fragments` before filesystem reads or Node execution. Plugin skills live under
+`${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as `skill://<skill>/`
+in OMP.
 
 | Dialect | Skill ids | Declared on the agent by | Activated at runtime by |
 | --- | --- | --- | --- |
@@ -140,9 +145,10 @@ bash agents/check.sh /target/.claude/agents /target/.omp/agents
 ```
 
 Every requested directory must collect agents; an empty request fails even
-alongside a valid request. The schema checks runtime syntax and exact or
-server-scoped MCP selectors without a server catalogue. Syntax acceptance is
-not confirmation that a tool exists, is authenticated, or is accessible.
+alongside a valid request. The schema checks runtime syntax. `tools` is optional
+(these routes omit it); when a target declares it, only the selector syntax is
+checked, which does not confirm that a tool exists, is authenticated, or is
+accessible.
 
 Run the actual disposable-HOME loader scenario (requires the installed OMP
 source and Bun):
@@ -164,11 +170,10 @@ native manager's disposable installed cache; project agent provenance and
 canonical installed-entry provenance are separate facts.
 
 No harness claim covers live model routing, native mutation, reviewer
-obedience, Claude execution or hard MCP confinement. OMP's child executor
-proxies parent MCP tools: frontmatter records selection intent, not an
-isolation boundary. Verify actually available tools and scoped read-only
-native identity from the real spawning session separately. Do not widen to a
-generic `mcp_*` selector or patch an external runtime to manufacture proof.
+obedience or Claude execution. Routes inherit every tool of the parent session,
+so verify the tools actually available and the scoped read-only native identity
+from the real spawning session separately, and never patch an external runtime to
+manufacture proof.
 
 Native installation and lifecycle commands live in [README](../README.md#install-on-a-new-machine);
 [Check Gate](../docs/agents/check-gate.md#native-install-smoke-requirement)

@@ -158,7 +158,9 @@ Authority Verification uses `../../forge/reference/common-guard.md` and native m
   `parent-owned`, `unavailable-tooling`, `not-required`, and `other`.
 - Finish authority: `none — requires explicit human/parent instruction`,
   `approval-only`, `reviewer may merge`, `queue auto-merge`, `human release`, or
-  an affirmatively granted project default.
+  an affirmatively granted project default. A granting value authorizes only the
+  action it names: `queue auto-merge` queues, while `reviewer may merge` or a
+  project default naming direct merge merges directly; neither implies the other.
 - Handoff actions include `parent-run-gate`, `spawn-reviewer`, `rerun-review`,
   `approve`, `finish`, `verify-post-merge`, `human-decision`, and `fix-blocker`.
 - Queued finish is non-terminal; only `post_merge_snapshot` may establish the

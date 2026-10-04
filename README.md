@@ -87,10 +87,12 @@ license; they do not require a developer checkout's `node_modules`.
 
 Both native surfaces expose shared reference docs and templates as resources,
 not additional skills, and exclude complete project-native agent declarations
-from reusable defaults. Canonical logical skill IDs remain unchanged. Skills
-name their resources by paths relative to their own directory, so both runtimes
-resolve them, including helper paths executed from the target CWD, without a
-per-runtime bootstrap; see
+from reusable defaults. The routes declare no `tools` and inherit all of the
+parent session's tools. Canonical logical skill IDs remain unchanged. Skills
+link their resources by relative paths that resolve against the directory of the
+file containing them, as in standard Markdown, so both runtimes resolve them
+without a per-runtime bootstrap; helper scripts run by their resolved absolute
+path, including from the target CWD. See
 [route ids, model/effort selection and skill invocation](agents/README.md#skill-invocation-and-resource-paths).
 Source-owned native docs never become a foreign target's profile or policy.
 
@@ -100,7 +102,7 @@ them. Operators own native configuration and any intentional legacy cleanup.
 Start a fresh runtime session after installation or route/frontmatter updates.
 [Check Gate](docs/agents/check-gate.md#native-install-smoke-requirement) owns
 isolated installation/discovery/lifecycle proof; discovery metadata alone does
-not prove live model routing, authentication or hard tool confinement.
+not prove live model routing or authentication.
 
 ## License
 

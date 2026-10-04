@@ -103,15 +103,17 @@ project_profile:
     reviewer: start-review/SKILL.md
   resource_addressing:
     target_repo_docs: repo-relative
-    runtime_skill_resources: skill-relative
+    runtime_skill_resources: skill-qualified
 ```
 
 ### Runtime project declarations and provenance
 
 Shared installed routes are provider-neutral. This repository's complete
-same-name declarations live in `.claude/agents/` and `.omp/agents/`; only these
-target-owned files name confirmed native servers. Route ids, runtime precedence,
-provenance and what to validate and observe separately are owned by
+same-name declarations live in `.claude/agents/` and `.omp/agents/`. Like the
+shared routes they declare no `tools` and inherit all of the parent session's
+tools, and they reach GitHub through the parent's github MCP server or `gh`. Route
+ids, runtime precedence, provenance and what to validate and observe separately
+are owned by
 [agents/README.md](../../agents/README.md#runtime-specific-precedence); the OMP
 loader proof is `tests/omp-agent-loader-smoke.sh`.
 
@@ -176,12 +178,28 @@ account, so native approval is unavailable;
 [native integration](native-integration.md#ready-approval-and-finish) records the
 passing Review Report as the review gate.
 
-Merge, auto-merge, release, deploy, close, and source-branch cleanup authority
-remain separate. They require an explicit `Merge authority` value and
-verifiable `Merge authority source`; approval never implies those finish
-actions.
+Merge, auto-merge queueing, release, deploy, close, and source-branch cleanup
+authority remain separate. Each requires an explicit `Finish authority` value and
+verifiable `Finish authority source`, and approval never implies them. The one
+project default below is that value for the parent's direct merge.
 
-Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In the `issue-delivery-loop` skill's parent-orchestrated child-builder plus final-reviewer mode, the parent owns approval and the exact-head direct merge after a fresh guarded pass review; this repo's GitHub binding refuses auto-merge queueing as `sha-bound-action-unsupported` ([native integration](native-integration.md#ready-approval-and-finish)). The reviewer owns only the Review Report verdict and evidence, then routes `Next action: finish-by-authorized-actor` back to the parent/authorized finisher.
+Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In the `issue-delivery-loop` skill's parent-orchestrated child-builder plus final-reviewer mode, the parent owns approval and the exact-head direct merge after a fresh guarded pass review, under the project default below. The reviewer owns only the Review Report verdict and evidence, then routes `Next action: finish-by-authorized-actor` back to the parent/authorized finisher.
+
+#### Finish authority default
+
+This section is the verifiable `Finish authority source` for the one project
+default, `project default: the parent finisher may directly merge the reviewed
+head`; quote that claim in the Reviewer Lift `Finish authority` row and the finisher
+verifies it through the common guard. It grants the `Finish owner: parent` finisher
+the exact-head direct merge
+([native integration](native-integration.md#ready-approval-and-finish)) after a
+fresh guarded pass review, a valid exact-candidate Gate Receipt and the common
+guard. GitHub holds that merge until required check `check` passes: the check can
+hold the merge, never authorize it, and the
+[wait recipe](native-integration.md#wait-for-required-checks) ends the wait before
+the guarded merge re-runs. The default grants nothing else: not queueing (this
+repo's GitHub binding refuses it as `sha-bound-action-unsupported`), and not a
+reviewer's own merge, release, deploy, close or source-branch cleanup.
 
 ### Release/deploy policy
 

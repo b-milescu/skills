@@ -11,7 +11,8 @@ Code, pull requests, work items and advisory CI use the public GitHub repository
 <https://github.com/b-milescu/skills> (`b-milescu/skills`), default branch `main`.
 Named `origin` fetch and push must both name it (HTTPS or
 `git@github.com:b-milescu/skills.git`); resolve fork or alternate-remote intent
-explicitly rather than selecting the first remote. Authentication is supplied by the
+explicitly rather than selecting the first remote. Project agents declare no `tools`
+and inherit the parent session's tools, so authentication is supplied by the parent's
 mounted `github` MCP connection and, for the documented gaps below, the logged-in
 `gh` CLI; never inspect or print credential stores or tokens. Every MCP call names
 `owner="b-milescu"` and `repo="skills"`; that explicit pair is the destination
@@ -99,9 +100,12 @@ commit. Record the Lift `CI pipeline` cell as
 `evidence=<run URL>; status=<conclusion or status>; commit=<head_sha>`. Failed/missing/
 pending CI does not affect eligibility, though native protection can refuse writes. A
 watcher (`gh run watch`, `gh pr checks --watch`) is advisory progress only, not a local
-gate.
+gate; its one use is the [bounded wait for a held merge](#wait-for-required-checks),
+where it only ends the wait.
 
-Resolve the installed gate helper to its actual filesystem path. Follow the
+Run the gate helper (`../../start-build/scripts/validate-gate-receipt.mjs`) by its
+resolved absolute path; `<start-build-dir>` below stands for that `start-build`
+directory. Follow the
 [canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
 selecting the recipe from the actual `Gate owner`:
 
@@ -148,9 +152,10 @@ these proofs.
 
 ## Publish one artifact
 
-Run common no-echo text validation from the installed forge directory before any
-write; GitHub adds no server-side body validation, so that check is the only text
-guard. Preserve authored UTF-8 source in a run file that ends without a trailing LF, so
+Run common no-echo text validation (`../../forge/scripts/validate-text.mjs`, by its
+resolved absolute path) before any write; GitHub adds no server-side body validation,
+so that check is the only text guard. Preserve authored UTF-8 source in a run file that
+ends without a trailing LF, so
 newline handling cannot cause a mismatch. GitHub bodies are capped at 65,536
 characters; a larger artifact is a transport blocker, never truncated or split.
 Readback must equal the source byte for byte: no GitHub normalization is documented for
@@ -227,17 +232,22 @@ SHA, the Gate Receipt `checkout_commit` and the Review Report `commit_id`,
   `blocked: native approval unavailable` with Action blocker `permission-failure`; a
   grant of `approval-only` is denied the same way.
 - Direct merge: `merge_pull_request` with `merge_method="merge"` and
-  `expectedHeadSha=<reviewed>`, never omitted, once required check `check` has passed on
-  the reviewed head. A pending or failed `check` makes GitHub refuse the merge; report
-  that refusal, never bypass it. Where the finish also removes the source branch, use
-  the `gh` form below (the MCP merge has no branch delete); `-R` keeps gh from touching
-  local branches.
+  `expectedHeadSha=<reviewed>`, never omitted, under a `reviewer may merge` grant or
+  the [project default](dev-workflows.md#finish-authority-default); CI never supplies
+  the authority. Required check `check` holds the merge until it passes on the
+  reviewed head: GitHub refuses the merge while `check` is pending or failed. Report
+  that refusal, never bypass it, and when pending `check` is the only hold
+  [wait it out](#wait-for-required-checks) and re-run the finish. Where the finish
+  also removes the source branch, use the `gh` form below (the MCP merge has no
+  branch delete); `-R` keeps gh from touching local branches.
 - Queue: unsupported. `--match-head-commit` binds the head only when GitHub accepts an
   auto-merge request, and GitHub documents cancelling a queued request only for a push
   by someone without write access or a base-branch change, so a later writer push would
   still merge once requirements pass. That is no exact-head guarantee: refuse queueing
-  with `sha-bound-action-unsupported`, finish with the direct merge above, and never
-  issue `--auto` or unbound queueing.
+  with `sha-bound-action-unsupported` and never issue `--auto` or unbound queueing. A
+  `queue auto-merge` grant never authorizes the direct merge above (only
+  `reviewer may merge` or the project default does); with no grant at all the blocker
+  is `missing-authority`.
 
 ```text
 gh pr merge <n> -R b-milescu/skills --merge --match-head-commit <reviewed> --delete-branch
@@ -260,6 +270,29 @@ and the issue's `closed_by_pull_requests` (`issue_read(get)`) check unintended c
 and the PR's commit messages and any merge `commit_message` must carry no other closing
 keyword because GitHub honours those on merge to `main`; observed post-merge issue state
 is the third oracle. Keep these distinct.
+
+### Wait for required checks
+
+Required check `check` (workflow `check`) is `main`'s native merge protection: it can
+hold the direct merge, never authorize one, and a pass changes no verdict, review,
+approval or authority. When pending `check` is the only hold, whether read before the
+call or reported by GitHub's refusal, end the wait with one watcher on the reviewed
+head, run under the caller's wait budget as its timeout, then re-run the whole guarded
+finish above (fresh `get_me()` and `pull_request_read(get)` reads, the same
+`expectedHeadSha`); the earlier refusal is never reused:
+
+```text
+gh pr checks <n> -R b-milescu/skills --required --watch
+```
+
+`--required` limits the watch to required checks and `--watch` returns when they
+finish. MCP-only sessions instead read `pull_request_read(get_check_runs)` at the
+[wait cadence](../../start-build/reference/parent-orchestrator.md#wait-cadence) floor
+until `check` reports completed. Either way the watcher only ends the wait: it is
+advisory, never a local gate, and the re-run guard decides (a push during the wait
+moves the head and fails it as `changed-head-sha`). A failed `check`, or a wait that
+outlasts the caller's budget, leaves the PR unmerged and blocked with GitHub's
+outcome as `other` and its one-line reason, never bypassed.
 
 ## Read-only post-merge and cleanup
 
