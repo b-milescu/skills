@@ -58,6 +58,58 @@ expect_fail "$TMP_ROOT/missing/.claude/agents"
 mkdir -p "$TMP_ROOT/unrecognized"
 printf '%s\n' '# Not an agent' >"$TMP_ROOT/unrecognized/not-agent.md"
 expect_fail "$TMP_ROOT/unrecognized/not-agent.md"
+# A plugin's `agents/` root in a checkout other than this one: its top-level presets are OMP
+# dialect, `claude/` holds the Claude ones and README.md is no agent. Recognition must follow
+# the directory layout, not the location of the checker.
+plugin="$TMP_ROOT/plugin-tree/agents"
+mkdir -p "$plugin/claude" "$TMP_ROOT/readme-only/agents"
+printf '%s\n' '# Not an agent' >"$plugin/README.md"
+cp "$plugin/README.md" "$TMP_ROOT/readme-only/agents/README.md"
+cat > "$plugin/claude/neutral-worker.md" <<'MD'
+---
+name: neutral-worker
+description: Claude plugin preset
+skills: start-build, forge
+model: inherit
+---
+MD
+cat > "$plugin/neutral-worker.md" <<'MD'
+---
+name: neutral-worker
+description: OMP plugin preset
+autoload-skills: start-build, forge
+---
+MD
+expect_checked() { # "<N> Claude agent(s), <M> OMP agent(s)", then checker arguments
+  local summary="$1"
+  shift
+  if ! bun "$checker" "$@" >"$TMP_ROOT/summary" 2>&1 || ! grep -Fxq "agents-schema: checked $summary" "$TMP_ROOT/summary"; then
+    echo "expected '$summary' from: $*" >&2
+    cat "$TMP_ROOT/summary" >&2
+    exit 1
+  fi
+}
+expect_checked '1 Claude agent(s), 1 OMP agent(s)' "$plugin"
+expect_checked '0 Claude agent(s), 1 OMP agent(s)' "$plugin/neutral-worker.md"
+expect_checked '1 Claude agent(s), 0 OMP agent(s)' "$plugin/claude"
+expect_fail "$plugin/README.md"
+expect_fail "$TMP_ROOT/readme-only/agents"
+# A corrupted root preset must fail whether the plugin root or the file itself is the target.
+printf -- '---\nmodel: 42\ntools: Bogus\n---\n' >"$plugin/neutral-worker.md"
+for target in "$plugin" "$plugin/neutral-worker.md"; do
+  expect_fail "$target"
+  for error in 'missing required frontmatter field: name' 'missing required frontmatter field: description' 'frontmatter field "model" must be a non-empty string or string list' 'OMP tool "Bogus" is not an OMP tool'; do
+    if ! grep -F 'plugin-tree/agents/neutral-worker.md:' "$TMP_ROOT/diagnostic" | grep -Fq "$error"; then
+      echo "corrupted plugin root preset not rejected for $target: $error" >&2
+      cat "$TMP_ROOT/diagnostic" >&2
+      exit 1
+    fi
+  done
+done
+if bash "$REPO_ROOT/agents/check.sh" "$plugin" >"$TMP_ROOT/plugin-check.out" 2>&1; then
+  echo 'agents/check.sh accepted a corrupted plugin root preset' >&2
+  exit 1
+fi
 
 bad="$TMP_ROOT/bad/.omp/agents"
 mkdir -p "$bad"

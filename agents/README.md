@@ -8,9 +8,17 @@ paths); the skills themselves stay runtime-neutral.
 
 ## Reusable presets and complete project declarations
 
-`claude/*.md` and `omp/*.md` are canonical reusable presets. Native OMP's
-root `change-*.md` entrypoints are symlinks into `omp/`. Native marketplaces
-preserve roles and canonical workflow skills.
+The reusable presets are plain files, one per route and runtime, never symlinks
+(an installer may rewrite a symlink into a machine-specific absolute link, and
+symlinks break on some Windows checkouts): `claude/<route>.md` for Claude Code and
+`<route>.md` directly in `agents/` for OMP. Each runtime loads only its own
+dialect. OMP (verified on 17.3.7) scans the installed plugin's `agents/*.md`, not
+recursively, so it never reaches `claude/`; it has no manifest key for agent paths.
+Claude Code (verified on 2.1.288) scans `agents/` only when the manifest lists no
+agents, and `.claude-plugin/plugin.json` lists `./agents/claude/<route>.md`
+explicitly, which replaces that scan, so Claude never loads the OMP files. Keep
+that list: without it Claude also loads the OMP files and this README as agents.
+Native marketplaces preserve roles and canonical workflow skills.
 
 No route declares `tools`: every preset and every project declaration inherits all
 of the parent session's tools, MCP tools included (each runtime still withholds the
@@ -39,7 +47,7 @@ The two routes are `change-builder` (child builder) and `change-reviewer-final`
 | Runtime | Reusable route ids | Reusable source |
 | --- | --- | --- |
 | Claude Code | `skills:change-builder`, `skills:change-reviewer-final` | `agents/claude/<route>.md`, selected explicitly by `.claude-plugin/plugin.json` |
-| OMP | `change-builder`, `change-reviewer-final` | `agents/<route>.md` (symlinks into `agents/omp/`); root `agents/*.md` select only OMP dialect files |
+| OMP | `change-builder`, `change-reviewer-final` | `agents/<route>.md`, found by OMP's non-recursive `agents/*.md` scan of the installed plugin (no manifest entry) |
 
 Claude prefixes plugin agents with the plugin namespace, so use the qualified ids
 for deterministic plugin routing. OMP exposes bare ids. In either runtime an

@@ -4,11 +4,13 @@ Eight reusable agent skills and runtime-specific builder/final-reviewer presets,
 
 ## Layout
 
-- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`). Skill directories hold no symlinks (an installer may rewrite them into machine-specific absolute links); skills link the shared `templates/` and `reference/` by relative path.
-- `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules, route ids, model/effort selection and skill invocation.
+- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`). Skills link the shared `templates/` and `reference/` by relative path.
+- `agents/` — runtime-specific agent definitions: `agents/*.md` for OMP, `agents/claude/*.md` for Claude Code; see `agents/README.md` for Claude Code vs OMP dialect rules, route ids, model/effort selection and skill invocation.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
 - `templates/` — shared template files (ADR, filling guides). Linked from skill files by relative path, not installed as runtime skill-root entries.
 - `reference/` — shared reference docs (Decoupling Contract, agent-readiness scorecard). Linked from skill files by relative path, not installed as runtime skill-root entries.
+
+No tracked file is a symlink: an installer may rewrite one into a machine-specific absolute link, and symlinks break on some Windows checkouts. `tests/skill-stack-agnostic.mjs` enforces it.
 
 ## Skills
 
