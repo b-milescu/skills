@@ -127,7 +127,7 @@ delivery:
     required_parent_decision: "none"
     safe_to_continue_without_parent: true
     changed_since_last_handoff: false
-    evidence_ready_for_next_actor: ["change-request-description-current", "candidate-commit-pushed"]
+    evidence_ready_for_next_actor: ["packet-home-current", "candidate-commit-pushed"]
   evidence:
     - tier: "tier-1"
       kind: "change-request-metadata"

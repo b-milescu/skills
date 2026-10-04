@@ -57,6 +57,17 @@ never grants authority.
   containment, advisory result-bound CI and branch/worktree cleanup evidence.
   Queued is not merged; closure intent/preview are not observed item closure.
 
+## Packet home
+
+The Review Packet, with its Reviewer Lift, is the canonical durable handoff. It
+lives at the **packet home** the selected reference designates, stated with its
+size limit and unit. The default home is the change-request description. A
+reference may instead designate a durable note on the change request; the
+description then carries a current pointer to that note instead of the packet.
+Publication, byte-exact readback and the Reviewer Lift marker-block rules apply
+unchanged at the home. `publish` checks the authored packet against the limit
+before publishing: a packet over it is refused (`blocked`), never truncated.
+
 ## Helpers
 
 Relative paths resolve against the directory of the file that contains them, not
@@ -81,7 +92,8 @@ role/offset/type, never body or parser excerpts. Valid envelope content errors u
 the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
-normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
+normalization, closure syntax, the [packet home](#packet-home) and its size limit,
+draft/ready, receipt extraction, approval/finish,
 expected-head guarantees, required-check holds with the signal that ends their
 wait and any bound other than the default
 [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
@@ -89,6 +101,10 @@ and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as
-unsupported. Before finish re-read the recorded allocated open item and exact
+unsupported. A direct merge is exact-head only through a stale-head rejection the
+reference names; where the provider documents none, setup proves it with a live
+stale-head probe before the binding may claim exact-head merge. Queueing that
+cannot be bound to a head is refused as `sha-bound-action-unsupported`. Before
+finish re-read the recorded allocated open item and exact
 change/source/item relationship. Verifier cleanup retains dirty, foreign,
 unknown, unmerged and containment-unverified state.

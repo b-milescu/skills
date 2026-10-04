@@ -54,7 +54,7 @@ A refactor is **behavior-touching** if it modifies external mutation paths, prot
 
 Ambiguous = behavior-touching. Behavior-touching refactors need regression evidence and reviewer attention.
 
-For behavior-touching work, each headline claim in the change-request body must name the mutation that kills its defending assertion. This is scoped to headline claims, not every assertion; do not run a full mutation battery per change request. An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
+For behavior-touching work, each headline claim in the packet or change-request body must name the mutation that kills its defending assertion. This is scoped to headline claims, not every assertion; do not run a full mutation battery per change request. An assertion whose subject cannot be changed by any mutation of the code under test—for example, when no mock can move the observed state—is structurally incapable of failing and is not regression evidence.
 
 A named killing mutation counts as evidence only when the harness proves the substitution applied by asserting its anchor matched exactly once before checking the result. The observed failure message must match the guard under test; a non-zero exit alone cannot distinguish a fired guard from a parse or setup error.
 

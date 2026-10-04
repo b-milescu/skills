@@ -12,7 +12,7 @@
     "skill_resources", "resource_addressing"
   ],
   "field_guidance": {
-    "provider": "Opaque confirmed integration name; reference resolves the target-owned integration document or section.",
+    "provider": "Opaque confirmed integration name; reference resolves the target-owned integration document or section, which states the packet home and size limit (the change-request description by default, or a durable note the description points to), the stale-head rejection behind exact-head direct merge (proved by setup's live stale-head probe where the provider documents none), and that queueing not bindable to a head is refused as sha-bound-action-unsupported.",
     "profile_path": "Confirmed invoked-target profile pointer, never an installed default.",
     "tracker": "Independently confirmed work-item system/repository or local filesystem scope, tools and operation limits.",
     "agent_setup_docs": "Confirmed target-relative paths preserving custom roots and additions.",

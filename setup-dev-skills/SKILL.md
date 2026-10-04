@@ -41,10 +41,17 @@ or which conflicting reference is authoritative. Do not present a platform menu,
 repeat already-confirmed choices or require unrelated authentication.
 
 Confirm target-owned integration recipes for forge's five operations, including
-operation-specific required systems, unsupported outcomes, pagination, exact-head
+operation-specific required systems, unsupported outcomes, pagination, the
+[packet home](../forge/SKILL.md#packet-home) and its size limit, exact-head
 guarantees, required-check holds with the signal that ends their wait and any bound
 other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
 normalization and lossless readback/recovery.
+Exact-head direct merge needs a stale-head rejection the reference names. Where the
+provider documents none, prove it with an owner-confirmed live stale-head probe on a
+disposable change request into a disposable branch, and record its outcome in the
+reference, before the binding may claim exact-head merge. Queueing that cannot be
+bound to a head is recorded as unsupported and refused as
+`sha-bound-action-unsupported`.
 Configuration is not an action-authority grant. Keep common safety floors with
 forge/delivery owners.
 

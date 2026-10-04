@@ -4,7 +4,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## General rules for all builder templates
 
-- Publish the template through `forge publish` as the change-request description (review-packet, compact) or provider-native discussion artifact (revision-packet, stuck-packet).
+- Publish the template through `forge publish`: review-packet and compact at the [packet home](../../forge/SKILL.md#packet-home), within its size limit; revision-packet and stuck-packet as provider-native discussion artifacts.
 - Keep it in sync with the diff and require provider-native publication readback after every push.
 - Before publication or ready transition, use the selected `forge` provider to validate the native work-item relationship/closure preview. Provider-specific syntax belongs only in its provider reference.
 
@@ -56,7 +56,7 @@ Add the heading only when its trigger applies; the template lists the four most 
 
 ## revision-packet.md
 
-- Submit with `forge publish` in response to a Review Report or substantive post-ready push. Push fixes as new commits, then refresh the change-request description and Reviewer Lift.
+- Submit with `forge publish` in response to a Review Report or substantive post-ready push. Push fixes as new commits, then refresh the Review Packet and Reviewer Lift at the packet home.
 - **Finding bindings** — Repeat every marked `(Report locator, Reviewed commit, Finding ID)` tuple addressed and run the pure-local validator (per the [helper rule](../../forge/SKILL.md#helpers)) before publishing.
 - **Response to Must Fix** — One subsection per MF item. Quote the headline/snippet, then response and commit SHA.
 - **What I did not change** — Reviewer comments not acted on, and why.

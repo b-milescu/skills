@@ -16,9 +16,9 @@ or contradicted decoupling evidence means serial work.
    safety surfaces current.
 5. Only the parent/coordinator launches builders or reviewers. Child builders do
    not launch either role.
-6. Keep durable handoffs in provider-published change-request descriptions and
-   discussions with provider-native readback. Local run artifacts stay in a
-   caller-owned absolute directory outside temporary worktrees.
+6. Keep durable handoffs in provider-published packet homes and discussions with
+   provider-native readback. Local run artifacts stay in a caller-owned absolute
+   directory outside temporary worktrees.
 7. Keep evidence scoped to one worktree/change request. Do not combine packets,
    close multiple work items from one change request, or stack branches unless
    the user explicitly switches to a serial plan.

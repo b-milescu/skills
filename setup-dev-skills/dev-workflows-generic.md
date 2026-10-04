@@ -13,6 +13,12 @@ work items bind filesystem scope. Refresh only systems required by the requested
 operation; missing or unsupported actions block only that operation. Configuration
 grants no action authority.
 
+The selected `provider.reference` states the packet home and its size limit (the
+change-request description by default, or a durable note the description points to);
+the stale-head rejection behind exact-head direct merge, which setup proves with a
+live stale-head probe where the provider documents none; and that queueing that
+cannot be bound to a head is refused as `sha-bound-action-unsupported`.
+
 Canonical resources, each named as its skill plus the path inside that skill:
 
 - `forge` skill: `SKILL.md`, `reference/common-guard.md`
