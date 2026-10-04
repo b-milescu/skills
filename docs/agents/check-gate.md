@@ -45,12 +45,15 @@ parity signal, not another delivery gate. Record its locator, status, and SHA
 when available, and attribute the status only when its SHA matches the reviewed
 candidate or provider-proven integration commit. Pending, failed, canceled,
 skipped, missing, stale, wrong-SHA, or unavailable CI never changes verdict,
-authority, or action eligibility. Native GitHub branch protection on `main` (pull
-request required, `check` status required, force-push and deletion blocked) may
-still hold or refuse a merge; report that provider outcome and never bypass it. A
-merge held only by pending `check` is waited out as in
+authority, or action eligibility, and the finisher never reads it to decide
+eligibility. Native GitHub branch protection on `main` (pull request required,
+`check` status required, force-push and deletion blocked, enforced for admins)
+may hold or refuse a merge for every account; report that provider outcome and
+never bypass it. A merge held only by pending `check` is waited out within the
+required-check wait budget as in
 [native integration](native-integration.md#wait-for-required-checks), then the
-guarded finish re-runs.
+guarded finish re-runs; a failed `check` or an elapsed budget leaves the PR
+blocked with GitHub's outcome.
 
 ## Executable-bit policy
 
@@ -62,14 +65,14 @@ Shell, JavaScript, and regression helpers stay non-executable (`100644`).
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent consistency | `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; disposable HOME remains unchanged. |
-| Agent schema validation | `bun run check:agents-schema` | Runtime-specific declarations, canonical names and optional model/effort metadata; routes declare no `tools`, and a declared `tools` is checked for syntax only. Native locations accepted, empty requested validation rejected. Metadata is not effective model/effort proof. |
-| Markdown formatting | `bun run check:md` | Runs the pinned `markdownlint-cli2` on Bun (`bunx --bun --no-install`) against tracked Markdown with repo-local prompt-friendly rule config; without a prior `bun install` it fails loudly instead of fetching a different release. |
+| Agent schema validation | `bun run check:agents-schema` | Runtime-specific declarations, canonical names and optional model/effort metadata; routes declare no `tools`. A declared `tools` list must be non-empty: its builtin names are validated against the checker's pinned Claude/OMP tool tables (wrong casing and retired names are flagged) and MCP selectors get a syntax check only, never a server catalogue. Native locations accepted, empty requested validation rejected. Metadata is not effective model/effort proof. |
+| Markdown formatting | `bun run check:md` | Runs the lockfile-pinned `markdownlint-cli2` from `node_modules/.bin` on Bun (`bun --bun node_modules/.bin/markdownlint-cli2`) against tracked Markdown with repo-local prompt-friendly rule config. Without a prior `bun install --frozen-lockfile` the binary is missing and the step fails loudly (`Script not found`); it never fetches or reuses a different release. |
 | Markdown local links | `bun run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
-| JavaScript tests | `bun tests/<file>.mjs`, or `bun test ./tests/<file>.mjs` for a file that imports `node:test` | `scripts/check.sh` runs every top-level `tests/*.mjs` in its own process and gates on its exit code, so one file's late async throw or `process.exit(0)` cannot hide or skip another file's result; it continues past failures and lists each failing file. A `node:test` file runs through `bun test` (the only runner it works under) with an explicit `./` path, because `bun test` treats a bare `tests/x.mjs` or a quoted glob as a name filter that matches nothing; every other file is a plain `node:assert/strict` script run as `bun tests/<file>.mjs`. An empty `tests/*.mjs` match runs nothing, and a bare `bun test` never runs (it discovers `*.test.*` files repo-wide). |
+| JavaScript tests | `bun tests/<file>.mjs` | `scripts/check.sh` runs every top-level `tests/*.mjs` as `bun tests/<file>.mjs` in its own process and gates on its exit code, so one file's late async throw or `process.exit(0)` cannot hide or skip another file's result; it continues past failures and lists each failing file. Every file is a plain `node:assert/strict` script that exits non-zero on failure; `node:test` is unsupported (its tests only run under `bun test`, which the gate never runs). An empty `tests/*.mjs` match runs nothing, and a bare `bun test` never runs (it discovers `*.test.*` files repo-wide). |
 | Native install/lifecycle smoke | Native commands in [README](../../README.md#install-on-a-new-machine), with disposable HOME/config/profile | Observe installation, update/removal, exposed skill/agent identities and foreign-CWD helper/resource execution; preserve unrelated user/site content. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
 | Gate/finding/text behavior | `bun tests/gate-receipt-validator.mjs`, `bun tests/finding-identity-bindings.mjs`, `bun tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
-| Skill-stack agnosticism | `bun test ./tests/skill-stack-agnostic.mjs` | Walks the file system (no git; `.git`, `node_modules` and `start-build/scripts/vendor/` skipped) over the eight skill directories, `templates/` and `reference/` and fails with every `path:line` that names a code host, agent harness, model or vendor, outside skill or carries a machine-specific path; fails on any Node toolchain use in the stack (a `node` invocation, a Node package-manager or version-manager command, a Node runtime version requirement; `bun`, `node:` imports and `node_modules` stay allowed); fails on any stack symlink that does not resolve inside the stack; also fails on any repo `.mjs` loader form that is neither a `node:` builtin nor a relative path. |
+| Skill-stack agnosticism | `bun tests/skill-stack-agnostic.mjs` | Walks the file system (no git; `.git`, `node_modules` and `start-build/scripts/vendor/` skipped) over the eight skill directories, `templates/` and `reference/` and fails with every `path:line` that names a code host, agent harness (names, `CLAUDE_*`/`OMP_*` variables, config paths, internal URIs, MCP and tool ids), model or vendor, outside skill or carries a machine-specific path; fails on any Node toolchain use in the stack (a `node` invocation, a `/bin/node` path, a `"node"` manifest key or `node@N` pin, `npm`, `npx`, `nvm`, `pnpm`, `yarn`, `corepack`, `fnm` or `volta`, a Node runtime version requirement; `bun`, `node:` imports and `node_modules` stay allowed); fails on any stack symlink with an absolute target or one that does not resolve inside the stack, and on any stack file holding a NUL byte, which cannot be scanned; also fails on any repo `.mjs` loader form that is neither a `node:` builtin nor a relative path, or that holds a NUL byte. A plain script: every check runs, all hits are listed together, any failure exits non-zero. |
 | Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution. Claude precedence requires separate runtime proof. |
 | Stale naming check | `git grep -nE "<old-name>\|<rejected-term>"` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |

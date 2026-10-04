@@ -2,7 +2,7 @@
 
 Detailed parent/coordinator flow for child builders and final reviewers in provider-neutral work-item-to-change-request loops. This file is the canonical owner of the parent-orchestrator recipe.
 
-Safety invariants: child builders do not spawn reviewers, approve, finish, or clean parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; the current head, reviewed commit, and exact-candidate local Gate Receipt stay bound before approval or finish; explicit authority source stays required; provider CI is advisory evidence, and a provider's required checks may hold a merge but never authorize one; `forge` owns provider-native transport and readback; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
+Safety invariants: child builders do not spawn reviewers, approve, finish, or clean parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; the current head, reviewed commit, and exact-candidate local Gate Receipt stay bound before approval or finish; explicit authority source stays required; provider CI is advisory evidence, and a provider's required checks may hold or refuse a merge but never authorize one; `forge` owns provider-native transport and readback; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
 ## Durable child outputs
 
@@ -117,8 +117,8 @@ per-branch invariant, not a one-time batch preflight:
 6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
 7. **Enforce candidate and gate guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and the exact-candidate local Gate Receipt to be valid. CI state never changes eligibility.
 8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. Under the literal `Finish owner: parent` contract, reviewers publish only Review Report verdict/evidence and return without waiting for parent action evidence; the parent/authorized finisher verifies provenance and passes the `forge` common guard before one `forge act`, then requires provider-native readback.
-   The verified grant selects the finish ([Default finish](../../start-review/REVIEW-FLOW.md#default-finish)): `queue auto-merge` queues only where the target's provider reference guarantees exact-head queueing; `reviewer may merge`, or a verified project default naming direct merge for the finisher, merges directly, bound to the reviewed head. A `queue auto-merge` grant never authorizes a direct merge: return `sha-bound-action-unsupported` (`missing-authority` when no grant exists).
-   A provider's required checks are native merge protection: they can hold a merge, never authorize one. When only pending required checks hold the direct merge, wait on the check-completion signal the target's provider reference names, per [Wait cadence](#wait-cadence), then re-run the full guarded `forge act`; do not reuse the earlier refusal. Failed checks, or a wait that elapses, block the change with the provider outcome.
+   The verified grant selects the finish ([Default finish](../../start-review/REVIEW-FLOW.md#default-finish)): `queue auto-merge` queues only where the target's provider reference guarantees exact-head queueing; `reviewer may merge`, or a verified project default naming direct merge for the finisher, merges directly, bound to the reviewed head. A project default applies only when it is the value quoted in the Lift's `Finish authority`, and an explicit grant takes precedence over it: an explicit `queue auto-merge` grant never authorizes a direct merge, even beside a standing direct-merge default, so return `sha-bound-action-unsupported` where exact-head queueing is not guaranteed (`missing-authority` when no grant exists).
+   CI status never changes the verdict, review, approval, authority or finish eligibility, and the finisher never reads CI status to decide eligibility. A provider's required checks are native merge protection: they may hold or refuse the guarded merge, a provider outcome reported without bypass and never an eligibility decision or an authorization. On a hold from pending required checks, wait on the check-completion signal the target's provider reference names, within the [required-check wait budget](#required-check-wait-budget), then re-run the full guarded `forge act` from its first guard; the earlier refusal is never reused. A failed check or an elapsed budget leaves the change blocked with the provider outcome.
    Absent verified authority, stop at the most permissive authorized action. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it. That finisher owns native post-read and any required compact action explanation, which next actors verify per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence). The historical Review Report stays immutable; a changed head routes new-head review rather than rebinding its judgment or findings.
    For unblock reconciliation, read the invoked target's confirmed tracker policy/reference, resolving repo-relative references from its confirmed root. Reconcile a dependent issue's `Blocked by` / `Dependencies` text only when that policy authorizes the particular blocker-closure transition, under the existing `forge` guards and native readback. A conventional path, observed closure or finish authority alone grants no dependent-body edit. Without that authority, skip reconciliation while preserving independently authorized finish/readback. Missing/stale/conflicting tracker bindings follow existing setup/owner-choice handling, not inherited policy, auto-running setup or creating absent setup docs.
 9. **Verify after finish.** Follow [Post-merge verifier recipe](post-merge-verifier.md) with `forge post_merge_snapshot` for result/default containment, advisory result-commit CI, linked-item closure, source-ref cleanup/retention, and pending evidence.
@@ -131,18 +131,33 @@ returns as soon as the expected child message, handoff, or signal arrives.
 
 - Builder or parent-owned gate running: wait at least 300 seconds.
 - Reviewer running: wait at least 120 seconds.
-- Direct merge held only by pending required checks: wait at least 300 seconds on
-  the check-completion signal the target's provider reference names, repeating at
-  that floor until the checks complete or the caller's wait budget is spent, then
-  re-run the full guarded `forge act` ([step 8](#parent-loop)). Failed checks, or no
-  completion inside the budget, block the change with the provider outcome.
+- Direct merge held by pending required checks: wait at least 300 seconds on the
+  check-completion signal the target's provider reference names, repeating at that
+  floor within the [required-check wait budget](#required-check-wait-budget).
 - Short acknowledgements only: the tool default.
 
 Each wait names the expected sender, handoff, or signal. After an empty wait, wait
 again at the same floor or check the child's (or the checks') status once; never
-re-issue a shorter wait. The required-check wait is the only CI wait: it is bounded
-and is not an eligibility oracle, because no CI status changes a verdict, review,
-approval, or authority.
+re-issue a shorter wait.
+
+### Required-check wait budget
+
+The required-check wait is the only CI wait. It follows a hold and never decides
+eligibility: CI status never changes the verdict, review, approval, authority or
+finish eligibility, and the finisher never reads CI status to decide eligibility.
+
+- **Bound:** 30 minutes from the first hold, shared by every wait for that hold,
+  unless the target's provider reference sets a different bound.
+- **Owner:** the finisher: the parent under `Finish owner: parent`, otherwise the
+  finishing reviewer or authorized actor.
+- **Completion:** only the checks completing ends the wait. A wait signal that ends
+  without that (a "no checks reported" or "expected" status, because a required
+  check is not registered yet) is not completion: keep waiting at the wait floor
+  within the same budget.
+- **Outcome:** when the checks pass, re-run the full guarded `forge act` from its
+  first guard ([step 8](#parent-loop)); the earlier refusal is never reused. A
+  failed check, or an elapsed budget, leaves the change blocked and reported with
+  the provider outcome.
 
 ## Reviewer launch timing
 

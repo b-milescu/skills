@@ -7,7 +7,7 @@
   "scripts": {
     "check": "scripts/check.sh",
     "check:agents-schema": "bun scripts/check-agent-schemas.mjs",
-    "check:md": "git ls-files -z '*.md' | xargs -0 bunx --bun --no-install markdownlint-cli2",
+    "check:md": "git ls-files -z '*.md' | xargs -0 bun --bun node_modules/.bin/markdownlint-cli2",
     "check:links": "bun scripts/check-md-links.mjs"
   },
   "engines": {

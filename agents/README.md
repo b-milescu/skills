@@ -96,7 +96,9 @@ Skills link their own resources, the shared reference docs and the shared
 templates by relative paths. A relative path resolves against the directory of the
 file that contains it, as in standard Markdown, never against the skill directory,
 so skill entries carry no per-runtime bootstrap. Run helper scripts by their
-resolved absolute path, including from a foreign CWD, and strip Markdown
+resolved absolute path inside the installed skill the runtime loaded, including from
+a foreign CWD and never from a copy in the checkout under review (a change must not
+be validated by its own modified validator), and strip Markdown
 `#fragments` before filesystem reads or Bun execution. Plugin skills live under
 `${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as `skill://<skill>/`
 in OMP.
@@ -146,9 +148,11 @@ bash agents/check.sh /target/.claude/agents /target/.omp/agents
 
 Every requested directory must collect agents; an empty request fails even
 alongside a valid request. The schema checks runtime syntax. `tools` is optional
-(these routes omit it); when a target declares it, only the selector syntax is
-checked, which does not confirm that a tool exists, is authenticated, or is
-accessible.
+(these routes omit it); when a target declares it, each builtin tool name is
+validated against the pinned tool table for its runtime (the Claude Code table; the
+OMP table mirrors the 17.3.7 builtins), so a real tool missing from a table fails,
+while MCP selectors get a syntax check only. Neither confirms that a tool is
+available in the spawning session, authenticated, or accessible.
 
 Run the actual disposable-HOME loader scenario (requires the installed OMP
 source and Bun):

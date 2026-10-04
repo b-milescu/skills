@@ -31,15 +31,10 @@ run "Markdown links" bun run check:links
 # runs in its own process and the failing set is reported once at the end.
 failed=()
 for test_script in tests/*.mjs; do
-  # One process per file gated on its exit code: a late throw fails the file and
-  # process.exit() ends only it. node:test files run only under `bun test`, which
-  # reads a path without ./ as a filter and, given none, discovers *.test.* files
-  # repo-wide.
-  if grep -Eq "from [\"']node:test[\"']" "$test_script"; then
-    run "$test_script" bun test "./$test_script" || failed+=("$test_script")
-  else
-    run "$test_script" bun "$test_script" || failed+=("$test_script")
-  fi
+  # One `bun <file>` process per file gated on its exit code: a late throw fails the
+  # file and process.exit() ends only it. Every file is a plain node:assert/strict
+  # script; node:test is unsupported (its tests only run under `bun test`).
+  run "$test_script" bun "$test_script" || failed+=("$test_script")
 done
 for test_script in tests/*.sh; do
   run "$test_script" bash "$test_script" || failed+=("$test_script")

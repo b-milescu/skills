@@ -1,14 +1,15 @@
 // Focus: the shipped skill stack (the 8 skill directories, templates/ and
 // reference/) names no code host, agent harness, model or skill outside this
 // plugin, invokes no Node toolchain (Bun is its one declared runtime), carries no
-// machine-specific path and symlinks only into itself; every repo .mjs imports
-// only node: builtins or relative paths. The scan walks the file system, not git,
-// so it also runs in an installed copy. All hits are reported together as path:line.
+// machine-specific path or binary (NUL-byte) file and symlinks only into itself
+// with relative targets; every repo .mjs imports only node: builtins or relative
+// paths. The scan walks the file system, not git, so it also runs in an installed
+// copy. A plain node:assert/strict script: every check runs, all hits are
+// reported together as path:line, and any failure exits non-zero.
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { test } from "node:test";
 
 const root = path.dirname(import.meta.dirname);
 const SKILLS = ["setup-dev-skills", "forge", "start-build", "start-review", "issue-delivery-loop", "plan-to-issues", "cleanup-codebase", "retro"];
@@ -21,10 +22,10 @@ const SKIPPED = new Set([".git", "node_modules"]);
 // over the whole file text, so a [\s_-]+ separator also catches a phrase wrapped across lines.
 // The `gitlab#` breadcrumb is covered by the code-host rule.
 const RULES = [
-  ["harness name", /\b(?:claude(?:code)?|omp|codex|cursor|copilot)s?\b/i, ["Claude Code", "claude code", "claude plugin install skills@skills", "omp plugin install skills@skills", "OMPs", "ClaudeCode"], ["compile", "cursory"]],
-  ["harness name", /oh-my-pi/i, ["Oh-My-Pi"]],
+  ["harness name", /\b(?:claude(?:code)?|omp|codex|cursor|copilot)s?\b|\b(?:claude|omp)_/i, ["Claude Code", "claude code", "claude plugin install skills@skills", "omp plugin install skills@skills", "OMPs", "ClaudeCode", "claude-code", "claude_code", "Claude_Code", "claude_plugin_root", "omp_agent_dir"], ["compile", "cursory", "comp_x", "claudette"]],
+  ["harness name", /\boh[\s_-]?my[\s_-]?pi\b|\bpi-coding-agent\b/i, ["Oh-My-Pi", "oh my pi", "ohmypi", "oh_my_pi", "Oh\nMy\nPi", "pi-coding-agent", "@oh-my-pi/pi-coding-agent"], ["ohm pi", "pie-coding-agents"]],
   ["internal URI", /\b(?:skill|local|agent|xd|artifact|history|mcp):\/\//, ["skill://forge/SKILL.md"], ["https://example.org"]],
-  ["harness env variable", /\$?\{?CLAUDE_[A-Z_]+/, ["${CLAUDE_PLUGIN_ROOT}", "$CLAUDE_PLUGIN_ROOT/forge/SKILL.md", "CLAUDE_CODE_SUBAGENT_MODEL"]],
+  ["harness env variable", /\$?\{?(?:CLAUDE|OMP)_[A-Z_]+/, ["${CLAUDE_PLUGIN_ROOT}", "$CLAUDE_PLUGIN_ROOT/forge/SKILL.md", "CLAUDE_CODE_SUBAGENT_MODEL", "${OMP_AGENT_DIR}", "$OMP_PLUGIN_ROOT/forge", "OMP_REQUIRE_LOADER"], ["OMPLIB"]],
   ["MCP tool id", /\bmcp__/, ["mcp__server__tool"]],
   ["harness config path", /\.claude(?:-plugin)?\b|\.omp(?:-plugin)?\b|CLAUDE\.md|AGENTS\.md/, [".claude/agents/x.md", ".claude-plugin/plugin.json", ".omp-plugin", ".omp/agents"]],
   ["harness skill namespace", new RegExp(`\\bskills?:(?:${SKILL})\\b`), ["skills:start-build", "skill:retro"]],
@@ -45,8 +46,11 @@ const RULES = [
   ["outside skill", /`simplify`|\bsimplify skill\b|\btdd[\s-]+skill\b|\/(?:simplify|verify)\b/i, ["`simplify`", "simplify skill", "tdd skill", "TDD-skill", "/simplify", "/verify"], ["the `tdd` field", "tdd:", "| tdd | RED/GREEN |"]],
   ["slash invocation", new RegExp(`(?<![\\w./-])/(?:skills?:)?(?:${SKILL})\\b`), ["run /forge", "Run **/forge preflight** first", "Run \"/retro\" after the batch", "[/plan-to-issues](x)", "/skills:forge", "/skill:retro"], ["../forge/SKILL.md", "owner/retro"]],
   ["absolute user path", /\/Users\/|\/home\/[a-z]|~\/\.(?:claude|omp|agents)/, ["~/.claude/skills"]],
-  // Bun is the stack's one declared runtime: no node invocation, npm/npx/nvm or Node.js version requirement. `node:` imports and `node_modules` stay legal.
-  ["Node toolchain", /\bnode\s+(?:-{1,2}\w|-\s*<<|[<./~$"']|[\w./-]+\.[cm]?[jt]s\b)|\benv\s+node\b|\b(?:npm|npx|nvm)(?:rc)?\b|\bnode\.?js\b|\bnode(?:\s+v?|\s*(?:>=?|≥|[~^])\s*v?)\d/i, ["node scripts/x.mjs", "node --test", "node -e 1", "node <dir>/x.mjs", "node ./x", "node - <<'JS'", "node\n  x.js", "#!/usr/bin/env node", "npx foo", "npm run check", "nvm use 22", ".nvmrc", "Node.js 22", "nodejs", "Node 22.x", "Node >=22", "node v22"], ["import fs from 'node:fs'", "graph node", "node_modules", "node_modules/.bin/x", "the leaf node, then", "node - the root", "node-based"]],
+  // Bun is the stack's one declared runtime: no node invocation (flag, script path with or
+  // without an extension, shell/template variable), no other Node package or version manager,
+  // /bin/node path, "node" manifest key, node@N pin or Node.js version requirement.
+  // `node:` imports and `node_modules` stay legal.
+  ["Node toolchain", /\bnode\s+(?:-{1,2}\w|-\s*<<|[<./~${"']|[\w./-]+\.[cm]?[jt]s\b|[\w.-]+\/[\w./-]*)|\benv\s+node\b|\b(?:npm|npx|nvm|pnpm|yarn|corepack|fnm|volta)(?:rc)?\b|\bnode\.?js\b|\bnode(?:\s+v?|\s*(?:>=?|≥|[~^])\s*v?)\d|\/bin\/node\b|["']node["']\s*:|\bnode@\d[\w.]*/i, ["node scripts/x.mjs", "node --test", "node -e 1", "node <dir>/x.mjs", "node ./x", "node - <<'JS'", "node\n  x.js", "#!/usr/bin/env node", "npx foo", "npm run check", "nvm use 22", ".nvmrc", "Node.js 22", "nodejs", "Node 22.x", "Node >=22", "node v22", "pnpm install", "yarn add x", "corepack enable", "fnm use 22", "volta install node", ".yarnrc", "/usr/bin/node x", "#!/usr/local/bin/node", "{\"engines\":{\"node\":\">=22\"}}", "'node': '22'", "node@22", "node {{skill_dir}}/x.mjs", "node ${SKILL_DIR}/x.mjs", "node scripts/x", "node forge/scripts/validate-text"], ["import fs from 'node:fs'", "graph node", "node_modules", "node_modules/.bin/x", "the leaf node, then", "node - the root", "node-based", "a tree node and its parent", "node/edge pairs", "{\"nodes\": 3}"]],
 ];
 const GLOBAL_RULES = RULES.map(([name, re]) => [name, new RegExp(re.source, `${re.flags}g`)]);
 
@@ -73,10 +77,12 @@ const lineAt = (text, offset) => text.slice(0, offset).split("\n").length;
 const inStack = (file) => STACK.some((dir) => file === dir || file.startsWith(`${dir}/`));
 
 // Walks rootDir without git. Entries are read as directory entries (an lstat view): symlinks
-// are listed, never followed, so content is scanned once, at its source.
+// are listed, never followed, so content is scanned once, at its source. A file holding a NUL
+// byte (binary, or UTF-16 text) cannot be scanned as text, so it is listed, never skipped.
 function walk(rootDir) {
   const texts = [];
   const links = [];
+  const binaries = [];
   const visit = (dir, prefix) => {
     for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
       const file = prefix + entry.name;
@@ -86,24 +92,28 @@ function walk(rootDir) {
       else if (entry.isSymbolicLink()) links.push(file);
       else if (entry.isFile()) {
         const bytes = readFileSync(full);
-        if (!bytes.includes(0)) texts.push([file, bytes.toString("utf8")]);
+        if (bytes.includes(0)) binaries.push(file);
+        else texts.push([file, bytes.toString("utf8")]);
       }
     }
   };
   visit(rootDir, "");
-  return { texts, links };
+  return { texts, links, binaries };
 }
 
-// A symlink inside the stack must resolve to a path inside the stack. Anything else ships a
-// repo directory (docs/, ...) whose content the stack scan never reads.
+// A symlink inside the stack must be relative and resolve to a path inside the stack. An
+// absolute target is machine-specific wherever it resolves; any other target outside the
+// stack ships a repo directory (docs/, ...) whose content the stack scan never reads.
 function linkHits(rootDir, links) {
   const realRoot = realpathSync(rootDir);
   const inside = STACK.map((dir) => path.join(realRoot, dir));
   return links.filter(inStack).flatMap((link) => {
-    let target;
-    try { target = realpathSync(path.join(rootDir, link)); } catch (error) { return [`${link}: symlink does not resolve (${error.code})`]; }
-    if (inside.some((dir) => target === dir || target.startsWith(dir + path.sep))) return [];
-    return [`${link}: symlink resolves outside the skill stack (${path.relative(realRoot, target)})`];
+    const target = readlinkSync(path.join(rootDir, link));
+    if (path.win32.isAbsolute(target)) return [`${link}: absolute symlink target (${target})`];
+    let real;
+    try { real = realpathSync(path.join(rootDir, link)); } catch (error) { return [`${link}: symlink does not resolve (${error.code})`]; }
+    if (inside.some((dir) => real === dir || real.startsWith(dir + path.sep))) return [];
+    return [`${link}: symlink resolves outside the skill stack (${path.relative(realRoot, real)})`];
   });
 }
 
@@ -123,8 +133,9 @@ function findHits(file, text) {
   return hits.sort((a, b) => a[0] - b[0]).map(([, hit]) => hit);
 }
 
-const stackHits = (rootDir, { texts, links }) => [
+const stackHits = (rootDir, { texts, links, binaries }) => [
   ...texts.filter(([file]) => inStack(file)).flatMap(([file, text]) => findHits(file, text)),
+  ...binaries.filter(inStack).map((file) => `${file}: binary file in skill stack (NUL byte: its text cannot be scanned)`),
   ...linkHits(rootDir, links),
 ];
 
@@ -134,21 +145,38 @@ const importHits = (text) => [
   ...[...text.matchAll(REQUIRE_FACTORY)].map((match) => [lineAt(text, match.index), `${match[0]} (only node: builtins and relative paths are allowed)`]),
 ].sort((a, b) => a[0] - b[0]);
 
+// A NUL byte in a .mjs would exempt the whole file from the loader scan, so it is a hit too.
+const loaderHits = ({ texts, binaries }) => [
+  ...binaries.filter((file) => file.endsWith(".mjs")).map((file) => `${file}: NUL byte in .mjs (its loader forms cannot be scanned)`),
+  ...texts.filter(([file]) => file.endsWith(".mjs")).flatMap(([file, text]) => importHits(text).map(([line, finding]) => `${file}:${line}: ${finding}`)),
+];
+
+// Every check runs even after one fails; failures are listed together and set a non-zero exit.
+const failures = [];
+function check(name, run) {
+  try {
+    run();
+    console.log(`ok   ${name}`);
+  } catch (error) {
+    failures.push(name);
+    const detail = error instanceof assert.AssertionError ? error.message : error?.stack ?? String(error);
+    console.log(`FAIL ${name}\n${detail.replace(/^/gm, "     ")}`);
+  }
+}
+
 const scanned = walk(root);
 
-test("skill stack names no code host, harness, model, outside skill or machine path and links only into itself", () => {
+check("skill stack names no code host, harness, model, outside skill or machine path, ships no binary file and links only into itself", () => {
   const hits = stackHits(root, scanned);
-  assert.equal(hits.length, 0, `${hits.length} coupling hit(s) in the skill stack:\n${hits.join("\n")}`);
+  assert.ok(!hits.length, `${hits.length} coupling hit(s) in the skill stack:\n${hits.join("\n")}`);
 });
 
-test("every .mjs imports only node: builtins and relative paths", () => {
-  const hits = scanned.texts
-    .filter(([file]) => file.endsWith(".mjs"))
-    .flatMap(([file, text]) => importHits(text).map(([line, finding]) => `${file}:${line}: ${finding}`));
-  assert.equal(hits.length, 0, `${hits.length} external loader form(s):\n${hits.join("\n")}`);
+check("every .mjs imports only node: builtins and relative paths", () => {
+  const hits = loaderHits(scanned);
+  assert.ok(!hits.length, `${hits.length} external loader form(s):\n${hits.join("\n")}`);
 });
 
-test("scanner rules match their probes, spare benign text and kept contract tokens, and the allowlist stays path- and span-scoped", () => {
+check("scanner rules match their probes, spare benign text and kept contract tokens, and the allowlist stays path- and span-scoped", () => {
   for (const [name, re, bad, ok = []] of RULES) {
     for (const text of bad) assert.match(text, re, `${name} must match ${JSON.stringify(text)}`);
     for (const text of ok) assert.doesNotMatch(text, re, `${name} must not match ${JSON.stringify(text)}`);
@@ -161,7 +189,7 @@ test("scanner rules match their probes, spare benign text and kept contract toke
   assert.ok(findHits("start-build/SKILL.md", `x ${text}`).length > 0, "allowlist is scoped to its path");
 });
 
-test("loader scan flags every non-node:, non-relative form", () => {
+check("loader scan flags every non-node:, non-relative form", () => {
   const sample = [
     "import a from \"node:fs\";", "import b from \"./b.mjs\";", "import c from \"left-pad\";", "import \"side-effect\";",
     "const d = require(\"fs\");", "const e = await import(\"pkg/sub\");", "export { f } from \"../g.mjs\";",
@@ -173,25 +201,42 @@ test("loader scan flags every non-node:, non-relative form", () => {
   assert.deepEqual(importHits(sample).map(([, finding]) => finding.split(" ")[0]), ["left-pad", "side-effect", "fs", "pkg/sub", "yaml", "yaml", "js-yaml", FACTORY]);
 });
 
-test("the walk skips .git, node_modules and vendored code; stack symlinks must resolve inside the stack", () => {
+check("the walk skips .git, node_modules and vendored code; stack symlinks must be relative and resolve inside the stack; NUL-byte files are hits", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "skill-stack-"));
   const put = (file, body) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); writeFileSync(path.join(dir, file), body); };
   const link = (file, target) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); symlinkSync(target, path.join(dir, file)); };
   try {
     put("docs/agents/x.md", "GitHub"); // outside the stack: only a link into it can ship this
+    put("docs/logo.bin", "a\0b"); // outside the stack: a binary there is no stack hit
     put("templates/adr.md", "clean");
     put("forge/note.md", "GitHub");
+    put("forge/blob.bin", "a\0b");
+    put("tools/x.mjs", "// \0\nimport a from \"left-pad\";"); // a NUL hides the whole file from the loader scan
     for (const skipped of [".git/HEAD", "node_modules/p/i.md", "forge/node_modules/p/i.md", `${VENDORED}/y.mjs`]) put(skipped, "GitHub");
+    put(`${VENDORED}/blob.bin`, "a\0b"); // the vendor exclusion also covers binaries
     link("forge/docs", "../docs"); // the regression: a skill shipping the repo docs
     link("forge/gone", "../nowhere");
     link("retro/x.md", "../docs/agents/x.md");
+    link("forge/abs-in", path.join(dir, "templates/adr.md")); // absolute: a hit even though it resolves inside the stack
+    link("retro/abs-out", path.join(dir, "docs/agents/x.md")); // absolute and outside the stack
     link("forge/shared-templates", "../templates"); // allowed: stays inside the stack
     link("forge/adr.md", "../templates/adr.md"); // allowed
     const walked = walk(dir);
-    assert.deepEqual(walked.texts.map(([file]) => file), ["docs/agents/x.md", "forge/note.md", "templates/adr.md"], "no .git, no node_modules, no vendor, no followed symlink");
-    assert.deepEqual(walked.links, ["forge/adr.md", "forge/docs", "forge/gone", "forge/shared-templates", "retro/x.md"]);
-    assert.deepEqual(stackHits(dir, walked).map((hit) => hit.split(":")[0]).sort(), ["forge/docs", "forge/gone", "forge/note.md", "retro/x.md"]);
+    assert.deepEqual(walked.texts.map(([file]) => file), ["docs/agents/x.md", "forge/note.md", "templates/adr.md"], "no .git, no node_modules, no vendor, no followed symlink, no NUL-byte file");
+    assert.deepEqual(walked.binaries, ["docs/logo.bin", "forge/blob.bin", "tools/x.mjs"], "NUL-byte files are listed, vendored ones are not");
+    assert.deepEqual(walked.links, ["forge/abs-in", "forge/adr.md", "forge/docs", "forge/gone", "forge/shared-templates", "retro/abs-out", "retro/x.md"]);
+    const hits = stackHits(dir, walked);
+    assert.deepEqual(hits.map((hit) => hit.split(":")[0]).sort(), ["forge/abs-in", "forge/blob.bin", "forge/docs", "forge/gone", "forge/note.md", "retro/abs-out", "retro/x.md"]);
+    for (const [file, reason] of [["forge/abs-in", "absolute symlink target"], ["retro/abs-out", "absolute symlink target"], ["forge/blob.bin", "binary file in skill stack"], ["forge/docs", "symlink resolves outside the skill stack"], ["forge/gone", "symlink does not resolve"]]) {
+      assert.ok(hits.some((hit) => hit.startsWith(`${file}: ${reason}`)), `${file} must be reported as: ${reason}`);
+    }
+    assert.deepEqual(loaderHits(walked), ["tools/x.mjs: NUL byte in .mjs (its loader forms cannot be scanned)"]);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+if (failures.length) {
+  console.error(`\nskill-stack-agnostic: FAIL - ${failures.length} failing check(s)`);
+  process.exitCode = 1;
+} else console.log("skill-stack-agnostic: PASS");

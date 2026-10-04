@@ -136,8 +136,10 @@ require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:
 
 Relative paths resolve against the directory of the file that contains them, so
-`<start-build-dir>` below is the absolute path of `..`; run the helper by that
-resolved absolute path, not from the target CWD:
+`<start-build-dir>` below is the absolute path of `..` in the installed skill the
+runtime loaded (never a copy in the checkout under review: a change must not be
+validated by its own modified validator); run the helper by that resolved absolute
+path, not from the target CWD:
 
 ```text
 bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
@@ -170,7 +172,7 @@ explicit non-placeholder opaque evidence with no default. CI is reasoned N/A or
 verified separately. Decoupling names `single change request` or an explicit
 `co-running <opaque>; <summary>`, not a backend identifier shape. Full canonical
 rows must remain present and nonempty. Diagnostics do not echo row bodies.
-Finding equality stays with `validate-finding-bindings.mjs`.
+Finding equality stays with `../../start-review/scripts/validate-finding-bindings.mjs`.
 
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
 For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt: <opaque locator>`.

@@ -42,9 +42,11 @@ repeat already-confirmed choices or require unrelated authentication.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, exact-head
-guarantees, required-check holds with the signal that ends their wait,
-normalization and lossless readback/recovery. Configuration is not an
-action-authority grant. Keep common safety floors with forge/delivery owners.
+guarantees, required-check holds with the signal that ends their wait and any bound
+other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+normalization and lossless readback/recovery.
+Configuration is not an action-authority grant. Keep common safety floors with
+forge/delivery owners.
 
 For labels, document live names and triage-role mapping as-is; no automatic live
 creation/rename/delete. For domain, respect existing single/multi-context layout.

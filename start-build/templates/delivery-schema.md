@@ -161,6 +161,8 @@ Authority Verification uses `../../forge/reference/common-guard.md` and native m
   an affirmatively granted project default. A granting value authorizes only the
   action it names: `queue auto-merge` queues, while `reviewer may merge` or a
   project default naming direct merge merges directly; neither implies the other.
+  A project default is a grant only as the quoted value and never supplements an
+  explicit grant.
 - Handoff actions include `parent-run-gate`, `spawn-reviewer`, `rerun-review`,
   `approve`, `finish`, `verify-post-merge`, `human-decision`, and `fix-blocker`.
 - Queued finish is non-terminal; only `post_merge_snapshot` may establish the

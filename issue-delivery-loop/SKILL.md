@@ -49,18 +49,24 @@ Default: fan out every provably decoupled subset.
    `handoff_contract`, but finals need no delivery block.
 6. Launch independent review as soon as the exact-candidate gate contract
    allows. Provider CI may run in parallel; no CI status changes verdict,
-   approval, authority, or finish eligibility.
+   approval, authority, or finish eligibility, and the finisher never reads CI
+   status to decide eligibility.
 7. On reviewer pass, keep verdict, approval, and finish separate. The verified
    grant selects the finish: `queue auto-merge` queues only where the target's
    provider reference guarantees exact-head queueing; `reviewer may merge`, or a
    verified project default naming direct merge for the finisher, merges directly,
-   bound to the reviewed head. A `queue auto-merge` grant never authorizes a direct
-   merge (`sha-bound-action-unsupported`, or `missing-authority` with no grant).
-   Required checks are native merge protection: they can hold a direct merge,
-   never authorize it. When only pending required checks hold it, the finisher
-   waits per [wait cadence](../start-build/reference/parent-orchestrator.md#wait-cadence)
-   and re-runs the full guarded `forge act`; failed checks or an elapsed wait block
-   the change with the provider outcome.
+   bound to the reviewed head. A project default applies only when it is the value
+   quoted in the Lift's `Finish authority`, and an explicit grant takes precedence
+   over it: an explicit `queue auto-merge` grant never authorizes a direct merge,
+   even beside a standing direct-merge default (`sha-bound-action-unsupported`, or
+   `missing-authority` with no grant).
+   A provider's required checks are native merge protection: they may hold or refuse
+   the guarded merge, a provider outcome reported without bypass and never an eligibility
+   decision or an authorization. On a hold from pending required checks, the finisher
+   waits on the check-completion signal the target's provider reference names, within
+   the [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+   then re-runs the full guarded `forge act` from its first guard; a failed check or
+   an elapsed budget leaves the change blocked with the provider outcome.
    The parent owns the finish when `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
    Immediately before that finish, use fresh `forge snapshot` evidence to re-read
    the allocated work item and require it to remain open. Verify that the current
@@ -80,8 +86,8 @@ Default: fan out every provably decoupled subset.
    records the contradiction instead of inheriting it.
 8. Treat `auto-merge queued` as pending. It does not count as **change requests merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
-   boundary: the bounded required-check wait in step 7 is the only CI wait, and it
-   is never an eligibility oracle. Provider merge-event evidence advances the
+   boundary: the required-check wait in step 7 is the only CI wait. Provider
+   merge-event evidence advances the
    existing handoff to phase: `post-merge-verify`,
    expected_next_actor: `verifier`, and
    expected_next_action: `post-merge-verify`; require a checked read-only

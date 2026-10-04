@@ -80,7 +80,7 @@ identities. Incomplete files/contexts, unresolved required review, stale head,
 or missing required evidence readback prevents pass. A provider `unknown/null`
 native action state denies that action, not an otherwise valid judgment.
 Missing, stale, wrong-commit, or red CI is advisory evidence, not a review or
-action blocker; a provider's required checks may still hold a merge
+action blocker; a provider's required checks may still hold or refuse a merge
 ([Default finish](#default-finish)).
 
 ## Single-change request checkout mode
@@ -181,14 +181,15 @@ taste, speculative redesign, or out-of-scope cleanup.
 | stale, wrong-commit, incomplete, or unknown binding | do not attribute the status to the reviewed candidate; record the binding limitation |
 
 Every classification is advisory. No provider CI status changes the review
-verdict, approval, authority, or merge, queued-finish, or post-merge eligibility.
+verdict, approval, authority, or merge, queued-finish, or post-merge eligibility,
+and the finisher never reads CI status to decide eligibility.
 The required quality predicate is a passing exact-candidate local Check Gate and,
 in parent-owned mode, its durable Gate Receipt. Independent review, reviewed-SHA
 binding, authority/caller guards, exactly one mutation, and native readback are
 separate mandatory predicates. Native provider protection, including checks the
-target binding requires before a merge, may refuse or hold a mutation; report the
-outcome without bypassing it. Required checks can hold a merge, never authorize
-one ([Default finish](#default-finish)).
+target binding requires before a merge, may hold or refuse a mutation: a provider
+outcome reported without bypass, never an eligibility decision or an
+authorization ([Default finish](#default-finish)).
 
 ### Open Question decision table
 
@@ -204,6 +205,8 @@ Use stable `OQ-N` IDs; no placeholder questions at publication.
 ## Finish authority source precedence
 
 Explicit human/provider restrictions precede defaults; silence never grants finish.
+Explicit human/parent grants likewise precede a standing project default, which is a
+grant only when it is the value quoted in the Lift's `Finish authority`.
 
 
 ## Approval-authority policy
@@ -261,27 +264,33 @@ action, and no grant substitutes for another:
 - `reviewer may merge`, or a verified project default that names direct merge for
   the finisher, authorizes a direct merge bound to the reviewed head.
 
-With both granted, queue where exact-head queueing is guaranteed, otherwise merge
-directly. A `queue auto-merge` grant never authorizes a direct merge: where the
+With both explicitly granted, queue where exact-head queueing is guaranteed,
+otherwise merge directly. A standing project default is a grant only when it is the
+value quoted in the Lift's `Finish authority`; explicit human/parent grants take
+precedence over it ([source precedence](#finish-authority-source-precedence)), so a
+default never supplements an explicit grant. A `queue auto-merge` grant never
+authorizes a direct merge, even beside a standing direct-merge default: where the
 provider cannot guarantee exact-head queueing, return `sha-bound-action-unsupported`
 instead of merging directly; with no grant at all, return `missing-authority`.
 Queued is non-terminal and is never reported as merged.
 
-CI status never changes the verdict, review, approval, or authority. A provider's
-required checks are native merge protection: they can hold a merge, never authorize
-one. When the direct merge is held only by pending required checks, the finisher
-waits on the check-completion signal the target's provider reference names
-(event-driven, bounded by the
-[wait cadence](../start-build/reference/parent-orchestrator.md#wait-cadence)), then
-re-runs the full guarded `forge act` from its first guard; the earlier refusal is
-not reused. Failed required checks, or a wait that elapses, leave the change
-blocked with the provider outcome. That bounded wait is the only CI wait, and it is
-never an eligibility oracle: a passing check authorizes nothing.
+CI status never changes the verdict, review, approval, authority or finish
+eligibility, and the finisher never reads CI status to decide eligibility. A
+provider's required checks are native merge protection: they may hold or refuse the
+guarded merge, a provider outcome reported without bypass and never an eligibility
+decision or an authorization. On a hold from pending required checks, the finisher
+waits on the check-completion signal the target's provider reference names, within
+the
+[required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+then re-runs the full guarded `forge act` from its first guard; the earlier refusal
+is never reused. A failed check or an elapsed budget leaves the change blocked with
+the provider outcome. That wait is the only CI wait.
 
 Queue, auto-completion, direct finish and required-check semantics, including the
-check-completion signal, belong to the confirmed target reference. An operation
-without the requested exact-head guarantee returns `sha-bound-action-unsupported`;
-observational reads cannot manufacture atomicity.
+check-completion signal and any bound other than the default required-check wait
+budget, belong to the confirmed target reference. An operation without the requested
+exact-head guarantee returns `sha-bound-action-unsupported`; observational reads
+cannot manufacture atomicity.
 
 ## Publication and actions
 
@@ -314,9 +323,9 @@ in the Review Report's Action / Blocker section.
    Preserve the published judgment, original reviewed commit, and finding
    identities as historical evidence, not a pass for the new head.
 6. Perform exactly one authorized `forge act` only when its guards pass and the
-   finish owner permits it; otherwise emit the no-action result. A merge held only
-   by pending required checks ran no mutation, so its guarded re-run after the
-   bounded wait is still that one action. An action-only failure after publication
+   finish owner permits it; otherwise emit the no-action result. A merge held by
+   pending required checks ran no mutation, so its guarded re-run after the
+   required-check wait is still that one action. An action-only failure after publication
    does not change the valid historical judgment; newly discovered invalid review
    evidence must be reported, not masked as action-only.
 7. The authorized actor owns provider-native post-read and any required

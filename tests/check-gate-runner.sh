@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# Focus: `scripts/check.sh` runs every `tests/*.mjs` (`bun <file>`, or
-# `bun test ./<file>` for a node:test file) and every `tests/*.sh` in its own
-# exit-gated process, keeps going after one fails (a throw, a late async throw
-# and a failing node:test file included) and after one calls `process.exit(0)`,
+# Focus: `scripts/check.sh` runs every `tests/*.mjs` (`bun <file>`) and every
+# `tests/*.sh` in its own exit-gated process, keeps going after one fails (a
+# throw or a late async throw included) and after one calls `process.exit(0)`,
 # ends with the failing-set list and a non-zero exit, and still prints
 # `check: PASS` only on a green run. An empty `tests/*.mjs` match runs nothing
 # instead of falling back to Bun's repo-wide *.test.* discovery.
@@ -15,7 +14,7 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 # Stub the pre-loop `bun run check:*` steps so only the test loop is under test;
-# every other bun invocation (`bun <file>`, `bun test`) reaches the real binary.
+# every other bun invocation (`bun <file>`) reaches the real binary.
 REAL_BUN="$(command -v bun)"
 export REAL_BUN
 mkdir -p "$WORK/bin"
@@ -43,10 +42,8 @@ run_gate() {
 green="$WORK/green"
 make_repo "$green"
 printf 'process.exit(0);\n' > "$green/tests/a-exit0.mjs"
-printf 'import { writeFileSync } from "node:fs";\nimport { test } from "node:test";\ntest("ran", () => writeFileSync("ran-n-pass-mjs", ""));\n' > "$green/tests/n-pass.mjs"
 run_gate "$green" "$WORK/green.out" || fail "green run exited non-zero: $(cat "$WORK/green.out")"
 assert_file_contains "$WORK/green.out" "check: PASS" "green PASS line"
-assert_path_readable "$green/ran-n-pass-mjs" "node:test file to run under bun test"
 assert_path_readable "$green/ran-z-pass-mjs" "tests/*.mjs script after a file that called process.exit(0)"
 
 # Empty glob: no top-level tests/*.mjs plus a decoy matching Bun's default
@@ -64,7 +61,6 @@ printf 'exit 1\n' > "$red/tests/a-fail.sh"
 printf 'exit 3\n' > "$red/tests/m-fail.sh"
 printf 'throw new Error("planted");\n' > "$red/tests/b-fail.mjs"
 printf 'setTimeout(() => { throw new Error("late"); }, 50);\n' > "$red/tests/late-fail.mjs"
-printf 'import { test } from "node:test";\ntest("planted", () => { throw new Error("planted"); });\n' > "$red/tests/n-fail.mjs"
 if run_gate "$red" "$WORK/red.out"; then
   fail "red run exited 0: $(cat "$WORK/red.out")"
 fi
@@ -75,7 +71,6 @@ assert_contains "$summary" "tests/a-fail.sh" "first failing script in summary"
 assert_contains "$summary" "tests/m-fail.sh" "second failing script in summary"
 assert_contains "$summary" "tests/b-fail.mjs" "throwing script in summary"
 assert_contains "$summary" "tests/late-fail.mjs" "late async throw in summary"
-assert_contains "$summary" "tests/n-fail.mjs" "failing node:test file in summary"
 assert_not_contains "$summary" "tests/z-pass.sh" "passing script in summary"
 assert_not_contains "$summary" "tests/z-pass.mjs" "passing .mjs file in summary"
 assert_file_not_contains "$WORK/red.out" "check: PASS" "PASS line on a red run"

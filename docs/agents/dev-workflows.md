@@ -190,16 +190,23 @@ Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In
 This section is the verifiable `Finish authority source` for the one project
 default, `project default: the parent finisher may directly merge the reviewed
 head`; quote that claim in the Reviewer Lift `Finish authority` row and the finisher
-verifies it through the common guard. It grants the `Finish owner: parent` finisher
-the exact-head direct merge
+verifies it through the common guard. The default applies only when it is the value
+quoted in that row: an explicit human/parent grant takes precedence over it, so an
+explicit `queue auto-merge` grant is refused as `sha-bound-action-unsupported` even
+though this default exists. It grants the `Finish owner: parent` finisher the
+exact-head direct merge
 ([native integration](native-integration.md#ready-approval-and-finish)) after a
 fresh guarded pass review, a valid exact-candidate Gate Receipt and the common
-guard. GitHub holds that merge until required check `check` passes: the check can
-hold the merge, never authorize it, and the
-[wait recipe](native-integration.md#wait-for-required-checks) ends the wait before
-the guarded merge re-runs. The default grants nothing else: not queueing (this
-repo's GitHub binding refuses it as `sha-bound-action-unsupported`), and not a
-reviewer's own merge, release, deploy, close or source-branch cleanup.
+guard. Required check `check` may hold or refuse that merge: `main` protection
+enforces admins, so GitHub holds it for every account, the sole admin included, until
+`check` passes. That is GitHub's outcome, never an eligibility decision, and the
+finisher never reads `check` to decide eligibility. On a hold the
+[wait recipe](native-integration.md#wait-for-required-checks) waits within the
+required-check wait budget before the guarded merge re-runs; a failed `check` or an
+elapsed budget leaves the PR blocked with GitHub's outcome. The default grants
+nothing else: not queueing (this repo's GitHub binding refuses it as
+`sha-bound-action-unsupported`), and not a reviewer's own merge, release, deploy,
+close or source-branch cleanup.
 
 ### Release/deploy policy
 

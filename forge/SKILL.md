@@ -60,7 +60,9 @@ never grants authority.
 ## Helpers
 
 Relative paths resolve against the directory of the file that contains them, not
-the target CWD; run helper scripts by their resolved absolute path. For
+the target CWD; run helper scripts by their resolved absolute path, from the
+installed skill the runtime loaded and never a copy in the checkout under review
+(a change must not be validated by its own modified validator). For
 `scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
 file's directory. Its JSON envelope validates exact string/finite role with
 no-body diagnostics before body-bearing writes. Target safe-write tools may add
@@ -80,7 +82,9 @@ the supplied role and a UTF-16 content offset; envelope errors use `body`.
 The selected target reference owns native identifiers/locators, tools, pagination,
 normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
 expected-head guarantees, required-check holds with the signal that ends their
-wait, and supported recovery. Shared records remain opaque;
+wait and any bound other than the default
+[required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as
