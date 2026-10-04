@@ -39,7 +39,7 @@ Add the heading only when its trigger applies; the template lists the four most 
 ## builder-final-handoff.md
 
 - Emit exactly the [two-line contract](builder-final-handoff.md), using `not-created` before a receipt exists for this candidate; no extra note is needed.
-- Validate canonical Lift presence with `../scripts/validate-gate-receipt.mjs --mode lift-only` (relative to this file, run by its resolved absolute path); verify native locator/artifact bindings independently.
+- Validate canonical Lift presence with `../scripts/validate-gate-receipt.mjs --mode lift-only` (relative to this file, run per the [helper rule](../../forge/SKILL.md#helpers)); verify native locator/artifact bindings independently.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Recover absent/malformed handoffs from the bound change request and durable Review Packet; prose is a locator hint, not verified evidence.
 
@@ -57,7 +57,7 @@ Add the heading only when its trigger applies; the template lists the four most 
 ## revision-packet.md
 
 - Submit with `forge publish` in response to a Review Report or substantive post-ready push. Push fixes as new commits, then refresh the change-request description and Reviewer Lift.
-- **Finding bindings** — Repeat every marked `(Report locator, Reviewed commit, Finding ID)` tuple addressed and run the pure-local validator before publishing.
+- **Finding bindings** — Repeat every marked `(Report locator, Reviewed commit, Finding ID)` tuple addressed and run the pure-local validator (per the [helper rule](../../forge/SKILL.md#helpers)) before publishing.
 - **Response to Must Fix** — One subsection per MF item. Quote the headline/snippet, then response and commit SHA.
 - **What I did not change** — Reviewer comments not acted on, and why.
 - **Updated Safety Impact** — New/changed safety evidence since prior packet, or "No change."

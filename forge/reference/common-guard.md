@@ -76,10 +76,8 @@ Account equality alone does not establish session independence. Commit authors
 and CI variables are not authenticated identity. Verify author/context separately.
 
 Body publication requires exact string/role validation with the helper at
-`../scripts/validate-text.mjs` (relative to this file, in the installed skill the
-runtime loaded, never a copy in the checkout under review: a change must not be
-validated by its own modified validator), run by its resolved absolute path rather
-than from the target CWD, before native checks. No diagnostic
+`../scripts/validate-text.mjs` (relative to this file), run per the
+[helper rule](../SKILL.md#helpers), before native checks. No diagnostic
 may echo submitted body or parser excerpts. Require complete lossless native
 readback against authored source; record only documented normalization.
 

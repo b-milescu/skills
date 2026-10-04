@@ -24,10 +24,9 @@ Reviewer Lift uses the same tuple in its single `Finding bindings` row. Use `non
 report=review-report:provider://change/123:2; sha=1111111111111111111111111111111111111111; id=MF-5<br>report=review-report:provider://change/123:3; sha=2222222222222222222222222222222222222222; id=SF-1
 ```
 
-Run the validator by its resolved absolute path, not from the target CWD:
-`<start-review-dir>` is the absolute path of `..`, because relative paths resolve
-against the directory of the file that contains them. Before publication/ready
-validate every originating report:
+Run the validator per the [helper rule](../../forge/SKILL.md#helpers):
+`<start-review-dir>` is the absolute path of `..` in the installed skill. Before
+publication/ready validate every originating report:
 
 ```text
 bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> [--report <report.md> ...] [--packet <revision.md> ...] [--lift <packet.md> ...]

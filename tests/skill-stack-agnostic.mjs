@@ -24,7 +24,7 @@ const SKIPPED = new Set([".git", "node_modules"]);
 const RULES = [
   ["harness name", /\b(?:claude(?:code)?|omp|codex|cursor|copilot)s?\b|\b(?:claude|omp)_/i, ["Claude Code", "claude code", "claude plugin install skills@skills", "omp plugin install skills@skills", "OMPs", "ClaudeCode", "claude-code", "claude_code", "Claude_Code", "claude_plugin_root", "omp_agent_dir"], ["compile", "cursory", "comp_x", "claudette"]],
   ["harness name", /\boh[\s_-]?my[\s_-]?pi\b|\bpi-coding-agent\b/i, ["Oh-My-Pi", "oh my pi", "ohmypi", "oh_my_pi", "Oh\nMy\nPi", "pi-coding-agent", "@oh-my-pi/pi-coding-agent"], ["ohm pi", "pie-coding-agents"]],
-  ["internal URI", /\b(?:skill|local|agent|xd|artifact|history|mcp):\/\//, ["skill://forge/SKILL.md"], ["https://example.org"]],
+  ["internal URI", /\b(?:skill|local|agent|xd|artifact|history|mcp|issue|pr|proc|vault|rule|memory|ssh|omp):\/\//i, ["skill://forge/SKILL.md", "SKILL://forge/SKILL.md", "local://plan.md", "agent://all", "xd://eval/judge", "artifact://12", "history://abc", "mcp://server/res", "issue://7", "pr://7/diff", "proc://job", "vault://notes/x.md", "rule://style", "memory://summary", "ssh://host/path", "omp://docs"], ["https://example.org", "myproc://x"]],
   ["harness env variable", /\$?\{?(?:CLAUDE|OMP)_[A-Z_]+/, ["${CLAUDE_PLUGIN_ROOT}", "$CLAUDE_PLUGIN_ROOT/forge/SKILL.md", "CLAUDE_CODE_SUBAGENT_MODEL", "${OMP_AGENT_DIR}", "$OMP_PLUGIN_ROOT/forge", "OMP_REQUIRE_LOADER"], ["OMPLIB"]],
   ["MCP tool id", /\bmcp__/, ["mcp__server__tool"]],
   ["harness config path", /\.claude(?:-plugin)?\b|\.omp(?:-plugin)?\b|CLAUDE\.md|AGENTS\.md/, [".claude/agents/x.md", ".claude-plugin/plugin.json", ".omp-plugin", ".omp/agents"]],

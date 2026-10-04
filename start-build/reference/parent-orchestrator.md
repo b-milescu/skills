@@ -151,9 +151,8 @@ finish eligibility, and the finisher never reads CI status to decide eligibility
 - **Owner:** the finisher: the parent under `Finish owner: parent`, otherwise the
   finishing reviewer or authorized actor.
 - **Completion:** only the checks completing ends the wait. A wait signal that ends
-  without that (a "no checks reported" or "expected" status, because a required
-  check is not registered yet) is not completion: keep waiting at the wait floor
-  within the same budget.
+  without that (a required check not yet registered or reported on the head) is not
+  completion: keep waiting at the wait floor within the same budget.
 - **Outcome:** when the checks pass, re-run the full guarded `forge act` from its
   first guard ([step 8](#parent-loop)); the earlier refusal is never reused. A
   failed check, or an elapsed budget, leaves the change blocked and reported with

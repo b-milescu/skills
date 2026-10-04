@@ -62,7 +62,8 @@ never grants authority.
 Relative paths resolve against the directory of the file that contains them, not
 the target CWD; run helper scripts by their resolved absolute path, from the
 installed skill the runtime loaded and never a copy in the checkout under review
-(a change must not be validated by its own modified validator). For
+(a change must not be validated by its own modified validator). Stack files that
+run a helper cite this rule instead of restating it. For
 `scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
 file's directory. Its JSON envelope validates exact string/finite role with
 no-body diagnostics before body-bearing writes. Target safe-write tools may add

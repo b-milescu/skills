@@ -100,8 +100,8 @@ commit. Record the Lift `CI pipeline` cell as
 `evidence=<run URL>; status=<conclusion or status>; commit=<head_sha>`. Failed/missing/
 pending CI does not affect eligibility, though native protection can hold or refuse
 writes. A watcher (`gh run watch`, `gh pr checks --watch`) is advisory progress only,
-not a local gate; its one use is the [wait for a held merge](#wait-for-required-checks)
-within the required-check wait budget, where it only ends the wait.
+never a local gate and never the held-merge wait; that wait polls as in
+[Wait for required checks](#wait-for-required-checks).
 
 Run the gate helper from the installed `start-build` skill, never from this checkout:
 resolve `scripts/validate-gate-receipt.mjs` inside the installed start-build skill (the
@@ -307,18 +307,26 @@ gh pr checks <n> -R b-milescu/skills --required
 
 Map the exit status of each poll:
 
-- `0`: the required checks passed. Re-run the guarded finish.
+- `0`: not proof (`gh` also exits `0` with a cancelled required check, and `--json`
+  exits `0` whatever the buckets). Confirm with
+  `gh pr checks <n> -R b-milescu/skills --required --json name,bucket`: when every
+  required `bucket` is `pass` or `skipping`, re-run the guarded finish; a `cancel` or
+  `fail` bucket is a failure; any other bucket (`pending`) means poll again at the
+  next floor.
 - `8`: the checks are still pending. Poll again at the next floor.
-- `1` with `no checks reported` or `no required checks reported`: `check` is not
-  registered on the head yet (GitHub's `expected` state), which is not completion.
-  Poll again at the next floor.
-- `1` for any other reason: a required check failed. The PR stays unmerged and blocked.
-- Budget spent with no `0`: the PR stays unmerged and blocked.
+- `1` with failing checks listed in the output: a required check failed.
+- `1` with none listed (`no checks reported`, `no required checks reported`, a network
+  or GraphQL error, no commit found): an unknown read, not a failure. A `check` not
+  yet registered on the head (GitHub's `expected` state) is not completion either.
+  Poll again at the next floor within the budget.
+- A failure, or the budget spent with no confirmed pass: the PR stays unmerged and
+  blocked.
 
 MCP-only sessions instead read `pull_request_read(get_check_runs)` at each wait floor,
 within the same budget: no `check` run yet, or one queued or in progress, keeps the
-wait going; a completed run with conclusion `success` re-runs the guarded finish; any
-other completed conclusion is a failure. Either way the watcher only ends the wait:
+wait going; a completed run with conclusion `success`, `skipped` or `neutral` (the
+statuses GitHub's required-check rule accepts) re-runs the guarded finish; any other
+completed conclusion is a failure. Either way the poll only ends the wait:
 it is advisory, never a local gate, and the re-run guard decides (a push during the
 wait moves the head and fails it as `changed-head-sha`). A failed `check` or an
 elapsed budget leaves the PR unmerged and blocked with GitHub's outcome as `other`

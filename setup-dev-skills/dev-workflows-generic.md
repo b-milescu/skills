@@ -40,6 +40,6 @@ Keep logical skill IDs stable: record each skill and route by its logical name;
 runtimes may namespace plugin entries, so each runtime-specific declaration uses
 the identifier its own inventory exposes. Resource access does not supply target
 policy or prove preload execution. Relative paths resolve against the directory of
-the file that contains them; run helper scripts by their resolved absolute path,
-not from the target CWD. Installed aliases keep underlying source ownership and
+the file that contains them; run helper scripts as the `forge` skill's `SKILL.md`
+Helpers section directs. Installed aliases keep underlying source ownership and
 never replace this target's profile, identity, paths, vocabulary or policy.
