@@ -56,7 +56,7 @@ assert_file_contains() {
 
 assert_file_not_contains() {
   local file="$1" needle="$2" label="${3:-$2}"
-  [[ ! -f "$file" ]] || return 0
+  [[ -f "$file" ]] || return 0
   if grep -Fq -- "$needle" "$file"; then
     fail "$file contains unexpected $label: $needle"
   fi

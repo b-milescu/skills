@@ -22,17 +22,25 @@ run() {
   "$@"
 }
 
-run "Agent schema validation" npm run check:agents-schema
+run "Agent schema validation" bun run check:agents-schema
 run "agent consistency" bash agents/check.sh
-run "Markdown lint" npm run check:md
-run "Markdown links" npm run check:links
+run "Markdown lint" bun run check:md
+run "Markdown links" bun run check:links
 
-# Pre-loop steps above stay fail-fast; the Node tests and every tests/*.sh
-# script run, and the failing set is reported once at the end.
+# Pre-loop steps above stay fail-fast; every tests/*.mjs and tests/*.sh script
+# runs in its own process and the failing set is reported once at the end.
 failed=()
-# Quoted so Node expands the glob: an empty match runs nothing rather than
-# falling back to Node's default repo-wide test patterns.
-run "node --test tests/*.mjs" node --test 'tests/*.mjs' || failed+=("tests/*.mjs")
+for test_script in tests/*.mjs; do
+  # One process per file gated on its exit code: a late throw fails the file and
+  # process.exit() ends only it. node:test files run only under `bun test`, which
+  # reads a path without ./ as a filter and, given none, discovers *.test.* files
+  # repo-wide.
+  if grep -Eq "from [\"']node:test[\"']" "$test_script"; then
+    run "$test_script" bun test "./$test_script" || failed+=("$test_script")
+  else
+    run "$test_script" bun "$test_script" || failed+=("$test_script")
+  fi
+done
 for test_script in tests/*.sh; do
   run "$test_script" bash "$test_script" || failed+=("$test_script")
 done

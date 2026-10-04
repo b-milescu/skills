@@ -8,7 +8,7 @@ import yaml from "../start-build/scripts/vendor/js-yaml.mjs";
 const validator = resolve(import.meta.dirname, "../start-build/scripts/validate-gate-receipt.mjs");
 const work = mkdtempSync(join(tmpdir(), "gate-receipt-"));
 const sha = "1".repeat(40);
-const command = "npm run check";
+const command = "bun run check";
 const locator = "verified-system/repository/review-note@opaque-alpha";
 const policy = "docs/check-gate.md#ready";
 const rationale = `Policy ${policy}; command ${command}; candidate ${sha}; coverage exact-candidate-local; result: PASS — Gate Receipt: ${locator}`;

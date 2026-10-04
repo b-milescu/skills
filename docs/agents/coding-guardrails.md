@@ -28,5 +28,5 @@ Repo-local defaults for agent implementation work in this repository. `CLAUDE.md
 
 - Convert the task into concrete success criteria before implementing.
 - For bugs and behavior changes, prefer a reproducing test or check before the fix.
-- Run targeted checks while working, then `npm run check` before claiming ready.
+- Run targeted checks while working, then `bun run check` before claiming ready.
 - If a check cannot run, report why and provide the strongest safe evidence available.

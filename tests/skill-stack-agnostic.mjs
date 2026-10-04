@@ -1,9 +1,9 @@
 // Focus: the shipped skill stack (the 8 skill directories, templates/ and
 // reference/) names no code host, agent harness, model or skill outside this
-// plugin, carries no machine-specific path and symlinks only into itself; every
-// repo .mjs imports only node: builtins or relative paths. The scan walks the
-// file system, not git, so it also runs in an installed copy. All hits are
-// reported together as path:line.
+// plugin, invokes no Node toolchain (Bun is its one declared runtime), carries no
+// machine-specific path and symlinks only into itself; every repo .mjs imports
+// only node: builtins or relative paths. The scan walks the file system, not git,
+// so it also runs in an installed copy. All hits are reported together as path:line.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -45,6 +45,8 @@ const RULES = [
   ["outside skill", /`simplify`|\bsimplify skill\b|\btdd[\s-]+skill\b|\/(?:simplify|verify)\b/i, ["`simplify`", "simplify skill", "tdd skill", "TDD-skill", "/simplify", "/verify"], ["the `tdd` field", "tdd:", "| tdd | RED/GREEN |"]],
   ["slash invocation", new RegExp(`(?<![\\w./-])/(?:skills?:)?(?:${SKILL})\\b`), ["run /forge", "Run **/forge preflight** first", "Run \"/retro\" after the batch", "[/plan-to-issues](x)", "/skills:forge", "/skill:retro"], ["../forge/SKILL.md", "owner/retro"]],
   ["absolute user path", /\/Users\/|\/home\/[a-z]|~\/\.(?:claude|omp|agents)/, ["~/.claude/skills"]],
+  // Bun is the stack's one declared runtime: no node invocation, npm/npx/nvm or Node.js version requirement. `node:` imports and `node_modules` stay legal.
+  ["Node toolchain", /\bnode\s+(?:-{1,2}\w|-\s*<<|[<./~$"']|[\w./-]+\.[cm]?[jt]s\b)|\benv\s+node\b|\b(?:npm|npx|nvm)(?:rc)?\b|\bnode\.?js\b|\bnode(?:\s+v?|\s*(?:>=?|≥|[~^])\s*v?)\d/i, ["node scripts/x.mjs", "node --test", "node -e 1", "node <dir>/x.mjs", "node ./x", "node - <<'JS'", "node\n  x.js", "#!/usr/bin/env node", "npx foo", "npm run check", "nvm use 22", ".nvmrc", "Node.js 22", "nodejs", "Node 22.x", "Node >=22", "node v22"], ["import fs from 'node:fs'", "graph node", "node_modules", "node_modules/.bin/x", "the leaf node, then", "node - the root", "node-based"]],
 ];
 const GLOBAL_RULES = RULES.map(([name, re]) => [name, new RegExp(re.source, `${re.flags}g`)]);
 

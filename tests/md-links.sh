@@ -35,7 +35,7 @@ MD
 : > "$TMPDIR/images/logo.png"
 
 set +e
-output="$(node "$REPO_ROOT/scripts/check-md-links.mjs" "$TMPDIR/docs/index.md" 2>&1)"
+output="$(bun "$REPO_ROOT/scripts/check-md-links.mjs" "$TMPDIR/docs/index.md" 2>&1)"
 status=$?
 set -e
 

@@ -97,7 +97,7 @@ templates by relative paths. A relative path resolves against the directory of t
 file that contains it, as in standard Markdown, never against the skill directory,
 so skill entries carry no per-runtime bootstrap. Run helper scripts by their
 resolved absolute path, including from a foreign CWD, and strip Markdown
-`#fragments` before filesystem reads or Node execution. Plugin skills live under
+`#fragments` before filesystem reads or Bun execution. Plugin skills live under
 `${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as `skill://<skill>/`
 in OMP.
 
@@ -136,11 +136,11 @@ path, declared metadata and canonical skill-entry source/bytes, not just a route
 
 ## Validate and observe separately
 
-`npm run check:agents-schema` validates both reusable and native project
+`bun run check:agents-schema` validates both reusable and native project
 frontmatter. Explicit paths work through either checker:
 
 ```sh
-node scripts/check-agent-schemas.mjs /target/.claude/agents /target/.omp/agents
+bun scripts/check-agent-schemas.mjs /target/.claude/agents /target/.omp/agents
 bash agents/check.sh /target/.claude/agents /target/.omp/agents
 ```
 

@@ -32,13 +32,13 @@ eligibility; see [skill invocation](agents/README.md#skill-invocation-and-resour
 
 ## Check before install or review
 
-Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitHub Actions (via `.nvmrc`) all declare the Node 22 major line. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and PR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
+Use Bun 1.4+ before installing dependencies; `.bun-version` (the CI pin), `package.json` `engines.bun`, and GitHub Actions (via `.bun-version`) all declare it. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and PR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
 
 ## Install on a new machine
 
 The public Git source is <https://github.com/b-milescu/skills> (shorthand
 `b-milescu/skills`). Native clients own installation, updates and removal. No
-npm executable or custom installer is published, and no MCP
+executable package or custom installer is published, and no MCP
 catalogue/configuration is automatically installed. Keep each native
 installation's complete resource tree; copying standalone helpers is not
 supported.
@@ -46,11 +46,11 @@ supported.
 ### Prerequisites
 
 - Claude Code or OMP with plugin-marketplace support.
-- Git, and Node.js 22.x on `PATH`. The bundled helpers need no npm packages.
+- Git, and Bun 1.4+ on `PATH`. The bundled helpers need no installed packages.
 - For change-request workflows, a tool your runtime can use to reach your code host and issue tracker (an MCP server or a CLI). Nothing is bundled; the `setup-dev-skills` skill records the choice per project.
 - Optional: a memory plugin or MCP server for `retro` lookback.
 
-Contributors to this repository also need npm and bash for the [Check Gate](docs/agents/check-gate.md), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally Bun plus an OMP source checkout for the loader smoke test.
+Contributors to this repository also need bash for the [Check Gate](docs/agents/check-gate.md) (`bun install`, then `bun run check`), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally an OMP source checkout for the loader smoke test.
 
 ### Claude Code
 
@@ -81,7 +81,7 @@ omp plugin uninstall skills@skills --scope user
 OMP uses the same marketplace and the OMP dialect marker. Its reusable agent
 IDs stay bare: `change-builder` and `change-reviewer-final`; skills use
 `/skill:<logical-name>` and native `skill://<logical-name>[/resource]`.
-OMP Git marketplace installation does not install npm dependencies. Installed
+OMP Git marketplace installation does not install package dependencies. Installed
 workflow helpers therefore carry their minimal static YAML dependency and
 license; they do not require a developer checkout's `node_modules`.
 

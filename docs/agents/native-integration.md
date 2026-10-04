@@ -112,7 +112,7 @@ selecting the recipe from the actual `Gate owner`:
 - **Parent:** validate the receipt and current candidate Lift before publication:
 
   ```text
-  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+  bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
   ```
 
   No future `--gate-receipt-locator` or `--gate-policy-ref` flags are allowed.
@@ -120,13 +120,13 @@ selecting the recipe from the actual `Gate owner`:
   the sole labelled opaque `Gate Receipt` pointer and policy:
 
   ```text
-  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode post-note --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
+  bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner parent --mode post-note --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
   ```
 
 - **Builder:** validate only the existing restricted builder receipt shape:
 
   ```text
-  node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+  bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
   ```
 
   Builder `post-note` and parent-only binding flags, including `--review-packet`,
@@ -144,7 +144,7 @@ GitHub has no native receipt extractor, so the read-back comment body is the
 extraction source and the local validator parses that same text. Separately verify
 exact `checkout_commit`, `command` and `result` as read back, candidate binding and
 artifact author/custody/scope (comment `user.login` equals the verified identity, on
-this PR). Actual exact-candidate `npm run check` execution and original-log custody
+this PR). Actual exact-candidate `bun run check` execution and original-log custody
 follow [Check Gate](check-gate.md); readable custody alone is not execution proof.
 [Authored-source publication readback](#publish-one-artifact) is another required
 proof. Local validity, read-back extraction or a body digest substitutes for none of

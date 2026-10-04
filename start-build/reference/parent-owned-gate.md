@@ -140,9 +140,9 @@ Relative paths resolve against the directory of the file that contains them, so
 resolved absolute path, not from the target CWD:
 
 ```text
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
 ```
 
 `lift-only` is receipt-independent **presence-only** validation: every canonical
@@ -192,7 +192,7 @@ or `pending (parent)`), or names the gate, the gate command, a rerun
 (`rerun`, `reruns`, `re-running`, `rerunning`), a receipt, a head, a rebind, a
 SHA or commit (the word or a SHA token), or an arrow (`gate rerun pending`,
 `Gate Receipt: pending`, `receipts pending`, `new head pending rebind`,
-`check re-running, pending`, `npm run check pending`, `<sha> pending`,
+`check re-running, pending`, `bun run check pending`, `<sha> pending`,
 `<sha> → pending`).
 Other prose, such as "the bound-or-pending wording", is accepted.
 
@@ -234,7 +234,7 @@ are rejected in this mode; full post-note Reviewer Lift validation stays scoped
 to parent-owned mode):
 
 ```text
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
 ```
 
 Fail-closed floors are unchanged: a receipt bound to any commit other than the

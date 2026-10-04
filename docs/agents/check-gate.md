@@ -4,17 +4,17 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 ## Full local gate
 
-Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitHub Actions `check` job (Node from `.nvmrc`). `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order. Its Node step, `node --test 'tests/*.mjs'`, is the native test framework for JavaScript tests: every top-level `tests/*.mjs` file runs in parallel under Node's built-in runner, so a new `.mjs` test is gated by adding the file, with no wrapper script.
+Run the local gate with Bun 1.4+, matching `.bun-version` (the CI pin), `package.json` `engines.bun`, and the GitHub Actions `check` job (Bun from `.bun-version`). `bun run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order. Its JavaScript steps run every top-level `tests/*.mjs` file in its own Bun process, gated on that process's exit code, so a new `.mjs` test is gated by adding the file, with no wrapper script.
 
-**Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Switch to Node 22 per `.nvmrc` (e.g. `nvm use 22`), then run `npm ci` to install dependencies from `package-lock.json`, then run `npm run check`. Skipping either bootstrap step produces spurious failures (wrong Node version or missing `node_modules`).
+**Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Install the Bun release pinned in `.bun-version`, then run `bun install --frozen-lockfile` to install dependencies from `bun.lock`, then run `bun run check`. Skipping either bootstrap step produces spurious failures (wrong Bun version or missing `node_modules`). The gate also needs `bash` and `git` on `PATH`.
 
-Use `Local gate: PASS — npm run check` in PR Review Packets when it passes.
+Use `Local gate: PASS — bun run check` in PR Review Packets when it passes.
 
 For parent-owned gate selection, this policy and the bootstrap route above
-already support an exact-candidate `npm run check` receipt. A fresh worktree
+already support an exact-candidate `bun run check` receipt. A fresh worktree
 without `node_modules` needs bootstrap; it does not lack gate policy. Record
 the parent as the bootstrap/gate executor without requiring a full gate pass
-before implementation. If Node 22 or dependency installation cannot be
+before implementation. If Bun 1.4+ or dependency installation cannot be
 provided, report that specific prerequisite, not an N/A parent receipt or an
 automatic ownership change. These are selection rules, not a report of an
 observed local failure. Generic cases, including issues that add a gate, are
@@ -26,7 +26,7 @@ Use this file as this repo's confirmed `project_profile.gate_policy_ref`.
 The declared `ci_parity.reference` points to [CI parity](#ci-parity);
 `manual_validation_rules.reference` points to
 [Manual validation rules](#manual-validation-rules).
-The exact-candidate full local gate is `npm run check`; CI is advisory.
+The exact-candidate full local gate is `bun run check`; CI is advisory.
 
 These project-owned facts are declared here and in the confirmed [profile](dev-workflows.md#project-profile-hooks), never inferred from installed shared field guidance.
 
@@ -35,12 +35,12 @@ the [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 
 ## Gate coverage for ready handoff
 
-This repo's `Gate coverage` is `exact-candidate-local`. `npm run check` must pass
+This repo's `Gate coverage` is `exact-candidate-local`. `bun run check` must pass
 on the exact PR head SHA; in parent-owned mode the durable Gate Receipt records
 that command, candidate, and PASS result. This singular local gate is the
 required quality evidence for ready, review, approval, and finish.
 
-The `check` provider job runs the same command after `npm ci`. It is an advisory
+The `check` provider job runs the same command after `bun install --frozen-lockfile`. It is an advisory
 parity signal, not another delivery gate. Record its locator, status, and SHA
 when available, and attribute the status only when its SHA matches the reviewed
 candidate or provider-proven integration commit. Pending, failed, canceled,
@@ -54,29 +54,29 @@ guarded finish re-runs.
 
 ## Executable-bit policy
 
-Only `scripts/check.sh` (via `npm run check`) keeps its tracked executable bit.
-Shell, Node, and regression helpers stay non-executable (`100644`).
+Only `scripts/check.sh` (via `bun run check`) keeps its tracked executable bit.
+Shell, JavaScript, and regression helpers stay non-executable (`100644`).
 
 ## Targeted checks
 
 | Area | Command | Notes |
 | --- | --- | --- |
 | Agent consistency | `bash agents/check.sh` | Read-only route inventory/parity and runtime schema checks; disposable HOME remains unchanged. |
-| Agent schema validation | `npm run check:agents-schema` | Runtime-specific declarations, canonical names and optional model/effort metadata; routes declare no `tools`, and a declared `tools` is checked for syntax only. Native locations accepted, empty requested validation rejected. Metadata is not effective model/effort proof. |
-| Markdown formatting | `npm run check:md` | Runs pinned `markdownlint-cli2` against tracked Markdown with repo-local prompt-friendly rule config. |
-| Markdown local links | `npm run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
-| JavaScript tests | `node --test 'tests/*.mjs'` | Node 22 built-in runner over every top-level `tests/*.mjs` (`node:assert/strict` scripts or `node:test` files); runs in parallel, continues past failures, prints a failure summary. Keep the glob quoted: an empty match then runs nothing instead of Node's repo-wide default patterns, and a directory argument fails on Node 22. |
+| Agent schema validation | `bun run check:agents-schema` | Runtime-specific declarations, canonical names and optional model/effort metadata; routes declare no `tools`, and a declared `tools` is checked for syntax only. Native locations accepted, empty requested validation rejected. Metadata is not effective model/effort proof. |
+| Markdown formatting | `bun run check:md` | Runs the pinned `markdownlint-cli2` on Bun (`bunx --bun --no-install`) against tracked Markdown with repo-local prompt-friendly rule config; without a prior `bun install` it fails loudly instead of fetching a different release. |
+| Markdown local links | `bun run check:links` | Validates tracked Markdown relative links, image targets, anchors, and allowlisted external URL hosts without live network calls. |
+| JavaScript tests | `bun tests/<file>.mjs`, or `bun test ./tests/<file>.mjs` for a file that imports `node:test` | `scripts/check.sh` runs every top-level `tests/*.mjs` in its own process and gates on its exit code, so one file's late async throw or `process.exit(0)` cannot hide or skip another file's result; it continues past failures and lists each failing file. A `node:test` file runs through `bun test` (the only runner it works under) with an explicit `./` path, because `bun test` treats a bare `tests/x.mjs` or a quoted glob as a name filter that matches nothing; every other file is a plain `node:assert/strict` script run as `bun tests/<file>.mjs`. An empty `tests/*.mjs` match runs nothing, and a bare `bun test` never runs (it discovers `*.test.*` files repo-wide). |
 | Native install/lifecycle smoke | Native commands in [README](../../README.md#install-on-a-new-machine), with disposable HOME/config/profile | Observe installation, update/removal, exposed skill/agent identities and foreign-CWD helper/resource execution; preserve unrelated user/site content. |
 | Skill size/readability | `wc -l <skill>/SKILL.md` | Keep `SKILL.md` near or under **100 lines** when practical; split distinct or advanced content into one-level references, and check triggers, examples, and reference depth. |
-| Gate/finding/text behavior | `node --test tests/gate-receipt-validator.mjs tests/finding-identity-bindings.mjs tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
-| Skill-stack agnosticism | `node --test tests/skill-stack-agnostic.mjs` | Walks the file system (no git; `.git`, `node_modules` and `start-build/scripts/vendor/` skipped) over the eight skill directories, `templates/` and `reference/` and fails with every `path:line` that names a code host, agent harness, model or vendor, outside skill or carries a machine-specific path; fails on any stack symlink that does not resolve inside the stack; also fails on any repo `.mjs` loader form that is neither a `node:` builtin nor a relative path. |
+| Gate/finding/text behavior | `bun tests/gate-receipt-validator.mjs`, `bun tests/finding-identity-bindings.mjs`, `bun tests/forge-text-validator.mjs` | Canonical row presence, opaque bindings, receipt/candidate/owner/custody, original finding identity and no-echo Unicode/envelope rejection; native scope verification remains separate. |
+| Skill-stack agnosticism | `bun test ./tests/skill-stack-agnostic.mjs` | Walks the file system (no git; `.git`, `node_modules` and `start-build/scripts/vendor/` skipped) over the eight skill directories, `templates/` and `reference/` and fails with every `path:line` that names a code host, agent harness, model or vendor, outside skill or carries a machine-specific path; fails on any Node toolchain use in the stack (a `node` invocation, a Node package-manager or version-manager command, a Node runtime version requirement; `bun`, `node:` imports and `node_modules` stay allowed); fails on any stack symlink that does not resolve inside the stack; also fails on any repo `.mjs` loader form that is neither a `node:` builtin nor a relative path. |
 | Runtime route provenance | `bash tests/omp-agent-loader-smoke.sh` | Actual installed OMP loader in fresh processes and independently invoked allocated/revision contexts; not live model execution. Claude precedence requires separate runtime proof. |
 | Stale naming check | `git grep -nE "<old-name>\|<rejected-term>"` | Use after renames or terminology decisions. |
 | Markdown presence | `find <skill> -maxdepth 1 -type f -print \| sort` | Confirms expected seed docs exist. |
 
 ## Shipped shell regression inventory
 
-`scripts/check.sh` runs `node --test 'tests/*.mjs'` and then every top-level `tests/*.sh` file, keeps going after a failing step, and ends with the failing set (the Node step is listed as `tests/*.mjs`) and a non-zero exit; the pre-loop steps (agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
+`scripts/check.sh` runs every top-level `tests/*.mjs` file and then every top-level `tests/*.sh` file, each in its own process, keeps going after a failing step, and ends with each failing file listed (for example `tests/foo.mjs`) and a non-zero exit; the pre-loop steps (agent schema, `agents/check.sh`, Markdown lint, Markdown links) stay fail-fast. Keep this inventory synchronized when adding, removing, or renaming a shell regression script: `tests/check-gate-inventory.sh` fails closed when these row keys and the `tests/*.sh` disk glob disagree, which is what catches a test present on disk but unregistered.
 
 Each script states its own coverage in a `# Focus:` header comment directly below its shebang; read the script rather than a paraphrase kept here.
 
@@ -95,16 +95,16 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 
 `.github/workflows/check.yml` mirrors the local Check Gate instead of re-encoding individual checks in CI:
 
-- The repo-local runtime contract is Node.js 22.x (`.nvmrc` and `package.json` `engines.node`), and CI runs the same major.
-- Advisory GitHub Actions workflow `check`, job `check`. After `npm ci` it runs `npm run check`, the same canonical command used locally.
+- The repo-local runtime contract is Bun 1.4+ (`.bun-version` and `package.json` `engines.bun`), and CI installs that release with `oven-sh/setup-bun`.
+- Advisory GitHub Actions workflow `check`, job `check`. After `bun install --frozen-lockfile` it runs `bun run check`, the same canonical command used locally.
 
-Do not add CI-only validation here unless it is first added to `npm run check` and documented as part of the local Check Gate.
+Do not add CI-only validation here unless it is first added to `bun run check` and documented as part of the local Check Gate.
 
 ## Manual validation rules
 
 Manual validation is supporting evidence only when automation cannot cover the
 change. Record exact commands or observations, redact secrets, and bind the
-evidence to the reviewed SHA. Manual validation does not replace `npm run check`
+evidence to the reviewed SHA. Manual validation does not replace `bun run check`
 for ready-marking unless the PR records a specific, reviewed exception.
 
 ## Native install smoke requirement

@@ -30,7 +30,7 @@ against the directory of the file that contains them. Before publication/ready
 validate every originating report:
 
 ```text
-node <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> [--report <report.md> ...] [--packet <revision.md> ...] [--lift <packet.md> ...]
+bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> [--report <report.md> ...] [--packet <revision.md> ...] [--lift <packet.md> ...]
 ```
 
 A Lift whose `Finding bindings` value is `none` can be checked without `--report`. The validator fails publication/ready validation on missing, stale, ambiguous, contradictory, duplicate, or malformed bindings. This identity contract does not change severity, Mutation Guard, Gate Receipt, approval, or merge-authority semantics, and it never requires editing historical reports.

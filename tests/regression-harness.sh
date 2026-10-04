@@ -30,4 +30,10 @@ assert_status 7
 assert_capture_contains 'captured output'
 assert_capture_not_contains 'not captured'
 
+printf 'present\n' > "$TEST_TMPDIR/file.txt"
+assert_file_contains "$TEST_TMPDIR/file.txt" 'present' 'file contains assertion'
+assert_file_not_contains "$TEST_TMPDIR/file.txt" 'absent' 'file not-contains assertion'
+run_capture bash -c 'source "$1"; assert_file_not_contains "$2" present' _ "$REPO_ROOT/tests/lib/assertions.sh" "$TEST_TMPDIR/file.txt"
+assert_status 1
+
 echo "regression-harness: PASS"

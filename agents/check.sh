@@ -7,7 +7,7 @@ shopt -s nullglob
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 # Explicit targets use the dialect-aware checker, including native project paths.
 if [[ "$#" -gt 0 ]]; then
-  exec node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$@"
+  exec bun "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$@"
 fi
 TMPDIR_CHECK="$(mktemp -d "${TMPDIR:-/tmp}/agent-check.XXXXXX")"
 trap 'rm -rf "$TMPDIR_CHECK"' EXIT

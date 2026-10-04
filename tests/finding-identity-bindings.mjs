@@ -3,7 +3,7 @@
 // tuples remain distinct; valid Revision Packet and Reviewer Lift bindings
 // pass; bare/missing/stale/contradictory bindings fail before
 // publication/ready; LF and CRLF inputs produce the same result through
-// platform-neutral Node path handling and no network calls.
+// platform-neutral `node:path` handling and no network calls.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

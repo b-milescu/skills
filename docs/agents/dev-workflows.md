@@ -76,9 +76,9 @@ project_profile:
     reference: docs/agents/triage-labels.md
   gate_policy_ref: docs/agents/check-gate.md#full-local-gate
   check_gate:
-    command: npm run check
-    runtime: Node.js 22.x
-    bootstrap: npm ci
+    command: bun run check
+    runtime: Bun 1.4+
+    bootstrap: bun install --frozen-lockfile
   dev_workflows:
     reference: docs/agents/dev-workflows.md
   acceptance_surfaces_ref: docs/agents/dev-workflows.md#acceptance-surface-vocabulary
@@ -123,7 +123,7 @@ loader proof is `tests/omp-agent-loader-smoke.sh`.
 | `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) exact-candidate full local gate, ready handoff, CI parity, and when-gate-cannot-run sections. |
 | `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
 | `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
-| `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
+| `language_families` | JavaScript (Bun), Bash/shell, Markdown, and YAML. |
 | `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
 | `ci_parity.reference` | [`docs/agents/check-gate.md`](check-gate.md#ci-parity) configured advisory CI parity jobs. |
 | `domain_docs` | [`docs/agents/domain.md`](domain.md) context and ADR layout. |

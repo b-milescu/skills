@@ -29,15 +29,15 @@ autoload-skills: start-build, forge
 Read skill://start-build and the target's confirmed integration.
 MD
 expect_fail() {
-  if node "$checker" "$@" >"$TMP_ROOT/diagnostic" 2>&1; then
+  if bun "$checker" "$@" >"$TMP_ROOT/diagnostic" 2>&1; then
     echo "expected schema rejection: $*" >&2
     exit 1
   fi
 }
 # Invoke from a foreign CWD: paths, not an unrelated checkout, define the input.
-(cd "$TMP_ROOT" && node "$checker" "$TMP_ROOT/project/.claude/agents" "$TMP_ROOT/project/.omp/agents")
-node "$checker" "$TMP_ROOT/project/.claude/agents/neutral-worker.md" "$TMP_ROOT/project/.omp/agents/neutral-worker.md"
-node "$checker" "$TMP_ROOT/project"
+(cd "$TMP_ROOT" && bun "$checker" "$TMP_ROOT/project/.claude/agents" "$TMP_ROOT/project/.omp/agents")
+bun "$checker" "$TMP_ROOT/project/.claude/agents/neutral-worker.md" "$TMP_ROOT/project/.omp/agents/neutral-worker.md"
+bun "$checker" "$TMP_ROOT/project"
 bash "$REPO_ROOT/agents/check.sh" "$TMP_ROOT/project/.claude/agents" "$TMP_ROOT/project/.omp/agents"
 # One source interpreted in two runtime scopes must still reject the wrong dialect.
 mkdir -p "$TMP_ROOT/alias/.omp/agents"
@@ -154,11 +154,11 @@ expect_tool_error() { # dialect, tools value, exact diagnostic
   fi
 }
 probe_tools omp '"read, todo, hub"'
-node "$checker" "$probe/.omp/agents/tool-probe.md"
+bun "$checker" "$probe/.omp/agents/tool-probe.md"
 probe_tools omp '"debug, github, computer, checkpoint, rewind, security_scan, memory_edit, retain, recall, reflect, learn, manage_skill, goal, think"'
-node "$checker" "$probe/.omp/agents/tool-probe.md"
+bun "$checker" "$probe/.omp/agents/tool-probe.md"
 probe_tools claude '"Read, Agent, Task"'
-node "$checker" "$probe/.claude/agents/tool-probe.md"
+bun "$checker" "$probe/.claude/agents/tool-probe.md"
 expect_tool_error claude '"LS, MultiEdit"' 'Claude tool "LS" is not a Claude Code tool'
 expect_tool_error claude '"LS, MultiEdit"' 'Claude tool "MultiEdit" is not a Claude Code tool'
 expect_tool_error omp irc 'OMP tool "irc" must use OMP-native tool "hub"'
@@ -172,7 +172,7 @@ skills: start-build, forge
 model: inherit
 ---
 MD
-node "$checker" "$probe/.claude/agents/tool-probe.md"
+bun "$checker" "$probe/.claude/agents/tool-probe.md"
 cat > "$probe/.omp/agents/tool-probe.md" <<'MD'
 ---
 name: tool-probe
@@ -180,7 +180,7 @@ description: Inherits every parent tool
 autoload-skills: start-build, forge
 ---
 MD
-node "$checker" "$probe/.omp/agents/tool-probe.md"
+bun "$checker" "$probe/.omp/agents/tool-probe.md"
 # Real project declarations and shared presets are checked together by default.
-node "$checker"
+bun "$checker"
 echo 'agents-schema regression: PASS'

@@ -67,7 +67,7 @@ no-body diagnostics before body-bearing writes. Target safe-write tools may add
 native checks, not replace common checks.
 
 ```text
-node <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
+bun <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
 ```
 
 Exact envelope: `{"role":"review-packet","content":"authored string"}` with only

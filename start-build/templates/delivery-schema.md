@@ -100,7 +100,7 @@ delivery:
     commit: "1111111111111111111111111111111111111111"
     not_run_reason: "N/A"
   local_gate:
-    command: "npm run check"
+    command: "bun run check"
     status: "not-run"
     not_run_reason: "parent-owned"
     summary: "parent owns the final local gate"
