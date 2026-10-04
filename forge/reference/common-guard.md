@@ -20,8 +20,15 @@ stops without trying another provider or transport:
 Return `passed`, `blocked`, `handoff`, `held`, or `escalated`; an opaque blocker
 string or `none`; whether a mutation ran; selected provider/transport evidence;
 and the post-read classification. Binding failure, stale head, missing or stale
-Gate Receipt, missing authority, unsafe body, unsupported commit binding, or
-failed post-read blocks without transport fallback. CI status never blocks.
+Gate Receipt, missing authority, unsupported commit binding, or failed post-read
+blocks without transport fallback. CI status never blocks the guard. A `held`
+result (native protection, including a provider's required checks, holds the
+mutation) is reported without bypass; once the hold clears, the retry is a new
+`forge act` that re-runs every step from the first, and nothing from the held
+attempt carries over. A required-check hold is waited out within the
+[required-check wait budget](../../start-build/reference/parent-orchestrator.md#required-check-wait-budget);
+a failed check or an elapsed budget leaves the change blocked with the provider
+outcome.
 
 The target's confirmed integration reference validates native identifiers and
 locators; shared callers and validators preserve opaque values and verified scope.
@@ -68,9 +75,9 @@ permission uncertainty or same-session self-review/self-finish stops the action.
 Account equality alone does not establish session independence. Commit authors
 and CI variables are not authenticated identity. Verify author/context separately.
 
-Body publication requires exact string/role validation using the installed
-`forge/scripts/validate-text.mjs` filesystem path before native checks. Resolve
-skill paths through runtime resource resolution, not target CWD. No diagnostic
+Body publication requires exact string/role validation with the helper at
+`../scripts/validate-text.mjs` (relative to this file), run per the
+[helper rule](../SKILL.md#helpers), before native checks. No diagnostic
 may echo submitted body or parser excerpts. Require complete lossless native
 readback against authored source; record only documented normalization.
 

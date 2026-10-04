@@ -117,7 +117,7 @@ candidate binding; and post-note validation of that same receipt and current
 Lift. Anchor recognition or SHA equality alone proves none of receipt validity,
 execution, an unchanged checkout, authorship, independent review, or authority.
 
-Retained local-log custody (issue gitlab#490): when a `local-gate` evidence row's
+Retained local-log custody: when a `local-gate` evidence row's
 `source` names the retained local log by absolute filesystem path, the
 validator requires that exact file to be readable — at pre-post validation,
 before any publication or ready action, and again at post-note validation.
@@ -135,13 +135,14 @@ Render once, validate before publication, publish with `forge publish`, and
 require provider-native byte-for-byte readback. Then validate the same artifact,
 its returned locator, and the current Review Packet before ready:
 
-Resolve the installed `start-build` directory to an actual filesystem path as
-`<start-build-dir>` through runtime resource resolution before invoking Node:
+Run helpers per the [helper rule](../../forge/SKILL.md#helpers): `<start-build-dir>`
+below is the absolute path of `..` in the installed skill, and each command runs by
+that resolved absolute path:
 
 ```text
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
 ```
 
 `lift-only` is receipt-independent **presence-only** validation: every canonical
@@ -169,7 +170,7 @@ explicit non-placeholder opaque evidence with no default. CI is reasoned N/A or
 verified separately. Decoupling names `single change request` or an explicit
 `co-running <opaque>; <summary>`, not a backend identifier shape. Full canonical
 rows must remain present and nonempty. Diagnostics do not echo row bodies.
-Finding equality stays with `validate-finding-bindings.mjs`.
+Finding equality stays with `../../start-review/scripts/validate-finding-bindings.mjs`, run per the [helper rule](../../forge/SKILL.md#helpers).
 
 After publishing the Gate Receipt, rebind both `Local gate` and `Gate coverage rationale`.
 For `Gate coverage rationale`, replace only the `result:` token: `not-run — parent-owned` becomes `PASS — Gate Receipt: <opaque locator>`.
@@ -191,7 +192,7 @@ or `pending (parent)`), or names the gate, the gate command, a rerun
 (`rerun`, `reruns`, `re-running`, `rerunning`), a receipt, a head, a rebind, a
 SHA or commit (the word or a SHA token), or an arrow (`gate rerun pending`,
 `Gate Receipt: pending`, `receipts pending`, `new head pending rebind`,
-`check re-running, pending`, `npm run check pending`, `<sha> pending`,
+`check re-running, pending`, `bun run check pending`, `<sha> pending`,
 `<sha> → pending`).
 Other prose, such as "the bound-or-pending wording", is accepted.
 
@@ -228,12 +229,13 @@ parent-only fields (`change_id`, `issue_id`, `checkout_path`, `status_*`,
 Acceptance is provider-native and exact-candidate: the handoff-evidence tool
 must report `present_anchor: true` and `receipt_commit_eq_head: true` for the
 current head, and publication requires provider-native byte-for-byte readback
-of the note. Validate locally before publication (parent-owned binding flags
-are rejected in this mode; full post-note Reviewer Lift validation stays scoped
-to parent-owned mode):
+of the note. Validate locally before publication, running the helper per the
+[helper rule](../../forge/SKILL.md#helpers) (parent-owned binding flags are
+rejected in this mode; full post-note Reviewer Lift validation stays scoped to
+parent-owned mode):
 
 ```text
-node <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
 ```
 
 Fail-closed floors are unchanged: a receipt bound to any commit other than the
@@ -260,7 +262,7 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
 7. Reviewer Lift `Acceptance surfaces` all have test/smoke/docs-read/ci/N/A
    evidence, and non-`none` finding bindings validate against their reports.
 8. Re-snapshot immediately before one guarded ready mutation. Provider-specific
-   CAS or snapshot-sandwich rules live in the selected `/forge` reference.
+   CAS or snapshot-sandwich rules live in the selected `forge` reference.
 9. Provider-native post-read confirms ready and unchanged current commit.
 
 The exact candidate plus a passing parent Gate Receipt is sufficient to mark

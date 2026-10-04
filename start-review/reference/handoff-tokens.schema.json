@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "skill://start-review/reference/handoff-tokens.schema.json",
+  "$id": "handoff-tokens.schema.json",
   "kind": "reviewer-handoff-tokens-schema",
   "version": "1",
   "owner": "start-review",
-  "human_resource": "skill://start-review/templates/filling-guide.md",
+  "human_resource": "../templates/filling-guide.md",
   "summary": "Canonical reviewer verdict, blocker and routing tokens; native outcome mappings are owned by the invoked target's confirmed integration.",
   "review_verdict": [
     "pass",

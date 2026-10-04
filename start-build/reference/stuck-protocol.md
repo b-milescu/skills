@@ -4,8 +4,8 @@ Detailed stuck-handling reference for `start-build`. This file is the canonical 
 
 If blocked for more than 2 hours:
 
-1. Keep the MR in Draft.
-2. Post `templates/stuck-packet.md` as an MR comment after filling it with `forge publish`.
+1. Keep the change request in Draft.
+2. Post `../templates/stuck-packet.md` as a change-request comment after filling it with `forge publish`.
 3. Apply the project's unblock label if one exists.
 4. Request review explicitly for unblocking.
 5. List ranked hypotheses.

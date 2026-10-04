@@ -1,51 +1,40 @@
 # Dev Workflows
 
-This repo binds the shared dev workflows to GitHub through `/forge preflight`.
+This repo binds the shared dev workflows to GitHub through the `forge` skill's `preflight` operation.
 
 ## Skills
 
-- **`/forge`** — the one provider seam; every shared workflow binds through it.
-- **`/issue-delivery-loop`** — coordinates bounded batches using the internal `mr-builder` and `mr-reviewer-final` routes.
-- **`/plan-to-issues`**, **`/start-build`**, **`/start-review`**, **`/retro`** — each skill's own `description:` states its scope; invoke them per [Usage rules](#usage-rules).
+- **`forge`** — the one provider seam; every shared workflow binds through it.
+- **`issue-delivery-loop`** — coordinates bounded batches using the internal `change-builder` and `change-reviewer-final` routes.
+- **`plan-to-issues`**, **`start-build`**, **`start-review`**, **`retro`** — each skill's own `description:` states its scope; invoke them per [Usage rules](#usage-rules).
 
 ## Skill activation mechanism
 
-**Skill invocation** (defined in [`CONTEXT.md`](../../CONTEXT.md) glossary) means running a skill's `SKILL.md` entry procedure through the runtime skill mechanism. It is distinct from a **reference read** — reading one of a skill's reference/template files for detail after the skill is active. This section is the canonical location for the per-dialect activation mechanism mapping.
+**Skill invocation** (defined in the [`CONTEXT.md`](../../CONTEXT.md) glossary) means running a skill's `SKILL.md` entry procedure through the runtime skill mechanism. It is distinct from a **reference read** — reading one of a skill's reference/template files for detail after the skill is active. The per-runtime mechanism (skill ids, preload declaration, activation verbs, resource paths) is owned by [agents/README.md](../../agents/README.md#skill-invocation-and-resource-paths).
 
-| Dialect | Declared on the agent by | Activated at runtime by | Activation verb in agent bodies/prompts |
-| --- | --- | --- | --- |
-| Claude (`agents/claude/*.md`) | `skills:` frontmatter preloads bodies; it is not an invocation allowlist. | Invoke additional eligible installed skills via the `Skill` tool at their entry. | "Invoke it via the `Skill` tool" / "invoke `<skill>` via the Skill tool". |
-| OMP (`agents/*.md`, excluding README) | `autoload-skills:` frontmatter preloads bodies at session start, separately from inherited discovery inventory. | The OMP skill-load mechanism enters preloads; eligible unpreloaded entries remain available through runtime entry resolution (`skill://<name>`). | "Invoke it through the OMP skill-load mechanism (its `autoload-skills` frontmatter)" for preloads; "invoke its entry through the OMP skill-load mechanism" on demand. |
-
-Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch prompt (or agent body) names the skill and instructs invocation; per the [gitlab#320 minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Reserve the word "load" for reference reads and other file/context loads, never for skill activation.
-
-Preload, discovery eligibility, Skill Invocation and Reference Read are distinct:
-an available/resolvable entry is not invocation permission. Check authoritative
-frontmatter for user-only restrictions before on-demand entry invocation.
-Dev Workflow entries use the shared
-[Task-selected specialists](../../start-build/reference/context-and-planning.md#task-selected-specialists)
-policy; coordinators leave that choice to each actor.
+A launch prompt (or agent body) names the skill and instructs invocation; per the [minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Dev Workflow entries use the shared [Task-selected specialists](../../start-build/reference/context-and-planning.md#task-selected-specialists) policy; coordinators leave that choice to each actor.
 
 ## Active recipes
 
-- `skill://forge/SKILL.md` — this target selects [native-integration.md](native-integration.md).
-- `skill://forge/reference/common-guard.md`
-- `skill://issue-delivery-loop/SKILL.md`
-- `skill://start-build/reference/parent-orchestrator.md`
-- `skill://start-build/reference/parent-owned-gate.md`
-- `skill://start-build/reference/post-merge-verifier.md`
-- `skill://start-build/templates/delivery-schema.md`
-- `skill://setup-dev-skills/reference/project-profile-facts.json`
+- [`forge/SKILL.md`](../../forge/SKILL.md) — this target selects [native-integration.md](native-integration.md).
+- [`forge/reference/common-guard.md`](../../forge/reference/common-guard.md)
+- [`issue-delivery-loop/SKILL.md`](../../issue-delivery-loop/SKILL.md)
+- [`start-build/reference/parent-orchestrator.md`](../../start-build/reference/parent-orchestrator.md)
+- [`start-build/reference/parent-owned-gate.md`](../../start-build/reference/parent-owned-gate.md)
+- [`start-build/reference/post-merge-verifier.md`](../../start-build/reference/post-merge-verifier.md)
+- [`start-build/templates/delivery-schema.md`](../../start-build/templates/delivery-schema.md)
+- [`setup-dev-skills/reference/project-profile-facts.json`](../../setup-dev-skills/reference/project-profile-facts.json)
 
 ## Default PR routes
 
-`/issue-delivery-loop` launches `mr-builder` and independent `mr-reviewer-final`
+The `issue-delivery-loop` skill launches `change-builder` and independent `change-reviewer-final`
 using the active runtime's effective same-name project declarations when present,
-otherwise provider-neutral shared routes. Follow the existing
+otherwise provider-neutral shared routes; per-runtime route ids are in
+[agents/README.md](../../agents/README.md#route-ids). Follow the existing
 [native model and effort selection](../../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection)
 contract; complete declarations do not force model/effort overrides.
 
-Mandatory independent review uses `mr-reviewer-final` from the same dialect
+Mandatory independent review uses `change-reviewer-final` from the same dialect
 directory. A missing route remains a route-unavailable blocker; no review scout,
 generic fallback, shim, old filename, or cross-runtime substitute is allowed.
 
@@ -55,14 +44,12 @@ Shared workflow records are provider-neutral: `provider`, `repository`, `issue`,
 `change_request`, `commit`, and `ci`. Their identifiers and locators are opaque
 outside the selected provider. This repo's profile binds them to GitHub and
 declares policy hooks through
-[`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
+[`start-build/templates/delivery-schema.md`](../../start-build/templates/delivery-schema.md).
 
 This repo's confirmed profile is declared here, not in installed shared facts.
 `provider.reference: docs/agents/native-integration.md` resolves from the invoked
 target clone. Code/work-item/CI scopes are this repository's GitHub repository
 `b-milescu/skills`, verified through that document's native preflight.
-Installed `docs/` aliases retain this source ownership and expose native facts;
-they never supply foreign targets with defaults.
 
 Confirmed project declaration (owned by this target, not shared field guidance):
 
@@ -89,9 +76,9 @@ project_profile:
     reference: docs/agents/triage-labels.md
   gate_policy_ref: docs/agents/check-gate.md#full-local-gate
   check_gate:
-    command: npm run check
-    runtime: Node.js 22.x
-    bootstrap: npm ci
+    command: bun run check
+    runtime: Bun 1.4+
+    bootstrap: bun install --frozen-lockfile
   dev_workflows:
     reference: docs/agents/dev-workflows.md
   acceptance_surfaces_ref: docs/agents/dev-workflows.md#acceptance-surface-vocabulary
@@ -111,37 +98,24 @@ project_profile:
     child_worktree_mode: read-only-unless-assigned
     copy_between_worktrees: forbidden
   skill_resources:
-    forge: skill://forge/SKILL.md
-    builder: skill://start-build/SKILL.md
-    reviewer: skill://start-review/SKILL.md
+    forge: forge/SKILL.md
+    builder: start-build/SKILL.md
+    reviewer: start-review/SKILL.md
   resource_addressing:
     target_repo_docs: repo-relative
-    runtime_skill_resources: skill-uri
+    runtime_skill_resources: skill-qualified
 ```
 
 ### Runtime project declarations and provenance
 
 Shared installed routes are provider-neutral. This repository's complete
-same-name declarations live in `.claude/agents/` and `.omp/agents/`, retaining
-canonical entries, builder/reviewer bounds, model/effort neutrality and task-selected
-specialists; only these target-owned files name confirmed native servers.
-
-OMP's installed discovery selects nearest project `.omp/agents` before user
-`~/.omp/agent/agents`, then extension/plugin/bundled entries. Establish this from
-the actual installed loader using `tests/omp-agent-loader-smoke.sh`, not by
-assuming Claude's precedence. Claude documents managed/CLI definitions ahead of
-nearest project `.claude/agents`, then user and plugin definitions; verify the
-actual effective selection in a fresh Claude spawning session independently.
-See [Claude subagents](https://code.claude.com/docs/en/subagents.md).
-
-Launch/relaunch the **spawning session** from the intended checkout. Changing a
-child's execution CWD does not reselect a cached route. Independently invoke
-allocated and revision checkout sessions; record selected file/source and exact
-canonical skill-entry provenance separately from entry access, available tools
-and live model behavior. A readable file or intended frontmatter proves neither
-actual selection nor hard MCP confinement; OMP inherited tool proxies are a
-distinct runtime property. No external runtime patch or generic MCP wildcard is
-part of this declaration.
+same-name declarations live in `.claude/agents/` and `.omp/agents/`. Like the
+shared routes they declare no `tools` and inherit all of the parent session's
+tools, and they reach GitHub through the parent's github MCP server or `gh`. Route
+ids, runtime precedence, provenance and what to validate and observe separately
+are owned by
+[agents/README.md](../../agents/README.md#runtime-specific-precedence); the OMP
+loader proof is `tests/omp-agent-loader-smoke.sh`.
 
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
@@ -149,7 +123,7 @@ part of this declaration.
 | `gate_policy_ref` | [`docs/agents/check-gate.md`](check-gate.md) exact-candidate full local gate, ready handoff, CI parity, and when-gate-cannot-run sections. |
 | `label_profile_ref` | [`docs/agents/triage-labels.md`](triage-labels.md) live label inventory and agent rules. |
 | `acceptance_surfaces_ref` | This doc's [Acceptance-surface vocabulary](#acceptance-surface-vocabulary) section. |
-| `language_families` | Node.js/JavaScript, Bash/shell, Markdown, and YAML. |
+| `language_families` | JavaScript (Bun), Bash/shell, Markdown, and YAML. |
 | `branch_naming` | This doc's [Branch naming](#branch-naming) section. |
 | `ci_parity.reference` | [`docs/agents/check-gate.md`](check-gate.md#ci-parity) configured advisory CI parity jobs. |
 | `domain_docs` | [`docs/agents/domain.md`](domain.md) context and ADR layout. |
@@ -167,7 +141,7 @@ weaken the [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 This repo's `project_profile.acceptance_surfaces_ref` resolves here. These are
 the only allowed `acceptance_surfaces` surface values for this repo; the global
 evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
-[`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
+[`start-build/templates/delivery-schema.md`](../../start-build/templates/delivery-schema.md).
 
 | Surface value | Meaning |
 | --- | --- |
@@ -175,7 +149,7 @@ evidence enum (`test`, `smoke`, `docs-read`, `ci`, `N/A — <reason>`) stays in
 | `prompt` | Agent prompt / SKILL.md / agent definition file changed. |
 | `agent_inventory` | Agent inventory manifest or registry changed. |
 | `install_surface` | Native marketplace/plugin discovery, installed resources/dependencies or deploy artifact changed. |
-| `transport` | `/forge` selection or provider-native transport logic changed. |
+| `transport` | The `forge` skill's selection or provider-native transport logic changed. |
 | `authority` | Authority verification, approval, vote, or finish logic changed. |
 | `ci_finish` | Bound CI or finish-verdict logic changed. |
 | `mutation_guard` | Common guard or provider safe-body/action handling changed. |
@@ -188,7 +162,7 @@ declared, blocks ready/pass.
 ### Branch naming
 
 Use issue-referencing source branches, for example `issue-<id>-<slug>`.
-Provider-native source/target shapes remain inside the selected `/forge`
+Provider-native source/target shapes remain inside the selected provider
 reference; the shared schema uses `change_request.source` and `.target`.
 
 ### Review approval / merge policy
@@ -196,20 +170,43 @@ reference; the shared schema uses `change_request.source` and `.target`.
 Reviewer approval is allowed by default after a passing review unless an
 explicit human/parent instruction, PR or issue comment, or project rulebook section
 restricts it. Use this section, or
-`skill://start-review/REVIEW-FLOW.md#approval-authority-policy`, as the stable repo
-policy source for `Approval authority: default-after-pass`.
+[`start-review/REVIEW-FLOW.md#approval-authority-policy`](../../start-review/REVIEW-FLOW.md#approval-authority-policy),
+as the stable repo policy source for `Approval authority: default-after-pass`.
 
 On GitHub the PR author cannot approve its own PR and every role here acts as one
 account, so native approval is unavailable;
 [native integration](native-integration.md#ready-approval-and-finish) records the
 passing Review Report as the review gate.
 
-Merge, auto-merge, release, deploy, close, and source-branch cleanup authority
-remain separate. They require an explicit `Merge authority` value and
-verifiable `Merge authority source`; approval never implies those finish
-actions.
+Merge, auto-merge queueing, release, deploy, close, and source-branch cleanup
+authority remain separate. Each requires an explicit `Finish authority` value and
+verifiable `Finish authority source`, and approval never implies them. The one
+project default below is that value for the parent's direct merge.
 
-Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In `/issue-delivery-loop` / parent-orchestrated child-builder plus final-reviewer mode, the parent owns approval, direct merge, and auto-merge queue actions after a fresh guarded pass review; the reviewer owns only the Review Report verdict and evidence, then routes `Next action: finish-by-authorized-actor` back to the parent/authorized finisher.
+Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In the `issue-delivery-loop` skill's parent-orchestrated child-builder plus final-reviewer mode, the parent owns approval and the exact-head direct merge after a fresh guarded pass review, under the project default below. The reviewer owns only the Review Report verdict and evidence, then routes `Next action: finish-by-authorized-actor` back to the parent/authorized finisher.
+
+#### Finish authority default
+
+This section is the verifiable `Finish authority source` for the one project
+default, `project default: the parent finisher may directly merge the reviewed
+head`; quote that claim in the Reviewer Lift `Finish authority` row and the finisher
+verifies it through the common guard. The default applies only when it is the value
+quoted in that row: an explicit human/parent grant takes precedence over it, so an
+explicit `queue auto-merge` grant is refused as `sha-bound-action-unsupported` even
+though this default exists. It grants the `Finish owner: parent` finisher the
+exact-head direct merge
+([native integration](native-integration.md#ready-approval-and-finish)) after a
+fresh guarded pass review, a valid exact-candidate Gate Receipt and the common
+guard. Required check `check` may hold or refuse that merge: `main` protection
+enforces admins, so GitHub holds it for every account, the sole admin included, until
+`check` passes. That is GitHub's outcome, never an eligibility decision, and the
+finisher never reads `check` to decide eligibility. On a hold the
+[wait recipe](native-integration.md#wait-for-required-checks) waits within the
+required-check wait budget before the guarded merge re-runs; a failed `check` or an
+elapsed budget leaves the PR blocked with GitHub's outcome. The default grants
+nothing else: not queueing (this repo's GitHub binding refuses it as
+`sha-bound-action-unsupported`), and not a reviewer's own merge, release, deploy,
+close or source-branch cleanup.
 
 ### Release/deploy policy
 
@@ -224,7 +221,7 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 
 ## Usage rules
 
-- Invoke `/forge` before shared workflow reads or actions; this target's confirmed integration is [native-integration.md](native-integration.md).
-- Before converting an approved plan into tracker issues, invoke `/plan-to-issues` after `/forge preflight`.
-- Before implementation, invoke `/start-build`; before independent review, invoke `/start-review`.
+- Invoke the `forge` skill before shared workflow reads or actions; this target's confirmed integration is [native-integration.md](native-integration.md).
+- Before converting an approved plan into tracker issues, invoke the `plan-to-issues` skill after the `forge` skill's `preflight`.
+- Before implementation, invoke the `start-build` skill; before independent review, invoke the `start-review` skill.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

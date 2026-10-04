@@ -7,7 +7,7 @@ shopt -s nullglob
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 # Explicit targets use the dialect-aware checker, including native project paths.
 if [[ "$#" -gt 0 ]]; then
-  exec node "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$@"
+  exec bun "$REPO_ROOT/scripts/check-agent-schemas.mjs" "$@"
 fi
 TMPDIR_CHECK="$(mktemp -d "${TMPDIR:-/tmp}/agent-check.XXXXXX")"
 trap 'rm -rf "$TMPDIR_CHECK"' EXIT
@@ -78,7 +78,7 @@ check_agent_variant_parity() {
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
   local name file rel declared claude_declared omp_declared token
 
-  # MR builder/reviewer routes share model-free basenames across Claude and
+  # Change-request builder/reviewer routes share model-free basenames across Claude and
   # OMP dialects. Runtime-owned model/effort selection does not make a
   # missing counterpart an allowed runtime-specific exception.
 

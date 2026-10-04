@@ -5,7 +5,7 @@
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |
 |---|---|---|
-| `review-report:agents/skills!340:1` | `cccccccccccccccccccccccccccccccccccccccc` | `MF-5` |
+| `review-report:b-milescu/skills#340:1` | `cccccccccccccccccccccccccccccccccccccccc` | `MF-5` |
 <!-- FINDING-IDENTITY-SCHEMA:END -->
 
 ## Response to Must Fix

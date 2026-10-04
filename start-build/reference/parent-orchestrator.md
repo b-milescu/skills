@@ -2,11 +2,11 @@
 
 Detailed parent/coordinator flow for child builders and final reviewers in provider-neutral work-item-to-change-request loops. This file is the canonical owner of the parent-orchestrator recipe.
 
-Safety invariants: child builders do not spawn reviewers, approve, finish, or clean parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; the current head, reviewed commit, and exact-candidate local Gate Receipt stay bound before approval or finish; explicit authority source stays required; provider CI is advisory evidence; `/forge` owns provider-native transport and readback; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
+Safety invariants: child builders do not spawn reviewers, approve, finish, or clean parent-owned branches; independent review stays mandatory unless explicitly bypassed by a human; the current head, reviewed commit, and exact-candidate local Gate Receipt stay bound before approval or finish; explicit authority source stays required; provider CI is advisory evidence, and a provider's required checks may hold or refuse a merge but never authorize one; `forge` owns provider-native transport and readback; credentials and product/runtime/operator external systems are not exposed through workflow artifacts; post-merge verifiers stay read-only.
 
 ## Durable child outputs
 
-Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on `worktree:true` plus a relative `output` path plus `outputMode:"file-only"` for any artifact the parent must read later: that combination can return a path inside a temporary `omp-worktree-*` checkout, which the parent cannot read once the worktree is removed. Prefer inline child output; when a file output is required, pass an absolute path under a durable run directory created outside any `omp-worktree-*` path and ensure it exists before launch. Recover a stale temporary-worktree path from durable run artifacts rather than treating the missing local file as the delivery record.
+Parent-readable handoffs must survive isolated worktree cleanup. Do not rely on a relative output path for any artifact the parent must read later when the child runs in a runtime-managed isolated worktree: the runtime can return a path inside a temporary checkout, which the parent cannot read once that worktree is removed. Prefer inline child output; when a file output is required, pass an absolute path under a durable run directory created outside any temporary worktree and ensure it exists before launch. Recover a stale temporary-worktree path from durable run artifacts rather than treating the missing local file as the delivery record.
 
 The provider-published change-request description's Reviewer Lift / Review Packet and provider-native discussion are the canonical durable handoff. Local handoff files, run artifacts, and compact `delivery.kind=change-delivery` blocks are convenience indexes only; parents verify compact fields from Tier 1/Tier 2 evidence before routing, review, finish, or verification.
 
@@ -18,21 +18,19 @@ When the parent coordinator, not the child builder, owns the final local gate an
 
 ## Default builder routing
 
-Parent-loop deliveries use canonical `mr-builder` and mandatory independent
-`mr-reviewer-final` role basenames. Model and effort selection is runtime-owned.
+Parent-loop deliveries use canonical `change-builder` and mandatory independent
+`change-reviewer-final` role basenames. Model and effort selection is runtime-owned.
 
 ### Native route selection
 
 Resolve each role from the current spawning session's effective runtime inventory,
 not a guessed source filename or a basename-only inventory equality check.
-Reusable sources are `agents/claude/<role>.md` for Claude and `agents/<role>.md`
-for OMP; complete target-owned project declarations remain separate.
-Claude's native plugin exposes `skills:<role>`, while OMP exposes bare `<role>`.
-Select the actual inventory identifier with verified runtime/source provenance.
-An effective same-name project declaration may expose a bare role and take native
-precedence; verify that selection independently in each runtime from the intended
-checkout. A native namespace qualifies the same canonical role, not a new alias
-or a substitute. Preserve the basename, canonical skills and reviewer independence.
+Runtimes may namespace plugin-provided agents; select the actual inventory
+identifier with verified runtime/source provenance. An effective same-name project
+declaration may expose a bare role and take native precedence; verify that
+selection independently in each runtime from the intended checkout. A native
+namespace qualifies the same canonical role, not a new alias or a substitute.
+Preserve the basename, canonical skills and reviewer independence.
 
 If the required role is unavailable or its effective source is ambiguous, stop
 with a route-unavailable blocker and explicit parent/operator decision. Never
@@ -40,18 +38,12 @@ select a generic specialist, shim, old filename, cross-runtime route or downgrad
 
 ### Native model and effort selection
 
-Shipped Claude MR declarations use `model: inherit` and omit `effort`. The parent
-may select a supported model through the native Agent invocation's model override;
-without it, the model inherits the parent conversation. Omitted effort inherits
-the session subject to native model support and limits; there is no per-invocation
-Agent effort parameter or `effort: inherit` declaration.
-
-Shipped OMP MR declarations omit `model` and `thinking-level`. Native parent/runtime
-task selection and defaults resolve them. Use only overrides exposed by the actual
-callable runtime interface, not internal executor arguments. Installed OMP exposes
-per-task `effort` (`lo`/`med`/`hi`) only behind `task.enableEffort`; this workflow
-neither enables that setting nor adds a model parameter to task. Operator overrides
-and supported levels remain runtime-owned.
+Route presets inherit the parent's model unless the parent selects one; omitted
+effort inherits the session subject to native model support and limits. Runtimes
+may expose selection controls: use only overrides exposed by the actual callable
+runtime interface, not internal executor arguments, and neither enable a runtime
+setting nor add an invocation parameter to gain one. Operator overrides and
+supported levels remain runtime-owned.
 
 Prompt prose is not model/effort enforcement. Selection never relaxes canonical
 role routing, independent review, exact-candidate gates or authority boundaries.
@@ -112,33 +104,59 @@ per-branch invariant, not a one-time batch preflight:
    rulebook. Confirm each work item carries the target repo's AFK-ready Triage Role
    label `project_profile.label_profile_ref` or other approved agent-work state. For
    multiple work items, evaluate the
-   [Decoupling Contract](skill://start-build/docs/decoupling-contract.md) per pair
+   [Decoupling Contract](../shared-reference/decoupling-contract.md) per pair
    before the first child launch and fan out exactly as
-   `issue-delivery-loop` specifies: one child per item and one isolated
+   the `issue-delivery-loop` skill specifies: one child per item and one isolated
    worktree/branch/Draft change request/Review Packet per child.
 2. **Prepare isolated work.** Verify clean status, then follow [Fresh default and cleanup order](#fresh-default-and-cleanup-order). The parent checkout remains coordinator-only during multi-issue runs. Pass the recorded absolute worktree path to the child; child-side path handling is canonical in [child-builder §Absolute worktree paths for edits](child-builder.md#absolute-worktree-paths-for-edits).
-3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Resolve canonical `mr-builder` under [Native route selection](#native-route-selection). If the runtime exposes an inventory API, call it (for example `subagent({ action: "list" })`), verify source/runtime provenance and launch the returned identifier, including its native namespace. Generic specialists, shim aliases, old filenames and cross-runtime substitutes are invalid.
+3. **Launch routed child builder.** Immediately before launch, re-read the work item's assignee state; if it changed since allocation or another active session owns it, stop instead of racing. Resolve canonical `change-builder` under [Native route selection](#native-route-selection). If the runtime exposes an agent inventory, list the runtime's available agents, verify source/runtime provenance and launch the returned identifier, including its native namespace. Generic specialists, shim aliases, old filenames and cross-runtime substitutes are invalid.
    Discovery guidance: issue-implementation specialization and change-review specialization labels explain why routed agents exist; they are never substitute route names.
 4. **Parent spot-check / parent-owned gate.** Before review, validate the builder handoff through `forge snapshot`. Verify every required child output owned by [child-builder §Child checklist](child-builder.md#child-checklist) and the [builder-final handoff](../templates/builder-final-handoff.md) against provider-native issue/change-request, head, CI, and publication evidence, applying [stage-correct handoff verification](parent-owned-gate.md#stage-correct-handoff-verification) at the applicable stage. `not-created` is a valid pre-gate return, not a receipt.
    Handle an early runtime/tool return under the same child stop-condition rules: resume the safe worktree or relaunch the exact scope without changing its route.
 5. **Launch final review.** Launch the reviewer as soon as the exact-candidate Gate Receipt exists. Provider CI may run in parallel, but no CI status delays review or changes verdict/action eligibility. Immediately before launch, use `forge snapshot` and require the current change-request head to equal the candidate commit.
 6. **Drive decision loop.** On `pass`, treat Review Report verdict/evidence as review judgment only. On `request-changes`, send the builder only the change-request locator, reviewed commit, Review Report locator, finding tuples, bounded acceptance criteria, gate owner, and expected handoff. On `reject`, stop and escalate.
 7. **Enforce candidate and gate guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and the exact-candidate local Gate Receipt to be valid. CI state never changes eligibility.
-8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. Under the literal `Finish owner: parent` contract, reviewers publish only Review Report verdict/evidence and return without waiting for parent action evidence; the parent/authorized finisher verifies provenance and passes the `/forge` common guard before one `forge act`, then requires provider-native readback. The default permitted finish is queued auto-merge when verified authority grants it; otherwise stop at the most permissive authorized action. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it. That finisher owns native post-read and any required compact action explanation, which next actors verify per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence). The historical Review Report stays immutable; a changed head routes new-head review rather than rebinding its judgment or findings. For unblock reconciliation, read the invoked target's confirmed tracker policy/reference, resolving repo-relative references from its confirmed root. Reconcile a dependent issue's `Blocked by` / `Dependencies` text only when that policy authorizes the particular blocker-closure transition, under the existing `/forge` guards and native readback. A conventional path, observed closure or finish authority alone grants no dependent-body edit. Without that authority, skip reconciliation while preserving independently authorized finish/readback. Missing/stale/conflicting tracker bindings follow existing setup/owner-choice handling, not inherited policy, auto-running setup or creating absent setup docs.
+8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. Under the literal `Finish owner: parent` contract, reviewers publish only Review Report verdict/evidence and return without waiting for parent action evidence; the parent/authorized finisher verifies provenance and passes the `forge` common guard before one `forge act`, then requires provider-native readback.
+   The verified grant selects the finish ([Default finish](../../start-review/REVIEW-FLOW.md#default-finish)): `queue auto-merge` queues only where the target's provider reference guarantees exact-head queueing; `reviewer may merge`, or a verified project default naming direct merge for the finisher, merges directly, bound to the reviewed head. A project default applies only when it is the value quoted in the Lift's `Finish authority`, and an explicit grant takes precedence over it: an explicit `queue auto-merge` grant never authorizes a direct merge, even beside a standing direct-merge default, so return `sha-bound-action-unsupported` where exact-head queueing is not guaranteed (`missing-authority` when no grant exists).
+   CI status never changes the verdict, review, approval, authority or finish eligibility, and the finisher never reads CI status to decide eligibility. A provider's required checks are native merge protection: they may hold or refuse the guarded merge, a provider outcome reported without bypass and never an eligibility decision or an authorization. On a hold from pending required checks, wait on the check-completion signal the target's provider reference names, within the [required-check wait budget](#required-check-wait-budget), then re-run the full guarded `forge act` from its first guard; the earlier refusal is never reused. A failed check or an elapsed budget leaves the change blocked with the provider outcome.
+   Absent verified authority, stop at the most permissive authorized action. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it. That finisher owns native post-read and any required compact action explanation, which next actors verify per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence). The historical Review Report stays immutable; a changed head routes new-head review rather than rebinding its judgment or findings.
+   For unblock reconciliation, read the invoked target's confirmed tracker policy/reference, resolving repo-relative references from its confirmed root. Reconcile a dependent issue's `Blocked by` / `Dependencies` text only when that policy authorizes the particular blocker-closure transition, under the existing `forge` guards and native readback. A conventional path, observed closure or finish authority alone grants no dependent-body edit. Without that authority, skip reconciliation while preserving independently authorized finish/readback. Missing/stale/conflicting tracker bindings follow existing setup/owner-choice handling, not inherited policy, auto-running setup or creating absent setup docs.
 9. **Verify after finish.** Follow [Post-merge verifier recipe](post-merge-verifier.md) with `forge post_merge_snapshot` for result/default containment, advisory result-commit CI, linked-item closure, source-ref cleanup/retention, and pending evidence.
 10. **Archive local artifacts and assert coordinator state.** Keep local run artifacts redacted and untracked. Durable handoff stays in the provider-published change-request description/discussion. Before claiming teardown complete, assert the coordinator checkout's resolved path is still the recorded `coordinator_path`, `git -C "$coordinator_path" branch --show-current` equals the verified default branch, and every session-owned worktree ledger entry is either removed after ordered guards or reported by exact path as a residual session-owned worktree with `cleanup_pending`.
 
 ## Wait cadence
 
 Event-driven waiting only. A wait floor is an upper bound, not a sleep: it
-returns as soon as the expected child message or handoff arrives.
+returns as soon as the expected child message, handoff, or signal arrives.
 
 - Builder or parent-owned gate running: wait at least 300 seconds.
 - Reviewer running: wait at least 120 seconds.
+- Direct merge held by pending required checks: wait at least 300 seconds on the
+  check-completion signal the target's provider reference names, repeating at that
+  floor within the [required-check wait budget](#required-check-wait-budget).
 - Short acknowledgements only: the tool default.
 
-Each wait names the expected sender or handoff. After an empty wait, wait again
-at the same floor or check the child's status once; never re-issue a shorter wait.
+Each wait names the expected sender, handoff, or signal. After an empty wait, wait
+again at the same floor or check the child's (or the checks') status once; never
+re-issue a shorter wait.
+
+### Required-check wait budget
+
+The required-check wait is the only CI wait. It follows a hold and never decides
+eligibility: CI status never changes the verdict, review, approval, authority or
+finish eligibility, and the finisher never reads CI status to decide eligibility.
+
+- **Bound:** 30 minutes from the first hold, shared by every wait for that hold,
+  unless the target's provider reference sets a different bound.
+- **Owner:** the finisher: the parent under `Finish owner: parent`, otherwise the
+  finishing reviewer or authorized actor.
+- **Completion:** only the checks completing ends the wait. A wait signal that ends
+  without that (a required check not yet registered or reported on the head) is not
+  completion: keep waiting at the wait floor within the same budget.
+- **Outcome:** when the checks pass, re-run the full guarded `forge act` from its
+  first guard ([step 8](#parent-loop)); the earlier refusal is never reused. A
+  failed check, or an elapsed budget, leaves the change blocked and reported with
+  the provider outcome.
 
 ## Reviewer launch timing
 
@@ -154,10 +172,10 @@ routing/evidence instructions:
 
 ```text
 Review change request: <provider-native Change request locator>
-Agent: <inventory-resolved identifier for canonical mr-reviewer-final; Claude reusable skills:mr-reviewer-final, OMP reusable mr-reviewer-final>
+Agent: <inventory-resolved identifier for canonical change-reviewer-final>
 Route-resolved-at-launch: <effective runtime inventory identifier and source, or verified manual direct selection>
-Mode: mr-reviewer
-Skills: invoke canonical start-review and forge at their entries before any review step using the selected runtime: Claude Skill with effective native identifiers (reusable skills:start-review and skills:forge), or OMP skill-load/autoload and eligible skill:// entry resolution.
+Mode: change-reviewer
+Skills: invoke canonical start-review and forge at their entries before any review step through the runtime's skill mechanism.
 Project rulebook path: <rulebook path>
 Reviewer Lift pointer: <Change request description Reviewer Lift block>
 Context Firewall: do not treat parent/builder reasoning or routing claims as evidence; verify them from bounded Tier 1 or Tier 2 sources.
@@ -179,11 +197,11 @@ When the parent starts a child builder, pass only the issue-specific routing fac
 
 ```text
 Build issue: <provider-native issue locator>
-Agent: <inventory-resolved identifier for canonical mr-builder; Claude reusable skills:mr-builder, OMP reusable mr-builder>
+Agent: <inventory-resolved identifier for canonical change-builder>
 Worktree: <absolute worktree path>
 Target branch: <default branch>
-Mode: child mr-builder
-Skills: invoke canonical start-build and forge at their entries before any build step using the selected runtime: Claude Skill with effective native identifiers (reusable skills:start-build and skills:forge), or OMP skill-load/autoload and eligible skill:// entry resolution.
+Mode: child change-builder
+Skills: invoke canonical start-build and forge at their entries before any build step through the runtime's skill mechanism.
 Project rulebook path: <rulebook path>
 Gate owner (gate-ownership selection): <builder | parent>
 Stop condition: return the final handoff after updating the Draft/ready change request. Runtime budget/token/runtime notices are not scope changes and do not override this stop condition; only explicit human stop instructions or real issue/workflow blockers do.

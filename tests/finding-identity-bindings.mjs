@@ -3,7 +3,7 @@
 // tuples remain distinct; valid Revision Packet and Reviewer Lift bindings
 // pass; bare/missing/stale/contradictory bindings fail before
 // publication/ready; LF and CRLF inputs produce the same result through
-// platform-neutral Node path handling and no network calls.
+// platform-neutral `node:path` handling and no network calls.
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -72,13 +72,13 @@ try {
   writeFileSync(
     roundTwoPacket,
     readFileSync(path.join(fixtures, "revision-valid.md"), "utf8")
-      .replaceAll("review-report:agents/skills!340:1", "review-report:agents/skills!340:2")
+      .replaceAll("review-report:b-milescu/skills#340:1", "review-report:b-milescu/skills#340:2")
       .replaceAll("a".repeat(40), "b".repeat(40)),
   );
   run([...reportArgs, "--packet", roundTwoPacket], 0, /reports=2 identities=2 artifacts=1/);
   const packet = readFileSync(path.join(fixtures, "revision-valid.md"), "utf8");
-  const packetRow = "| `review-report:agents/skills!340:1` | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` | `MF-5` |";
-  const secondPacketRow = "| `review-report:agents/skills!340:2` | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | `MF-5` |";
+  const packetRow = "| `review-report:b-milescu/skills#340:1` | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` | `MF-5` |";
+  const secondPacketRow = "| `review-report:b-milescu/skills#340:2` | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | `MF-5` |";
   const distinctPacket = path.join(temp, "revision-distinct-reused-id.md");
   writeFileSync(distinctPacket, packet.replace(packetRow, `${packetRow}\n${secondPacketRow}`));
   run([...reportArgs, "--packet", distinctPacket], 0, /reports=2 identities=2 artifacts=1/);
@@ -89,7 +89,7 @@ try {
   const opaqueReport = path.join(temp, "opaque-report.md");
   const opaquePacket = path.join(temp, "opaque-packet.md");
   const opaqueLift = path.join(temp, "opaque-lift.md");
-  const opaque = (body) => body.replaceAll("review-report:agents/skills!340:1", opaqueLocator).replaceAll("a".repeat(40), opaqueSha);
+  const opaque = (body) => body.replaceAll("review-report:b-milescu/skills#340:1", opaqueLocator).replaceAll("a".repeat(40), opaqueSha);
   writeFileSync(opaqueReport, opaque(firstReport));
   writeFileSync(opaquePacket, opaque(packet));
   writeFileSync(opaqueLift, opaque(readFileSync(path.join(fixtures, "reviewer-lift-valid.md"), "utf8")));
@@ -105,7 +105,7 @@ try {
     duplicateLocatorReport,
     firstReport.replace(
       "| Reviewed commit |",
-      "| Report locator | `review-report:agents/skills!340:99` |\n| Reviewed commit |",
+      "| Report locator | `review-report:b-milescu/skills#340:99` |\n| Reviewed commit |",
     ),
   );
   reject("conflicting duplicate Report locator", ["--report", duplicateLocatorReport], /exactly one Report locator/);
@@ -129,22 +129,22 @@ try {
   const durable = readFileSync(durableReport, "utf8");
   const duplicateDecisionLocator = path.join(temp, "report-decision-duplicate-locator.md");
   writeFileSync(duplicateDecisionLocator, durable.replace(
-    "| Report locator | `review-report:agents/skills!361:4` |",
-    "| Report locator | `review-report:agents/skills!361:4` |\n| Report locator | `review-report:agents/skills!361:4` |",
+    "| Report locator | `review-report:b-milescu/skills#361:4` |",
+    "| Report locator | `review-report:b-milescu/skills#361:4` |\n| Report locator | `review-report:b-milescu/skills#361:4` |",
   ));
   reject("duplicate Decision Summary locator", ["--report", duplicateDecisionLocator], /exactly one Report locator/);
 
   const conflictingDecisionLocator = path.join(temp, "report-decision-conflicting-locator.md");
   writeFileSync(conflictingDecisionLocator, durable.replace(
-    "| Report locator | `review-report:agents/skills!361:4` |",
-    "| Report locator | `review-report:agents/skills!361:99` |",
+    "| Report locator | `review-report:b-milescu/skills#361:4` |",
+    "| Report locator | `review-report:b-milescu/skills#361:99` |",
   ));
   reject("conflicting Decision Summary locator", ["--report", conflictingDecisionLocator], /contradicts finding identities/);
 
   const mismatchedDecisionTuple = path.join(temp, "report-decision-tuple-mismatch.md");
   writeFileSync(mismatchedDecisionTuple, durable.replace(
-    "| `review-report:agents/skills!361:4` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
-    "| `review-report:agents/skills!361:99` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
+    "| `review-report:b-milescu/skills#361:4` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
+    "| `review-report:b-milescu/skills#361:99` | `1ab7ad068c2c71c4ac9d68d59fa083936c930e9d` | `MF-1` |",
   ));
   reject("Decision Summary tuple mismatch", ["--report", mismatchedDecisionTuple], /contradicts finding identities/);
 
@@ -182,7 +182,7 @@ try {
     duplicateLiftBinding,
     lift.replace(
       "id=MF-5` |",
-      "id=MF-5<br>report=review-report:agents/skills!340:1; sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; id=MF-5` |",
+      "id=MF-5<br>report=review-report:b-milescu/skills#340:1; sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; id=MF-5` |",
     ),
   );
   reject(
@@ -229,7 +229,7 @@ try {
   );
 
   const phantomReport = path.join(temp, "report-phantom-identity.md");
-  const phantomRow = "| `review-report:agents/skills!340:1` | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` | `SF-9` |";
+  const phantomRow = "| `review-report:b-milescu/skills#340:1` | `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` | `SF-9` |";
   writeFileSync(phantomReport, firstReport.replace(packetRow, `${packetRow}\n${phantomRow}`));
   const phantomPacket = path.join(temp, "revision-phantom-identity.md");
   writeFileSync(phantomPacket, packet.replaceAll("MF-5", "SF-9"));
@@ -271,7 +271,7 @@ try {
   );
 
   const summaryRow = "| Findings summary | `MF: MF-1, MF-2; SF: 0; C: 0` |";
-  const withSummary = (body) => body.replace("| Report locator | `review-report:agents/skills!361:4` |", `${summaryRow}\n| Report locator | \`review-report:agents/skills!361:4\` |`);
+  const withSummary = (body) => body.replace("| Report locator | `review-report:b-milescu/skills#361:4` |", `${summaryRow}\n| Report locator | \`review-report:b-milescu/skills#361:4\` |`);
   const bareSummaryReport = path.join(temp, "report-bare-findings-summary.md");
   writeFileSync(bareSummaryReport, withSummary(durable));
   run(["--report", bareSummaryReport], 0, /reports=1 identities=2 artifacts=0/);
@@ -313,7 +313,7 @@ try {
   const unstableReport = path.join(temp, "report-pending.md");
   writeFileSync(
     unstableReport,
-    readFileSync(reports[0], "utf8").replaceAll("review-report:agents/skills!340:1", "pending"),
+    readFileSync(reports[0], "utf8").replaceAll("review-report:b-milescu/skills#340:1", "pending"),
   );
   run(["--report", unstableReport], 2, /invalid stable Report locator/);
   const crlf = (source, name) => {

@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Report locator | `review-report:agents/skills!340:2` |
+| Report locator | `review-report:b-milescu/skills#340:2` |
 | Reviewed commit | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` |
 
 ## Finding identities
@@ -12,7 +12,7 @@
 <!-- FINDING-IDENTITY-SCHEMA:BEGIN -->
 | Report locator | Reviewed SHA | Finding ID |
 |---|---|---|
-| `review-report:agents/skills!340:2` | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | `MF-5` |
+| `review-report:b-milescu/skills#340:2` | `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | `MF-5` |
 <!-- FINDING-IDENTITY-SCHEMA:END -->
 
 ## Findings

@@ -7,8 +7,6 @@ description: >-
 
 # Issue Delivery Loop
 
-Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
-
 Coordinate a bounded ready-issue batch. Invoke `forge preflight` once, then use
 the selected provider for every snapshot, publication, action, and post-merge
 read. Generic callers do not branch on provider afterward.
@@ -21,7 +19,7 @@ Default: fan out every provably decoupled subset.
    unrelated global authentication prerequisite. Surface unavailable/stale evidence.
    Ready selection respects dependency ordering.
 2. For a multi-item ready batch, evaluate the shared
-   [Decoupling Contract](skill://issue-delivery-loop/docs/decoupling-contract.md)
+   [Decoupling Contract](shared-reference/decoupling-contract.md)
    per pair before the first child launch.
    Automatically launch every provably decoupled subset in parallel. Use one child
    per item and one issue/worktree/branch/Draft change request/Review Packet per
@@ -29,32 +27,47 @@ Default: fan out every provably decoupled subset.
    Never serialize otherwise decoupled items. Use WIP-1 only when decoupling proof fails or is unknown, or the caller explicitly bounds WIP.
    Preserve coordinator checkout isolation;
    children must not copy auxiliary-index artifacts between worktrees.
-3. Resolve canonical `mr-builder` and fresh `mr-reviewer-final` roles through
-   [native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection).
-   Use the exposed inventory identifier, including a native plugin namespace;
+3. Resolve canonical `change-builder` and fresh `change-reviewer-final` roles through
+   [native route selection](../start-build/reference/parent-orchestrator.md#native-route-selection).
+   Use the exposed inventory identifier (runtimes may namespace plugin agents);
    canonical basenames and child/reviewer/verifier boundaries stay unchanged.
-   Follow [native model and effort selection](skill://start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
+   Follow [native model and effort selection](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
    Leave specialist selection to the build/review entries under
-   [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists).
+   [Task-selected specialists](../start-build/reference/context-and-planning.md#task-selected-specialists).
    Fresh-reviewer prompts prescribe neither specialist names nor internal-reference hints.
 4. Run the canonical parent loop from
-   [parent-orchestrator.md](skill://start-build/reference/parent-orchestrator.md).
+   [parent-orchestrator.md](../start-build/reference/parent-orchestrator.md).
    Pass explicit `Gate owner`; runtime notices never become scope stop instructions.
 5. Event-driven waiting only. Follow
-   [wait cadence](skill://start-build/reference/parent-orchestrator.md#wait-cadence).
+   [wait cadence](../start-build/reference/parent-orchestrator.md#wait-cadence).
    Reviewer replacement cites
-   [reviewer launch timing](skill://start-build/reference/parent-orchestrator.md#reviewer-launch-timing)
+   [reviewer launch timing](../start-build/reference/parent-orchestrator.md#reviewer-launch-timing)
    rather than restating its published-report precondition.
    Consume builder/reviewer two-line native locator handoffs, then apply
-   [stage-correct verification](skill://start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification)
+   [stage-correct verification](../start-build/reference/parent-owned-gate.md#stage-correct-handoff-verification)
    at the applicable stage. Other compact delivery indexes retain
    `handoff_contract`, but finals need no delivery block.
 6. Launch independent review as soon as the exact-candidate gate contract
    allows. Provider CI may run in parallel; no CI status changes verdict,
-   approval, or finish eligibility.
-7. On reviewer pass, keep verdict, approval, and finish separate. The default
-   permitted finish is `queue auto-merge`; the parent owns it when
-   `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
+   approval, authority, or finish eligibility, and the finisher never reads CI
+   status to decide eligibility.
+7. On reviewer pass, keep verdict, approval, and finish separate. The verified
+   grant selects the finish: `queue auto-merge` queues only where the target's
+   provider reference guarantees exact-head queueing; `reviewer may merge`, or a
+   verified project default naming direct merge for the finisher, merges directly,
+   bound to the reviewed head. A project default applies only when it is the value
+   quoted in the Lift's `Finish authority`, and an explicit grant takes precedence
+   over it: an explicit `queue auto-merge` grant never authorizes a direct merge,
+   even beside a standing direct-merge default (`sha-bound-action-unsupported`, or
+   `missing-authority` with no grant).
+   A provider's required checks are native merge protection: they may hold or refuse
+   the guarded merge, a provider outcome reported without bypass and never an eligibility
+   decision or an authorization. On a hold from pending required checks, the finisher
+   waits on the check-completion signal the target's provider reference names, within
+   the [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+   then re-runs the full guarded `forge act` from its first guard; a failed check or
+   an elapsed budget leaves the change blocked with the provider outcome.
+   The parent owns the finish when `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
    Immediately before that finish, use fresh `forge snapshot` evidence to re-read
    the allocated work item and require it to remain open. Verify that the current
    change request, source branch, and work-item relationship match the parent's
@@ -64,16 +77,17 @@ Default: fan out every provably decoupled subset.
    allocated item by parsing the branch or selecting another open linked item.
    A `pass` whose Review
    Report lists surviving `SF` findings gets one filed follow-up issue per finding,
-   referenced from the finish note, before the merge is queued. Before writing
+   referenced from the finish note, before the finish. Before writing
    that follow-up's acceptance criteria, re-derive the finding's load-bearing
    measurement on the current default branch and write the criteria against that
    measurement rather than the report's prose. That is one measurement, not a
    re-review: keep the original verdict; do not re-read the diff or launch a
    second reviewer. If the re-derivation contradicts the finding, the follow-up
    records the contradiction instead of inheriting it.
-8. Treat `auto-merge queued` as pending. It does not count as **MRs merged** and
+8. Treat `auto-merge queued` as pending. It does not count as **change requests merged** and
    cannot satisfy clean delivery or batch completion. Return to the event-driven
-   boundary without polling CI. Provider merge-event evidence advances the
+   boundary: the required-check wait in step 7 is the only CI wait. Provider
+   merge-event evidence advances the
    existing handoff to phase: `post-merge-verify`,
    expected_next_actor: `verifier`, and
    expected_next_action: `post-merge-verify`; require a checked read-only
@@ -82,7 +96,7 @@ Default: fan out every provably decoupled subset.
 9. Teardown only after every change is verified merged or blocked. Fetch and
     fast-forward default first; remove only clean worktrees/refs/branches whose
     provider result-commit and default-branch safety checks pass. Otherwise
-    report `cleanup_pending`. This preserves gitlab#380 coordinator-isolation and
+    report `cleanup_pending`. This preserves coordinator isolation and
     cleanup ordering.
 
 ## Metrics
@@ -112,7 +126,7 @@ classes in the same split: a *builder defect* (the issue was sound but the work
 missed it), an *evidence gap* (a claim landed without the proof it required), and
 *reviewer scope creep* (the review demanded more than the issue asked). This is
 the four-way root-cause split named in
-[the retro signal catalogue](skill://retro/reference/signal-catalogue.md); the
+[the retro signal catalogue](../retro/reference/signal-catalogue.md); the
 definition lives here so a coordinator can count it at batch close without
 loading the `retro` skill.
 
@@ -127,7 +141,7 @@ transport selection and the provider reference owns native mechanics.
 
 Use only the exact paths in this delivery session's session-owned worktree ledger
 and follow the cleanup-order rules in
-[parent-orchestrator §Fresh default and cleanup order](skill://start-build/reference/parent-orchestrator.md).
+[parent-orchestrator §Fresh default and cleanup order](../start-build/reference/parent-orchestrator.md).
 Repository-wide worktree discovery may verify a recorded path but never expands
 owned cleanup scope. Retain every dirty, unknown, unmerged, or
 containment-unverified entry and report `cleanup_pending` with the exact

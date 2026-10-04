@@ -7,8 +7,6 @@ description: >-
 
 # Start Review
 
-Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
-
 Review one bound change request from a fresh context. A Review Packet, Reviewer
 Lift, Gate Receipt, parent/builder prose, and compact delivery block are maps,
 not proof. Verify every safety-critical claim from provider-native Tier 1 or
@@ -17,7 +15,7 @@ parent-orchestrated.
 
 ## Procedure
 
-1. Read the project rulebook and [REVIEW-FLOW.md](skill://start-review/REVIEW-FLOW.md).
+1. Read the project rulebook and [REVIEW-FLOW.md](REVIEW-FLOW.md).
    Invoke `forge preflight` to bind provider, canonical repository, default
    branch, opaque change-request identifier/locator, source/target, current
    commit, caller identity, and policy profile before snapshot, publication, or
@@ -30,7 +28,7 @@ parent-orchestrated.
    unresolved required discussion, stale head, or incomplete mandatory evidence
    blocks review; absent or incomplete CI does not.
    Before substantive judgment, independently follow
-   [Task-selected specialists](skill://start-build/reference/context-and-planning.md#task-selected-specialists)
+   [Task-selected specialists](../start-build/reference/context-and-planning.md#task-selected-specialists)
    from this verified issue/diff.
 3. Copy every Reviewer Lift row into the Review Report as a claim. Verify scope,
    issue acceptance, Gate Receipt/local gate, changed paths, safety and
@@ -57,7 +55,7 @@ parent-orchestrated.
    and the ordered common guard through one `forge act`. Perform exactly one
    authorized action bound to the reviewed commit or provider-proven integration
    candidate. The actor owns native readback and any required backlinking note
-   under [Post-report action evidence](skill://start-review/REVIEW-FLOW.md#post-report-action-evidence).
+   under [Post-report action evidence](REVIEW-FLOW.md#post-report-action-evidence).
    A changed head denies action and routes fresh review; queued is not merged.
 8. Emit the complete reviewer-final handoff. Post-merge verification is a
    separate read-only actor using `forge post_merge_snapshot`.
@@ -82,7 +80,7 @@ parent-orchestrated.
   evidence, unresolved required review, credential exposure, and contract
   violations are blocking. The blocking set is otherwise bounded by the
   delivered work item's acceptance criteria per
-  [Findings and tone](skill://start-review/REVIEW-FLOW.md#findings-and-tone).
+  [Findings and tone](REVIEW-FLOW.md#findings-and-tone).
 
-Use [review-report.md](skill://start-review/templates/review-report.md) and
-[reviewer-final-handoff.md](skill://start-review/templates/reviewer-final-handoff.md).
+Use [review-report.md](templates/review-report.md) and
+[reviewer-final-handoff.md](templates/reviewer-final-handoff.md).

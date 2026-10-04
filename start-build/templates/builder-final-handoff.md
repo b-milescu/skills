@@ -1,11 +1,11 @@
 # Builder Final Handoff
 
-Emit this block inline from child `mr-builder` sessions. Values contain no
+Emit this block inline from child `change-builder` sessions. Values contain no
 secrets or private payloads. Consumers tolerate absence/malformed content and
 fall back to the durable Review Packet plus provider-native readback.
 Parent-owned fields follow `../reference/parent-owned-gate.md`.
 
-Authority Verification uses `skill://forge/reference/common-guard.md` and native mechanics from the invoked target's confirmed integration reference.
+Authority Verification uses `../../forge/reference/common-guard.md` and native mechanics from the invoked target's confirmed integration reference.
 
 Change-request locator: `<provider-native change-request locator>`
 Durable note id: `<verified Gate Receipt note id, or not-created>`

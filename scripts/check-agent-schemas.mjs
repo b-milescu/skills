@@ -1,12 +1,14 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import yaml from '../start-build/scripts/vendor/js-yaml.mjs';
 
 const REPO_ROOT = findRepoRoot();
 const DIALECTS = new Set(['claude', 'omp']);
-const REQUIRED_FIELDS = ['name', 'description', 'tools'];
+// `tools` is optional: omitting it inherits every parent tool in both runtimes. A declared
+// list is still validated name by name.
+const REQUIRED_FIELDS = ['name', 'description'];
 
 const CLAUDE_ALLOWED_FIELDS = new Set([
   'name',
@@ -68,37 +70,85 @@ const OMP_THINKING_LEVELS = new Set(['inherit', 'off', 'minimal', 'low', 'medium
 const ALLOWED_OMP_THINKING_LEVELS = [...OMP_THINKING_LEVELS].join(', ');
 
 const CLAUDE_TOOLS = new Set([
+  'Agent',
+  'Artifact',
   'AskUserQuestion',
   'Bash',
+  'CronCreate',
+  'CronDelete',
+  'CronList',
   'Edit',
+  'EndConversation',
+  'EnterPlanMode',
+  'EnterWorktree',
+  'ExitPlanMode',
+  'ExitWorktree',
   'Glob',
   'Grep',
-  'LS',
-  'MultiEdit',
+  'ListAgents',
+  'ListMcpResourcesTool',
+  'LSP',
+  'Monitor',
   'NotebookEdit',
+  'PowerShell',
+  'PushNotification',
   'Read',
+  'ReadMcpResourceTool',
+  'RemoteTrigger',
+  'ReportFindings',
+  'ScheduleWakeup',
+  'SendFeedback',
+  'SendMessage',
+  'SendUserFile',
+  'ShareOnboardingGuide',
   'Skill',
-  'Task',
+  'SubagentHandback',
+  'Task', // documented alias of Agent
+  'TaskCreate',
+  'TaskGet',
+  'TaskList',
+  'TaskOutput',
+  'TaskStop',
+  'TaskUpdate',
   'TodoWrite',
+  'ToolSearch',
+  'WaitForMcpServers',
   'WebFetch',
   'WebSearch',
+  'Workflow',
   'Write',
 ]);
+// Mirrors OMP 17.3.7 src/tools/builtin-names.ts: BUILTIN_TOOL_NAMES plus HIDDEN_TOOL_NAMES
+// (yield, goal, think). Static on purpose: the checker never imports OMP.
 const OMP_TOOLS = new Set([
   'ask',
   'ast_edit',
   'ast_grep',
   'bash',
   'browser',
+  'checkpoint',
+  'computer',
+  'debug',
   'edit',
   'eval',
+  'github',
   'glob',
+  'goal',
   'grep',
+  'hub',
   'inspect_image',
-  'irc',
+  'learn',
   'lsp',
+  'manage_skill',
+  'memory_edit',
   'read',
+  'recall',
+  'reflect',
+  'retain',
+  'rewind',
+  'security_scan',
   'task',
+  'think',
   'todo',
   'web_search',
   'write',
@@ -111,18 +161,18 @@ const OMP_TO_CLAUDE_TOOL = new Map([
   ['glob', 'Glob'],
   ['grep', 'Grep'],
   ['read', 'Read'],
-  ['task', 'Task'],
+  ['task', 'Agent'],
   ['todo', 'TodoWrite'],
   ['web_search', 'WebSearch'],
   ['write', 'Write'],
 ]);
 const CLAUDE_TO_OMP_TOOL = new Map([
+  ['Agent', 'task'],
   ['AskUserQuestion', 'ask'],
   ['Bash', 'bash'],
   ['Edit', 'edit'],
   ['Glob', 'glob'],
   ['Grep', 'grep'],
-  ['LS', 'directory reads via read'],
   ['Read', 'read'],
   ['Task', 'task'],
   ['TodoWrite', 'todo'],
@@ -133,7 +183,8 @@ const OMP_RETIRED_TOOL_REPLACEMENTS = new Map([
   ['search', 'grep'],
   ['find', 'glob'],
   ['ls', 'directory reads via read'],
-  ['intercom', 'irc'],
+  ['intercom', 'hub'],
+  ['irc', 'hub'],
 ]);
 const NON_PI_FORBIDDEN_BODY_TERMS = ['contact_supervisor', 'intercom'];
 

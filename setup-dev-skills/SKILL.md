@@ -6,8 +6,6 @@ disable-model-invocation: true
 
 # Setup Dev Skills
 
-Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
-
 User-invoked and human-confirmed: inspect, resolve only missing choices, present
 complete draft, confirm, write. Other skills may recommend this entry for absent
 or stale setup, but never auto-run it, login, install or mutate live labels.
@@ -16,7 +14,7 @@ or stale setup, but never auto-run it, login, install or mutate live labels.
 
 Read explicit owner intent and the target rulebook's existing `project_profile`,
 `profile_path`, `provider.reference`, policy/docs pointers and custom roots.
-Shared [field guidance](skill://setup-dev-skills/reference/project-profile-facts.json) is not a profile:
+Shared [field guidance](reference/project-profile-facts.json) is not a profile:
 it contains no target identity, vocabulary, host, default paths or detector.
 
 Inspect named fetch **and** push remotes, fork intent, code/change-request,
@@ -44,8 +42,11 @@ repeat already-confirmed choices or require unrelated authentication.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, exact-head
-guarantees, normalization and lossless readback/recovery. Configuration is not an
-action-authority grant. Keep common safety floors with forge/delivery owners.
+guarantees, required-check holds with the signal that ends their wait and any bound
+other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+normalization and lossless readback/recovery.
+Configuration is not an action-authority grant. Keep common safety floors with
+forge/delivery owners.
 
 For labels, document live names and triage-role mapping as-is; no automatic live
 creation/rename/delete. For domain, respect existing single/multi-context layout.
@@ -57,8 +58,8 @@ explicit rationale and owner choice, not fabricated PASS. CI remains advisory.
 Show the target profile/reference pointers, complete target-owned integration
 doc, existing-root Agent Setup Docs (tracker, labels, domain, gate, guardrails,
 workflows), and complete runtime-specific same-name project agent declarations.
-Use [neutral tracker seed](skill://setup-dev-skills/issue-tracker.md) and
-[workflow seed](skill://setup-dev-skills/dev-workflows-generic.md) as field guidance only. Include evidence,
+Use [neutral tracker seed](issue-tracker.md) and
+[workflow seed](dev-workflows-generic.md) as field guidance only. Include evidence,
 operation limits, unresolved choices and source ownership of installed aliases.
 Write only after human confirmation.
 
@@ -76,15 +77,16 @@ generator or adapter registry. `provider` names and records are opaque scoped
 values. A second target with other mechanics needs only its own confirmed docs.
 
 Runtime declarations are **complete shallow files**, not metadata overlays:
-canonical builder/reviewer entry pointers, role/authority bounds, runtime-specific
-model/effort neutrality per [native selection](skill://start-build/reference/parent-orchestrator.md#native-model-and-effort-selection) and confirmed exact/server-scoped tools. Determine each runtime's
-native project location and precedence independently from runtime evidence. Keep
-shared presets free of native server catalogues; do not widen to generic `mcp_*`.
-Selected-file/skill provenance from the actual spawning session and independently
-invoked allocated/revision checkouts must be verified separately from accessible
-entries/tools. Metadata is not hard confinement; no external runtime patch.
+canonical builder/reviewer entry pointers, role/authority bounds and
+runtime-specific model/effort neutrality per [native selection](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
+They declare no tool allowlist, so each inherits every tool of the spawning
+session; the target's confirmed integration, not the declaration, names the tools
+its recipes need. Determine each runtime's native project location and precedence
+independently from runtime evidence. Selected-file/skill provenance from the actual
+spawning session and independently invoked allocated/revision checkouts must be
+verified separately from accessible entries/tools; no external runtime patch.
 Resolve canonical roles through the effective runtime inventory under
-[native route selection](skill://start-build/reference/parent-orchestrator.md#native-route-selection);
+[native route selection](../start-build/reference/parent-orchestrator.md#native-route-selection);
 record exposed identifiers separately from canonical basenames and source files.
 Preserve deterministic native preload identifiers without changing logical skill
 IDs; discovery metadata does not prove preload execution or effort enforcement.

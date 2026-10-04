@@ -1,8 +1,8 @@
 # Issue tracker: GitHub
 
-Issues, PRDs, and pull requests for this repo live on GitHub in `b-milescu/skills` (`https://github.com/b-milescu/skills`; issues at `https://github.com/b-milescu/skills/issues`). The GitLab project this repo moved from no longer exists: its issue and merge request numbers are historical and are written `gitlab#N` and `gitlab!N` in prose, never as GitHub numbers.
+Issues, PRDs, and pull requests for this repo live on GitHub in `b-milescu/skills` (`https://github.com/b-milescu/skills`; issues at `https://github.com/b-milescu/skills/issues`). Commit messages before the move cite `gitlab#N` for issues in the deleted GitLab tracker.
 
-Use `/forge` from this verified target clone with the selected
+Use the `forge` skill from this verified target clone with the selected
 [project-native recipes](native-integration.md). These are this project's facts,
 not an installed shared profile or a default for foreign targets.
 
@@ -45,11 +45,11 @@ target project's rulebook documents such a convention) conditionally requires.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a native issue in this verified repository using `/forge publish` and the [project integration](native-integration.md). Approved plans/specs/PRDs use `/plan-to-issues`.
+Create a native issue in this verified repository using the `forge` skill's `publish` operation and the [project integration](native-integration.md). Approved plans/specs/PRDs use the `plan-to-issues` skill.
 
 ## When a skill says "fetch the relevant ticket"
 
-Read the full referenced issue and all discussions through `/forge snapshot` and the [project integration](native-integration.md).
+Read the full referenced issue and all discussions through the `forge` skill's `snapshot` operation and the [project integration](native-integration.md).
 
 ## Reconcile on unblock
 

@@ -21,7 +21,7 @@ Placeholder destination: [skill root]({skill-root}/README.md).
 Blocked external: [example](https://example.com/outside-policy).
 Broken file: [missing](missing.md).
 Broken anchor: [bad anchor](details.md#missing-heading).
-Allowed skill URI: [shared resource](skill://start-build/docs/decoupling-contract.md).
+Allowed skill URI: [shared resource](skill://start-build/shared-reference/decoupling-contract.md).
 Broken skill target: [bad skill](skill://start-build/reference/does-not-exist.md).
 Broken skill anchor: [bad skill anchor](skill://start-build/SAFETY.md#no-such-anchor).
 MD
@@ -35,7 +35,7 @@ MD
 : > "$TMPDIR/images/logo.png"
 
 set +e
-output="$(node "$REPO_ROOT/scripts/check-md-links.mjs" "$TMPDIR/docs/index.md" 2>&1)"
+output="$(bun "$REPO_ROOT/scripts/check-md-links.mjs" "$TMPDIR/docs/index.md" 2>&1)"
 status=$?
 set -e
 
@@ -58,7 +58,7 @@ for expected in \
   fi
 done
 
-if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* || "$output" == *"<details.md"* || "$output" == *"<https://github.com"* || "$output" == *"{skill-root}/README.md"* || "$output" == *"skill://start-build/docs/decoupling-contract.md"* ]]; then
+if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* || "$output" == *"<details.md"* || "$output" == *"<https://github.com"* || "$output" == *"{skill-root}/README.md"* || "$output" == *"skill://start-build/shared-reference/decoupling-contract.md"* ]]; then
   echo "valid file/image/anchor was reported as broken" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$output" >&2

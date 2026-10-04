@@ -1,19 +1,14 @@
 node_modules/
 
-# Local agent/runtime artifacts
-graphify-out/
-.graphify*
-.trace-mcp/
-
 # Runtime state and isolation worktrees remain ignored; complete project agents
 # are deliberately tracked at their native locations.
 .claude/*
 !.claude/agents/
 .claude/agents/*
-!.claude/agents/mr-builder.md
-!.claude/agents/mr-reviewer-final.md
+!.claude/agents/change-builder.md
+!.claude/agents/change-reviewer-final.md
 .omp/*
 !.omp/agents/
 .omp/agents/*
-!.omp/agents/mr-builder.md
-!.omp/agents/mr-reviewer-final.md
+!.omp/agents/change-builder.md
+!.omp/agents/change-reviewer-final.md

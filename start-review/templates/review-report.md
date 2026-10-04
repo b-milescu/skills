@@ -1,7 +1,7 @@
 # Review Report
 
 Authority Verification uses the shared
-[`/forge` common guard](../../forge/reference/common-guard.md); the selected
+[`forge` common guard](../../forge/reference/common-guard.md); the selected
 target's confirmed integration reference owns native approval and finish mechanics.
 
 <!-- Fill and publish this report per the [review-report filling guide](filling-guide.md#review-reportmd), including its safe-body, plain non-resolvable note, transport, and readback rules. -->
@@ -40,7 +40,7 @@ Fill from Tier 1 evidence. `Reviewed commit` stays a bare value here too, repeat
 | Change request | `<opaque identifier/locator; source -> target; draft/readiness>` |
 | Repository | `<canonical repository locator; default branch>` |
 | Issue | `<linked issue URL or N/A with reason>` |
-| Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
+| Reviewer | `@reviewer — <exact model id if exposed>` |
 | Report # | `<round or report number>` |
 | Report locator | `<same stable report locator used by every finding tuple; final uses the published report's native note ID>` |
 | Reviewed commit | `<40-hex reviewed commit>` |
@@ -75,28 +75,28 @@ Copy the builder handoff, then verify it against canonical [`reviewer-lift-schem
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Builder value / reviewer check |
 |---|---|
-| Reviewed SHA | `<copy; verify per reviewer-lift-schema.md>` |
-| Finding bindings | `<copy; verify per reviewer-lift-schema.md>` |
-| Review gate | `<copy; verify per reviewer-lift-schema.md>` |
+| Reviewed SHA | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Finding bindings | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Review gate | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
 | Transport | `<copy; independently verify opaque transport evidence in target scope>` |
-| Gate owner | `<copy; verify per reviewer-lift-schema.md>` |
-| Gate coverage | `<copy; verify per reviewer-lift-schema.md>` |
-| Gate coverage rationale | `<copy; verify per reviewer-lift-schema.md>` |
-| CI pipeline | `<copy; verify per reviewer-lift-schema.md>` |
+| Gate owner | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Gate coverage | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Gate coverage rationale | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| CI pipeline | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
 | Local gate | `<copy; verify N/A or parent-owned Gate Receipt per ../../start-build/reference/parent-owned-gate.md>` |
 | RED | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy command and measured output; verify with git diff --name-only <base>...HEAD>` |
-| Touched safety surfaces | `<copy; verify per reviewer-lift-schema.md>` |
-| Acceptance surfaces | `<copy; verify evidence per reviewer-lift-schema.md>` |
-| Decoupling proof | `<copy; verify per reviewer-lift-schema.md>` |
-| Reviewer Focus | `<copy; verify per reviewer-lift-schema.md>` |
-| Open Questions | `<copy; verify per reviewer-lift-schema.md>` |
-| Approval authority | `<copy; verify default-after-pass or restriction per reviewer-lift-schema.md>` |
-| Approval authority source | `<copy; verify per reviewer-lift-schema.md>` |
-| Finish authority | `<copy; verify per reviewer-lift-schema.md>` |
-| Finish authority source | `<copy; verify per reviewer-lift-schema.md>` |
-| Delta since last ready push | `<copy; verify per reviewer-lift-schema.md>` |
+| Touched safety surfaces | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Acceptance surfaces | `<copy; verify evidence per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Decoupling proof | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Reviewer Focus | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Open Questions | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Approval authority | `<copy; verify default-after-pass or restriction per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Approval authority source | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Finish authority | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Finish authority source | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
+| Delta since last ready push | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->
 
 ## Review Context Capsule
@@ -176,7 +176,7 @@ Required. Fill and reconcile these values per [Publication and actions](../REVIE
 | Field | Value |
 |---|---|
 | Review verdict | `<chosen value>` |
-| Bound change request target | `<bound change request URL; bound change request project path; bound repo URL>` |
+| Bound change request target | `<bound change request URL; bound repository path; bound repo URL>` |
 | Authority result | `<approval policy/source + finish authority/source summary>` |
 | Finish owner | `<chosen value; parent-managed pass uses Finish owner: parent>` |
 | Approval action | `<chosen value>` |

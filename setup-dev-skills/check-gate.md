@@ -24,7 +24,7 @@ gate/runtime/bootstrap, targeted checks, independently scoped advisory CI and
 allowed manual evidence here.
 
 Project-profile hooks may specialize project policy, but they must not weaken
-the [safety-floor litany](skill://start-build/SAFETY.md#safety-floors).
+the safety-floor litany (`start-build` skill, `SAFETY.md#safety-floors`).
 
 ## Targeted checks
 
@@ -57,4 +57,4 @@ is not accepted evidence for this repo, write that explicitly.
 
 ## When the gate cannot be run
 
-If a command is missing dependencies, requires unavailable services, or is OS-specific, say so in the MR and include the best targeted evidence available. Do not claim `PASS` for a gate that did not run.
+If a command is missing dependencies, requires unavailable services, or is OS-specific, say so in the change request and include the best targeted evidence available. Do not claim `PASS` for a gate that did not run.

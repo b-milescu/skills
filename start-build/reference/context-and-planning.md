@@ -4,7 +4,7 @@ Detailed discovery, task-selected specialists, Build Plan Packet, check-gate dis
 
 ## Discovery Budget
 
-Keep discovery bounded before edits. Read the issue and project rulebook index first, then expand only from evidence. Load affected docs/source/tests needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Load ADRs, architecture docs, domain docs, and `CONTEXT.md` only when evidence triggers them: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each loaded context source and why it mattered in the Build Plan Packet, MR Review Packet, or reviewer-facing Context Capsule. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
+Keep discovery bounded before edits. Read the issue and project rulebook index first, then expand only from evidence. Load affected docs/source/tests needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Load ADRs, architecture docs, domain docs, and `CONTEXT.md` only when evidence triggers them: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each loaded context source and why it mattered in the Build Plan Packet, Review Packet, or reviewer-facing Context Capsule. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
 
 If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
 
@@ -63,10 +63,10 @@ Before selecting parent-owned gate mode or promising a parent Gate Receipt,
 identify the required exact-candidate gate policy, exact command, and documented
 bootstrap route (including runtime and dependencies). Discover them in this order:
 
-1. Project rulebook / contributor docs (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, README).
+1. Project rulebook / contributor docs (the project's agent instruction files, `CONTRIBUTING.md`, README).
 2. Build scripts (`Makefile`, `package.json`, task runner config, language-specific project files).
 3. Configured CI definitions and included pipeline files to mirror the target's project gate locally where practical; unrelated CI authentication is not a prerequisite.
-4. If still ambiguous, ask the user or state the limitation in the MR before requesting review.
+4. If still ambiguous, ask the user or state the limitation in the change request before requesting review.
 
 For parent-mode selection, record the applicable case in the Build Plan Packet:
 
@@ -86,12 +86,12 @@ Builder-owned evidence policy is outside this parent-mode selection rule.
 
 ## Handoff integrity checklist
 
-Before marking ready or requesting review, validate the MR handoff:
+Before marking ready or requesting review, validate the change-request handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
 - Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
-- `Reviewed SHA` equals the MR head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
+- `Reviewed SHA` equals the change-request head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
 - `Gate owner`, `Gate coverage`, `Gate coverage rationale`, and the advisory `CI pipeline` cell follow their `../templates/reviewer-lift-schema.md` rows; an unattributable pipeline commit records its binding limitation instead of a status.
 - Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.

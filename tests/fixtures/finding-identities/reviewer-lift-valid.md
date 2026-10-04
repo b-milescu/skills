@@ -4,5 +4,5 @@
 | Field | Value |
 |---|---|
 | Reviewed SHA | `dddddddddddddddddddddddddddddddddddddddd` |
-| Finding bindings | `report=review-report:agents/skills!340:1; sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; id=MF-5` |
+| Finding bindings | `report=review-report:b-milescu/skills#340:1; sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; id=MF-5` |
 <!-- REVIEWER-LIFT-SCHEMA:END -->

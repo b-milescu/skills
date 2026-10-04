@@ -18,7 +18,7 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 ## Acceptance criteria
 
-<!-- Command-based ACs (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted here. See docs/agents/agent-readiness-scorecard.md#scorecard. Authoring rules: (1) scope acceptance greps to owned paths, excluding vendored/third-party dirs (e.g. Libs/, vendor/, node_modules/); (2) always state the baseline commit for any measured baseline (counts, line numbers); (3) prefer content anchors (function/heading names) over bare line numbers, which go stale as batches merge. -->
+<!-- Command-based ACs (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted here. See ../shared-reference/agent-readiness-scorecard.md#scorecard. Authoring rules: (1) scope acceptance greps to owned paths, excluding vendored/third-party dirs (e.g. Libs/, vendor/, node_modules/); (2) always state the baseline commit for any measured baseline (counts, line numbers); (3) prefer content anchors (function/heading names) over bare line numbers, which go stale as batches merge. -->
 
 - [ ] Criterion 1
 - [ ] Criterion 2
@@ -34,7 +34,7 @@ Fill this before applying the target repo's AFK-ready label from its triage-labe
 | Current-state / repro evidence | Current behavior, reproduction evidence, baseline docs gap, or N/A with reason. |
 | Test strategy | Targeted checks plus full local Check Gate expected for review evidence. |
 | Risk surface | docs / CLI / Dev Workflow / state / migration / external integration / credentials / deploy / other. |
-| Dependencies | Blockers, ordering constraints, related issues/MRs, or None. |
+| Dependencies | Blockers, ordering constraints, related issues/change requests, or None. |
 | Unknowns | Open questions/human decisions, or None. |
 | AFK safety | Why an agent can proceed without new human decisions or live product/runtime/operator mutations. |
 | Reviewer focus | Area the reviewer should inspect hardest. |

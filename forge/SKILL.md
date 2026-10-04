@@ -8,18 +8,16 @@ description: >-
 
 # Forge
 
-Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
-
 A model-invoked instruction seam with five operations. Obtain mechanics from
 **the invoked target's** confirmed `project_profile`, `profile_path` and selected
 `provider.reference`. Resolve that reference in the target checkout, not the
-skill installation or an installed `docs/` alias. No shared provider catalogue,
+skill installation or an installed alias. No shared provider catalogue,
 host detector, default target profile or tool-presence inference is used.
 
 ## Preflight
 
 1. Read the target rulebook's profile pointer and selected integration reference.
-   Missing/stale setup prompts the owner to invoke `/setup-dev-skills`; never
+   Missing/stale setup prompts the owner to run the `setup-dev-skills` skill; never
    auto-run setup, authentication, installation or live label changes.
 2. Reconcile explicit owner intent, named fetch/push remotes and fork intent,
    configured code/change, work-item and CI scopes, and referenced policy. A
@@ -43,12 +41,12 @@ never grants authority.
 
 - **`preflight`** — the binding above, operation-scoped readiness policy and
   identity; optional bounded candidate discovery.
-- **`snapshot`** — evidence-only [snapshot contract](skill://forge/reference/common-guard.md#snapshot-evidence).
+- **`snapshot`** — evidence-only [snapshot contract](reference/common-guard.md#snapshot-evidence).
   Follow target native pagination and lossless body recovery; lists are discovery,
   not decision-grade single-record evidence. Complete requested diff/discussions/
   reviews; unresolved truncation blocks the decision requiring completeness.
 - **`publish`** — validate one authored durable artifact through
-  [common guard](skill://forge/reference/common-guard.md), publish once using the selected
+  [common guard](reference/common-guard.md), publish once using the selected
   recipe, and require native byte-preserving authored-source readback with only
   explicitly documented target normalization. Echoes and stored-body digests are
   not submitted-source equality. Known-created artifacts recover GET-only;
@@ -61,14 +59,18 @@ never grants authority.
 
 ## Helpers
 
-Resolve this skill's real installed filesystem directory through the runtime
-resource resolver before executing `scripts/validate-text.mjs`; do not run
-`node skill://...` or resolve helpers relative to target CWD. Its JSON envelope
-validates exact string/finite role with no-body diagnostics before body-bearing
-writes. Target safe-write tools may add native checks, not replace common checks.
+Relative paths resolve against the directory of the file that contains them, not
+the target CWD; run helper scripts by their resolved absolute path, from the
+installed skill the runtime loaded and never a copy in the checkout under review
+(a change must not be validated by its own modified validator). Stack files that
+run a helper cite this rule instead of restating it. For
+`scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
+file's directory. Its JSON envelope validates exact string/finite role with
+no-body diagnostics before body-bearing writes. Target safe-write tools may add
+native checks, not replace common checks.
 
 ```text
-node <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
+bun <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>
 ```
 
 Exact envelope: `{"role":"review-packet","content":"authored string"}` with only
@@ -80,7 +82,10 @@ the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
 normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
-expected-head guarantees and supported recovery. Shared records remain opaque;
+expected-head guarantees, required-check holds with the signal that ends their
+wait and any bound other than the default
+[required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as

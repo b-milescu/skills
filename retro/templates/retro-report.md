@@ -5,7 +5,7 @@ The Retro Report is the session deliverable; accepted follow-up issues are the d
 A report is complete only after independent refutation assigns every finding a verdict, each survivor includes its strongest counter-argument and response, and the report carries the refuter's safety-floor attestation ([reference/refutation.md](../reference/refutation.md)). A zero-finding report still requires the refuter's report-level check and attestation. Unavailable evidence and metrics may be `N/A — <why>`; unavailable refutation leaves an explicitly unrefuted draft, not a final report. Only the refuted report reaches the user; counts, findings, and the safety floor check below are all post-verdict.
 
 ```markdown
-# Retro Report — <scope, e.g. batch issues #204–#207 / change requests !193–!196>
+# Retro Report — <scope, e.g. batch issues #204–#207 and their change requests>
 
 <n> findings after refutation — <a> adopt / <e> experiment / <m> monitor / <h> human-decision.
 <d> dropped, <x> merged, <r> rerouted by the refuter.
@@ -24,7 +24,7 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 | CI failures | <n> |
 | Brief defects | <n> |
 | Follow-up issues created | <n> |
-| **`other` tokens used** — evidence sources, counting and N/A rules: [delivery-loop Metrics](skill://issue-delivery-loop/SKILL.md#metrics) | `action_blocker`: <n> / <total> or N/A — <why>; `blocker_token`: <n> / <total> or N/A — <why>; `not_run_reason`: <n> / <total> or N/A — <why> |
+| **`other` tokens used** — evidence sources, counting and N/A rules: [delivery-loop Metrics](../../issue-delivery-loop/SKILL.md#metrics) | `action_blocker`: <n> / <total> or N/A — <why>; `blocker_token`: <n> / <total> or N/A — <why>; `not_run_reason`: <n> / <total> or N/A — <why> |
 
 ## What went well
 
@@ -56,7 +56,7 @@ Scope: <issues / change requests / session>. Date: <YYYY-MM-DD>.
 ## Safety floor check
 
 <Refuter's attestation: no surviving proposal weakens any floor in
-[Start Build Safety floors](skill://start-build/SAFETY.md#safety-floors).
+[Start Build Safety floors](../../start-build/SAFETY.md#safety-floors).
 List any finding escalated to human-decision by this check, or state
 "none touched".>
 
@@ -64,6 +64,6 @@ List any finding escalated to human-decision by this check, or state
 
 | RF | Disposition | Route |
 |---|---|---|
-| RF-1 | adopt | `/plan-to-issues` — <target repo> issue with <labels> |
+| RF-1 | adopt | `plan-to-issues` skill — <target repo> issue with <labels> |
 | RF-2 | monitor | next retro |
 ```

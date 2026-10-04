@@ -60,10 +60,14 @@ assert_contains "$TMP_ROOT/empty.out" "validation collected no agent files"
 nomutate_home="$TMP_ROOT/nomutate-home"
 nomutate_output="$TMP_ROOT/nomutate.out"
 mkdir -p "$nomutate_home/.claude" "$nomutate_home/.omp/agent"
+# Mode, owner, size, link target and mtime of every entry; the same flags work on BSD and GNU userland.
 snapshot_home() {
-  (cd "$nomutate_home" && find . -printf '%P %y %l %m %T@\n' | LC_ALL=C sort)
+  (cd "$nomutate_home" && find . -exec ls -ldn {} + | LC_ALL=C sort)
 }
 snapshot_home >"$TMP_ROOT/home-before"
+# ls shows mtimes to the minute only, so a same-minute touch or create-and-delete shows up
+# through this marker instead.
+touch "$TMP_ROOT/home-marker"
 if ! HOME="$nomutate_home" bash "$clean_repo/agents/check.sh" >"$nomutate_output" 2>&1; then
   echo "expected agents/check.sh to pass" >&2
   echo "--- output ---" >&2
@@ -74,6 +78,10 @@ assert_contains "$nomutate_output" "agent-check: PASS"
 snapshot_home >"$TMP_ROOT/home-after"
 if ! cmp -s "$TMP_ROOT/home-before" "$TMP_ROOT/home-after"; then
   echo "agents/check.sh changed HOME" >&2
+  exit 1
+fi
+if [[ -n "$(find "$nomutate_home" -newer "$TMP_ROOT/home-marker")" ]]; then
+  echo "agents/check.sh modified HOME" >&2
   exit 1
 fi
 

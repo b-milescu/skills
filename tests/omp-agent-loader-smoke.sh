@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Focus: Native local-marketplace installation and actual OMP discovery in fresh
-# processes. Proves selected source and canonical resource access, not hosted
-# acquisition, live models, native operations or hard MCP confinement.
+# processes. Proves selected source, that no selected route restricts tools (each
+# inherits the parent's) and canonical resource access, not hosted acquisition,
+# live models or native operations.
 set -euo pipefail
 shopt -s nullglob
 TEST_NAME="omp-agent-loader-smoke"
@@ -91,8 +92,8 @@ const project = process.env.EXPECT_PROJECT === '1';
 const result = await discoverAgents(cwd, process.env.HOME);
 const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.CANONICAL_ROOT, 'agents');
 const routes = [
-  { name: 'mr-builder', entry: 'start-build' },
-  { name: 'mr-reviewer-final', entry: 'start-review' },
+  { name: 'change-builder', entry: 'start-build' },
+  { name: 'change-reviewer-final', entry: 'start-review' },
 ];
 for (const { name, entry } of routes) {
   const agent = result.agents.find(agent => agent.name === name);
@@ -100,13 +101,10 @@ for (const { name, entry } of routes) {
   const expected = path.join(expectedDir, `${name}.md`);
   assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
   assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
-  assert(agent.autoloadSkills.includes(entry) && agent.autoloadSkills.includes('forge'), `${name}: canonical entry preload absent`);
-  assert(!agent.autoloadSkills.includes('tdd'), `${name}: retired unconditional TDD preload`);
-  if (project) {
-    assert(agent.tools.includes('mcp__github_*') && agent.tools.includes('mcp__codebase_memory_mcp_*'), `${name}: project-native selection missing`);
-  } else {
-    assert(!agent.tools.some(tool => tool.startsWith('mcp')), `${name}: shared route leaks native selection`);
-  }
+  assert([...agent.autoloadSkills].sort().join() === [entry, 'forge'].sort().join(), `${name}: preload must be exactly the canonical entry and forge`);
+  // An omitted or empty `tools` list reaches the loader as undefined: the route inherits the
+  // parent's tools. Any declared list would be a restriction.
+  assert(!agent.tools?.length, `${name}: route must not restrict tools, got ${JSON.stringify(agent.tools)}`);
   console.log(JSON.stringify({ proof: 'selected-metadata', phase: process.env.PROOF_PHASE, cwd, name, source: agent.source, filePath: agent.filePath, realPath: fs.realpathSync(agent.filePath), model: agent.model, thinking: agent.thinkingLevel, tools: agent.tools }));
 }
 // This is actual session skill discovery with isolated HOME, not a fabricated
@@ -124,15 +122,15 @@ for (const name of ['start-build', 'start-review', 'forge']) {
 }
 for (const [name, resourcePath] of [
   ['start-build', 'SAFETY.md'],
-  ['start-build', 'docs/decoupling-contract.md'],
+  ['start-build', 'shared-reference/decoupling-contract.md'],
   ['start-review', 'shared-templates/filling-guide.md'],
-  ['plan-to-issues', 'docs/agents/agent-readiness-scorecard.md'],
+  ['plan-to-issues', 'shared-reference/agent-readiness-scorecard.md'],
 ]) {
   const resource = await handler.resolve(new URL(`skill://${name}/${resourcePath}`), { skills });
   assert(resource.content === fs.readFileSync(path.join(process.env.CANONICAL_ROOT, name, resourcePath), 'utf8'),
     `${name}: installed resource bytes differ`);
 }
-const builder = result.agents.find(agent => agent.name === 'mr-builder');
+const builder = result.agents.find(agent => agent.name === 'change-builder');
 assert(!builder.autoloadSkills.includes('start-review'), 'cross-entry scenario should be unpreloaded');
 let rejected = false;
 try { await handler.resolve(new URL('skill://start-review'), { skills: [] }); }
@@ -154,4 +152,4 @@ fresh_discovery foreign "$TMP_ROOT/foreign" 0
 fresh_discovery spawning "$spawn_cwd" 1
 fresh_discovery allocated "$allocated_cwd" 1
 fresh_discovery revision "$revision_cwd" 1
-printf '%s: PASS (%s); no live model, native action, Claude or hard-confinement proof\n' "$TEST_NAME" "$proof_scope"
+printf '%s: PASS (%s); no live model, native action or Claude proof\n' "$TEST_NAME" "$proof_scope"

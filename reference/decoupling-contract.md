@@ -19,7 +19,7 @@ A set is **coupled** when any item is false, unknown, or contradicted by evidenc
 Builders prove decoupling before multi-issue work starts and keep the proof current as branches change.
 
 - Write the proof once per change request in `Reviewer Lift > Decoupling proof`.
-- List every co-running change-request ID when known. If an IID is not known yet, use the branch/issue identifier and update after change request creation.
+- List every co-running change-request ID when known. If an ID is not known yet, use the branch/issue identifier and update after change request creation.
 - State how the set satisfies the contract: no ordering relation, no file/module/safety-surface overlap, no shared migrations/locks/lockfiles/generated artifacts/version bumps/deploy topology, and independent checks/tests.
 - Keep `Changed paths` and `Touched safety surfaces` current so reviewers can compare the proof against the diff.
 - If a later push, rebase, CI result, or sibling change request creates overlap, conflict, stale state, or ordering pressure, stop treating the set as decoupled and report the blocker.
