@@ -2,22 +2,20 @@
 name: cleanup-codebase
 description: >-
   Discover and plan subtractive repo cleanup — deslop and destale. Planning-only.
-  Not for boundary-moving refactoring, diff-level tidy-ups
-  (`simplify`/`code-review`), or issue triage. Use when the user asks for
-  cleanup, deslop, removing dead/duplicated/stale code or docs, or repo-hygiene
-  discovery.
+  Not for boundary-moving refactoring, diff-level tidy-ups (the runtime's own
+  review or simplification facilities, if any), or issue triage. Use when the
+  user asks for cleanup, deslop, removing dead/duplicated/stale code or docs, or
+  repo-hygiene discovery.
 ---
 
 # Cleanup Codebase
-
-Native Claude plugin resources: map `skill://<name>` to `${CLAUDE_PLUGIN_ROOT}/<name>/SKILL.md` and `skill://<name>/<path>` to `${CLAUDE_PLUGIN_ROOT}/<name>/<path>`; strip Markdown fragments before filesystem reads or Node execution. Invoke logical skills via the `Skill` tool as `skills:<name>`. OMP keeps its native `skill://` resolver and canonical names.
 
 Operate as a **relentless subtractive auditor**: exhaustive within the declared scope, evidence-gated, behavior- and boundary-preserving, and unwilling to cut without proof.
 
 ## Operating stance
 
 - **Evidence first, language agnostic:** infer ecosystems from repo evidence, never from filenames alone; every finding **MUST** cite exact file/line/command/doc/test evidence and the negative checks actually run. Leads without proof are not findings: put them in known gaps or omit them.
-- **Project rules first:** read the invoked target rulebook and its confirmed profile/policy pointers, README/CONTRIBUTING, context and relevant ADRs before judging cleanup value. Installed `docs/` aliases are not target policy.
+- **Project rules first:** read the invoked target rulebook and its confirmed profile/policy pointers, README/CONTRIBUTING, context and relevant ADRs before judging cleanup value. Installed skill aliases are not target policy.
 - **Domain-safe, fail-closed:** cleanup **MUST** preserve domain language, safety invariants, review gates, deploy topology, migrations, and operator workflows; when you cannot prove a structure is incidental, leave it.
 - **Exhaustive in coverage, restrained in severity:** sweep the declared scope, but pure nits, style, and personal preference are OUT/omitted; judgment calls need concrete maintenance risk. Never inflate trivia into a blocking finding.
 - **Planning-only by default:** produce scoped plans, risks, validation, and follow-up questions; leave implementation to the build workflow.
@@ -44,19 +42,19 @@ Apply the [DESTALE gate sequence](reference/gates.md#destale-gate-sequence) to c
 
 - boundary-moving restructuring (split mixed-responsibility files, move responsibilities, change APIs/layers, cross-unit dedup) → file a boundary-change follow-up issue
 - tracker/backlog hygiene (stale issues, labels, untriaged backlog) → follow the repo tracker workflow
-- unsafe-default / security assessment → `security-review`, flag-and-refer only *(built-in)*
+- unsafe-default / security assessment → flag-and-refer only, to the runtime's review or security-assessment facilities if any; none are required
 - terminology / ADR / glossary → edit `CONTEXT.md`/ADRs manually
 
 ## Quick start
 
 1. Default to a repo-wide sweep when scope is unspecified; honor any explicit narrower user scope — **narrower scope** means path-limited, docs-only, config-only, dependency hygiene, or a specific concern.
-2. Resolve invoked repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); call out dirty-worktree noise. Read its rulebook and confirmed profile's Agent Setup Doc paths, gate/domain/ADR refs and README/CONTRIBUTING. Missing/stale setup prompts owner invocation; no default installation paths or automatic setup. Tracker reads/publication use `/forge` in only the required verified scopes.
+2. Resolve invoked repo root and cleanliness with read-only commands (`git rev-parse --show-toplevel`, `git status --porcelain`); call out dirty-worktree noise. Read its rulebook and confirmed profile's Agent Setup Doc paths, gate/domain/ADR refs and README/CONTRIBUTING. Missing/stale setup prompts owner invocation; no default installation paths or automatic setup. Tracker reads/publication use the `forge` skill in only the required verified scopes.
 3. Use read-only discovery subagents: fan out for repo-wide coverage; use enough passes for explicit narrower scope. This is the default posture for discovery. If coverage is incomplete, label the run partial, list uninspected surfaces and known gaps before findings, and make no absence-of-debt claims.
 4. Discover ecosystems from manifests/config/CI, then build the deslop and destale candidate list by applying the applicable gate sequence with recorded proof and negative checks.
 
    **Complete when:** every candidate has a gate verdict and every unproven lead is a known gap or `N/A — <why>`.
 5. Present the proposal; ask which slices to approve, defer, merge, split, or discard.
-6. After approval, measure each slice's numeric and emptiness criteria against the [measurable acceptance criteria](#measurable-acceptance-criteria) rules, then route to `/plan-to-issues`; implementation goes to the build workflow.
+6. After approval, measure each slice's numeric and emptiness criteria against the [measurable acceptance criteria](#measurable-acceptance-criteria) rules, then route to the `plan-to-issues` skill; implementation goes to the build workflow.
 
 ## Classification rules
 

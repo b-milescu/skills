@@ -4,10 +4,11 @@ Eight reusable agent skills and runtime-specific builder/final-reviewer presets,
 
 ## Layout
 
-- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `docs/` and `shared-templates/` symlinks for shared resource reads.
-- `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules.
+- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `shared-templates/` symlinks (plus `shared-reference/` for `start-build`, `issue-delivery-loop` and `plan-to-issues`) for shared resource reads.
+- `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules, route ids, model/effort selection and skill invocation.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
 - `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
+- `reference/` — shared reference docs (Decoupling Contract, agent-readiness scorecard). Referenced through `shared-reference/` skill-local symlinks, not installed as runtime skill-root entries.
 
 ## Skills
 
@@ -26,12 +27,8 @@ Eight reusable agent skills and runtime-specific builder/final-reviewer presets,
 
 Dev Workflows invoke applicable installed specialists on demand under the shared
 [selection policy](start-build/reference/context-and-planning.md#task-selected-specialists).
-An external `tdd` skill is not required to install or check this repo; observable
-TDD/native-test rules still apply. Runtime workflow/forge preloads are distinct
-from entry access and invocation eligibility; see
-[skill activation](docs/agents/dev-workflows.md#skill-activation-mechanism).
-`cleanup-codebase` also refers to `simplify`, `code-review`, and `security-review`,
-which are harness built-ins rather than installable skill dependencies.
+Runtime workflow/forge preloads are distinct from entry access and invocation
+eligibility; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths).
 
 ## Check before install or review
 
@@ -40,11 +37,20 @@ Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engin
 ## Install on a new machine
 
 The public Git source is <https://github.com/b-milescu/skills> (shorthand
-`b-milescu/skills`). Acquisition requires Git. Native clients own
-installation, updates and removal. No npm executable or custom installer is
-published, and no MCP catalogue/configuration is automatically installed.
-Installed Node helpers require Node.js 22.x. Keep each native installation's
-complete resource tree; copying standalone helpers is not supported.
+`b-milescu/skills`). Native clients own installation, updates and removal. No
+npm executable or custom installer is published, and no MCP
+catalogue/configuration is automatically installed. Keep each native
+installation's complete resource tree; copying standalone helpers is not
+supported.
+
+### Prerequisites
+
+- Claude Code or OMP with plugin-marketplace support.
+- Git, and Node.js 22.x on `PATH`. The bundled helpers need no npm packages.
+- For change-request workflows, a tool your runtime can use to reach your code host and issue tracker (an MCP server or a CLI). Nothing is bundled; the `setup-dev-skills` skill records the choice per project.
+- Optional: a memory plugin or MCP server for `retro` lookback.
+
+Contributors to this repository also need npm and bash for the [Check Gate](docs/agents/check-gate.md), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally Bun plus an OMP source checkout for the loader smoke test.
 
 ### Claude Code
 
@@ -57,11 +63,10 @@ claude plugin uninstall skills@skills --scope user
 ```
 
 The plugin exposes all eight skills and only the two reusable Claude agent
-files. Agent identifiers are `skills:mr-builder` and `skills:mr-reviewer-final`;
-prefer qualified plugin IDs when selecting reusable routes. Skill commands use
-the `skills:<logical-name>` namespace. Native Git marketplace installation
-prepares package dependencies; local `--plugin-dir` development loading does
-not, so it is not equivalent installation/dependency proof.
+files. Agent identifiers are `skills:change-builder` and
+`skills:change-reviewer-final`; prefer qualified plugin IDs when selecting
+reusable routes. Skill commands use the `skills:<logical-name>` namespace.
+Local `--plugin-dir` development loading is not equivalent installation proof.
 
 ### OMP
 
@@ -74,19 +79,19 @@ omp plugin uninstall skills@skills --scope user
 ```
 
 OMP uses the same marketplace and the OMP dialect marker. Its reusable agent
-IDs stay bare: `mr-builder` and `mr-reviewer-final`; skills use
+IDs stay bare: `change-builder` and `change-reviewer-final`; skills use
 `/skill:<logical-name>` and native `skill://<logical-name>[/resource]`.
 OMP Git marketplace installation does not install npm dependencies. Installed
 workflow helpers therefore carry their minimal static YAML dependency and
 license; they do not require a developer checkout's `node_modules`.
 
-Both native surfaces expose shared docs/templates as resources, not additional
-skills, and exclude complete project-native agent declarations from reusable
-defaults. Canonical logical skill IDs remain unchanged. Claude does not natively
-resolve `skill://`: installed entry/agent bodies bootstrap its filesystem mapping
-through `${CLAUDE_PLUGIN_ROOT}`. Follow that entry contract before executing
-resolved helper paths from the target CWD; see
-[agent dialect/resource guidance](agents/README.md#validate-and-observe-separately).
+Both native surfaces expose shared reference docs and templates as resources,
+not additional skills, and exclude complete project-native agent declarations
+from reusable defaults. Canonical logical skill IDs remain unchanged. Skills
+name their resources by paths relative to their own directory, so both runtimes
+resolve them, including helper paths executed from the target CWD, without a
+per-runtime bootstrap; see
+[route ids, model/effort selection and skill invocation](agents/README.md#skill-invocation-and-resource-paths).
 Source-owned native docs never become a foreign target's profile or policy.
 
 Existing legacy user links, user/site agents, extensions, MCP settings and

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import yaml from '../start-build/scripts/vendor/js-yaml.mjs';
 
 const REPO_ROOT = findRepoRoot();
 const DIALECTS = new Set(['claude', 'omp']);
@@ -68,20 +68,52 @@ const OMP_THINKING_LEVELS = new Set(['inherit', 'off', 'minimal', 'low', 'medium
 const ALLOWED_OMP_THINKING_LEVELS = [...OMP_THINKING_LEVELS].join(', ');
 
 const CLAUDE_TOOLS = new Set([
+  'Agent',
+  'Artifact',
   'AskUserQuestion',
   'Bash',
+  'CronCreate',
+  'CronDelete',
+  'CronList',
   'Edit',
+  'EndConversation',
+  'EnterPlanMode',
+  'EnterWorktree',
+  'ExitPlanMode',
+  'ExitWorktree',
   'Glob',
   'Grep',
-  'LS',
-  'MultiEdit',
+  'ListAgents',
+  'ListMcpResourcesTool',
+  'LSP',
+  'Monitor',
   'NotebookEdit',
+  'PowerShell',
+  'PushNotification',
   'Read',
+  'ReadMcpResourceTool',
+  'RemoteTrigger',
+  'ReportFindings',
+  'ScheduleWakeup',
+  'SendFeedback',
+  'SendMessage',
+  'SendUserFile',
+  'ShareOnboardingGuide',
   'Skill',
-  'Task',
+  'SubagentHandback',
+  'Task', // documented alias of Agent
+  'TaskCreate',
+  'TaskGet',
+  'TaskList',
+  'TaskOutput',
+  'TaskStop',
+  'TaskUpdate',
   'TodoWrite',
+  'ToolSearch',
+  'WaitForMcpServers',
   'WebFetch',
   'WebSearch',
+  'Workflow',
   'Write',
 ]);
 const OMP_TOOLS = new Set([
@@ -94,8 +126,8 @@ const OMP_TOOLS = new Set([
   'eval',
   'glob',
   'grep',
+  'hub',
   'inspect_image',
-  'irc',
   'lsp',
   'read',
   'task',
@@ -111,18 +143,18 @@ const OMP_TO_CLAUDE_TOOL = new Map([
   ['glob', 'Glob'],
   ['grep', 'Grep'],
   ['read', 'Read'],
-  ['task', 'Task'],
+  ['task', 'Agent'],
   ['todo', 'TodoWrite'],
   ['web_search', 'WebSearch'],
   ['write', 'Write'],
 ]);
 const CLAUDE_TO_OMP_TOOL = new Map([
+  ['Agent', 'task'],
   ['AskUserQuestion', 'ask'],
   ['Bash', 'bash'],
   ['Edit', 'edit'],
   ['Glob', 'glob'],
   ['Grep', 'grep'],
-  ['LS', 'directory reads via read'],
   ['Read', 'read'],
   ['Task', 'task'],
   ['TodoWrite', 'todo'],
@@ -133,7 +165,8 @@ const OMP_RETIRED_TOOL_REPLACEMENTS = new Map([
   ['search', 'grep'],
   ['find', 'glob'],
   ['ls', 'directory reads via read'],
-  ['intercom', 'irc'],
+  ['intercom', 'hub'],
+  ['irc', 'hub'],
 ]);
 const NON_PI_FORBIDDEN_BODY_TERMS = ['contact_supervisor', 'intercom'];
 

@@ -78,7 +78,7 @@ check_agent_variant_parity() {
   local shared_names="$TMPDIR_CHECK/shared-agent-names"
   local name file rel declared claude_declared omp_declared token
 
-  # MR builder/reviewer routes share model-free basenames across Claude and
+  # Change-request builder/reviewer routes share model-free basenames across Claude and
   # OMP dialects. Runtime-owned model/effort selection does not make a
   # missing counterpart an allowed runtime-specific exception.
 

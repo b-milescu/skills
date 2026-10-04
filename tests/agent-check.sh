@@ -61,7 +61,7 @@ nomutate_home="$TMP_ROOT/nomutate-home"
 nomutate_output="$TMP_ROOT/nomutate.out"
 mkdir -p "$nomutate_home/.claude" "$nomutate_home/.omp/agent"
 snapshot_home() {
-  (cd "$nomutate_home" && find . -printf '%P %y %l %m %T@\n' | LC_ALL=C sort)
+  (cd "$nomutate_home" && find . | LC_ALL=C sort)
 }
 snapshot_home >"$TMP_ROOT/home-before"
 if ! HOME="$nomutate_home" bash "$clean_repo/agents/check.sh" >"$nomutate_output" 2>&1; then

@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "skill://setup-dev-skills/reference/project-profile-facts.json",
+  "$id": "project-profile-facts.json",
   "kind": "setup-dev-skills-project-profile-facts",
   "version": "1",
   "owner": "setup-dev-skills",
-  "machine_resource": "skill://setup-dev-skills/reference/project-profile-facts.json",
+  "machine_resource": "project-profile-facts.json",
   "required_project_profile_fields": [
     "profile_id", "profile_path", "provider", "tracker", "agent_setup_docs",
     "label_vocabulary", "check_gate", "dev_workflows", "branch_naming",
@@ -27,13 +27,13 @@
   },
   "resource_addressing": {
     "target_repo_docs": { "mode": "repo-relative" },
-    "runtime_skill_resources": { "mode": "skill-uri", "execution": "resolve installed filesystem path before invoking helpers" },
+    "runtime_skill_resources": { "mode": "skill-relative", "execution": "<skill-name>/<path> resolves against the directory holding the installed skill directories; resolve it to a real filesystem path before invoking helpers" },
     "installed_aliases": "Classify by underlying source; project-owned native aliases never establish the invoked target's profile."
   },
   "skill_resources": {
-    "forge": "skill://forge/SKILL.md",
-    "common_guard": "skill://forge/reference/common-guard.md",
-    "delivery_schema": "skill://start-build/templates/delivery-schema.md",
-    "reviewer_lift": "skill://start-build/templates/reviewer-lift-schema.md"
+    "forge": "forge/SKILL.md",
+    "common_guard": "forge/reference/common-guard.md",
+    "delivery_schema": "start-build/templates/delivery-schema.md",
+    "reviewer_lift": "start-build/templates/reviewer-lift-schema.md"
   }
 }

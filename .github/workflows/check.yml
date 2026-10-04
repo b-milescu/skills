@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   check:
-    # ubuntu-latest: tests/agent-check.sh needs GNU find (-printf).
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

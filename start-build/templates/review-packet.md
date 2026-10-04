@@ -32,7 +32,7 @@ Child runs: `gate_owner_received: <literal launch value, or absent>` per
 <!-- REVIEWER-LIFT-SCHEMA:BEGIN generated-copy from start-build/templates/reviewer-lift-schema.md -->
 | Field | Value |
 |---|---|
-| Reviewed SHA | `<MR head; refresh after every push>` |
+| Reviewed SHA | `<change-request head; refresh after every push>` |
 | Finding bindings | `<per reviewer-lift-schema.md: none or validated report/SHA/finding-ID tuples>` |
 | Review gate | `<mandatory / bypassed (human override)>` |
 | Transport | `<identified opaque target transport evidence; no missing-value default>` |

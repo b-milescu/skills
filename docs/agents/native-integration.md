@@ -2,9 +2,8 @@
 
 Project-owned integration selected by `provider.reference` in
 [the project profile](dev-workflows.md#project-profile-hooks). These are this
-repository's facts, not reusable target defaults. Installed skill `docs/` aliases
-point at repository-owned sources; their native content is exposure, not invoked
-foreign-project configuration. Read this document from the verified target clone.
+repository's facts, not reusable target defaults. Read this document from the
+verified target clone.
 
 ## Scope and transport
 
@@ -30,8 +29,8 @@ Use mounted tools documented under `xd://mcp__github_<operation>` (OMP) or
 `mcp__github__<operation>` (Claude). Read the current tool schema before use. MCP
 first. `gh` fallback only for a documented unavailable-tool, pagination or merge
 robustness gap, after all non-transport guards. The documented gaps, which no mounted
-MCP tool covers, are repository metadata, PR queue, closing-reference, merge-state and
-merge-commit fields (`gh pr view --json`), queue auto-merge, source-branch deletion,
+MCP tool covers, are repository metadata, closing-reference, merge-state and
+merge-commit fields (`gh pr view --json`), source-branch deletion,
 branch containment (`compare`), merge-commit parents, `--paginate` completeness and
 byte-exact body readback. Run exact command help first and verify flags; cache help
 only in this run/context and invalidate on CLI version, command or repository change.
@@ -64,8 +63,8 @@ post_merge_snapshot. All five need only this one GitHub repository.
    body cut short by client output limits is not lossless content: recover it with
    `gh api` to a file.
 5. PR state, source, target and head come from a fresh `pull_request_read(method="get")`
-   or the body-free `gh pr view <n> -R b-milescu/skills --json number,state,isDraft,headRefName,headRefOid,baseRefName,mergeStateStatus,autoMergeRequest,closingIssuesReferences,author`,
-   which also supplies the queue, closing-reference and merge-state fields. Review
+   or the body-free `gh pr view <n> -R b-milescu/skills --json number,state,isDraft,headRefName,headRefOid,baseRefName,mergeStateStatus,closingIssuesReferences,author`,
+   which also supplies the closing-reference and merge-state fields. Review
    needs complete `get_files` (GitHub lists at most 3000 files and omits `patch` for
    binary or oversized ones; a missing `patch` on anything but a pure rename, mode
    change or empty file is incomplete evidence), `get_commits` (at most 250),
@@ -228,23 +227,20 @@ SHA, the Gate Receipt `checkout_commit` and the Review Report `commit_id`,
   `blocked: native approval unavailable` with Action blocker `permission-failure`; a
   grant of `approval-only` is denied the same way.
 - Direct merge: `merge_pull_request` with `merge_method="merge"` and
-  `expectedHeadSha=<reviewed>`, never omitted. Where the finish also removes the source
-  branch, use the `gh` form below (the MCP merge has no branch delete); `-R` keeps gh
-  from touching local branches.
-- Queue: no MCP tool exists; use the `gh` form below after `gh pr merge --help` shows
-  those flags and `gh api repos/b-milescu/skills --jq .allow_auto_merge` is `true`.
-  Classify by native readback, never command output: an open PR with
-  `autoMergeRequest` is queued, not merged, and gh merges at once instead when the PR is
-  already mergeable. `--match-head-commit` binds the head when GitHub accepts the
-  request; GitHub documents cancelling a queued request only for a push by someone
-  without write access or a base-branch change, so a later writer push would still merge
-  once requirements pass. Re-read head and `autoMergeRequest` right after acceptance and
-  compare the merge commit's parent after merge
-  ([post-merge](#read-only-post-merge-and-cleanup)). Never issue unbound queueing.
+  `expectedHeadSha=<reviewed>`, never omitted, once required check `check` has passed on
+  the reviewed head. A pending or failed `check` makes GitHub refuse the merge; report
+  that refusal, never bypass it. Where the finish also removes the source branch, use
+  the `gh` form below (the MCP merge has no branch delete); `-R` keeps gh from touching
+  local branches.
+- Queue: unsupported. `--match-head-commit` binds the head only when GitHub accepts an
+  auto-merge request, and GitHub documents cancelling a queued request only for a push
+  by someone without write access or a base-branch change, so a later writer push would
+  still merge once requirements pass. That is no exact-head guarantee: refuse queueing
+  with `sha-bound-action-unsupported`, finish with the direct merge above, and never
+  issue `--auto` or unbound queueing.
 
 ```text
 gh pr merge <n> -R b-milescu/skills --merge --match-head-commit <reviewed> --delete-branch
-gh pr merge <n> -R b-milescu/skills --auto --merge --match-head-commit <reviewed>
 ```
 
 Native refusals are reported, never bypassed: no `--admin`, ruleset or protection edit,
@@ -252,9 +248,9 @@ or direct push to `main`. `main` protection does not enforce admins, so an unref
 call proves nothing about eligibility; the guard above does. Handoff tokens: a moved
 head (REST 409 or GitHub's "Head branch was modified" refusal) is `changed-head-sha`;
 `mergeable_state` `dirty` is `merge-conflict`; an action GitHub forbids this account is
-`permission-failure`; a missing exact-head binding is `sha-bound-action-unsupported`;
-any other hold (required check `check`, draft, repository auto-merge disabled) is `other`
-with its one-line reason.
+`permission-failure`; a missing exact-head binding (any queue request) is
+`sha-bound-action-unsupported`; any other hold (required check `check` pending or
+failed, draft) is `other` with its one-line reason.
 
 Before finish re-read the recorded allocated **open** issue and exact PR/source/item
 relationship, not merely an item inferred from branch text. The plain
@@ -267,13 +263,11 @@ is the third oracle. Keep these distinct.
 
 ## Read-only post-merge and cleanup
 
-No GitHub tool returns a post-merge snapshot; compose it from read-only calls. Queue
-acceptance is not merge.
+No GitHub tool returns a post-merge snapshot; compose it from read-only calls.
 
 - PR: `pull_request_read(get)` reports `merged` true, state closed and base `main`; the
   merge commit is `mergeCommit.oid` from
-  `gh pr view <n> -R b-milescu/skills --json state,mergeCommit,mergedAt`. An open PR with
-  `autoMergeRequest` is still queued.
+  `gh pr view <n> -R b-milescu/skills --json state,mergeCommit,mergedAt`.
 - Reviewed commit: the merge commit's parents from `get_commit(sha=<merge commit>)`, or
   `gh api repos/b-milescu/skills/commits/<merge commit> --jq '[.parents[].sha]'` when the
   MCP result omits them. Merge method `merge` makes the second parent the merged head,
@@ -297,19 +291,3 @@ authorized mutation, never by a verifier read:
 ```text
 gh api -X DELETE repos/b-milescu/skills/git/refs/heads/<source_branch>
 ```
-
-## Guards without a GitHub counterpart
-
-| Guard | GitHub replacement or outcome |
-| --- | --- |
-| Server-side body validation | Dropped; the forge common text validation is the only text guard, and the 65,536-character cap is a transport blocker. |
-| Stored-body digest | Replaced by byte comparison of the GET readback with the authored source. |
-| Closing-keyword validator | Replaced by reading the PR description plus `closingIssuesReferences` and `closed_by_pull_requests`. |
-| Workflow snapshot and handoff evidence | Replaced by the composed fresh reads and local claim extraction in [snapshot](#snapshot-and-receipt-evidence). |
-| Native receipt extraction | Replaced by local checks on the read-back comment and the fresh head; see the receipt proofs above. |
-| Reviewer Lift block validation | `--mode lift-only` of the local gate helper, unchanged. |
-| Approval and authority-aware finish | Approval is unavailable; the actor runs the ordered common guard with fresh reads and one head-bound merge call. |
-| Expected-head ready | Unsupported; ready is observational pre/post reads only. |
-| Exact-head queue | Head bound at acceptance only; compensated by the post-acceptance re-read and the post-merge parent comparison. |
-| Post-merge snapshot | Replaced by the composed read-only calls above. |
-| Project and instance ID bindings | Replaced by the explicit `owner`/`repo` on every call and the `get_me()` identity. |

@@ -6,7 +6,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 - Publish the template through `forge publish` as the change-request description (review-packet, compact) or provider-native discussion artifact (revision-packet, stuck-packet).
 - Keep it in sync with the diff and require provider-native publication readback after every push.
-- Before publication or ready transition, use the selected `/forge` provider to validate the native work-item relationship/closure preview. Provider-specific syntax belongs only in its provider reference.
+- Before publication or ready transition, use the selected `forge` provider to validate the native work-item relationship/closure preview. Provider-specific syntax belongs only in its provider reference.
 
 ## build-plan-packet.md
 
@@ -22,7 +22,7 @@ The template ships the default sections only. Pre-edit discovery (rulebook read,
 
 - **Reviewer Lift** — Copy every row unchanged; fill it per `reviewer-lift-schema.md`, which owns field order, gate, and Approval/Finish authority claim/source semantics. `../../start-review/REVIEW-FLOW.md` owns CI and authority decisions. Parent-owned mode follows `../reference/parent-owned-gate.md`; the child records only the ownership contract and candidate.
 - **Finding bindings** — Use `none` until a Review Report finding is in flight. Otherwise copy each originating `(Report locator, Reviewed commit, Finding ID)` exactly from the report and validate before publication or ready transition.
-- **Authority sources** — Record where each approval/finish claim came from. Do not write builder-local interpretation as authority; the reviewer/parent verifies provenance through the `/forge` common guard.
+- **Authority sources** — Record where each approval/finish claim came from. Do not write builder-local interpretation as authority; the reviewer/parent verifies provenance through the `forge` common guard.
 - **Safety / State / External Delta** — One line per surface; write `N/A — <reason>` when untouched. Name each applicable invariant from [SAFETY.md §Non-negotiables](../SAFETY.md#non-negotiables) and how the change preserves it, the state/persistence/migration surfaces touched (with migration numbers and smoke plan), and the external-system/credential delta.
 
 ### Conditional sections

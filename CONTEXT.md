@@ -37,11 +37,11 @@ An issue state that may be mapped to the target tracker's actual label string wh
 _Avoid_: label, status
 
 **Skill Invocation**:
-Entering a skill at its `SKILL.md` entry procedure through the runtime skill mechanism, rather than mid-policy. The per-dialect mechanism is owned by [dev-workflows](docs/agents/dev-workflows.md#skill-activation-mechanism).
+Entering a skill at its `SKILL.md` entry procedure through the runtime skill mechanism, rather than mid-policy. The per-dialect mechanism is owned by [agent dialects](agents/README.md#skill-invocation-and-resource-paths).
 _Avoid_: load (a skill), skill-enter directive
 
 **Reference Read**:
-Reading a skill's reference, template, or doc file after the skill is active. Legitimate context loading, never a substitute for **Skill Invocation**. See [dev-workflows](docs/agents/dev-workflows.md#skill-activation-mechanism).
+Reading a skill's reference, template, or doc file after the skill is active. Legitimate context loading, never a substitute for **Skill Invocation**. See [agent dialects](agents/README.md#skill-invocation-and-resource-paths).
 _Avoid_: invoking a skill, loading a skill
 
 ## Flagged ambiguities

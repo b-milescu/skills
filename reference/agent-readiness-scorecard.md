@@ -1,19 +1,19 @@
 # Agent Readiness Scorecard
 
-Agent Readiness is the visible contract for an issue carrying `ready-for-agent`.
-It records why an AFK builder can start without broad rediscovery and gives the
-reviewer a stable checklist for spotting gaps.
+Agent Readiness is the visible contract for an issue carrying the target's AFK-ready
+label (the `afk_ready` triage role). It records why an AFK builder can start without
+broad rediscovery and gives the reviewer a stable checklist for spotting gaps.
 
 ## Pass rule
 
-Before applying `ready-for-agent`, fill the scorecard in the issue body or in a
+Before applying the AFK-ready label, fill the scorecard in the issue body or in a
 durable issue comment. The issue is ready only when every row is present and
 specific enough for an AFK builder, or a maintainer explicitly waives the missing
 field(s).
 
 A waiver must name the missing field(s), the maintainer decision, and why the
 issue is still safe for AFK work. If a row is unknown and not waived, do not apply
-`ready-for-agent`; keep the issue as Needs info or HITL in the issue body until
+the AFK-ready label; keep the issue as Needs info or HITL in the issue body until
 the missing context is resolved.
 
 ## Scorecard

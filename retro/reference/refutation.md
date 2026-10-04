@@ -40,4 +40,4 @@ Prefer `demote` to `drop` when the friction was observed but its cause is unclea
 
 - **Verdicts only.** The refuter judges the drafted findings; it does not add findings, rewrite bounded proposals, or re-run the signal catalogue.
 - **Read-only.** Re-reading cited sources, the repo, and the tracker is the whole toolkit; it mutates nothing and files nothing. Apply [SKILL.md](../SKILL.md)'s session-first/privacy bounds; evaluate the supplied evidence rather than performing a separate debugging investigation.
-- **The safety floor check is the refuter's attestation**, not the drafter's: it confirms every floor in [Start Build Safety floors](skill://start-build/SAFETY.md#safety-floors) and lists every finding it escalated.
+- **The safety floor check is the refuter's attestation**, not the drafter's: it confirms every floor in [Start Build Safety floors](../../start-build/SAFETY.md#safety-floors) and lists every finding it escalated.

@@ -1,6 +1,6 @@
 # Triage Labels
 
-This repo treats GitHub's live label set as the source of truth. `/setup-dev-skills` owns regenerating this file when tracker labels change.
+This repo treats GitHub's live label set as the source of truth. The `setup-dev-skills` skill owns regenerating this file when tracker labels change.
 
 Use this file as `project_profile.label_profile_ref` for this repo. The profile
 may point to this label vocabulary, but it must not create live labels, rely on
@@ -25,7 +25,7 @@ Live set for `b-milescu/skills`, read with `gh label list -R b-milescu/skills`:
 
 | Triage Role | Live label | Notes |
 | --- | --- | --- |
-| `afk_ready` | `ready-for-agent` | Apply the live label only after an [Agent Readiness](agent-readiness-scorecard.md) pass or a recorded maintainer waiver. |
+| `afk_ready` | `ready-for-agent` | Apply the live label only after an [Agent Readiness](../../reference/agent-readiness-scorecard.md) pass or a recorded maintainer waiver. |
 | `needs_info` | `needs-info` | Issue needs more information before AFK work; apply the live label and state the missing information in issue/PR prose. |
 | `human_decision` | `human-decision` | Issue needs a maintainer decision before AFK work; apply the live label and state the decision request in issue/PR prose. |
 
@@ -34,7 +34,7 @@ These values are this repo's project-specific vocabulary; reusable skills must r
 ## Agent rules
 
 - Apply only labels listed above. Do not rely on GitHub's implicit label creation: the issues API may create a label name that does not exist, so verify each name against the live inventory (`get_label` or `gh label list`) before an issue write.
-- Use `ready-for-agent` only for AFK-ready issues with a passing or explicitly waived [Agent Readiness scorecard](agent-readiness-scorecard.md).
+- Use `ready-for-agent` only for AFK-ready issues with a passing or explicitly waived [Agent Readiness scorecard](../../reference/agent-readiness-scorecard.md).
 - Use `docs` or `refactor` as optional kind labels when the slice fits.
 - Apply `needs-info` when an issue needs more information before AFK work, and state the missing information in the issue/PR body or a comment.
 - Apply `human-decision` when an issue needs a maintainer decision before AFK work, and state the decision request in the issue/PR body or a comment. Keep this distinct from the PR-level `human-decision-needed` Review Report verdict token.
@@ -44,4 +44,4 @@ These values are this repo's project-specific vocabulary; reusable skills must r
 
 ## Agent Readiness
 
-[Agent Readiness scorecard](agent-readiness-scorecard.md) owns the readiness fields and the pass/waiver rule gating `ready-for-agent`. That contract changes no label names; use only the live labels above.
+[Agent Readiness scorecard](../../reference/agent-readiness-scorecard.md) owns the readiness fields and the pass/waiver rule gating `ready-for-agent`. That contract changes no label names; use only the live labels above.

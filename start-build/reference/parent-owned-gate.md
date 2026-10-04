@@ -117,7 +117,7 @@ candidate binding; and post-note validation of that same receipt and current
 Lift. Anchor recognition or SHA equality alone proves none of receipt validity,
 execution, an unchanged checkout, authorship, independent review, or authority.
 
-Retained local-log custody (issue gitlab#490): when a `local-gate` evidence row's
+Retained local-log custody: when a `local-gate` evidence row's
 `source` names the retained local log by absolute filesystem path, the
 validator requires that exact file to be readable — at pre-post validation,
 before any publication or ready action, and again at post-note validation.
@@ -260,7 +260,7 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
 7. Reviewer Lift `Acceptance surfaces` all have test/smoke/docs-read/ci/N/A
    evidence, and non-`none` finding bindings validate against their reports.
 8. Re-snapshot immediately before one guarded ready mutation. Provider-specific
-   CAS or snapshot-sandwich rules live in the selected `/forge` reference.
+   CAS or snapshot-sandwich rules live in the selected `forge` reference.
 9. Provider-native post-read confirms ready and unchanged current commit.
 
 The exact candidate plus a passing parent Gate Receipt is sufficient to mark

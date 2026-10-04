@@ -1,6 +1,6 @@
 # Standalone review gate
 
-Detailed mandatory review gate for standalone `/start-build` sessions. Child
+Detailed mandatory review gate for standalone `start-build` sessions. Child
 builder sessions return to their parent and do not own this gate.
 
 ## Mandatory review gate
@@ -39,14 +39,13 @@ than copying that parent prompt's fixed `Finish owner: parent`:
 Resolve the canonical final-reviewer role through
 [native route selection](parent-orchestrator.md#native-route-selection), including
 the exposed namespace and effective project/reusable source. Invoke canonical
-`start-review` and `forge` at their entries through the selected runtime:
-Claude `Skill` with verified native identifiers (`skills:<name>` for the reusable
-plugin), or OMP skill-load/autoload and eligible `skill://` entry resolution.
-Entry access, preload metadata or a raw internal-reference read is not invocation
-proof; retain the Context Firewall and task-selected/user-only eligibility.
+`start-review` and `forge` at their entries through the runtime's skill
+mechanism. Entry access, preload metadata or a raw internal-reference read is
+not invocation proof; retain the Context Firewall and task-selected/user-only
+eligibility.
 The reviewer independently verifies current/reviewed commit, exact-candidate
 local Gate Receipt, publication evidence, advisory CI attribution, authority and
-the `/forge` common guard. Review blockers still apply, and the builder never
+the `forge` common guard. Review blockers still apply, and the builder never
 approves or finishes.
 
 ## Timeout handling

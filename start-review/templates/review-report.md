@@ -1,7 +1,7 @@
 # Review Report
 
 Authority Verification uses the shared
-[`/forge` common guard](../../forge/reference/common-guard.md); the selected
+[`forge` common guard](../../forge/reference/common-guard.md); the selected
 target's confirmed integration reference owns native approval and finish mechanics.
 
 <!-- Fill and publish this report per the [review-report filling guide](filling-guide.md#review-reportmd), including its safe-body, plain non-resolvable note, transport, and readback rules. -->
@@ -40,7 +40,7 @@ Fill from Tier 1 evidence. `Reviewed commit` stays a bare value here too, repeat
 | Change request | `<opaque identifier/locator; source -> target; draft/readiness>` |
 | Repository | `<canonical repository locator; default branch>` |
 | Issue | `<linked issue URL or N/A with reason>` |
-| Reviewer | `@reviewer — <exact model id if exposed, e.g. claude-opus-4-7>` |
+| Reviewer | `@reviewer — <exact model id if exposed>` |
 | Report # | `<round or report number>` |
 | Report locator | `<same stable report locator used by every finding tuple; final uses the published report's native note ID>` |
 | Reviewed commit | `<40-hex reviewed commit>` |
@@ -176,7 +176,7 @@ Required. Fill and reconcile these values per [Publication and actions](../REVIE
 | Field | Value |
 |---|---|
 | Review verdict | `<chosen value>` |
-| Bound change request target | `<bound change request URL; bound change request project path; bound repo URL>` |
+| Bound change request target | `<bound change request URL; bound repository path; bound repo URL>` |
 | Authority result | `<approval policy/source + finish authority/source summary>` |
 | Finish owner | `<chosen value; parent-managed pass uses Finish owner: parent>` |
 | Approval action | `<chosen value>` |

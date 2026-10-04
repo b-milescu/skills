@@ -70,7 +70,7 @@ and CI variables are not authenticated identity. Verify author/context separatel
 
 Body publication requires exact string/role validation using the installed
 `forge/scripts/validate-text.mjs` filesystem path before native checks. Resolve
-skill paths through runtime resource resolution, not target CWD. No diagnostic
+helper paths relative to the skill directory, not target CWD. No diagnostic
 may echo submitted body or parser excerpts. Require complete lossless native
 readback against authored source; record only documented normalization.
 

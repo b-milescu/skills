@@ -12,7 +12,7 @@ At commit `b4a33ef`, the `CLAUDE.md` ownership-map table measured 2,237 bytes, a
 - TOON with tab delimiters: 10% smaller
 - JSON: 39% larger
 
-Prose accounts for 87% of the table's bytes, so serialization overhead is not the main cost driver. Markdown tables also retain GitLab rendering and model familiarity.
+Prose accounts for 87% of the table's bytes, so serialization overhead is not the main cost driver. Markdown tables also retain code-host rendering and model familiarity.
 
 ## Decision
 

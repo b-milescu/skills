@@ -15,11 +15,11 @@ Friction signals worth scanning for after a build/review/delivery run, with wher
 
 | Signal | Where to look | Usual category |
 |---|---|---|
-| Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, memory-plugin observations if present, `/forge` helper output | tooling |
+| Repeated workaround — the same error worked around twice or more (within the session, or vs memory/issue history) | conversation, memory-plugin observations if present, `forge` helper output | tooling |
 | MCP call failures, contract-inconsistent output, or documented unavailability of a required tool | scoped session calls/outputs/unavailability; implicated local evidence only under SKILL.md's session-first contract | tooling |
 | Review rounds > 1 on any change request — classify the root cause: brief defect, builder defect, evidence gap, or reviewer scope creep | Review Reports, revision packets, Review Gate Summary | process |
 | Blocker tokens fired (`missing-authority`, `changed-head-sha`, `merge-conflict`, `partial-review`, ...) — was the blocker avoidable upstream? | verified durable Review Reports / Review Packets, supported compact `delivery.handoff_contract` indexes, action-result notes located by reviewer finals | flow |
-| `other` used in `action_blocker`, `blocker_token`, or `not_run_reason` — the enum lacked a real value | delivery-loop batch report / Retro Report §Batch metrics, using [Metrics](skill://issue-delivery-loop/SKILL.md#metrics) for evidence sources and counting | taxonomy |
+| `other` used in `action_blocker`, `blocker_token`, or `not_run_reason` — the enum lacked a real value | delivery-loop batch report / Retro Report §Batch metrics, using [Metrics](../../issue-delivery-loop/SKILL.md#metrics) for evidence sources and counting | taxonomy |
 | Timeout / stale / interrupted reviewer or builder rounds | Review Gate Summary, parent loop records | flow |
 | Leftover local state after the run — worktrees, `refs/tmp/review/*` temp refs, undeleted source branches, dirty checkouts | `git worktree list`, `git for-each-ref refs/tmp`, `git branch`, `git status --porcelain` | flow |
 | Check Gate failing on the default branch after merges | gate command on a fresh default-branch checkout | process |

@@ -91,8 +91,8 @@ const project = process.env.EXPECT_PROJECT === '1';
 const result = await discoverAgents(cwd, process.env.HOME);
 const expectedDir = project ? path.join(cwd, '.omp/agents') : path.join(process.env.CANONICAL_ROOT, 'agents');
 const routes = [
-  { name: 'mr-builder', entry: 'start-build' },
-  { name: 'mr-reviewer-final', entry: 'start-review' },
+  { name: 'change-builder', entry: 'start-build' },
+  { name: 'change-reviewer-final', entry: 'start-review' },
 ];
 for (const { name, entry } of routes) {
   const agent = result.agents.find(agent => agent.name === name);
@@ -100,10 +100,9 @@ for (const { name, entry } of routes) {
   const expected = path.join(expectedDir, `${name}.md`);
   assert(agent.filePath === expected, `${name}: selected ${agent.filePath}, expected ${expected}`);
   assert(agent.source === (project ? 'project' : 'user'), `${name}: wrong selected scope`);
-  assert(agent.autoloadSkills.includes(entry) && agent.autoloadSkills.includes('forge'), `${name}: canonical entry preload absent`);
-  assert(!agent.autoloadSkills.includes('tdd'), `${name}: retired unconditional TDD preload`);
+  assert([...agent.autoloadSkills].sort().join() === [entry, 'forge'].sort().join(), `${name}: preload must be exactly the canonical entry and forge`);
   if (project) {
-    assert(agent.tools.includes('mcp__github_*') && agent.tools.includes('mcp__codebase_memory_mcp_*'), `${name}: project-native selection missing`);
+    assert(agent.tools.includes('mcp__github_*') && !agent.tools.some(tool => tool.includes('codebase_memory')), `${name}: project-native selection must include github and exclude codebase-memory`);
   } else {
     assert(!agent.tools.some(tool => tool.startsWith('mcp')), `${name}: shared route leaks native selection`);
   }
@@ -124,15 +123,15 @@ for (const name of ['start-build', 'start-review', 'forge']) {
 }
 for (const [name, resourcePath] of [
   ['start-build', 'SAFETY.md'],
-  ['start-build', 'docs/decoupling-contract.md'],
+  ['start-build', 'shared-reference/decoupling-contract.md'],
   ['start-review', 'shared-templates/filling-guide.md'],
-  ['plan-to-issues', 'docs/agents/agent-readiness-scorecard.md'],
+  ['plan-to-issues', 'shared-reference/agent-readiness-scorecard.md'],
 ]) {
   const resource = await handler.resolve(new URL(`skill://${name}/${resourcePath}`), { skills });
   assert(resource.content === fs.readFileSync(path.join(process.env.CANONICAL_ROOT, name, resourcePath), 'utf8'),
     `${name}: installed resource bytes differ`);
 }
-const builder = result.agents.find(agent => agent.name === 'mr-builder');
+const builder = result.agents.find(agent => agent.name === 'change-builder');
 assert(!builder.autoloadSkills.includes('start-review'), 'cross-entry scenario should be unpreloaded');
 let rejected = false;
 try { await handler.resolve(new URL('skill://start-review'), { skills: [] }); }

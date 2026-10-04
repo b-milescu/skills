@@ -11,7 +11,7 @@
     "./retro"
   ],
   "agents": [
-    "./agents/claude/mr-builder.md",
-    "./agents/claude/mr-reviewer-final.md"
+    "./agents/claude/change-builder.md",
+    "./agents/claude/change-reviewer-final.md"
   ]
 }

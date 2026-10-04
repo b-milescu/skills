@@ -1,11 +1,11 @@
 # Review Flow
 
 Canonical mandatory independent review policy for one change request in the
-invoked target's confirmed integration. Native mechanics live behind `/forge`; this file
+invoked target's confirmed integration. Native mechanics live behind the `forge` skill; this file
 owns review judgment, evidence, severity, advisory CI/Open Question classifications,
 authority, and action separation.
-On missing mechanics or provider drift, fall back to the selected `/forge`
-provider reference; never copy provider commands into this policy.
+On missing mechanics or provider drift, fall back to the provider reference
+selected through the `forge` skill; never copy provider commands into this policy.
 
 ## Context Firewall
 
@@ -184,8 +184,9 @@ verdict or approval, merge, queued-finish, or post-merge eligibility. The
 required quality predicate is a passing exact-candidate local Check Gate and,
 in parent-owned mode, its durable Gate Receipt. Independent review, reviewed-SHA
 binding, authority/caller guards, exactly one mutation, and native readback are
-separate mandatory predicates. Native provider protection may refuse a mutation;
-report the refusal without bypassing it.
+separate mandatory predicates. Native provider protection, including checks the
+target binding requires before a merge, may refuse or hold a mutation; report the
+refusal without bypassing it.
 
 ### Open Question decision table
 
@@ -246,14 +247,17 @@ approval when finish is denied. Use existing
 [`handoff-tokens.schema.json`](reference/handoff-tokens.schema.json) tokens and
 align next action with the handoff's expected next actor/action.
 
-## Default finish: queued auto-merge
+## Default finish
 
 When verdict is pass, the exact-candidate Gate Receipt is valid, finish authority
-affirmatively allows it, caller context is eligible, and the selected provider
-offers an exact-reviewed-commit protected queue, the default finish is queue
-auto-merge through one guarded `forge act`. Provider CI remains advisory.
-Native protection may hold or refuse the request; report that provider outcome.
-Queued is non-terminal and is never reported as merged.
+affirmatively allows it, and caller context is eligible, the default finish is one
+guarded `forge act` bound to the exact reviewed commit: queue auto-merge only when
+the selected provider reference guarantees exact-head queueing; otherwise the
+authorized finisher merges directly, bound to the reviewed head, once the binding's
+required checks pass. Those required checks are the target binding's native merge
+protection; every other CI observation stays advisory and never changes the verdict
+or approval. Native protection may hold or refuse the request; report that provider
+outcome. Queued is non-terminal and is never reported as merged.
 
 Queue, auto-completion and direct finish semantics belong to the confirmed target
 reference. An operation without the requested exact-head guarantee returns

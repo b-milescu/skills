@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import yaml from "js-yaml";
+import yaml from "../start-build/scripts/vendor/js-yaml.mjs";
 
 const validator = resolve(import.meta.dirname, "../start-build/scripts/validate-gate-receipt.mjs");
 const work = mkdtempSync(join(tmpdir(), "gate-receipt-"));
@@ -177,6 +177,8 @@ try {
   }
   for (const delta of ["pending", `${sha}; gate rerun pending`, `${sha}; receipts pending`, `${sha}; pending (parent)`, `${sha.slice(0, 7)} -> files`, `${"2".repeat(40)} -> files`]) reject({ body: packet({ "Delta since last ready push": delta }) }, "stale delta");
   pass({ body: packet({ "Delta since last ready push": `${sha}; bound-or-pending wording fixed; gate rerun PASS` }) }, "pending prose not pointer");
+  for (const value of ["single change request", "single PR"]) pass({ body: packet({ "Decoupling proof": value }) }, `Decoupling proof accepts ${value}`);
+  for (const value of ["single pull request", "several MRs"]) reject({ body: packet({ "Decoupling proof": value }) }, `Decoupling proof rejects ${value}`);
   const unsafe = reject({ body: packet() + "PRIVATE-SENTINEL\u0000" }, "unsafe packet");
   assert.ok(!unsafe.stderr.includes("PRIVATE-SENTINEL"));
   console.log("gate-receipt-validator: PASS");

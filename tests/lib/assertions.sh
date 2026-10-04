@@ -41,21 +41,11 @@ require_text() {
   grep -Eiq -- "$pattern" "$file" || fail "$file missing $label"
 }
 
-require_text_case_sensitive() {
-  local file="$1" pattern="$2" label="$3"
-  grep -Eq -- "$pattern" "$file" || fail "$file missing $label"
-}
-
 reject_text() {
   local file="$1" pattern="$2" label="$3"
   if grep -Eni -- "$pattern" "$file" >&2; then
     fail "$file contains $label"
   fi
-}
-
-require_exact_line() {
-  local file="$1" line="$2" label="${3:-$2}"
-  grep -Fxq -- "$line" "$file" || fail "$file missing $label"
 }
 
 assert_file_contains() {
@@ -70,12 +60,4 @@ assert_file_not_contains() {
   if grep -Fq -- "$needle" "$file"; then
     fail "$file contains unexpected $label: $needle"
   fi
-}
-
-assert_log_contains() {
-  assert_file_contains "$@"
-}
-
-assert_log_not_contains() {
-  assert_file_not_contains "$@"
 }

@@ -16,7 +16,7 @@ required scope. Local items are files in a verified root, not remote IDs. Resolv
 conflicting or missing choices with the owner; unavailable tools preserve known
 configuration. Neither hosting brand nor installed tools selects a tracker.
 
-Use `/forge` for binding, evidence, publication, guarded actions and read-only
+Use the `forge` skill for binding, evidence, publication, guarded actions and read-only
 post-merge verification. Recipes cover safe text, complete reads, one mutation,
 exact-candidate/authority/identity guards, lossless authored-source readback and
 GET-only/bounded uncertain-write recovery. Configuration grants no authority.

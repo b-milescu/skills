@@ -15,7 +15,7 @@ TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 # is_allowed_executable PATH -> exit 0 path may be 100755.
-# Allowlist the two documented direct entrypoints only.
+# Allowlist the one documented direct entrypoint only.
 is_allowed_executable() {
  local path="$1"
  case "$path" in
@@ -53,8 +53,8 @@ check_repo() {
 }
 
 # --- Fail-closed self-tests on disposable fixture repos -------------------------
-# These prove the guard cannot fail open: a stray executable outside the three
-# documented patterns must FAIL, and the documented entrypoints must PASS.
+# These prove the guard cannot fail open: a stray executable outside the
+# allowlist must FAIL, and the documented entrypoint must PASS.
 
 make_fixture_repo() {
   local repo="$1"
@@ -124,12 +124,12 @@ stray_root_repo="$TMPDIR/stray-root"
 make_fixture_repo "$stray_root_repo" 100755:scripts/extra.sh
 assert_repo_fails "$stray_root_repo" "scripts/extra.sh" "executable outside allowlist"
 
-# only the two documented entrypoints pass.
+# only the documented entrypoint passes.
 allowed_repo="$TMPDIR/allowed"
 make_fixture_repo "$allowed_repo" \
  100755:scripts/check.sh \
  100644:tests/regression.sh
-assert_repo_passes "$allowed_repo" "documented entrypoints"
+assert_repo_passes "$allowed_repo" "documented entrypoint"
 
 # --- Real repository check ------------------------------------------------------
 check_repo "$REPO_ROOT"

@@ -136,7 +136,7 @@ delivery:
   blockers: []
 ```
 
-Authority Verification uses `skill://forge/reference/common-guard.md` and native mechanics from the invoked target's selected confirmed reference.
+Authority Verification uses `../../forge/reference/common-guard.md` and native mechanics from the invoked target's selected confirmed reference.
 
 ## Provider and repository binding
 
