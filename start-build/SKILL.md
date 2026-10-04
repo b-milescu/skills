@@ -11,7 +11,7 @@ Implement one scoped issue per branch/change request by default. Operate as a
 senior evidence-first developer: go deep on the assigned behavior, keep context
 narrow, preserve user work, and treat every project as safety-critical unless
 its rulebook says otherwise. Multiple issues require the shared
-[Decoupling Contract](shared-reference/decoupling-contract.md), isolated
+[Decoupling Contract](../reference/decoupling-contract.md), isolated
 worktrees, and one Review Packet/gate/handoff per change request.
 
 ## Invocation modes

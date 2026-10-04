@@ -93,9 +93,14 @@ delivery record.
 ## Skill invocation and resource paths
 
 Skills link their own resources, the shared reference docs and the shared
-templates by relative paths. A relative path resolves against the directory of the
-file that contains it, as in standard Markdown, never against the skill directory,
-so skill entries carry no per-runtime bootstrap. Run helper scripts by their
+templates by relative paths, never through symlinks (an installer may rewrite a
+symlink into a machine-specific absolute link; each native installation keeps the
+complete plugin tree, so a plain path works). A relative path resolves against the
+directory of the file that contains it, as in standard Markdown, never against the
+skill directory, so skill entries carry no per-runtime bootstrap:
+`start-build/SKILL.md` reaches the shared contract as
+`../reference/decoupling-contract.md`, and `start-build/reference/*.md` as
+`../../reference/decoupling-contract.md`. Run helper scripts by their
 resolved absolute path inside the installed skill the runtime loaded, including from
 a foreign CWD and never from a copy in the checkout under review (a change must not
 be validated by its own modified validator), and strip Markdown

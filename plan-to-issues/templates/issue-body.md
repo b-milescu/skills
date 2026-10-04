@@ -18,7 +18,7 @@ Avoid specific file paths or code snippets unless they encode a reviewed decisio
 
 ## Acceptance criteria
 
-<!-- Command-based ACs (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted here. See ../shared-reference/agent-readiness-scorecard.md#scorecard. Authoring rules: (1) scope acceptance greps to owned paths, excluding vendored/third-party dirs (e.g. Libs/, vendor/, node_modules/); (2) always state the baseline commit for any measured baseline (counts, line numbers); (3) prefer content anchors (function/heading names) over bare line numbers, which go stale as batches merge. -->
+<!-- Command-based ACs (grep, test, script) must be executed against the target repo at authoring time, with the observed output or count pasted here. See ../../reference/agent-readiness-scorecard.md#scorecard. Authoring rules: (1) scope acceptance greps to owned paths, excluding vendored/third-party dirs (e.g. Libs/, vendor/, node_modules/); (2) always state the baseline commit for any measured baseline (counts, line numbers); (3) prefer content anchors (function/heading names) over bare line numbers, which go stale as batches merge. -->
 
 - [ ] Criterion 1
 - [ ] Criterion 2

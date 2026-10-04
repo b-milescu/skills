@@ -72,4 +72,4 @@ Add the heading only when its trigger applies; the template lists the four most 
 
 ## adr.md
 
-See the [shared ADR filling guide](../shared-templates/filling-guide.md) for ADR template filling instructions.
+The ADR template is the shared [`adr.md`](../../templates/adr.md); see its [filling guide](../../templates/filling-guide.md) for ADR template filling instructions.

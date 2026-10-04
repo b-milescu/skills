@@ -122,13 +122,23 @@ for (const name of ['start-build', 'start-review', 'forge']) {
 }
 for (const [name, resourcePath] of [
   ['start-build', 'SAFETY.md'],
-  ['start-build', 'shared-reference/decoupling-contract.md'],
-  ['start-review', 'shared-templates/filling-guide.md'],
-  ['plan-to-issues', 'shared-reference/agent-readiness-scorecard.md'],
+  ['start-build', 'reference/issue-pickup.md'],
+  ['start-review', 'templates/filling-guide.md'],
+  ['plan-to-issues', 'templates/issue-body.md'],
 ]) {
   const resource = await handler.resolve(new URL(`skill://${name}/${resourcePath}`), { skills });
   assert(resource.content === fs.readFileSync(path.join(process.env.CANONICAL_ROOT, name, resourcePath), 'utf8'),
     `${name}: installed resource bytes differ`);
+}
+// Shared docs sit beside the skills in the installed plugin tree and are linked by plain relative paths
+// (no symlink: an installer rewrites it into an absolute link), so each must be a regular file there.
+for (const [name, link] of [
+  ['start-build', '../reference/decoupling-contract.md'],
+  ['start-review', '../templates/filling-guide.md'],
+  ['plan-to-issues', '../reference/agent-readiness-scorecard.md'],
+]) {
+  const target = path.resolve(path.dirname(skills.find(skill => skill.name === name).filePath), link);
+  assert(fs.lstatSync(target).isFile(), `${name}: ${link} is not a regular file in the installed tree`);
 }
 const builder = result.agents.find(agent => agent.name === 'change-builder');
 assert(!builder.autoloadSkills.includes('start-review'), 'cross-entry scenario should be unpreloaded');

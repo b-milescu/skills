@@ -104,7 +104,7 @@ per-branch invariant, not a one-time batch preflight:
    rulebook. Confirm each work item carries the target repo's AFK-ready Triage Role
    label `project_profile.label_profile_ref` or other approved agent-work state. For
    multiple work items, evaluate the
-   [Decoupling Contract](../shared-reference/decoupling-contract.md) per pair
+   [Decoupling Contract](../../reference/decoupling-contract.md) per pair
    before the first child launch and fan out exactly as
    the `issue-delivery-loop` skill specifies: one child per item and one isolated
    worktree/branch/Draft change request/Review Packet per child.

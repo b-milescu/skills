@@ -1,13 +1,13 @@
 // Focus: the shipped skill stack (the 8 skill directories, templates/ and
 // reference/) names no code host, agent harness, model or skill outside this
 // plugin, invokes no Node toolchain (Bun is its one declared runtime), carries no
-// machine-specific path or binary (NUL-byte) file and symlinks only into itself
-// with relative targets; every repo .mjs imports only node: builtins or relative
-// paths. The scan walks the file system, not git, so it also runs in an installed
-// copy. A plain node:assert/strict script: every check runs, all hits are
-// reported together as path:line, and any failure exits non-zero.
+// machine-specific path, binary (NUL-byte) file or symlink (an installer rewrites
+// a symlink into an absolute link); every repo .mjs imports only node: builtins
+// or relative paths. The scan walks the file system, not git, so it also runs in
+// an installed copy. A plain node:assert/strict script: every check runs, all
+// hits are reported together as path:line, and any failure exits non-zero.
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -101,22 +101,6 @@ function walk(rootDir) {
   return { texts, links, binaries };
 }
 
-// A symlink inside the stack must be relative and resolve to a path inside the stack. An
-// absolute target is machine-specific wherever it resolves; any other target outside the
-// stack ships a repo directory (docs/, ...) whose content the stack scan never reads.
-function linkHits(rootDir, links) {
-  const realRoot = realpathSync(rootDir);
-  const inside = STACK.map((dir) => path.join(realRoot, dir));
-  return links.filter(inStack).flatMap((link) => {
-    const target = readlinkSync(path.join(rootDir, link));
-    if (path.win32.isAbsolute(target)) return [`${link}: absolute symlink target (${target})`];
-    let real;
-    try { real = realpathSync(path.join(rootDir, link)); } catch (error) { return [`${link}: symlink does not resolve (${error.code})`]; }
-    if (inside.some((dir) => real === dir || real.startsWith(dir + path.sep))) return [];
-    return [`${link}: symlink resolves outside the skill stack (${path.relative(realRoot, real)})`];
-  });
-}
-
 function findHits(file, text) {
   const spans = [];
   for (const entry of ALLOWED) {
@@ -133,10 +117,10 @@ function findHits(file, text) {
   return hits.sort((a, b) => a[0] - b[0]).map(([, hit]) => hit);
 }
 
-const stackHits = (rootDir, { texts, links, binaries }) => [
+const stackHits = ({ texts, links, binaries }) => [
   ...texts.filter(([file]) => inStack(file)).flatMap(([file, text]) => findHits(file, text)),
   ...binaries.filter(inStack).map((file) => `${file}: binary file in skill stack (NUL byte: its text cannot be scanned)`),
-  ...linkHits(rootDir, links),
+  ...links.filter(inStack).map((file) => `${file}: symlink in skill stack (an installer rewrites it into a machine-specific absolute link; link the shared file by relative path instead)`),
 ];
 
 // [line, finding] for every loader form that is neither a node: nor a relative specifier.
@@ -166,8 +150,8 @@ function check(name, run) {
 
 const scanned = walk(root);
 
-check("skill stack names no code host, harness, model, outside skill or machine path, ships no binary file and links only into itself", () => {
-  const hits = stackHits(root, scanned);
+check("skill stack names no code host, harness, model, outside skill or machine path, ships no binary file and no symlink", () => {
+  const hits = stackHits(scanned);
   assert.ok(!hits.length, `${hits.length} coupling hit(s) in the skill stack:\n${hits.join("\n")}`);
 });
 
@@ -201,7 +185,7 @@ check("loader scan flags every non-node:, non-relative form", () => {
   assert.deepEqual(importHits(sample).map(([, finding]) => finding.split(" ")[0]), ["left-pad", "side-effect", "fs", "pkg/sub", "yaml", "yaml", "js-yaml", FACTORY]);
 });
 
-check("the walk skips .git, node_modules and vendored code; stack symlinks must be relative and resolve inside the stack; NUL-byte files are hits", () => {
+check("the walk skips .git, node_modules and vendored code; any symlink in the stack is a hit; NUL-byte files are hits", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "skill-stack-"));
   const put = (file, body) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); writeFileSync(path.join(dir, file), body); };
   const link = (file, target) => { mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); symlinkSync(target, path.join(dir, file)); };
@@ -215,19 +199,15 @@ check("the walk skips .git, node_modules and vendored code; stack symlinks must 
     for (const skipped of [".git/HEAD", "node_modules/p/i.md", "forge/node_modules/p/i.md", `${VENDORED}/y.mjs`]) put(skipped, "GitHub");
     put(`${VENDORED}/blob.bin`, "a\0b"); // the vendor exclusion also covers binaries
     link("forge/docs", "../docs"); // the regression: a skill shipping the repo docs
-    link("forge/gone", "../nowhere");
-    link("retro/x.md", "../docs/agents/x.md");
-    link("forge/abs-in", path.join(dir, "templates/adr.md")); // absolute: a hit even though it resolves inside the stack
-    link("retro/abs-out", path.join(dir, "docs/agents/x.md")); // absolute and outside the stack
-    link("forge/shared-templates", "../templates"); // allowed: stays inside the stack
-    link("forge/adr.md", "../templates/adr.md"); // allowed
+    link("forge/adr.md", "../templates/adr.md"); // even a relative link that stays inside the stack is a hit
+    link("docs/y.md", "agents/x.md"); // outside the stack: listed by the walk, no stack hit
     const walked = walk(dir);
     assert.deepEqual(walked.texts.map(([file]) => file), ["docs/agents/x.md", "forge/note.md", "templates/adr.md"], "no .git, no node_modules, no vendor, no followed symlink, no NUL-byte file");
     assert.deepEqual(walked.binaries, ["docs/logo.bin", "forge/blob.bin", "tools/x.mjs"], "NUL-byte files are listed, vendored ones are not");
-    assert.deepEqual(walked.links, ["forge/abs-in", "forge/adr.md", "forge/docs", "forge/gone", "forge/shared-templates", "retro/abs-out", "retro/x.md"]);
-    const hits = stackHits(dir, walked);
-    assert.deepEqual(hits.map((hit) => hit.split(":")[0]).sort(), ["forge/abs-in", "forge/blob.bin", "forge/docs", "forge/gone", "forge/note.md", "retro/abs-out", "retro/x.md"]);
-    for (const [file, reason] of [["forge/abs-in", "absolute symlink target"], ["retro/abs-out", "absolute symlink target"], ["forge/blob.bin", "binary file in skill stack"], ["forge/docs", "symlink resolves outside the skill stack"], ["forge/gone", "symlink does not resolve"]]) {
+    assert.deepEqual(walked.links, ["docs/y.md", "forge/adr.md", "forge/docs"]);
+    const hits = stackHits(walked);
+    assert.deepEqual(hits.map((hit) => hit.split(":")[0]).sort(), ["forge/adr.md", "forge/blob.bin", "forge/docs", "forge/note.md"]);
+    for (const [file, reason] of [["forge/adr.md", "symlink in skill stack"], ["forge/docs", "symlink in skill stack"], ["forge/blob.bin", "binary file in skill stack"]]) {
       assert.ok(hits.some((hit) => hit.startsWith(`${file}: ${reason}`)), `${file} must be reported as: ${reason}`);
     }
     assert.deepEqual(loaderHits(walked), ["tools/x.mjs: NUL byte in .mjs (its loader forms cannot be scanned)"]);

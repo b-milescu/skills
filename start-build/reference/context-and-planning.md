@@ -107,7 +107,7 @@ Before marking ready or requesting review, validate the change-request handoff:
 Detailed section-by-section instructions live next to the templates:
 
 - [Builder template filling guide](../templates/filling-guide.md)
-- [Shared ADR filling guide](../shared-templates/filling-guide.md)
+- [Shared ADR filling guide](../../templates/filling-guide.md)
 
 Safety-critical filling follows the canonical [Reviewer Lift](../templates/reviewer-lift-schema.md), [CI](../../start-review/REVIEW-FLOW.md#ci-decision-table), [credential](../SAFETY.md#non-negotiables), and [finding-identity](../../start-review/reference/finding-identities.md) rules.
 
