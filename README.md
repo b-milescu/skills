@@ -16,12 +16,12 @@ No tracked file is a symlink: an installer may rewrite one into a machine-specif
 
 | Skill | Purpose |
 |---|---|
-| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) that scaffolds per-repo Agent Setup Docs. Invoke explicitly as `/setup-dev-skills`; agents must ask before running or writing. |
+| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) that scaffolds per-repo Agent Setup Docs. User invocation only; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths) for the runtime command. Agents must ask before running or writing. |
 | `forge` | Five-operation instruction seam using the invoked target's confirmed integration. |
 | `start-build` | Implement one issue test-first as a Draft change request with a Review Packet. |
 | `start-review` | Independently review one change request at an exact commit. |
 | `issue-delivery-loop` | Coordinate bounded issue batches under the Decoupling Contract. |
-| `plan-to-issues` | Publish an approved plan as tracker issues. Slash is `/plan-to-issues`. |
+| `plan-to-issues` | Publish an approved plan as tracker issues; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths) for the runtime command. |
 | `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
 | `retro` | Mine a finished delivery session for friction; proposes follow-up issues only. |
 

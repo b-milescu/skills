@@ -109,8 +109,8 @@ Follow [Review Context Capsule](../REVIEW-FLOW.md#review-context-capsule). Treat
 | Change request | `<claimed locator/source/target/head/reviewed commit/readiness>` | `<verified change request metadata, reviewed-commit match, diff captured>` | `<provider snapshot / change request locator / diff artifact>` |
 | Authority | `<claimed Approval authority/source and Finish authority/source>` | `<verified through ../../forge/reference/common-guard.md: approval policy/restriction, merge source, precedence, conflicts/no-action result, and no-self context>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
 | CI | `<claimed advisory pipeline/local gate/Gate Receipt>` | `<verified exact-candidate local gate/Gate Receipt; CI status attributed only with exact commit binding>` | `<change request pipeline metadata / CI snapshot / Gate Receipt change request comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
-| Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / change request description / diff / rulebook>` |
-| Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<change request description/comment URL / artifact path / command transcript>` |
+| Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / Review Packet / diff / rulebook>` |
+| Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<packet home / comment URL / artifact path / command transcript>` |
 | Context expansion | `<Tier 2 or Tier 3 context used/considered>` | `<verified trigger, bounded read, and Tier 3 human/necessity rationale>` | `<path:line / finding ID / CI log / human instruction / rulebook section>` |
 
 ## Findings
@@ -133,7 +133,7 @@ Required. Follow [Findings and tone](../REVIEW-FLOW.md#findings-and-tone) and th
 
 Required. Classify every `OQ-N` per [CI and Open Question decision tables](../REVIEW-FLOW.md#ci-and-open-question-decision-tables); do not leave a default completion value.
 
-<!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. Human/product/security decisions stay blocked routing (`human-decision-needed`) until the decision source exists. If verified no OQ-N exists, write `Verified: no OQ-N entries in the change request description after review.` -->
+<!-- FILL REQUIRED: for each OQ-N, record answer/escalation/evidence request/non-blocking downgrade with source. Human/product/security decisions stay blocked routing (`human-decision-needed`) until the decision source exists. If verified no OQ-N exists, write `Verified: no OQ-N entries in the Review Packet after review.` -->
 
 ## Evidence
 

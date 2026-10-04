@@ -279,7 +279,7 @@ before another ready/review handoff.
 
 ## Evidence-ready tokens
 
-- `change-request-description-reviewer-lift-current`
+- `packet-home-reviewer-lift-current`
 - `candidate-commit-pushed`
 - `gate-receipt-exact-commit-pass`
 - `ready-transition-post-reread`
@@ -289,4 +289,4 @@ With feasibility established, before the receipt the two-line final uses
 `parent` / next action `parent-run-gate` with no extra decision.
 An unresolved prerequisite instead requires a precise blocked report to the
 parent; neither the ownership contract nor an N/A result is a passing receipt.
-A Gate Receipt is canonical gate evidence; later description updates are delta-only.
+A Gate Receipt is canonical gate evidence; later packet updates are delta-only.

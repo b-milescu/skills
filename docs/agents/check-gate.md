@@ -122,6 +122,21 @@ Installation/discovery does not prove live model/effort selection. Follow [nativ
 
 **Session-cache caveat:** Agent definitions are loaded into a coordinator session's spawn inventory at session start. In-session spawn checks therefore reflect pre-change frontmatter after a merge; a live smoke of changed agent definitions using the same session will see the cached (pre-merge) state and is inconclusive by design. Live smoke of changed agent definitions requires a fresh session — record this as an operator step after each merge that touches agent frontmatter or routing.
 
+### Owner-approved extended workflow smoke
+
+When explicitly owner-authorized, an extended live scenario covers installed Claude Code/OMP × GitHub/GitLab copies and all eight skills. This is available coverage, not a requirement to run four live cells on every future PR; the affected-surface installation requirement above remains unchanged. Azure DevOps coverage is design-level only unless the owner supplies a dedicated authorized sandbox and probes; do not report it as tested.
+
+Use a sandbox per cell and fresh sessions for each step (including separate build/review sessions), recording installed version/source SHA, invocation, transcripts and artifact pointers. On resume, preserve existing issues, change requests, reviews and logs; reconcile their current state rather than recreate them. Classify findings separately as **S** skill-stack, **A** adapter, **E** environment/sandbox, or **M** model error despite clear instructions, with installed-source evidence for S/A. Record observed results only; redact secrets and keep transient rate-reset timestamps out of repository docs.
+
+1. **A — `setup-dev-skills`:** Generate and owner-inspect the target setup, merge it under explicit authority, then apply the sandbox's branch protection and required CI check.
+2. **B — `plan-to-issues`:** Publish four approved vertical issues, each with its own observable acceptance criteria.
+3. **C — `issue-delivery-loop`:** Deliver the first two as one bounded batch through builder/final-reviewer routes, Gate Receipts, Review Reports, exact-reviewed-head finishes and post-merge verification.
+4. **D — `start-build` / `start-review`:** Build the third issue standalone, independently review it in a new session, and finish only under the confirmed authority and passing required check.
+5. **E — `forge`:** Run and record target-bound preflight in a fresh session.
+6. **F — `cleanup-codebase`:** Produce a proposal only; make no cleanup changes.
+7. **G — `retro`:** Review the delivered batch and standalone delivery; challenge proposed findings against the evidence and record refuted claims rather than treating every hypothesis as a defect.
+8. **H — Final state:** Verify merges match the reviewed heads, the first three issues are closed, main CI passes, no stray source branches remain, and the fourth issue stays open. Keep the supporting URLs/SHAs and any incomplete proof explicit; this scenario description makes no pass claim.
+
 ## When the gate cannot be run
 
 If an affected native runtime is unavailable, record the exact missing prerequisite and installation/discovery evidence as N/A. Required runtime proof remains incomplete; a schema pass or source inspection is not a substitute.

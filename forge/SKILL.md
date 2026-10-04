@@ -57,6 +57,33 @@ never grants authority.
   containment, advisory result-bound CI and branch/worktree cleanup evidence.
   Queued is not merged; closure intent/preview are not observed item closure.
 
+## Packet home
+
+The Review Packet, with its Reviewer Lift, is the canonical durable handoff. It
+lives at the **packet home** the selected reference designates, with confirmed
+supported size limits, units and evidence for the packet and description. Unknown
+limits or Unicode counting units block affected publication, never guessed
+ceilings, truncation or splitting. The default home is the change-request
+description; its existing publication behavior is unchanged.
+
+A note-home reference specifies the description pointer form and native refresh
+recipe. First Draft creation may precede note publication, but the change remains
+Draft/unready until the selected packet and pointer have verified readbacks.
+Publish or refresh in this order: append a new complete packet note; require
+byte-exact native readback; update the description pointer while preserving
+provider-native closure syntax; require exact description readback. Each mutation
+runs `forge publish` independently; there is no assumed transactional double-write.
+Published notes are immutable, not edited to refresh a packet.
+
+Discovery, gate/Lift rebind, handoff and review resolve **only the current
+description pointer**, natively scoped to this same change request. Never select
+by latest note or marker search: historical packets and reports may contain
+copied Lift markers. Missing, stale, wrong-change or head-mismatched pointers block
+affected transitions. The one-Lift-block rule applies within the current selected
+packet, not across historical packet/report notes. Publication, safe-text,
+supported-limit checks and byte-exact readback apply unchanged at the selected
+home; a packet over its limit is refused (`blocked`), never truncated.
+
 ## Helpers
 
 Relative paths resolve against the directory of the file that contains them, not
@@ -81,7 +108,8 @@ role/offset/type, never body or parser excerpts. Valid envelope content errors u
 the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
-normalization, closure syntax, draft/ready, receipt extraction, approval/finish,
+normalization, closure syntax, the [packet home](#packet-home) and its size limit,
+draft/ready, receipt extraction, approval/finish,
 expected-head guarantees, required-check holds with the signal that ends their
 wait and any bound other than the default
 [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
@@ -89,6 +117,12 @@ and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as
-unsupported. Before finish re-read the recorded allocated open item and exact
+`sha-bound-action-unsupported`. A direct merge needs the reference's documented
+stale-head rejection guarantee or recorded evidence from an explicitly authorized
+disposable stale-head probe described by setup; a request field or schema alone is
+not proof. Queue binding must hold through actual merge, not just request
+acceptance; unsupported or unproven binding is refused with no unbound fallback
+or direct merge under queue authority. Before
+finish re-read the recorded allocated open item and exact
 change/source/item relationship. Verifier cleanup retains dirty, foreign,
 unknown, unmerged and containment-unverified state.

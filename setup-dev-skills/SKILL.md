@@ -41,10 +41,33 @@ or which conflicting reference is authoritative. Do not present a platform menu,
 repeat already-confirmed choices or require unrelated authentication.
 
 Confirm target-owned integration recipes for forge's five operations, including
-operation-specific required systems, unsupported outcomes, pagination, exact-head
-guarantees, required-check holds with the signal that ends their wait and any bound
+operation-specific required systems, unsupported outcomes, pagination, the
+[packet home](../forge/SKILL.md#packet-home), confirmed supported size limits/units
+and their evidence for packet and description, exact-head guarantees,
+required-check holds with the signal that ends their wait and any bound
 other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-normalization and lossless readback/recovery.
+normalization and lossless readback/recovery. A note home records the pointer form,
+same-change/current-head resolution and independent append/readback then
+pointer-update/readback recipe; unconfirmed ceilings or Unicode units block
+affected publication, not invented defaults.
+
+Exact-head direct merge requires a documented stale-head rejection guarantee or
+the owner-confirmed probe below; a request field/schema alone proves no guarantee.
+Queue head binding must survive through actual merge, not merely acceptance.
+Unsupported or unproven bindings are refused as `sha-bound-action-unsupported`,
+with no unbound fallback or direct merge under queue authority.
+
+Where rejection is undocumented, describe this probe for an explicitly authorized
+actor; setup does not execute it or implicitly grant probe/cleanup authority:
+create disposable source and target branches and a disposable change request;
+capture the old full head, advance source to a new full head, then request native
+merge bound to the **old** head. Require refusal and an unmerged native post-read.
+Record date, change/request locator and identity, both full SHAs, refusal
+status/response and unmerged post-read in the target reference. Accepted or
+unproven outcomes leave exact-head direct merge unsupported. Obtain explicit
+probe and cleanup authority; after recording, the authorized actor closes/deletes
+disposable artifacts. Never use protected/shared branches. A documented stale-head
+rejection guarantee needs no live probe.
 Configuration is not an action-authority grant. Keep common safety floors with
 forge/delivery owners.
 

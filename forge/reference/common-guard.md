@@ -20,8 +20,9 @@ stops without trying another provider or transport:
 Return `passed`, `blocked`, `handoff`, `held`, or `escalated`; an opaque blocker
 string or `none`; whether a mutation ran; selected provider/transport evidence;
 and the post-read classification. Binding failure, stale head, missing or stale
-Gate Receipt, missing authority, unsupported commit binding, or failed post-read
-blocks without transport fallback. CI status never blocks the guard. A `held`
+Gate Receipt, missing authority, unsupported commit binding, a packet over its
+[packet home](../SKILL.md#packet-home) size limit, or failed post-read blocks
+without transport fallback. CI status never blocks the guard. A `held`
 result (native protection, including a provider's required checks, holds the
 mutation) is reported without bypass; once the hold clears, the retry is a new
 `forge act` that re-runs every step from the first, and nothing from the held
@@ -41,11 +42,18 @@ locators; shared callers and validators preserve opaque values and verified scop
   diff/discussion/review, exact-candidate Gate Receipt, and requested
   commit-bound advisory CI;
 - change-request author id;
-- Lift `claims` and missing rows;
+- Lift `claims` and missing rows, read at the [packet home](../SKILL.md#packet-home);
 - note-bound Review Report and Gate Receipt `claims` with author identity;
 - the four head/author `bindings`: Lift reviewed SHA equals head, report
   reviewed SHA equals head, receipt commit equals head, and finding bindings
   match the report.
+
+Resolve the current selected packet through the [packet-home contract](../SKILL.md#packet-home)
+for discovery, gate/Lift rebind and review. For note homes, use only the current
+description pointer with native same-change and current-head binding; historical
+notes or copied report markers never select a candidate. Missing, stale,
+wrong-change or head-mismatched pointers block affected transitions. Validate one
+Lift block within that selected packet, not across historical packet/report notes.
 
 No routing field is added. `claims` and `bindings` are labelled as such; snapshot
 never turns them into a decision, and its claims never replace native post-read.

@@ -154,6 +154,17 @@ follow [Check Gate](check-gate.md); readable custody alone is not execution proo
 proof. Local validity, read-back extraction or a body digest substitutes for none of
 these proofs.
 
+## Packet home
+
+The packet home is the PR description: it holds the Review Packet and its Reviewer
+Lift in full, not a pointer to a note. Its size limit is 65,536 characters, the
+figure GitHub's API names when it refuses a longer PR body
+(`body is too long (maximum is 65536 characters)`); GitHub's documentation publishes
+no number. A packet over the limit is refused as a transport blocker before
+publication, never truncated or split. Publication, byte-exact readback and the
+Reviewer Lift marker-block rules apply to the description as published
+([Publish one artifact](#publish-one-artifact)).
+
 ## Publish one artifact
 
 Run common no-echo text validation before any write: resolve `scripts/validate-text.mjs`
@@ -239,7 +250,12 @@ SHA, the Gate Receipt `checkout_commit` and the Review Report `commit_id`,
 - Direct merge: `merge_pull_request` with `merge_method="merge"` and
   `expectedHeadSha=<reviewed>`, never omitted, under a `reviewer may merge` grant or
   the [project default](dev-workflows.md#finish-authority-default); CI never supplies
-  the authority. Required check `check` may hold or refuse the merge: `main`
+  the authority. GitHub documents the stale-head rejection that makes this exact-head:
+  `expectedHeadSha` is the REST merge `sha` ("SHA that pull request head must match
+  to allow merge", 409 when the head differs) and `--match-head-commit` is the same
+  binding in `gh` ("Commit SHA that the pull request head must match to allow
+  merge"), so no setup stale-head probe applies. Required check `check` may hold or
+  refuse the merge: `main`
   protection enforces admins, so GitHub holds it for every account, this repository's
   sole admin account included, until `check` passes on the reviewed head. That is
   GitHub's outcome, never an eligibility decision, and the finisher never reads
