@@ -19,7 +19,7 @@ Default: fan out every provably decoupled subset.
    unrelated global authentication prerequisite. Surface unavailable/stale evidence.
    Ready selection respects dependency ordering.
 2. For a multi-item ready batch, evaluate the shared
-   [Decoupling Contract](shared-reference/decoupling-contract.md)
+   [Decoupling Contract](../reference/decoupling-contract.md)
    per pair before the first child launch.
    Automatically launch every provably decoupled subset in parallel. Use one child
    per item and one issue/worktree/branch/Draft change request/Review Packet per

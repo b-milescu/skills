@@ -4,11 +4,11 @@ Eight reusable agent skills and runtime-specific builder/final-reviewer presets,
 
 ## Layout
 
-- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`), with skill-local `shared-templates/` symlinks (plus `shared-reference/` for `start-build`, `issue-delivery-loop` and `plan-to-issues`) for shared resource reads.
+- `<skill-name>/` — one directory per skill (entry point: `SKILL.md`). Skill directories hold no symlinks (an installer may rewrite them into machine-specific absolute links); skills link the shared `templates/` and `reference/` by relative path.
 - `agents/` — runtime-specific agent definitions; see `agents/README.md` for Claude Code vs OMP dialect rules, route ids, model/effort selection and skill invocation.
 - `scripts/` — repo-local Check Gate and maintenance scripts; see `scripts/README.md`.
-- `templates/` — shared template files (ADR, filling guides). Referenced through `shared-templates/` skill-local symlinks, not installed as runtime skill-root entries.
-- `reference/` — shared reference docs (Decoupling Contract, agent-readiness scorecard). Referenced through `shared-reference/` skill-local symlinks, not installed as runtime skill-root entries.
+- `templates/` — shared template files (ADR, filling guides). Linked from skill files by relative path, not installed as runtime skill-root entries.
+- `reference/` — shared reference docs (Decoupling Contract, agent-readiness scorecard). Linked from skill files by relative path, not installed as runtime skill-root entries.
 
 ## Skills
 

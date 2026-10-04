@@ -1,7 +1,7 @@
 # Multiple work-item worktree mode
 
 Use this mode only for multiple work items that satisfy the shared
-[Decoupling Contract](../shared-reference/decoupling-contract.md). Unknown
+[Decoupling Contract](../../reference/decoupling-contract.md). Unknown
 or contradicted decoupling evidence means serial work.
 
 1. Use the original checkout as coordinator only. Require clean status and run

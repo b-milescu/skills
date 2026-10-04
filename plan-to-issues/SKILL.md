@@ -26,7 +26,7 @@ Turn an approved plan into tracker issues or work items for the current target r
 
 Each issue is a thin vertical slice through all affected user-visible layers: docs, CLI behavior, Dev Workflow guidance, state, API, UI, tests, deploy/runbook, or other observable surfaces. Do not assume every project has schema/API/UI. Each slice should be demoable, reviewable, and testable on its own.
 
-Slice *toward* the shared [Decoupling Contract](shared-reference/decoupling-contract.md): aim each slice at independence so a builder and reviewer can later grade it against that same contract. This skill references the contract for the independence target only; it does not enforce or prove decoupling — that stays with the `start-build`, `start-review`, and `issue-delivery-loop` skills.
+Slice *toward* the shared [Decoupling Contract](../reference/decoupling-contract.md): aim each slice at independence so a builder and reviewer can later grade it against that same contract. This skill references the contract for the independence target only; it does not enforce or prove decoupling — that stays with the `start-build`, `start-review`, and `issue-delivery-loop` skills.
 
 ## Slice types and labels
 
@@ -34,7 +34,7 @@ Use only labels listed in `<triage-labels-doc>`; never invent or rely on lazy la
 
 Readiness **Type** is exclusively **AFK / HITL / Needs info**:
 
-- **AFK**: ready for an agent to implement; see the shared [Agent Readiness scorecard](shared-reference/agent-readiness-scorecard.md#scorecard) for what that requires, and fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section.
+- **AFK**: ready for an agent to implement; see the shared [Agent Readiness scorecard](../reference/agent-readiness-scorecard.md#scorecard) for what that requires, and fill the [Agent Readiness](templates/issue-body.md#agent-readiness) section.
 - **HITL**: requires human decision, design review, architecture choice, product judgment, security/legal judgment, or another choice an agent must not invent.
 - **Needs info**: unclear, missing acceptance criteria, blocked by unknowns, or not safe to hand to an agent yet; name the blocker in the issue body.
 
@@ -49,8 +49,8 @@ For each proposed slice, show:
 - **Blocked by**: issue title or dependency, if any
 - **User stories covered**: source user stories this slice satisfies
 - **Acceptance criteria**: concrete, verifiable checks
-- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](shared-reference/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](templates/issue-body.md#agent-readiness)
-- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](shared-reference/decoupling-contract.md)
+- **Agent Readiness**: the readiness fields from the [Agent Readiness scorecard](../reference/agent-readiness-scorecard.md#scorecard), filled via the [issue body template](templates/issue-body.md#agent-readiness)
+- **Coupling risk**: files/seams/safety surfaces likely to overlap other slices, graded toward the shared [Decoupling Contract](../reference/decoupling-contract.md)
 
 Ask the user whether granularity, dependencies, splitting/merging, and AFK/HITL/Needs info classifications are right. Iterate until approved.
 
