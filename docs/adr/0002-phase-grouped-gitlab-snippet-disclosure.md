@@ -17,7 +17,7 @@
 
 At adoption, `gitlab/SKILL.md` was the selected GitLab transport branch reached through `/forge` disclosure. The skill-activation mechanic documented in [`docs/agents/dev-workflows.md`](../agents/dev-workflows.md#skill-activation-mechanism) made a `SKILL.md` body **all-or-nothing** on invocation, while files under `reference/` were read per-need. Names in this record describe historical files, not live resource pointers.
 
-Measured at baseline commit `e2dbcd266f44b4aa1acac254914654415ef7e9c9`:
+Measured at baseline commit `0288f20ef769690944b8b5e83d58db618c8179e7`:
 
 - `gitlab/SKILL.md` was 6,645 tok, of which the 21 `### Snippet:` bodies were 4,160 tok (63 percent), by section scan.
 - A build run needs about 6 of the 21 snippets; a review run about 11.

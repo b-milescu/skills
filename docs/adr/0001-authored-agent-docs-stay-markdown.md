@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-At commit `34d3b6a`, the `CLAUDE.md` ownership-map table measured 2,237 bytes, approximately 526 tokens, as Markdown. Re-encoding the same rows produced these relative sizes:
+At commit `b4a33ef`, the `CLAUDE.md` ownership-map table measured 2,237 bytes, approximately 526 tokens, as Markdown. Re-encoding the same rows produced these relative sizes:
 
 - TOON with comma delimiters: 2% smaller
 - TOON with tab delimiters: 10% smaller
