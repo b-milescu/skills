@@ -13,11 +13,20 @@ work items bind filesystem scope. Refresh only systems required by the requested
 operation; missing or unsupported actions block only that operation. Configuration
 grants no action authority.
 
-The selected `provider.reference` states the packet home and its size limit (the
-change-request description by default, or a durable note the description points to);
-the stale-head rejection behind exact-head direct merge, which setup proves with a
-live stale-head probe where the provider documents none; and that queueing that
-cannot be bound to a head is refused as `sha-bound-action-unsupported`.
+The selected `provider.reference` states the complete packet home and confirmed
+supported size limits/units with evidence for packet and description. Description
+is the default; a note home specifies its current description-pointer form and
+independent append/readback then pointer-update/readback refresh, preserving
+closure syntax. Discovery, gate/Lift rebind and review follow only that same-change,
+current-head pointer, never historical notes/markers; unknown limits/units block
+affected publication. See the `forge` skill's `SKILL.md#packet-home`.
+
+Record documented stale-head rejection or evidence from the explicitly authorized
+disposable probe described in the `setup-dev-skills` skill's `SKILL.md#resolve-choices`;
+setup never runs that probe or grants cleanup authority. A request field/schema
+alone proves no guarantee. Queue head binding must survive actual merge, not only
+acceptance; unsupported/unproven bindings return `sha-bound-action-unsupported`,
+with no unbound fallback or direct merge under queue authority.
 
 Canonical resources, each named as its skill plus the path inside that skill:
 

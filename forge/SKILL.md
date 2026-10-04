@@ -60,13 +60,29 @@ never grants authority.
 ## Packet home
 
 The Review Packet, with its Reviewer Lift, is the canonical durable handoff. It
-lives at the **packet home** the selected reference designates, stated with its
-size limit and unit. The default home is the change-request description. A
-reference may instead designate a durable note on the change request; the
-description then carries a current pointer to that note instead of the packet.
-Publication, byte-exact readback and the Reviewer Lift marker-block rules apply
-unchanged at the home. `publish` checks the authored packet against the limit
-before publishing: a packet over it is refused (`blocked`), never truncated.
+lives at the **packet home** the selected reference designates, with confirmed
+supported size limits, units and evidence for the packet and description. Unknown
+limits or Unicode counting units block affected publication, never guessed
+ceilings, truncation or splitting. The default home is the change-request
+description; its existing publication behavior is unchanged.
+
+A note-home reference specifies the description pointer form and native refresh
+recipe. First Draft creation may precede note publication, but the change remains
+Draft/unready until the selected packet and pointer have verified readbacks.
+Publish or refresh in this order: append a new complete packet note; require
+byte-exact native readback; update the description pointer while preserving
+provider-native closure syntax; require exact description readback. Each mutation
+runs `forge publish` independently; there is no assumed transactional double-write.
+Published notes are immutable, not edited to refresh a packet.
+
+Discovery, gate/Lift rebind, handoff and review resolve **only the current
+description pointer**, natively scoped to this same change request. Never select
+by latest note or marker search: historical packets and reports may contain
+copied Lift markers. Missing, stale, wrong-change or head-mismatched pointers block
+affected transitions. The one-Lift-block rule applies within the current selected
+packet, not across historical packet/report notes. Publication, safe-text,
+supported-limit checks and byte-exact readback apply unchanged at the selected
+home; a packet over its limit is refused (`blocked`), never truncated.
 
 ## Helpers
 
@@ -101,10 +117,12 @@ and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
 exact-head finish/queue must be guaranteed by that operation or refused as
-unsupported. A direct merge is exact-head only through a stale-head rejection the
-reference names; where the provider documents none, setup proves it with a live
-stale-head probe before the binding may claim exact-head merge. Queueing that
-cannot be bound to a head is refused as `sha-bound-action-unsupported`. Before
+`sha-bound-action-unsupported`. A direct merge needs the reference's documented
+stale-head rejection guarantee or recorded evidence from an explicitly authorized
+disposable stale-head probe described by setup; a request field or schema alone is
+not proof. Queue binding must hold through actual merge, not just request
+acceptance; unsupported or unproven binding is refused with no unbound fallback
+or direct merge under queue authority. Before
 finish re-read the recorded allocated open item and exact
 change/source/item relationship. Verifier cleanup retains dirty, foreign,
 unknown, unmerged and containment-unverified state.

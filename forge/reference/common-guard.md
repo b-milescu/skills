@@ -48,6 +48,13 @@ locators; shared callers and validators preserve opaque values and verified scop
   reviewed SHA equals head, receipt commit equals head, and finding bindings
   match the report.
 
+Resolve the current selected packet through the [packet-home contract](../SKILL.md#packet-home)
+for discovery, gate/Lift rebind and review. For note homes, use only the current
+description pointer with native same-change and current-head binding; historical
+notes or copied report markers never select a candidate. Missing, stale,
+wrong-change or head-mismatched pointers block affected transitions. Validate one
+Lift block within that selected packet, not across historical packet/report notes.
+
 No routing field is added. `claims` and `bindings` are labelled as such; snapshot
 never turns them into a decision, and its claims never replace native post-read.
 
