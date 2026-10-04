@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer-final
-description: Mandatory independent final project change-request reviewer for agents/skills.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__gitlab-mcp__*, mcp__codebase-memory-mcp__*"
+description: Mandatory independent final project change-request reviewer for b-milescu/skills.
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, mcp__github__*, mcp__codebase-memory-mcp__*"
 skills: start-review, forge
 model: inherit
 color: green

@@ -1,4 +1,4 @@
-# agents/skills native integration
+# b-milescu/skills native integration
 
 Project-owned integration selected by `provider.reference` in
 [the project profile](dev-workflows.md#project-profile-hooks). These are this
@@ -8,53 +8,99 @@ foreign-project configuration. Read this document from the verified target clone
 
 ## Scope and transport
 
-Code, merge requests, work items and advisory CI use GitLab instance
-<https://gitlab.example.com>, canonical repository `agents/skills`, project 16,
-default branch `main`. Named `origin` fetch/push intent must agree; resolve fork or
-alternate-remote intent explicitly rather than selecting the first remote.
-Authentication is supplied by the mounted `gitlab-mcp` connection; never inspect
-or print credential stores. Opaque records map to project-scoped issue/MR IIDs,
-commit SHA, pipeline/job and note/discussion locators **after** native binding.
+Code, pull requests, work items and advisory CI use the public GitHub repository
+<https://github.com/b-milescu/skills> (`b-milescu/skills`), default branch `main`.
+Named `origin` fetch and push must both name it (HTTPS or
+`git@github.com:b-milescu/skills.git`); resolve fork or alternate-remote intent
+explicitly rather than selecting the first remote. Authentication is supplied by the
+mounted `github` MCP connection and, for the documented gaps below, the logged-in
+`gh` CLI; never inspect or print credential stores or tokens. Every MCP call names
+`owner="b-milescu"` and `repo="skills"`; that explicit pair is the destination
+binding. Opaque records map to repository-scoped issue/PR numbers, commit SHA,
+workflow run/job IDs and comment/review IDs **after** native binding:
 
-Use mounted tools documented under `xd://mcp__gitlab_mcp_<operation>` (OMP) or
-`mcp__gitlab-mcp__<operation>` (Claude). Read the current tool schema before use.
-MCP first. `glab` fallback only for a documented unavailable-tool, pagination or
-merge robustness gap, after all non-transport guards. Run exact command help
-first and verify flags; cache help only in this run/context and invalidate on CLI
-version, command or repository change. No fallback for stale head, binding,
-identity, authority, unsafe text, missing receipt or failed post-read. Explicit
-repository selection is required whenever CLI inference is ambiguous. Native
-post-read remains mandatory; unavailable readback means unverified, not success.
+| Record | Native form |
+| --- | --- |
+| Issue locator | `https://github.com/b-milescu/skills/issues/<n>` |
+| Change-request locator | `https://github.com/b-milescu/skills/pull/<n>` |
+| Durable note id | `issuecomment-<id>` (comment on a PR or issue) or `pullrequestreview-<id>` (PR review) |
+| Report locator | `review-report:b-milescu/skills#<pr>:<round>`, chosen before publication |
+
+Use mounted tools documented under `xd://mcp__github_<operation>` (OMP) or
+`mcp__github__<operation>` (Claude). Read the current tool schema before use. MCP
+first. `gh` fallback only for a documented unavailable-tool, pagination or merge
+robustness gap, after all non-transport guards. The documented gaps, which no mounted
+MCP tool covers, are repository metadata, PR queue, closing-reference, merge-state and
+merge-commit fields (`gh pr view --json`), queue auto-merge, source-branch deletion,
+branch containment (`compare`), merge-commit parents, `--paginate` completeness and
+byte-exact body readback. Run exact command help first and verify flags; cache help
+only in this run/context and invalidate on CLI version, command or repository change.
+Name the repository on every `gh` command (`-R b-milescu/skills`, a positional
+`b-milescu/skills` or a `repos/b-milescu/skills/...` path), never CLI inference from the
+working directory. No fallback for stale head, binding, identity, authority, unsafe
+text, missing receipt or failed post-read. Native post-read remains mandatory;
+unavailable readback means unverified, not success. The sections below follow forge's
+operations: preflight, snapshot, publish, act (ready, approval and finish) and
+post_merge_snapshot. All five need only this one GitHub repository.
 
 ## Preflight and complete reads
 
 1. Compare intended repository against named local remotes and fresh
-   `get_project(project="agents/skills")`; verify path, web URL and main, not ID
-   alone. Bind instance/project together.
-2. `get_current_user()` captures caller identity in this instance at entry;
-   retain immutable identity and re-read immediately before each write.
-3. `get_issue(project, issue_iid)` and `get_issue_discussions` read the full work
-   item and every discussion before pickup. Verify opened/assignment and re-read
+   `gh repo view b-milescu/skills --json nameWithOwner,url,defaultBranchRef`; verify
+   host, name, URL and `main`, not an ID alone. `get_me()` and `gh api user --jq .login`
+   must name the same login whenever both transports are used.
+2. `get_me()` captures caller identity (login and numeric ID) at entry; retain
+   immutable identity and re-read immediately before each write.
+3. `issue_read(method="get")` and every page of `issue_read(method="get_comments")`
+   read the full work item before pickup. Verify open state and assignees and re-read
    before authoring/launch. Claim/release convention is in [tracker policy](issue-tracker.md#claiming-convention).
-4. Lists (`list_issues`, `list_merge_requests`, `list_labels`, `list_pipelines`,
-   `get_pipeline_jobs`, notes/discussions) are discovery. Follow `nextCursor` until
-   `pagination.complete`; preserve partiality on caps. Prefer direct single-record
-   reads for decisions. Recover bounded description/note bytes using dedicated
-   `get_issue_description`, `get_merge_request_description`, `get_merge_request_note`
-   and documented offset fields until lossless complete content is available.
-5. `get_merge_request_workflow_snapshot` supplies body-free state/source/target/head;
-   use `get_merge_request` for missing metadata. `get_merge_request_changes` and all
-   discussions/reviews must be complete for review; truncation is not a complete diff.
+4. Lists (`list_issues`, `search_issues`, `list_pull_requests`, `list_label`,
+   `actions_list`, comment/review/file/commit pages) are discovery; the ready queue is
+   `list_issues(state="OPEN", labels=[<live triage label>])`. Follow `after`/
+   `pageInfo.endCursor` (cursor lists) or `page` until a page returns fewer than
+   `perPage` items (maximum 100). There is no `pagination.complete` flag, so record the
+   terminating page and preserve partiality on caps. `gh api --paginate --slurp` is the
+   pagination-robustness fallback. Prefer direct single-record reads for decisions. A
+   body cut short by client output limits is not lossless content: recover it with
+   `gh api` to a file.
+5. PR state, source, target and head come from a fresh `pull_request_read(method="get")`
+   or the body-free `gh pr view <n> -R b-milescu/skills --json number,state,isDraft,headRefName,headRefOid,baseRefName,mergeStateStatus,autoMergeRequest,closingIssuesReferences,author`,
+   which also supplies the queue, closing-reference and merge-state fields. Review
+   needs complete `get_files` (GitHub lists at most 3000 files and omits `patch` for
+   binary or oversized ones; a missing `patch` on anything but a pure rename, mode
+   change or empty file is incomplete evidence), `get_commits` (at most 250),
+   `get_review_comments`, `get_reviews` and `get_comments` pages; truncation is not a
+   complete diff.
 
 ## Snapshot and receipt evidence
 
-`get_merge_request_handoff_evidence` supplies workflow snapshot, author, changed
-paths, approvals and Lift/report/receipt claims. Verify its current SHA and native
-artifact author/custody/scope; extraction alone is not local receipt validity or
-execution proof. `get_pipeline` or `list_pipelines(sha=<candidate>)` and jobs provide
-advisory CI; status is attributable only to that SHA or proven integration commit.
-Failed/missing/pending CI does not affect eligibility, though native protection
-can refuse writes. `watch_pipeline` is advisory progress only, not a local gate.
+No single read returns handoff evidence. Compose the snapshot from fresh
+`pull_request_read` calls: `get` (author login and ID, state, draft, head SHA,
+description carrying the Review Packet and Reviewer Lift), `get_files`, `get_reviews`
+(Review Reports: reviewer, `commit_id`, body), `get_comments` (Gate Receipts and action
+notes: author, body) and `get_check_runs`. Extract Lift, report and receipt claims
+locally from those read-back bodies. Verify the current head SHA, each artifact's author
+(`user.login`, never a commit author) and that it belongs to this PR; the four
+head/author bindings stay claims until then. Extraction alone is not local receipt
+validity or execution proof.
+
+To materialize the reviewed commit for local checks, fetch `refs/pull/<n>/head` from the
+verified `origin`, require `FETCH_HEAD` to equal the reviewed SHA and add the detached
+worktree at that SHA; never an arbitrary `git pull`.
+
+Advisory CI is workflow `check`, job `check` (`.github/workflows/check.yml`). Read it
+with `pull_request_read(get_check_runs)`, or with `actions_list(list_workflow_runs)`
+(`resource_id="check.yml"`, `workflow_runs_filter` branch/event), `actions_get(get_workflow_run)`
+(`head_sha`, `status`, `conclusion`), `actions_list(list_workflow_jobs)` and
+`get_job_logs`; `gh run list --workflow check.yml --commit <sha> -R b-milescu/skills` is
+the SHA-filtered fallback. Attribute a status only to a run whose `head_sha` equals the
+candidate (a `pull_request` run tests GitHub's merge of the head into `main` but reports
+the PR head) or, after merge, to the `push` run on `main` whose `head_sha` is the merge
+commit. Record the Lift `CI pipeline` cell as
+`evidence=<run URL>; status=<conclusion or status>; commit=<head_sha>`. Failed/missing/
+pending CI does not affect eligibility, though native protection can refuse writes. A
+watcher (`gh run watch`, `gh pr checks --watch`) is advisory progress only, not a local
+gate.
 
 Resolve the installed gate helper to its actual filesystem path. Follow the
 [canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
@@ -81,94 +127,189 @@ selecting the recipe from the actual `Gate owner`:
   ```
 
   Builder `post-note` and parent-only binding flags, including `--review-packet`,
-  remain refused. Verify native `present_anchor` and `receipt_commit_eq_head`
-  independently; parent-only post-note validation is not builder proof.
+  remain refused. Verify `present_anchor` (the read-back comment body has the
+  standalone `gate_receipt:` anchor) and `receipt_commit_eq_head` (its
+  `checkout_commit` equals the fresh PR head) independently; parent-only post-note
+  validation is not builder proof.
 
 Receipt-independent `--mode lift-only --review-packet <packet>` checks required
 nonempty rows, unique markers and duplicate rows in either owner context. It is
 presence-only: it validates neither row values nor authority, execution or native
 identity, and replaces neither receipt validation nor native verification.
 
-Separately verify native extraction of exact `checkout_commit`, `command` and
-`result`, candidate binding and artifact author/custody/scope. Actual
-exact-candidate `npm run check` execution and original-log custody follow
-[Check Gate](check-gate.md); readable custody alone is not execution proof.
+GitHub has no native receipt extractor, so the read-back comment body is the
+extraction source and the local validator parses that same text. Separately verify
+exact `checkout_commit`, `command` and `result` as read back, candidate binding and
+artifact author/custody/scope (comment `user.login` equals the verified identity, on
+this PR). Actual exact-candidate `npm run check` execution and original-log custody
+follow [Check Gate](check-gate.md); readable custody alone is not execution proof.
 [Authored-source publication readback](#publish-one-artifact) is another required
-proof. Local validity, native extraction or a stored-body digest substitutes for
-none of these proofs.
+proof. Local validity, read-back extraction or a body digest substitutes for none of
+these proofs.
 
 ## Publish one artifact
 
-Run common no-echo text validation from the installed forge directory before native
-safe-write validation. Preserve authored UTF-8 source in a run file. GitLab strips
-exactly **one trailing LF** from note/description bodies; compare readback with
-source under only that normalization. `verify_merge_request_note_digest` describes
-stored-body equality, not authored-source equality. Recover the actual description
-or exact note with native GET and compare bytes to the source without printing it.
+Run common no-echo text validation from the installed forge directory before any
+write; GitHub adds no server-side body validation, so that check is the only text
+guard. Preserve authored UTF-8 source in a run file that ends without a trailing LF, so
+newline handling cannot cause a mismatch. GitHub bodies are capped at 65,536
+characters; a larger artifact is a transport blocker, never truncated or split.
+Readback must equal the source byte for byte: no GitHub normalization is documented for
+this repository, so none is tolerated. Recover the exact body with a native GET and
+compare it to the source without printing it:
 
-- Draft: push the source; `create_merge_request(project, source_branch,
-  target_branch, title, description, draft=true)` once. Description contains plain
-  `Closes #<issue_iid>`. Re-read MR state/source/target/head and complete description.
-- Description: `safe_update_merge_request_description` once; native metadata and
-  complete description readback must preserve Draft/ready state and candidate.
-- MR report/receipt/action note: `safe_create_merge_request_note` once; retain
-  returned note ID and use `get_merge_request_note` for exact source readback. A
-  Review Report is an MR note, never an issue note.
-- Issue note: `safe_create_issue_note` once then exact issue-note GET readback.
-- Issue: `create_issue` with freshly verified `expected_project_id`,
-  `expected_user_id`, exact existing label bindings and intended publication fields.
-  Mounted URL-free schema is required; old `expected_api_url` schema blocks before
-  POST. Bound connection owns destination; local IDs alone do not verify instance.
-- Assignee/labels: `update_issue` scoped fields; precompute non-overlapping add/remove
-  sets from exact live names and re-read final state. Setup never mutates live labels.
+```text
+gh api repos/b-milescu/skills/<resource> --template '{{.body}}' > <run-dir>/readback.md
+cmp <run-dir>/readback.md <run-dir>/source.md
+```
+
+`<resource>` is `issues/comments/<id>` (comment), `pulls/<n>/reviews/<id>` (review),
+`pulls/<n>` (PR description) or `issues/<n>` (issue). MCP reads of the same record serve
+discovery and metadata, not byte comparison; a `sha256` of the readback is only the same
+comparison, never a substitute for the source.
+
+- Draft: push the source, which must be ahead of `main` (GitHub refuses a PR without a
+  commit difference), then `create_pull_request` once with `head=<source_branch>`,
+  `base="main"`, title, body and `draft=true`. The description contains plain
+  `Closes #<issue_number>` outside code spans. Re-read PR state/draft/head/base and the
+  complete description.
+- Description: `update_pull_request` once with `pullNumber` and only `body`, so draft
+  state, title and base stay untouched; native metadata and complete description
+  readback must preserve Draft/ready state and candidate.
+- Review Report: `pull_request_review_write` once with `method="create"`,
+  `event="COMMENT"`, the report as `body` and `commitID=<reviewed SHA>`. `event` is
+  always set, because an event-less call leaves an unpublished pending review. Retain
+  the review ID (`pullrequestreview-<id>`) and read the exact review back
+  (`get_reviews`, then the byte comparison). A Review Report is a PR review, never a
+  comment on the linked issue.
+- Gate Receipt, Review Packet delta or action note: `add_issue_comment` once with the PR
+  number as `issue_number`; retain the returned comment ID (`issuecomment-<id>`) and read
+  it back. A comment has no title, so its first heading line is the note title.
+  Published artifacts are never repaired with `update_issue_comment`.
+- Issue note: `add_issue_comment` once with the issue number, then exact comment
+  readback.
+- Issue: `issue_write` with `method="create"`, title, body, labels and assignees, after
+  `get_me()` verifies identity and `get_label` verifies every label name exists. Local
+  numbers alone never verify scope.
+- Assignee, labels, body: `issue_write` with `method="update"`, `issue_number` and only the
+  scoped field. Assignees and labels **replace** the whole set: read the live set,
+  compute the complete final set (non-overlapping adds/removes), send it whole and
+  re-read the final state. A body update re-reads and byte-compares like any published
+  artifact. Setup never mutates live labels.
 
 Classify creation as verified-created, not-created, created-unverified or unknown.
-Known ID uses GET-only recovery. Unknown uses bounded native reconciliation, never
-repeat POST; ambiguous/absent matches require human decision. Do not silently fix
-lost bodies or mismatched submitted fields with another mutation.
+Known ID uses GET-only recovery. Unknown uses bounded native reconciliation (list the
+PR's comments/reviews or the issues by the verified author since the pre-write instant),
+never repeat the write; ambiguous/absent matches require human decision. Do not
+silently fix lost bodies or mismatched submitted fields with another mutation.
 
 ## Ready, approval and finish
 
 Run [common guard](../../forge/reference/common-guard.md) for exactly one action.
 Require candidate/Lift and exact-candidate Gate Receipt before ready/review and
-independent passing Review Report before approval/finish. Verify authority source,
-caller role/context and immediately-before-write identity. Same account may be an
-independent session; a builder cannot approve or finish its own change.
+independent passing Review Report before finish. Verify authority source, caller
+role/context and immediately-before-write identity. Same account may be an independent
+session; a builder cannot finish its own change. No GitHub tool combines these checks:
+immediately before the one mutation the actor reads `get_me()`, `pull_request_read(get)`
+(open, not draft, base `main`, recorded source branch, `head.sha` equal to the reviewed
+SHA, the Gate Receipt `checkout_commit` and the Review Report `commit_id`,
+`mergeable_state` not `dirty`) and the allocated issue, then reads back.
 
-- Ready: `mark_merge_request_ready(project, merge_request_iid, expected_sha)` after
-  fresh head and allocated open-item/source/closure checks. Re-read Draft false,
-  unchanged head and source-equal description. The quick-action pre/post sandwich
-  is observational, not an atomic expected-head guarantee.
-- Approval: `approve_merge_request(..., sha=<reviewed>, confirm=true)`; re-read
-  `get_merge_request_approvals`. Approval alone grants no finish authority.
-- Direct merge: `merge_merge_request(..., sha=<reviewed>, confirm=true)`.
-- Queue: `merge_merge_request(project, merge_request_iid, sha=<reviewed>,
-  auto_merge=true, should_remove_source_branch=true, confirm=true)` or the
-  authority-aware finish action below. Acceptance is queued, not merged.
-  Documented MCP robustness/CLI 405 gap fallback requires `glab mr merge --help`
-  and verified `--auto-merge --sha <reviewed> --remove-source-branch` support,
-  followed by native GET. Never issue unbound queueing.
-- Authority-aware finish: `finish_merge_request(project, merge_request_iid,
-  reviewed_sha, source_branch, target_branch, caller_role="authorized-parent",
-  authority="queue auto-merge", authority_source=<verified affirmative source>,
-  action="queue-auto-merge", should_remove_source_branch=true)`. Alternatives
-  `approval-only`/`direct-merge` require their own matching authority and role.
-  Independently verify native MR author and entry/pre-write caller identity;
-  those checks are mandatory even when tool schema omits caller/author IDs.
-  Native operation must provide the requested exact-head guarantee or refuse.
+- Ready: `update_pull_request` with `draft=false` or `gh pr ready <n> -R b-milescu/skills`
+  after fresh head and allocated open-item/source/closure checks. Neither takes an
+  expected head; re-read draft false, unchanged head and source-equal description. The
+  pre/post sandwich is observational, not an atomic expected-head guarantee.
+- Approval: unavailable. GitHub refuses `APPROVE` and `REQUEST_CHANGES` from a PR's
+  author and every role here is the one GitHub account, so no native approval exists
+  and `reviewDecision` is never an oracle; `main` protection requires none. The passing
+  Review Report, a `COMMENT` review bound to the reviewed commit, is the review gate
+  and carries the verdict in its body; `REQUEST_CHANGES` would need a reviewer account
+  other than the PR author. Record Approval action `not-approved` (parent-managed) or
+  `blocked: native approval unavailable` with Action blocker `permission-failure`; a
+  grant of `approval-only` is denied the same way.
+- Direct merge: `merge_pull_request` with `merge_method="merge"` and
+  `expectedHeadSha=<reviewed>`, never omitted. Where the finish also removes the source
+  branch, use the `gh` form below (the MCP merge has no branch delete); `-R` keeps gh
+  from touching local branches.
+- Queue: no MCP tool exists; use the `gh` form below after `gh pr merge --help` shows
+  those flags and `gh api repos/b-milescu/skills --jq .allow_auto_merge` is `true`.
+  Classify by native readback, never command output: an open PR with
+  `autoMergeRequest` is queued, not merged, and gh merges at once instead when the PR is
+  already mergeable. `--match-head-commit` binds the head when GitHub accepts the
+  request; GitHub documents cancelling a queued request only for a push by someone
+  without write access or a base-branch change, so a later writer push would still merge
+  once requirements pass. Re-read head and `autoMergeRequest` right after acceptance and
+  compare the merge commit's parent after merge
+  ([post-merge](#read-only-post-merge-and-cleanup)). Never issue unbound queueing.
 
-Before finish re-read the recorded allocated **open** issue and exact MR/source/
-item relationship, not merely an item inferred from branch text. Plain
-`validate_closes_keyword` validates intended syntax; native `closes_issues`
-preview checks unintended closures (code spans may appear in preview); observed
-post-merge issue state is the third oracle. Keep these distinct.
+```text
+gh pr merge <n> -R b-milescu/skills --merge --match-head-commit <reviewed> --delete-branch
+gh pr merge <n> -R b-milescu/skills --auto --merge --match-head-commit <reviewed>
+```
+
+Native refusals are reported, never bypassed: no `--admin`, ruleset or protection edit,
+or direct push to `main`. `main` protection does not enforce admins, so an unrefused
+call proves nothing about eligibility; the guard above does. Handoff tokens: a moved
+head (REST 409 or GitHub's "Head branch was modified" refusal) is `changed-head-sha`;
+`mergeable_state` `dirty` is `merge-conflict`; an action GitHub forbids this account is
+`permission-failure`; a missing exact-head binding is `sha-bound-action-unsupported`;
+any other hold (required check `check`, draft, repository auto-merge disabled) is `other`
+with its one-line reason.
+
+Before finish re-read the recorded allocated **open** issue and exact PR/source/item
+relationship, not merely an item inferred from branch text. The plain
+`Closes #<issue_number>` in the PR description validates intended syntax; native
+`closingIssuesReferences` (`gh pr view <n> -R b-milescu/skills --json closingIssuesReferences`)
+and the issue's `closed_by_pull_requests` (`issue_read(get)`) check unintended closures,
+and the PR's commit messages and any merge `commit_message` must carry no other closing
+keyword because GitHub honours those on merge to `main`; observed post-merge issue state
+is the third oracle. Keep these distinct.
 
 ## Read-only post-merge and cleanup
 
-`get_post_merge_snapshot(project, merge_request_iid, reviewed_sha)` verifies merged
-state, merge/squash/reviewed containment and linked issue/default branch. Queue
-acceptance is not merge. Open issue becomes `issue_closure_pending`, never a
-verifier force-close. Observe result-commit CI independently. Cleanup requires
-explicit parent authority, session-owned source/worktree, clean state and proven
-containment; retain dirty/foreign/unknown/unmerged/unverified worktrees. Native
-`delete_branch` is a separate guarded authorized mutation, never a verifier read.
+No GitHub tool returns a post-merge snapshot; compose it from read-only calls. Queue
+acceptance is not merge.
+
+- PR: `pull_request_read(get)` reports `merged` true, state closed and base `main`; the
+  merge commit is `mergeCommit.oid` from
+  `gh pr view <n> -R b-milescu/skills --json state,mergeCommit,mergedAt`. An open PR with
+  `autoMergeRequest` is still queued.
+- Reviewed commit: the merge commit's parents from `get_commit(sha=<merge commit>)`, or
+  `gh api repos/b-milescu/skills/commits/<merge commit> --jq '[.parents[].sha]'` when the
+  MCP result omits them. Merge method `merge` makes the second parent the merged head,
+  and it must equal the reviewed SHA. Any other head is a `changed-head-sha` evidence
+  gap, reported and never repaired.
+- Containment: `gh api repos/b-milescu/skills/compare/<reviewed_sha>...main --jq .status`
+  is `ahead` or `identical`; `list_commits(sha="main")` pages cross-check recent merges.
+- Linked issue: `issue_read(get)` shows closed. An open issue becomes
+  `issue_closure_pending`, never a verifier force-close.
+- Result-commit CI: the `push` run of workflow `check` on `main` whose `head_sha` is the
+  merge commit, observed independently and advisory.
+- Source ref: `gh api repos/b-milescu/skills/git/ref/heads/<source_branch>` returning 404
+  means removed; a present branch is reported, not deleted.
+
+Cleanup requires explicit parent authority, session-owned source/worktree, clean state
+and proven containment; retain dirty/foreign/unknown/unmerged/unverified worktrees. The
+repository deletes merged source branches (verified by the ref read, not assumed). A
+branch still present after proven containment is deleted only by a separate guarded
+authorized mutation, never by a verifier read:
+
+```text
+gh api -X DELETE repos/b-milescu/skills/git/refs/heads/<source_branch>
+```
+
+## Guards without a GitHub counterpart
+
+| Guard | GitHub replacement or outcome |
+| --- | --- |
+| Server-side body validation | Dropped; the forge common text validation is the only text guard, and the 65,536-character cap is a transport blocker. |
+| Stored-body digest | Replaced by byte comparison of the GET readback with the authored source. |
+| Closing-keyword validator | Replaced by reading the PR description plus `closingIssuesReferences` and `closed_by_pull_requests`. |
+| Workflow snapshot and handoff evidence | Replaced by the composed fresh reads and local claim extraction in [snapshot](#snapshot-and-receipt-evidence). |
+| Native receipt extraction | Replaced by local checks on the read-back comment and the fresh head; see the receipt proofs above. |
+| Reviewer Lift block validation | `--mode lift-only` of the local gate helper, unchanged. |
+| Approval and authority-aware finish | Approval is unavailable; the actor runs the ordered common guard with fresh reads and one head-bound merge call. |
+| Expected-head ready | Unsupported; ready is observational pre/post reads only. |
+| Exact-head queue | Head bound at acceptance only; compensated by the post-acceptance re-read and the post-merge parent comparison. |
+| Post-merge snapshot | Replaced by the composed read-only calls above. |
+| Project and instance ID bindings | Replaced by the explicit `owner`/`repo` on every call and the `get_me()` identity. |

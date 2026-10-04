@@ -1,7 +1,7 @@
 ---
 name: mr-builder
-description: Project change-request builder for agents/skills; child-builder authority remains in start-build.
-tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__gitlab-mcp__*, mcp__codebase-memory-mcp__*"
+description: Project change-request builder for b-milescu/skills; child-builder authority remains in start-build.
+tools: "Bash, Read, Edit, Write, Grep, Glob, Skill, TodoWrite, AskUserQuestion, mcp__github__*, mcp__codebase-memory-mcp__*"
 skills: start-build, forge
 model: inherit
 color: blue

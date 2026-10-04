@@ -1,7 +1,7 @@
 ---
 name: mr-reviewer-final
-description: Mandatory independent final project change-request reviewer for agents/skills.
-tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__gitlab_mcp_*, mcp__codebase_memory_mcp_*"
+description: Mandatory independent final project change-request reviewer for b-milescu/skills.
+tools: "read, grep, glob, bash, edit, write, todo, irc, mcp__github_*, mcp__codebase_memory_mcp_*"
 autoload-skills: start-review, forge
 ---
 

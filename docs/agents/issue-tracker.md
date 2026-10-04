@@ -1,6 +1,6 @@
-# Issue tracker: GitLab
+# Issue tracker: GitHub
 
-Issues, PRDs, and merge requests for this repo live on the self-hosted GitLab instance at `gitlab.example.com` in project `agents/skills` (`https://gitlab.example.com/agents/skills`).
+Issues, PRDs, and pull requests for this repo live on GitHub in `b-milescu/skills` (`https://github.com/b-milescu/skills`; issues at `https://github.com/b-milescu/skills/issues`). The GitLab project this repo moved from no longer exists: its issue and merge request numbers are historical and are written `gitlab#N` and `gitlab!N` in prose, never as GitHub numbers.
 
 Use `/forge` from this verified target clone with the selected
 [project-native recipes](native-integration.md). These are this project's facts,
@@ -8,13 +8,13 @@ not an installed shared profile or a default for foreign targets.
 
 ## Repo conventions
 
-- GitLab issues are the tracker items for tasks and PRDs.
-- GitLab merge requests are the review vehicle for code, docs, and workflow changes.
-- Comments are native notes; the [project integration](native-integration.md) owns exact tools, complete reads and publication readback.
+- GitHub issues are the tracker items for tasks and PRDs.
+- GitHub pull requests are the review vehicle for code, docs, and workflow changes.
+- Comments are native issue and PR comments (plus PR reviews); the [project integration](native-integration.md) owns exact tools, complete reads and publication readback.
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
-- Follow native cursor recovery for complete discovery; lists are not single-item guard evidence.
-- Verify intended repository against named fetch/push/fork configuration and native project metadata; never infer work-item scope solely from code-host branding.
-- Branch naming is project policy, not a GitLab schema rename. This repo declares
+- Follow native pagination for complete discovery; lists are not single-item guard evidence.
+- Verify intended repository against named fetch/push/fork configuration and native repository metadata; never infer work-item scope solely from code-host branding.
+- Branch naming is project policy, not a GitHub schema rename. This repo declares
   it in [`docs/agents/dev-workflows.md`](dev-workflows.md#branch-naming) as
   `project_profile.branch_naming`; shared delivery fields remain
   `change_request.source` and `change_request.target`.
@@ -45,7 +45,7 @@ target project's rulebook documents such a convention) conditionally requires.
 
 ## When a skill says "publish to the issue tracker"
 
-Create a native issue in this verified project using `/forge publish` and the [project integration](native-integration.md). Approved plans/specs/PRDs use `/plan-to-issues`.
+Create a native issue in this verified repository using `/forge publish` and the [project integration](native-integration.md). Approved plans/specs/PRDs use `/plan-to-issues`.
 
 ## When a skill says "fetch the relevant ticket"
 

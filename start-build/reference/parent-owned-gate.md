@@ -117,7 +117,7 @@ candidate binding; and post-note validation of that same receipt and current
 Lift. Anchor recognition or SHA equality alone proves none of receipt validity,
 execution, an unchanged checkout, authorship, independent review, or authority.
 
-Retained local-log custody (issue #490): when a `local-gate` evidence row's
+Retained local-log custody (issue gitlab#490): when a `local-gate` evidence row's
 `source` names the retained local log by absolute filesystem path, the
 validator requires that exact file to be readable — at pre-post validation,
 before any publication or ready action, and again at post-note validation.

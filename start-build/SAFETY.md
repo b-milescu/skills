@@ -71,7 +71,7 @@ Valid regression evidence includes:
 - Prefer typed/domain-specific errors at library boundaries; CLIs translate to exit codes/messages.
 - Keep stdout contracts stable when other code parses CLI output.
 - Public modules/classes/functions get docstrings; safety invariants get why-comments at the seam.
-- **Simplest version of your own change.** Write the most direct form of the code this issue adds or changes — not merely one that passes. During the green-refactor step, collapse needless branches, pass-through wrappers, speculative abstraction, or `any`/cast-heavy boundaries **within the lines your diff introduces or touches**, before marking ready. This is a within-diff bar, never a license to straighten adjacent code or push an untouched file past its current size; when in doubt whether a cleanup is your diff or the surrounding code, treat it as surrounding code and open a follow-up (see SKILL.md "Keep scope tight; file follow-up GitLab issues instead of drive-by refactors").
+- **Simplest version of your own change.** Write the most direct form of the code this issue adds or changes — not merely one that passes. During the green-refactor step, collapse needless branches, pass-through wrappers, speculative abstraction, or `any`/cast-heavy boundaries **within the lines your diff introduces or touches**, before marking ready. This is a within-diff bar, never a license to straighten adjacent code or push an untouched file past its current size; when in doubt whether a cleanup is your diff or the surrounding code, treat it as surrounding code and open a follow-up (see SKILL.md "Keep scope tight and prefer the smallest direct change").
 
 ## Anti-patterns
 

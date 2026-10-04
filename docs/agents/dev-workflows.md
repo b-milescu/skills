@@ -1,6 +1,6 @@
 # Dev Workflows
 
-This repo binds the shared dev workflows to GitLab through `/forge preflight`.
+This repo binds the shared dev workflows to GitHub through `/forge preflight`.
 
 ## Skills
 
@@ -17,7 +17,7 @@ This repo binds the shared dev workflows to GitLab through `/forge preflight`.
 | Claude (`agents/claude/*.md`) | `skills:` frontmatter preloads bodies; it is not an invocation allowlist. | Invoke additional eligible installed skills via the `Skill` tool at their entry. | "Invoke it via the `Skill` tool" / "invoke `<skill>` via the Skill tool". |
 | OMP (`agents/*.md`, excluding README) | `autoload-skills:` frontmatter preloads bodies at session start, separately from inherited discovery inventory. | The OMP skill-load mechanism enters preloads; eligible unpreloaded entries remain available through runtime entry resolution (`skill://<name>`). | "Invoke it through the OMP skill-load mechanism (its `autoload-skills` frontmatter)" for preloads; "invoke its entry through the OMP skill-load mechanism" on demand. |
 
-Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch prompt (or agent body) names the skill and instructs invocation; per the [#320 minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Reserve the word "load" for reference reads and other file/context loads, never for skill activation.
+Both dialects enter a skill at its `SKILL.md` start, not mid-policy. A launch prompt (or agent body) names the skill and instructs invocation; per the [gitlab#320 minimal-prompt exclusion rule](../../start-build/reference/parent-orchestrator.md#minimal-reviewer-launch-prompt), it must not name the skill's internal reference files, because a subagent could then satisfy the prompt with a raw reference read that skips the entry procedure. Reserve the word "load" for reference reads and other file/context loads, never for skill activation.
 
 Preload, discovery eligibility, Skill Invocation and Reference Read are distinct:
 an available/resolvable entry is not invocation permission. Check authoritative
@@ -37,7 +37,7 @@ policy; coordinators leave that choice to each actor.
 - `skill://start-build/templates/delivery-schema.md`
 - `skill://setup-dev-skills/reference/project-profile-facts.json`
 
-## Default MR routes
+## Default PR routes
 
 `/issue-delivery-loop` launches `mr-builder` and independent `mr-reviewer-final`
 using the active runtime's effective same-name project declarations when present,
@@ -53,14 +53,14 @@ generic fallback, shim, old filename, or cross-runtime substitute is allowed.
 
 Shared workflow records are provider-neutral: `provider`, `repository`, `issue`,
 `change_request`, `commit`, and `ci`. Their identifiers and locators are opaque
-outside the selected provider. This repo's profile binds them to GitLab and
+outside the selected provider. This repo's profile binds them to GitHub and
 declares policy hooks through
 [`skill://start-build/templates/delivery-schema.md`](skill://start-build/templates/delivery-schema.md).
 
 This repo's confirmed profile is declared here, not in installed shared facts.
 `provider.reference: docs/agents/native-integration.md` resolves from the invoked
-target clone. Code/work-item/CI scopes are this repository's GitLab instance and
-agents/skills repository, verified through that document's native preflight.
+target clone. Code/work-item/CI scopes are this repository's GitHub repository
+`b-milescu/skills`, verified through that document's native preflight.
 Installed `docs/` aliases retain this source ownership and expose native facts;
 they never supply foreign targets with defaults.
 
@@ -71,10 +71,10 @@ project_profile:
   profile_id: agents-skills
   profile_path: docs/agents/dev-workflows.md#project-profile-hooks
   provider:
-    name: gitlab-nja
+    name: github
     reference: docs/agents/native-integration.md
   tracker:
-    scope: https://gitlab.example.com/agents/skills
+    scope: https://github.com/b-milescu/skills
     reference: docs/agents/issue-tracker.md
   agent_setup_docs:
     root: docs/agents
@@ -194,10 +194,15 @@ reference; the shared schema uses `change_request.source` and `.target`.
 ### Review approval / merge policy
 
 Reviewer approval is allowed by default after a passing review unless an
-explicit human/parent instruction, MR or issue note, or project rulebook section
+explicit human/parent instruction, PR or issue comment, or project rulebook section
 restricts it. Use this section, or
 `skill://start-review/REVIEW-FLOW.md#approval-authority-policy`, as the stable repo
 policy source for `Approval authority: default-after-pass`.
+
+On GitHub the PR author cannot approve its own PR and every role here acts as one
+account, so native approval is unavailable;
+[native integration](native-integration.md#ready-approval-and-finish) records the
+passing Review Report as the review gate.
 
 Merge, auto-merge, release, deploy, close, and source-branch cleanup authority
 remain separate. They require an explicit `Merge authority` value and
@@ -210,7 +215,7 @@ Parent-managed dev-flow finish ownership is explicit: `Finish owner: parent`. In
 
 This skills repo has no product deploy path. Release actions for skill packages
 or installed skill surfaces require explicit human or workflow authority and must
-cite the authority source in the MR. This release/deploy policy does not grant
+cite the authority source in the PR. This release/deploy policy does not grant
 merge, auto-merge, release, deploy, or operator authority by itself.
 
 ### Auxiliary project-index policy

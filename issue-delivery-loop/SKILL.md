@@ -82,7 +82,7 @@ Default: fan out every provably decoupled subset.
 9. Teardown only after every change is verified merged or blocked. Fetch and
     fast-forward default first; remove only clean worktrees/refs/branches whose
     provider result-commit and default-branch safety checks pass. Otherwise
-    report `cleanup_pending`. This preserves #380 coordinator-isolation and
+    report `cleanup_pending`. This preserves gitlab#380 coordinator-isolation and
     cleanup ordering.
 
 ## Metrics

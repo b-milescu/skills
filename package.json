@@ -1,8 +1,9 @@
 {
-  "name": "@agents/skills",
+  "name": "@b-milescu/skills",
   "version": "0.0.0",
   "private": true,
-  "description": "Agent Skill repository for the gitlab.example.com/agents/skills project.",
+  "description": "Agent Skill repository for the github.com/b-milescu/skills project.",
+  "license": "MIT",
   "scripts": {
     "check": "scripts/check.sh",
     "check:agents-schema": "node scripts/check-agent-schemas.mjs",

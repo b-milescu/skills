@@ -103,7 +103,7 @@ for (const { name, entry } of routes) {
   assert(agent.autoloadSkills.includes(entry) && agent.autoloadSkills.includes('forge'), `${name}: canonical entry preload absent`);
   assert(!agent.autoloadSkills.includes('tdd'), `${name}: retired unconditional TDD preload`);
   if (project) {
-    assert(agent.tools.includes('mcp__gitlab_mcp_*') && agent.tools.includes('mcp__codebase_memory_mcp_*'), `${name}: project-native selection missing`);
+    assert(agent.tools.includes('mcp__github_*') && agent.tools.includes('mcp__codebase_memory_mcp_*'), `${name}: project-native selection missing`);
   } else {
     assert(!agent.tools.some(tool => tool.startsWith('mcp')), `${name}: shared route leaks native selection`);
   }

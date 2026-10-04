@@ -1,6 +1,6 @@
-# agents/skills
+# b-milescu/skills
 
-Repository of agent skills for the canonical GitLab project `gitlab.example.com/agents/skills`. Native Claude and OMP marketplaces distribute the reusable skills and runtime-specific agents.
+Repository of agent skills for the canonical GitHub project `github.com/b-milescu/skills`. Native Claude and OMP marketplaces distribute the reusable skills and runtime-specific agents.
 
 ## Agent skills
 

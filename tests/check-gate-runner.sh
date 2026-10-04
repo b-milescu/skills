@@ -2,8 +2,8 @@
 # Focus: `scripts/check.sh` runs `node --test 'tests/*.mjs'` (quoted: an empty
 # match never falls back to Node's default patterns) and every `tests/*.sh`,
 # keeps going after one fails, ends with the failing-set list and a non-zero
-# exit, and still prints `check: PASS` only on a green run (issues #493, #498,
-# #500).
+# exit, and still prints `check: PASS` only on a green run (issues gitlab#493,
+# gitlab#498, gitlab#500).
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -43,7 +43,7 @@ assert_path_readable "$green/ran-z-pass-mjs" "tests/*.mjs file to run under node
 
 # Empty glob: no top-level tests/*.mjs plus a decoy matching Node's default
 # test patterns. The quoted glob runs 0 tests; unquoted, nullglob drops the
-# argument and bare `node --test` would run the decoy (issue #500).
+# argument and bare `node --test` would run the decoy (issue gitlab#500).
 empty="$WORK/empty"
 make_repo "$empty"
 rm "$empty/tests/z-pass.mjs"

@@ -1,5 +1,5 @@
 {
-  "name": "nja-skills",
-  "owner": { "name": "agents/skills" },
+  "name": "skills",
+  "owner": { "name": "b-milescu" },
   "plugins": [{ "name": "skills", "source": "./" }]
 }

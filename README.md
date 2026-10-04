@@ -35,13 +35,12 @@ which are harness built-ins rather than installable skill dependencies.
 
 ## Check before install or review
 
-Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitLab CI all declare the Node 22 major line. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and MR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
+Use Node.js 22.x before installing dependencies; `.nvmrc`, `package.json` `engines.node`, and GitHub Actions (via `.nvmrc`) all declare the Node 22 major line. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and PR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
 
 ## Install on a new machine
 
-The public Git source is `https://gitlab.example.com/agents/skills.git`.
-Acquisition requires Git, reachable DNS and trusted TLS for this origin; public
-project access does not imply public-internet reachability. Native clients own
+The public Git source is <https://github.com/b-milescu/skills> (shorthand
+`b-milescu/skills`). Acquisition requires Git. Native clients own
 installation, updates and removal. No npm executable or custom installer is
 published, and no MCP catalogue/configuration is automatically installed.
 Installed Node helpers require Node.js 22.x. Keep each native installation's
@@ -50,11 +49,11 @@ complete resource tree; copying standalone helpers is not supported.
 ### Claude Code
 
 ```sh
-claude plugin marketplace add https://gitlab.example.com/agents/skills.git
-claude plugin install skills@nja-skills --scope user
-claude plugin marketplace update nja-skills
-claude plugin update skills@nja-skills --scope user
-claude plugin uninstall skills@nja-skills --scope user
+claude plugin marketplace add b-milescu/skills
+claude plugin install skills@skills --scope user
+claude plugin marketplace update skills
+claude plugin update skills@skills --scope user
+claude plugin uninstall skills@skills --scope user
 ```
 
 The plugin exposes all eight skills and only the two reusable Claude agent
@@ -67,11 +66,11 @@ not, so it is not equivalent installation/dependency proof.
 ### OMP
 
 ```sh
-omp plugin marketplace add https://gitlab.example.com/agents/skills.git
-omp plugin install skills@nja-skills --scope user
-omp plugin marketplace update nja-skills
-omp plugin upgrade skills@nja-skills --scope user
-omp plugin uninstall skills@nja-skills --scope user
+omp plugin marketplace add b-milescu/skills
+omp plugin install skills@skills --scope user
+omp plugin marketplace update skills
+omp plugin upgrade skills@skills --scope user
+omp plugin uninstall skills@skills --scope user
 ```
 
 OMP uses the same marketplace and the OMP dialect marker. Its reusable agent
@@ -97,3 +96,7 @@ Start a fresh runtime session after installation or route/frontmatter updates.
 [Check Gate](docs/agents/check-gate.md#native-install-smoke-requirement) owns
 isolated installation/discovery/lifecycle proof; discovery metadata alone does
 not prove live model routing, authentication or hard tool confinement.
+
+## License
+
+Released under the [MIT license](LICENSE).

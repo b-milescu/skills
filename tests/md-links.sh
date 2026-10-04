@@ -13,9 +13,9 @@ cat > "$TMPDIR/docs/index.md" <<'MD'
 
 See [details](details.md#setup-flow), [local heading](#main-doc), and ![logo](../images/logo.png).
 
-Allowed external: [GitLab](https://gitlab.example.com/agents/skills/-/issues/52).
+Allowed external: [GitHub](https://github.com/b-milescu/skills/issues/52).
 Angle local: [details angle](<details.md#setup-flow>).
-Angle external: [GitLab angle](<https://gitlab.example.com/agents/skills/-/issues/52>).
+Angle external: [GitHub angle](<https://github.com/b-milescu/skills/issues/52>).
 Malformed nested angle: [nested](<<details.md#setup-flow>>).
 Placeholder destination: [skill root]({skill-root}/README.md).
 Blocked external: [example](https://example.com/outside-policy).
@@ -58,7 +58,7 @@ for expected in \
   fi
 done
 
-if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* || "$output" == *"<details.md"* || "$output" == *"<https://gitlab.example.com"* || "$output" == *"{skill-root}/README.md"* || "$output" == *"skill://start-build/docs/decoupling-contract.md"* ]]; then
+if [[ "$output" == *"logo.png"* || "$output" == *"setup-flow"* || "$output" == *"main-doc"* || "$output" == *"<details.md"* || "$output" == *"<https://github.com"* || "$output" == *"{skill-root}/README.md"* || "$output" == *"skill://start-build/docs/decoupling-contract.md"* ]]; then
   echo "valid file/image/anchor was reported as broken" >&2
   echo "--- output ---" >&2
   printf '%s\n' "$output" >&2

@@ -6,7 +6,7 @@ const postFlags = ["--review-packet", "--gate-receipt-locator", "--gate-policy-r
 const allowedFlags = ["--mode", "--owner", ...commonFlags, ...postFlags];
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 // Preflight command allowlist: the canonical form plus the strictly stronger
-// untracked-files=all form, which also fails on untracked residue (issue #449).
+// untracked-files=all form, which also fails on untracked residue (issue gitlab#449).
 const cleanStatusCommands = new Set(["git status --porcelain", "git status --porcelain --untracked-files=all"]);
 
 function fail(message) {
@@ -43,7 +43,7 @@ function parseArgs(argv) {
     fail("parent-owned binding flags are invalid in builder mode");
   }
   // Pre-post may lint the candidate Lift (--review-packet); the receipt pointer
-  // and policy binding exist only after the note is posted (issue #503).
+  // and policy binding exist only after the note is posted (issue gitlab#503).
   if (owner === "parent" && mode === "pre-post" && ["--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) {
     fail("--gate-receipt-locator and --gate-policy-ref are post-note flags, invalid in pre-post mode");
   }
@@ -108,7 +108,7 @@ function validateReceipt(body, expected) {
   for (const [field, value] of Object.entries(exact)) {
     if (receipt[field] !== value) fail(`invalid gate_receipt.${field}`);
   }
-  // A re-gate of an already-ready change request truthfully records "ready" (issue #449).
+  // A re-gate of an already-ready change request truthfully records "ready" (issue gitlab#449).
   if (receipt.status_before !== "draft" && receipt.status_before !== "ready") fail("invalid gate_receipt.status_before");
   if (Object.keys(receipt).some((field) => /waiver/i.test(field))) fail("Gate Receipt cannot waive tracked-file changes");
 
@@ -137,7 +137,7 @@ function validateReceipt(body, expected) {
     if (!/^tier-[12]$/.test(row.tier)) fail("invalid evidence tier");
     if (row.kind === "local-gate") {
       hasLocalGate = true;
-      // Issue #490: refuse to publish a receipt claiming a retained local log
+      // Issue gitlab#490: refuse to publish a receipt claiming a retained local log
       // that is not readable. Native/remote locators (scheme://) keep their
       // documented behavior and are never opened as local paths.
       if (!/[a-z][a-z0-9+.-]*:\/\//i.test(row.source) && isAbsolutePortable(row.source)) {
@@ -243,7 +243,7 @@ function opaque(value) {
 const liftValueForms = [
   ["Review gate", (v) => /^(?:mandatory|bypassed \(human override\))$/.test(v), "`mandatory` or `bypassed (human override)`"],
   ["Transport", opaque, "identified transport evidence (required; no default)"],
-  // Post-note mode validates a parent-owned Lift, so the row leads with `parent` (#502 C-1).
+  // Post-note mode validates a parent-owned Lift, so the row leads with `parent` (gitlab#502 C-1).
   ["Gate owner", (v) => /^parent(?:$|[\s.,;:(—–])/.test(v), "`parent`, optionally followed by the ownership-contract annotation"],
   ["Gate coverage", (v) => v === "exact-candidate-local", "`exact-candidate-local`"],
   ["CI pipeline", (v) => {
@@ -255,7 +255,7 @@ const liftValueForms = [
     "`none`, `[]`, or comma-separated bare tokens from external-system, credentials, state, migration, gates, locks, deploy, wire-protocol, other (optional parenthetical)"],
   // Entries split only at a comma that starts a new `surface:evidence` entry
   // (no space after the colon; a backticked one is split off and refused), so
-  // an `N/A — <reason>` may itself contain commas and `, word: text` (#502 C-2).
+  // an `N/A — <reason>` may itself contain commas and `, word: text` (gitlab#502 C-2).
   ["Acceptance surfaces", (v) => /^(?:none|\[\])$/.test(v) || v.split(/,(?=\s*`?[^\s:,`]+:\S)/).every((entry) => acceptanceEntry.test(entry.trim())),
     "`none`, `[]`, or comma-separated bare `surface:evidence` entries with evidence test, smoke, docs-read, ci, or `N/A — <reason>`"],
   ["Decoupling proof", (v) => /^single (?:MR|PR|change request)$/.test(v) || /^co-running [^;]+;\s*\S.+$/.test(v) && opaque(v.slice(11).split(";")[0]),
@@ -308,7 +308,7 @@ function liftStructure(body) {
 // with it (a bare or annotated slot such as `pending — parent-owned`), or names
 // the gate, its command, a rerun, a receipt, a head, a rebind, a SHA/commit
 // (word or token), or an arrow; prose such as "the bound-or-pending wording"
-// is not a pointer (issues #503, #505).
+// is not a pointer (issues gitlab#503, gitlab#505).
 const deltaPointer = /\bgate\b|\bre-?run(?:s|n?ing)?\b|\breceipts?\b|\bshas?\b|\bcommits?\b|\bheads?\b|\bre-?bind(?:ing)?\b|\bre-?bound\b|→|->/i;
 
 function pendingPointer(clause, gateCommand) {

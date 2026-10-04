@@ -46,7 +46,7 @@ list_executed_test_scripts() {
   # Discover the same surface the scripts/check.sh test loop actually executes: the
   # top-level tests/*.sh disk glob. Keying on disk presence (not git ls-files)
   # catches a new test that is present but unregistered before it is committed,
-  # so the local gate fails identically to CI (issue #326). tests/lib/** helper
+  # so the local gate fails identically to CI (issue gitlab#326). tests/lib/** helper
   # modules stay excluded because the glob is non-recursive and top-level only.
   local repo="$1"
   (
@@ -86,7 +86,7 @@ check_inventory() {
   fi
 
   # docs/agents/check-gate.md keeps no per-script prose; it delegates coverage
-  # to a `# Focus:` header directly below each shebang (issue #463). Enforce
+  # to a `# Focus:` header directly below each shebang (issue gitlab#463). Enforce
   # that placement and non-empty text so the convention is a check, not trust.
   local headerless_file="$TMPDIR/headerless.$(basename "$repo").txt"
   local path
@@ -160,7 +160,7 @@ make_fixture_repo "$untracked_repo" tests/actual.sh
 write_check_gate_doc "$untracked_repo" tests/actual.sh
 # A new top-level test present on disk but neither tracked nor listed in the
 # inventory: this is exactly what the scripts/check.sh test loop would execute, so the
-# inventory check must flag it before commit (it is the bug under issue #326).
+# inventory check must flag it before commit (it is the bug under issue gitlab#326).
 printf '#!/usr/bin/env bash\n' > "$untracked_repo/tests/untracked-present.sh"
 set +e
 untracked_output="$(check_inventory "$untracked_repo" 2>&1)"
@@ -175,7 +175,7 @@ fi
 
 # In-sync inventories still fail when a tracked top-level script does not state
 # its own coverage: docs/agents/check-gate.md delegates the per-script
-# description to a `# Focus:` header directly below the shebang (issue #463),
+# description to a `# Focus:` header directly below the shebang (issue gitlab#463),
 # so the gate has to enforce that convention rather than trust it.
 header_missing_repo="$TMPDIR/header-missing"
 mkdir -p "$header_missing_repo"

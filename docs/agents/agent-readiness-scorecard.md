@@ -24,7 +24,7 @@ the missing context is resolved.
 | Current-state / repro evidence | Bugs name reproduction evidence; enhancements/docs name the current baseline or gap; non-applicable cases say why. |
 | Test strategy | Expected targeted checks and the full local Check Gate are named, including docs/link/read/grep evidence when no executable behavior changes. |
 | Risk surface | Affected surfaces are explicit: docs, CLI, Dev Workflow, state, migration, external integration, credentials, deploy, or other. |
-| Dependencies | Blockers, sequencing constraints, and related issues/MRs are listed, or `None` is stated. |
+| Dependencies | Blockers, sequencing constraints, and related issues/change requests are listed, or `None` is stated. |
 | Unknowns | Open questions and human decisions are listed; AFK issues have `None` or an explicit maintainer waiver. |
 | AFK safety | The issue explains why an agent can proceed without new human decisions or live product/runtime/operator mutations. |
-| Reviewer focus | The expected hardest review area is named so the reviewer can compare the MR against the readiness contract. |
+| Reviewer focus | The expected hardest review area is named so the reviewer can compare the change request against the readiness contract. |

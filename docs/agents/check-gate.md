@@ -4,11 +4,11 @@ Local commands agents should run before claiming a change is ready in this repo.
 
 ## Full local gate
 
-Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitLab CI `node:22` image. `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order. Its Node step, `node --test 'tests/*.mjs'`, is the native test framework for JavaScript tests: every top-level `tests/*.mjs` file runs in parallel under Node's built-in runner, so a new `.mjs` test is gated by adding the file, with no wrapper script.
+Run the local gate with Node.js 22.x, matching `.nvmrc`, `package.json` `engines.node`, and the GitHub Actions `check` job (Node from `.nvmrc`). `npm run check` is the canonical full Check Gate for this repo. It delegates to the read-only shell wrapper at `scripts/check.sh`, which owns the checks it runs and their order. Its Node step, `node --test 'tests/*.mjs'`, is the native test framework for JavaScript tests: every top-level `tests/*.mjs` file runs in parallel under Node's built-in runner, so a new `.mjs` test is gated by adding the file, with no wrapper script.
 
 **Fresh checkout or worktree bootstrap:** A fresh checkout or new worktree must bootstrap before running the gate. Switch to Node 22 per `.nvmrc` (e.g. `nvm use 22`), then run `npm ci` to install dependencies from `package-lock.json`, then run `npm run check`. Skipping either bootstrap step produces spurious failures (wrong Node version or missing `node_modules`).
 
-Use `Local gate: PASS — npm run check` in MR Review Packets when it passes.
+Use `Local gate: PASS — npm run check` in PR Review Packets when it passes.
 
 For parent-owned gate selection, this policy and the bootstrap route above
 already support an exact-candidate `npm run check` receipt. A fresh worktree
@@ -36,7 +36,7 @@ the [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 ## Gate coverage for ready handoff
 
 This repo's `Gate coverage` is `exact-candidate-local`. `npm run check` must pass
-on the exact MR head SHA; in parent-owned mode the durable Gate Receipt records
+on the exact PR head SHA; in parent-owned mode the durable Gate Receipt records
 that command, candidate, and PASS result. This singular local gate is the
 required quality evidence for ready, review, approval, and finish.
 
@@ -45,8 +45,9 @@ parity signal, not another delivery gate. Record its locator, status, and SHA
 when available, and attribute the status only when its SHA matches the reviewed
 candidate or provider-proven integration commit. Pending, failed, canceled,
 skipped, missing, stale, wrong-SHA, or unavailable CI never changes verdict or
-action eligibility. Native GitLab protection may still refuse a merge; report
-that provider outcome and never bypass it.
+action eligibility. Native GitHub branch protection on `main` (pull request
+required, `check` status required, force-push and deletion blocked) may still
+refuse a merge; report that provider outcome and never bypass it.
 
 ## Executable-bit policy
 
@@ -88,10 +89,10 @@ Each script states its own coverage in a `# Focus:` header comment directly belo
 
 ## CI parity
 
-`.gitlab-ci.yml` mirrors the local Check Gate instead of re-encoding individual checks in CI:
+`.github/workflows/check.yml` mirrors the local Check Gate instead of re-encoding individual checks in CI:
 
 - The repo-local runtime contract is Node.js 22.x (`.nvmrc` and `package.json` `engines.node`), and CI runs the same major.
-- Advisory GitLab CI job name: `check` (stage `validate`). It runs `npm run check`, the same canonical command used locally.
+- Advisory GitHub Actions workflow `check`, job `check`. After `npm ci` it runs `npm run check`, the same canonical command used locally.
 
 Do not add CI-only validation here unless it is first added to `npm run check` and documented as part of the local Check Gate.
 
@@ -100,7 +101,7 @@ Do not add CI-only validation here unless it is first added to `npm run check` a
 Manual validation is supporting evidence only when automation cannot cover the
 change. Record exact commands or observations, redact secrets, and bind the
 evidence to the reviewed SHA. Manual validation does not replace `npm run check`
-for ready-marking unless the MR records a specific, reviewed exception.
+for ready-marking unless the PR records a specific, reviewed exception.
 
 ## Native install smoke requirement
 
