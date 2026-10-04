@@ -111,6 +111,21 @@ need not be recognized correctly by the current native extractor, so arbitrary
 scalar spellings are not proven supported. Keep the actual project gate command
 unchanged.
 
+`--receipt` names a file containing only the raw block-style receipt YAML
+document: the plain `gate_receipt:` mapping and its indented fields, without a
+Markdown title, fence delimiters or evidence bullets. The helper does not extract
+YAML from Markdown. This input contract does not change the required native
+publication form, including the titled, fenced, evidence-bearing builder note.
+
+Retain the complete authored note and the complete native readback separately.
+Materialize `authored-receipt.yaml` from the authored body before publication and
+`readback-receipt.yaml` from the lossless native body afterward, using the selected
+target reference's supported extraction recipe. Copy the receipt document bytes;
+do not reconstruct fields or parse/re-dump YAML. Keep both raw files and require
+their equality in addition to full authored-note/native-note byte equality.
+Full authored-body safe-text validation and complete native-body equality remain
+independent publication prerequisites, not checks of only the extracted YAML.
+
 Three checks stay separate: full local pre-post receipt validation; native
 extraction of the exact `checkout_commit`, `command`, and `result` with
 candidate binding; and post-note validation of that same receipt and current
@@ -131,9 +146,11 @@ readable log permits the check to proceed but by itself proves no gate PASS,
 exact-candidate binding, clean checkout, review, or authority; the other
 checks on this page still apply.
 
-Render once, validate before publication, publish with `forge publish`, and
-require provider-native byte-for-byte readback. Then validate the same artifact,
-its returned locator, and the current Review Packet before ready:
+Render the complete note once, materialize its raw YAML and validate that input
+before publication. Publish the complete note with `forge publish` and require
+provider-native byte-for-byte full-body readback. Materialize the receipt YAML
+from that readback, then validate it, its returned locator and the current
+Review Packet before ready:
 
 Run helpers per the [helper rule](../../forge/SKILL.md#helpers): `<start-build-dir>`
 below is the absolute path of `..` in the installed skill, and each command runs by
@@ -141,8 +158,8 @@ that resolved absolute path:
 
 ```text
 bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>
-bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
-bun <start-build-dir>/scripts/validate-gate-receipt.mjs --receipt <receipt> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode pre-post --receipt <authored-receipt.yaml> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode post-note --receipt <readback-receipt.yaml> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <sole opaque pointer> --gate-command <command> --gate-policy-ref <policy>
 ```
 
 `lift-only` is receipt-independent **presence-only** validation: every canonical
@@ -229,13 +246,17 @@ parent-only fields (`change_id`, `issue_id`, `checkout_path`, `status_*`,
 Acceptance is provider-native and exact-candidate: the handoff-evidence tool
 must report `present_anchor: true` and `receipt_commit_eq_head: true` for the
 current head, and publication requires provider-native byte-for-byte readback
-of the note. Validate locally before publication, running the helper per the
-[helper rule](../../forge/SKILL.md#helpers) (parent-owned binding flags are
-rejected in this mode; full post-note Reviewer Lift validation stays scoped to
-parent-owned mode):
+of the complete note. Retain that full authored/read-back pair and materialize
+its two raw YAML files as in [Publication syntax and proof](#publication-syntax-and-proof).
+Validate the authored YAML before publication and the read-back YAML afterward,
+using `--owner builder --mode pre-post` for both. Run the helper per the
+[helper rule](../../forge/SKILL.md#helpers); parent-owned binding flags are
+rejected in this mode, and full post-note Reviewer Lift validation stays scoped
+to parent-owned mode:
 
 ```text
-bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <receipt> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <authored-receipt.yaml> --reviewed-commit <commit> --gate-command <command>
+bun <start-build-dir>/scripts/validate-gate-receipt.mjs --owner builder --mode pre-post --receipt <readback-receipt.yaml> --reviewed-commit <commit> --gate-command <command>
 ```
 
 Fail-closed floors are unchanged: a receipt bound to any commit other than the
