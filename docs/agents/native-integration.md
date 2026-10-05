@@ -134,7 +134,9 @@ acting session. The recipes below apply unchanged to either transport.
    Follow `after` / `pageInfo.endCursor` (cursor lists) or `page` until a page returns
    fewer than `perPage` items (maximum 100). There is no `pagination.complete` flag, so
    record the terminating page and preserve partiality on caps. `gh api --hostname github.com --paginate --slurp`
-   is the pagination-robustness fallback for those cursor and page tools.
+   is the pagination-robustness fallback for those cursor and page tools; `--slurp` cannot
+   be combined with `--jq` or `--template`, so write the slurped pages to a file and
+   post-process that file.
    `list_label(owner="b-milescu", repo="skills")` takes only `owner` and `repo`. Do not
    pass `after`, `page`, `perPage` or `pageInfo`. It returns `labels` and `totalCount`.
    Completeness is `labels.length == totalCount` in that single response, a different
