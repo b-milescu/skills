@@ -131,12 +131,12 @@ another target's configuration.
 
 ## Runtime-specific precedence
 
-- **OMP:** the installed `src/task/discovery.ts` selects the nearest project
-  `.omp/agents` before user `~/.omp/agent/agents`, then extension-package agents,
-  installed plugins/Claude marketplace agents and bundled agents. It does not
-  load `.claude/agents` as an OMP-native agent root. The actual loader harness
-  below verifies the selected project file against a same-name native marketplace
-  preset in fresh processes.
+- **OMP:** its task-agent discovery selects the nearest project `.omp/agents`
+  before user `~/.omp/agent/agents`, then extension-package agents, installed
+  plugins/Claude marketplace agents and bundled agents. It does not load
+  `.claude/agents` as an OMP-native agent root. The installed-client loader smoke
+  below observes the selected project file against a same-name native marketplace
+  preset in fresh client processes.
 - **Claude Code:** [its scope documentation](https://code.claude.com/docs/en/subagents.md#choose-the-subagent-scope)
   independently specifies managed definitions, CLI `--agents`, nearest project
   `.claude/agents`, user `~/.claude/agents`, then plugins, in descending priority.
@@ -167,8 +167,9 @@ OMP table mirrors the 17.3.7 builtins), so a real tool missing from a table fail
 while MCP selectors get a syntax check only. Neither confirms that a tool is
 available in the spawning session, authenticated, or accessible.
 
-Run the actual disposable-HOME loader scenario (requires the installed OMP
-source and Bun):
+Run the disposable-HOME loader smoke on the installed OMP client (`omp` on
+`PATH`; without it the smoke reports N/A, which `OMP_REQUIRE_LOADER=1` turns into
+a failure):
 
 ```sh
 OMP_REQUIRE_LOADER=1 \
@@ -178,12 +179,18 @@ OMP_REVISION_CWD=/revision/checkout \
 bash tests/omp-agent-loader-smoke.sh
 ```
 
-Without explicit allocated/revision paths it uses isolated filesystem copies
-of native declarations, and labels that narrower proof. The harness uses a
-fresh process for each discovery, and separately checks available canonical
-entries through actual skill discovery and `skill://` access, including an
-unpreloaded entry and absent-inventory rejection. Entries resolve to the
-native manager's disposable installed cache; project agent provenance and
+The smoke installs a candidate copy with the client's own `omp plugin
+marketplace add` and `omp plugin install`, and names the client version and
+binary path. It imports no OMP source: client calls inherit only `PATH`, use a
+disposable HOME and a placeholder model at an unreachable local address, and send
+no prompt. In each phase (foreign, spawning, allocated, revision) a fresh
+`omp --mode rpc` process answers one `get_state`, and each route's description in
+its `task` tool inventory must identify exactly one candidate file; the copy marks
+the Claude-dialect plugin descriptions, which otherwise equal the OMP ones.
+`omp read skill://…` then resolves canonical entries and resources byte-exact
+from the installed root and rejects an absent skill. Without explicit
+allocated/revision paths it uses isolated filesystem copies of native
+declarations, and labels that narrower proof. Project agent provenance and
 canonical installed-entry provenance are separate facts.
 
 No harness claim covers live model routing, native mutation, reviewer
