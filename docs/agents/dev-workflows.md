@@ -118,12 +118,12 @@ separately are owned by
 [agents/README.md](../../agents/README.md#runtime-specific-precedence); the OMP
 loader proof is `tests/omp-agent-loader-smoke.sh`.
 
-The loader harness's source-package version is evidence only for that version,
-not for a differently versioned compiled client. Verify actual-client selected-file
-and installed-entry provenance from the spawning checkout and independently
-invoked allocated/revision checkouts; discovery, accessible entries, preload
-execution and effective model/effort are separate proofs. Missing observations
-remain evidence limits, never inferred PASS.
+The loader smoke drives the installed `omp` client on `PATH` and names its version
+and binary path; its evidence holds for that client version only. It observes
+selected-file and installed-entry provenance from the spawning checkout and
+independently invoked allocated/revision checkouts; discovery, accessible
+entries, preload execution and effective model/effort are separate proofs.
+Missing observations remain evidence limits, never inferred PASS.
 
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
