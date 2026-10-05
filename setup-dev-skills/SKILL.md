@@ -35,21 +35,26 @@ Summarize verified, conflicting and unavailable evidence first. With existing
 setup, propose reconciliation in place while preserving custom paths, vocabulary
 and user additions; no legacy reader or bulk profile conversion.
 
-Ask concrete **unresolved** choices one at a time, e.g. which named push repository
-is intended, where work items live, which available tool reaches the named scope,
-or which conflicting reference is authoritative. Do not present a platform menu,
-repeat already-confirmed choices or require unrelated authentication.
+Ask concrete **unresolved owner choices** one at a time, e.g. which named push
+repository is intended, where work items live, which available tool reaches the
+named scope, or which conflicting reference is authoritative. Do not present a
+platform menu, repeat confirmed choices, require unrelated authentication or ask
+the owner to discover undocumented provider ceilings/counting units.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, the
-[packet home](../forge/SKILL.md#packet-home), confirmed supported size limits/units
-and their evidence for packet and description, exact-head guarantees,
+[packet home](../forge/SKILL.md#packet-home), applicable authoritative limits/units
+and their evidence or explicit undocumented capacity, exact-head guarantees,
 required-check holds with the signal that ends their wait and any bound
 other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-normalization and lossless readback/recovery. A note home records the pointer form,
-same-change/current-head resolution and independent append/readback then
-pointer-update/readback recipe; unconfirmed ceilings or Unicode units block
-affected publication, not invented defaults.
+normalization and lossless readback/recovery. A confirmed native-validation recipe
+may permit one otherwise authorized ordinary publication with an undocumented
+ceiling/unit: retain the pre-write original, validate safe text, bind the actual
+native artifact and require full string-valued body/original-byte equality per
+forge. Record possible refusal/unverified artifacts and manual recovery, not
+unlimited capacity or an invented default. A note home still records its pointer
+form, same-change/current-head resolution and independent append/readback then
+pointer-update/readback recipe.
 
 Exact-head direct merge requires a documented stale-head rejection guarantee or
 the owner-confirmed probe below; a request field/schema alone proves no guarantee.
@@ -114,6 +119,10 @@ record exposed identifiers separately from canonical basenames and source files.
 Preserve deterministic native preload identifiers without changing logical skill
 IDs; discovery metadata does not prove preload execution or effort enforcement.
 
-Done when confirmed pointers resolve in the invoked target, recipes support its
-real available operations, docs/declarations preserve custom facts and all limits
-are explicit. Live installation and operator mutations remain outside setup.
+Configuration-complete means confirmed pointers resolve in the invoked target,
+docs/declarations preserve custom facts, and each operation's supported/refused
+recipes, known bounds and evidence gaps are explicit. Report this separately from
+selected-operation delivery readiness: a refused or unverified publication required
+by that delivery blocks delivery-ready, even when configuration is complete.
+Setup does not claim future publication, gate or review success. Live installation
+and operator mutations remain outside setup; configuration grants no authority.

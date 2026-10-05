@@ -89,7 +89,7 @@ Builder-owned evidence policy is outside this parent-mode selection rule.
 Before marking ready or requesting review, validate the change-request handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
-- The packet is published at its [packet home](../../forge/SKILL.md#packet-home) within the home's size limit; a note home's description carries a current pointer to it.
+- The packet has verified original-source publication readback at its [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the confirmed native-validation recipe for undocumented capacity; a note home's description carries a current pointer to it.
 - Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
 - `Reviewed SHA` equals the change-request head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.

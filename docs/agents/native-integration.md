@@ -28,12 +28,19 @@ workflow run/job IDs and comment/review IDs **after** native binding:
 
 Use mounted tools documented under `xd://mcp__github_<operation>` (OMP) or
 `mcp__github__<operation>` (Claude). Read the current tool schema before use. MCP
-first. `gh` fallback only for a documented unavailable-tool, pagination or merge
-robustness gap, after all non-transport guards. The documented gaps, which no mounted
-MCP tool covers, are repository metadata, closing-reference, merge-state and
-merge-commit fields (`gh pr view -R github.com/b-milescu/skills --json`), source-branch deletion,
-branch containment (`compare`), merge-commit parents, `--paginate` completeness and
-byte-exact body readback. Run exact command help first and verify flags; cache help
+first. `gh` fallback only for a documented unavailable-tool, pagination, native
+artifact resolver/readback or merge robustness gap, after all non-transport guards.
+The documented gaps are repository metadata, closing-reference, merge-state and
+merge-commit fields (`gh pr view -R github.com/b-milescu/skills --json`), source-branch
+deletion, branch containment (`compare`), merge-commit parents, `--paginate`
+completeness and byte-exact body readback. A selected create result can supply only
+`id`/`url` (observed for this repair's Draft), not a full native record. Do not assume
+review-create success text or review pages expose a usable numeric review ID.
+Resolve only a missing locator/field/completeness gap as
+[Publish one artifact](#publish-one-artifact) directs; a known locator uses direct
+GET, not an extra discovery scan on every successful write. These result-shape gaps
+are not proof of a defect or of the running MCP server revision.
+Run exact command help first and verify flags; cache help
 only in this run/context and invalidate on CLI version, command or repository change.
 `list_label` takes no pagination arguments. When `labels.length` is not `totalCount`,
 recover with the help-verified label read in
@@ -56,7 +63,7 @@ supported operation.
 | --- | --- | --- |
 | `preflight` | The scope being bound: code, change request, work item or advisory CI, all this repository | none |
 | `snapshot` | Read-only evidence on this repository | none |
-| `publish` | One artifact write on this repository; a body write also needs that surface's confirmed limit | none |
+| `publish` | One authorized artifact write on this repository under the native-validation/readback recipe below; enforce any authoritative known bound in its known unit | none |
 | `act` | One guarded mutation on this repository | none |
 | `post_merge_snapshot` | Read-only merged-state reads on this repository | none |
 
@@ -145,9 +152,9 @@ PR may change. Follow the
 [canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
 using the raw YAML files materialized below for the actual `Gate owner`.
 
-The materialization and owner-mode commands below are unchanged. They do not
-authorize a native comment write while the comment-body limit in
-[Packet home](#packet-home) is unconfirmed.
+The materialization and owner-mode commands below are unchanged. They validate
+artifacts, not publication authority or capacity. A native comment write separately
+requires [Packet home](#packet-home) and [Publish one artifact](#publish-one-artifact).
 
 ### Materialize the receipt YAML
 
@@ -262,92 +269,123 @@ The packet home remains the PR description: it holds the Review Packet and its
 Reviewer Lift in full, not a pointer to a note. Do not move it to a note, truncate
 it, split it, or use a hidden fallback.
 
-No supported current ceiling and no Unicode counting unit are confirmed for the
-packet/description or for any other body publication surface. Do not invent a UTF-8,
-UTF-16, code-point or character cap, and do not assume a title limit or a global
-body limit. Do not probe a ceiling.
+No supported current ceiling or Unicode counting unit is confirmed for the
+packet/description or the other body surfaces below. Unknown is not unlimited.
+Do not invent a UTF-8, UTF-16, code-point or character cap, assume a title/global
+body limit or probe a ceiling. Enforce any applicable authoritative limit in its
+declared unit if later documented.
 [Discussion 27190](https://github.com/orgs/community/discussions/27190) is conflicting
-historical evidence, not a ceiling: a 2020 staff note equated a mediumblob with
+historical evidence, not a current bound: a 2020 staff note equated a mediumblob with
 65,536 4-byte characters; later comments report both a `maximum is 65536 characters`
 API error and larger comments succeeding; current REST documentation does not publish
-that figure. None of those remarks is this repository's limit or permission to publish.
+that figure. Neither those remarks nor a request schema without a bound proves
+capacity or grants publication authority.
 
 | Surface | Artifact | Size, unit, evidence | Publication |
 | --- | --- | --- | --- |
-| PR description | Review Packet and description | unconfirmed; counting unit unconfirmed | refused until both are confirmed for this surface |
-| Issue body | issue body | unconfirmed; counting unit unconfirmed | refused until both are confirmed for this surface |
-| PR or issue comment | Gate Receipt, action note, issue note | unconfirmed; counting unit unconfirmed | refused until both are confirmed for this surface |
-| PR review body | Review Report | unconfirmed; counting unit unconfirmed | refused until both are confirmed for this surface |
+| PR description | Review Packet and description | undocumented ceiling/unit | one otherwise authorized ordinary native attempt plus original-source verification below |
+| Issue body | issue body | undocumented ceiling/unit | same native-validation recipe |
+| PR or issue comment | Gate Receipt, action note, issue note | undocumented ceiling/unit | same native-validation recipe |
+| PR review body | Review Report | undocumented ceiling/unit | same recipe plus this-run review identity |
 
-The recipes in [Publish one artifact](#publish-one-artifact) describe those body writes
-as mechanics only until each affected surface has its own confirmed limit and unit.
-Metadata-only operations and read evidence stay supported. This refusal is not a write
-or action-authority grant. When the description surface is later permitted,
-publication, byte-exact readback and the Reviewer Lift marker-block rules apply to
-the description as published.
+This target confirms [Publish one artifact](#publish-one-artifact) as its
+native-validation recipe for these undocumented surfaces. The owner-approved
+[issue #11 amendment](https://github.com/b-milescu/skills/issues/11) also permits
+the ordinary repair artifacts under this recipe before the amended shared policy
+lands; that bootstrap is not post-fix consumer evidence. Possible refusal,
+unverified artifacts/notifications and manual recovery are accepted, not corrupted
+decision inputs. Configuration is not action authority. The description still
+holds the complete packet and one Reviewer Lift block; no truncation, splitting,
+shortening to evade refusal, note-home migration or hidden transport switch.
 
 ## Publish one artifact
 
-Native publish of a body is permitted only after that surface has a confirmed ceiling
-and counting unit in [Packet home](#packet-home). GitHub write permission is not that
-confirmation. Until then the body-write bullets below are mechanics and must not be
-executed. Do not truncate, split, shorten, or switch the packet home. Label and
-assignee replacement, and every read, stay supported. This reference grants no action
-authority.
+Run the common guard for one otherwise authorized native attempt. Undocumented
+capacity alone does not refuse that attempt under [Packet home](#packet-home);
+known applicable bounds still apply. Retain the complete pre-write source,
+destination, fields, immutable actor, head when relevant and pre-write instant.
+For a selected creation recipe without a guaranteed usable locator, also retain
+the scoped pre-write artifact evidence needed by the reconciliation below.
+Native permission never grants action authority.
 
-Run common no-echo text validation before any write that is otherwise permitted:
-resolve `scripts/validate-text.mjs` inside the installed `forge` skill (the skill the
-runtime loaded, never this checkout's copy, for the same reason as the gate helper
-above) and run it by that resolved absolute path. GitHub adds no server-side safe-text
-validation, so that check is the only text guard. It is not a size ceiling. Keep the
-authored UTF-8 source as written, including its actual line endings and a trailing LF
-when the author wrote one. Do not trim the file or remove an authored newline to force
-a match. No target normalization is confirmed. Recover the native GET body without
-printing it and compare it to that authored file:
+Run common no-echo text validation before writing: resolve
+`scripts/validate-text.mjs` inside the installed `forge` skill (the skill the runtime
+loaded, never this checkout's copy, for the same reason as the gate helper above)
+and run it by that resolved absolute path. GitHub adds no server-side safe-text
+validation, so that check is the text guard, not a capacity check. Submit exactly
+the validated authored string. Keep its UTF-8 bytes, actual line endings and any
+authored trailing LF unchanged; do not trim or reconstruct source after writing.
+No target normalization is confirmed.
+
+Use a complete native GET, not the write response/echo, to bind the record's ID,
+URL and repository/change relationship to the selected destination. Require
+`user.login` and immutable `user.id` to match the retained authenticated actor;
+verify supplied fields and head/commit where applicable. Before extraction require
+the native `body` field to be present and a string, never missing/null or coerced.
+Recover the full body without printing it and compare against the original:
 
 ```text
-gh api --hostname github.com repos/b-milescu/skills/<resource> --template '{{.body}}' > <run-dir>/readback.md
+gh api --hostname github.com repos/b-milescu/skills/<resource> > <run-dir>/native.json
+bun -e '
+const fs = require("node:fs");
+let record;
+try {
+  record = JSON.parse(new TextDecoder("utf-8", {fatal:true}).decode(fs.readFileSync(process.argv[1])));
+} catch {
+  console.error("native-readback-invalid");
+  process.exit(1);
+}
+if (typeof record.body !== "string") {
+  console.error("native-body-unavailable");
+  process.exit(1);
+}
+fs.writeFileSync(process.argv[2], record.body, "utf8");
+' <run-dir>/native.json <run-dir>/readback.md
 cmp <run-dir>/readback.md <run-dir>/source.md
 ```
 
 `<resource>` is `issues/comments/<id>` (comment), `pulls/<n>/reviews/<id>` (review),
-`pulls/<n>` (PR description) or `issues/<n>` (issue). The `--template` redirect extracts
-the native GET body. Extraction alone is not submitted-source equality. A successful
-`cmp` of that file against the retained authored source is full-byte equality proof.
-An echo, or a `sha256` of the readback alone, is not. MCP reads of the same record
-serve discovery and metadata, not byte comparison. When a body write is later
-permitted, that `cmp` must succeed; a mismatch is unverified, not a cue to edit the
-source.
-
-Body-write mechanics, not current permission:
+`pulls/<n>` (PR description) or `issues/<n>` (issue). Retain the complete native
+record, extracted body, metadata binding and comparison outcome separately.
+Extraction or a readback-only digest is not submitted-source equality. MCP reads
+serve snapshots/metadata, not byte comparison. A mismatch, missing/null body,
+refusal, unavailable GET or uncertain outcome stays unverified and blocks
+dependent Ready/review/finish; never edit source or submitted fields to force
+success.
 
 - Draft: push the source, which must be ahead of `main` (GitHub refuses a PR without a
   commit difference), then `create_pull_request` once with `head=<source_branch>`,
   `base="main"`, title, body and `draft=true`. The description contains plain
-  `Closes #<issue_number>` outside code spans. Re-read PR state/draft/head/base and the
-  complete description. Do not call this while the PR-description limit is unconfirmed.
+  `Closes #<issue_number>` outside code spans. Retain the returned locator and
+  resolve it with `pull_request_read(get)` and the exact `pulls/<n>` GET above;
+  verify open/Draft, repository/source/base/head, actor, fields, closure relationship
+  and full original-source equality before consuming the packet.
 - Description: `update_pull_request` once with `pullNumber` and only `body`, so draft
   state, title and base stay untouched; native metadata and complete description
-  readback must preserve Draft/ready state and candidate. Same description refusal.
+  readback must preserve Draft/ready state and candidate. This is an intentional
+  packet refresh, never silent repair of an unverified write.
 - Review Report: `pull_request_review_write` once with `method="create"`,
-  `event="COMMENT"`, the report as `body` and `commitID=<reviewed SHA>`. `event` is
-  always set, because an event-less call leaves an unpublished pending review. Retain
-  the review ID (`pullrequestreview-<id>`) and read the exact review back
-  (`get_reviews`, then the byte comparison). A Review Report is a PR review, never a
-  comment on the linked issue. Do not call this while the review-body limit is
-  unconfirmed.
+  `event="COMMENT"`, the report as `body` and `commitID=<reviewed SHA>`. Always set
+  `event`; an event-less call leaves an unpublished pending review. If the selected
+  recipe has no guaranteed review locator, retain complete pre-write review IDs
+  and a previously unused canonical report locator before writing. A returned
+  numeric review ID goes directly to `pulls/<n>/reviews/<id>` GET; otherwise use
+  the one bounded native resolver below. Require same PR, actor, `commit_id`,
+  submitted `COMMENTED` state, this-run identity and original-source equality.
+  A Review Report is a PR review, never a comment on the linked issue.
 - Gate Receipt, Review Packet delta or action note: `add_issue_comment` once with the PR
-  number as `issue_number`; retain the returned comment ID (`issuecomment-<id>`) and read
-  it back. A comment has no title, so its first heading line is the note title.
-  Published artifacts are never repaired with `update_issue_comment`. Do not call this
-  while the comment-body limit is unconfirmed.
-- Issue note: `add_issue_comment` once with the issue number, then exact comment
-  readback. Same comment-body refusal.
+  number as `issue_number`; retain the returned comment ID (`issuecomment-<id>`) and
+  read it back, verifying `issue_url` names this PR before full-byte comparison.
+  A comment has no title, so its first heading line is the note title.
+  Published artifacts are never repaired with `update_issue_comment`.
+- Issue note: `add_issue_comment` once with the issue number; require that issue's
+  scoped comment identity and exact original-source readback.
 - Issue create: `issue_write` with `method="create"`, title, body, labels and assignees,
   after `get_me()` verifies identity and the complete label inventory in
   [Preflight and complete reads](#preflight-and-complete-reads) contains every label
-  name. Local numbers alone never verify scope. Do not call this
-  while the issue-body limit is unconfirmed.
+  name. Local numbers alone never verify scope. Verify original body, title, scoped
+  identity, assignees and supplied labels before any dependent transition; apply
+  `ready-for-agent` only after that verification, never in the initial create.
 - Assignee or labels: supported metadata replacement, not a body publication.
   `issue_write` with `method="update"`, `issue_number` and only the scoped field.
   Assignees and labels **replace** the whole set: read the issue's live set, compute
@@ -356,15 +394,33 @@ Body-write mechanics, not current permission:
   name. An incomplete inventory blocks the label-based action. Setup never mutates
   live label definitions.
 - Issue body update: `issue_write` with `method="update"`, `issue_number` and only
-  `body`, then the byte comparison above. Mechanics only, under the issue-body refusal.
+  `body`, then the same native metadata/original-byte comparison.
 
 Classify creation as verified-created, not-created, created-unverified or unknown.
-A known created ID uses GET-only recovery: read that record and do not write again.
-An unknown outcome gets one bounded native reconciliation pass: list that PR's
-comments or reviews, or the issues by the verified author since the pre-write
-instant, and no recreate. A unique match is then GET-only. A truncated list is not
-another pass. Absence and ambiguity both stop for a human decision. Do not silently
-fix a lost body or a mismatched submitted field with another mutation.
+Only explicit native non-creation evidence permits `not-created`; a generic
+tool/server error or timeout is not rollback proof. No classification permits
+automatic repeat creation or silent body/field repair.
+
+A known-created locator uses GET-only recovery of that exact record. With no
+usable locator, make one bounded read-only native reconciliation pass in the
+verified repository/change: PRs by the recorded source/base, that issue/PR's
+comments or reviews, or issues by the verified author since the pre-write instant.
+Use documented MCP pagination when it supplies complete IDs/records; for missing
+review IDs/fields or pagination gaps use the help-verified native resolver:
+`gh api --hostname github.com 'repos/b-milescu/skills/pulls/<n>/reviews?per_page=100' --paginate --slurp`.
+Aggregate all pages within that one pass; a truncated/unavailable list is not a
+second pass or proof of absence. Do not run this scan for a successful write whose
+usable locator already resolves directly.
+
+Require a unique new artifact with native correlation to this attempt or complete
+pre-write ID evidence plus the recorded source/fields and previously unused report
+locator where applicable; then GET that exact record and verify all metadata/body
+bytes. Author, head, timestamp and even identical body bytes alone cannot identify
+this run's artifact. Reject every pre-existing ID, never select the newest/first
+matching historical report, and stop on multiple new candidates. Absence,
+ambiguity, missing pre-write evidence, incomplete readback or mismatch blocks
+dependent transitions and requires a human decision, with the original source and
+known locator retained. No recreate, silent repair or transport/home fallback.
 
 ## Ready, approval and finish
 
