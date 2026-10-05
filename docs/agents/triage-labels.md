@@ -7,7 +7,7 @@ may point to this label vocabulary, but it must not create live labels, rely on
 lazy label creation, or weaken the
 [safety-floor litany](../../start-build/SAFETY.md#safety-floors).
 
-Live set for `b-milescu/skills`, read with `gh label list -R b-milescu/skills`:
+Live set for `b-milescu/skills`, read with `gh label list -R github.com/b-milescu/skills`:
 
 ## Live label inventory
 
@@ -33,7 +33,7 @@ These values are this repo's project-specific vocabulary; reusable skills must r
 
 ## Agent rules
 
-- Apply only labels listed above. Do not rely on GitHub's implicit label creation: the issues API may create a label name that does not exist, so verify each name against the live inventory (`get_label` or `gh label list`) before an issue write.
+- Apply only labels listed above. Do not rely on GitHub's implicit label creation: the issues API may create a label name that does not exist, so verify each name against the live inventory (`list_label` or `gh label list -R github.com/b-milescu/skills`) before an issue write.
 - Use `ready-for-agent` only for AFK-ready issues with a passing or explicitly waived [Agent Readiness scorecard](../../reference/agent-readiness-scorecard.md).
 - Use `docs` or `refactor` as optional kind labels when the slice fits.
 - Apply `needs-info` when an issue needs more information before AFK work, and state the missing information in the issue/PR body or a comment.

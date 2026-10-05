@@ -8,6 +8,8 @@ This rulebook is a pointer-first entry point. Keep live tracker, label, check-ga
 
 ### Routing
 
+- Project profile: see `docs/agents/dev-workflows.md#project-profile-hooks`.
+- Native integration (`provider.reference`): see `docs/agents/native-integration.md`.
 - Issue tracker: see `docs/agents/issue-tracker.md`.
 - Triage labels: see `docs/agents/triage-labels.md`.
 - Domain docs: see `docs/agents/domain.md`.
