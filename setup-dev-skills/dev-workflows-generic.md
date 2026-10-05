@@ -12,14 +12,31 @@ delivery uses the `forge`, `start-build`, `start-review`, `plan-to-issues`,
 work items bind filesystem scope. Refresh only systems required by the requested
 operation; missing or unsupported actions block only that operation. Configuration
 grants no action authority.
+Each recipe names, per native read and write, its MCP-first transport and the
+help-verified CLI fallback used only when that MCP is unavailable to the acting
+session or for a documented gap (the `setup-dev-skills` skill's
+`SKILL.md#resolve-choices`).
 
-The selected `provider.reference` states the complete packet home and confirmed
-supported size limits/units with evidence for packet and description. Description
-is the default; a note home specifies its current description-pointer form and
-independent append/readback then pointer-update/readback refresh, preserving
-closure syntax. Discovery, gate/Lift rebind and review follow only that same-change,
-current-head pointer, never historical notes/markers; unknown limits/units block
-affected publication. See the `forge` skill's `SKILL.md#packet-home`.
+The selected `provider.reference` states the complete packet home, applicable
+authoritative limits/units with evidence and any undocumented capacity. Enforce
+known bounds in their declared units. A confirmed native-validation recipe may
+permit one otherwise authorized ordinary publication with an undocumented
+ceiling/unit, retaining the pre-write original and requiring safe text, actual
+artifact/actor/scope binding and full string-valued native body/original-byte
+equality. Unknown is not unlimited or a guessed cap; refusal or unverified
+publication blocks dependent transitions. See the `forge` skill's
+`SKILL.md#packet-home` and `reference/common-guard.md#authority-verification`.
+Description remains the default; a note home specifies its current
+description-pointer form and independent append/readback then
+pointer-update/readback refresh, preserving closure syntax. Discovery, gate/Lift
+rebind and review follow only that same-change, current-head pointer, never
+historical notes/markers.
+
+Report configuration-complete separately from selected-operation delivery-ready.
+Explicit supported/refused recipes and evidence gaps can complete configuration;
+a refused or unverified publication required by the selected delivery cannot
+complete delivery readiness. Ask only genuine unresolved owner choices, not
+undocumented provider internals. Configuration proves no future publication/gate.
 
 Record documented stale-head rejection or evidence from the explicitly authorized
 disposable probe described in the `setup-dev-skills` skill's `SKILL.md#resolve-choices`;

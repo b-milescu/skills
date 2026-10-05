@@ -20,9 +20,9 @@ stops without trying another provider or transport:
 Return `passed`, `blocked`, `handoff`, `held`, or `escalated`; an opaque blocker
 string or `none`; whether a mutation ran; selected provider/transport evidence;
 and the post-read classification. Binding failure, stale head, missing or stale
-Gate Receipt, missing authority, unsupported commit binding, a packet over its
-[packet home](../SKILL.md#packet-home) size limit, or failed post-read blocks
-without transport fallback. CI status never blocks the guard. A `held`
+Gate Receipt, missing authority, unsupported commit binding, a packet over a
+known applicable [packet home](../SKILL.md#packet-home) limit, or failed post-read
+blocks without transport fallback. CI status never blocks the guard. A `held`
 result (native protection, including a provider's required checks, holds the
 mutation) is reported without bypass; once the hold clears, the retry is a new
 `forge act` that re-runs every step from the first, and nothing from the held
@@ -85,12 +85,23 @@ and CI variables are not authenticated identity. Verify author/context separatel
 
 Body publication requires exact string/role validation with the helper at
 `../scripts/validate-text.mjs` (relative to this file), run per the
-[helper rule](../SKILL.md#helpers), before native checks. No diagnostic
-may echo submitted body or parser excerpts. Require complete lossless native
-readback against authored source; record only documented normalization.
+[helper rule](../SKILL.md#helpers), before native checks. Retain the complete
+pre-write authored source and submit exactly that string. Enforce applicable
+authoritative bounds in their known units; undocumented capacity follows only
+the confirmed [native-validation recipe](../SKILL.md#packet-home), not a guessed
+cap. No diagnostic may echo submitted body or parser excerpts. Require a full
+string-valued native body, actual artifact/actor/scope binding and byte equality
+against that retained original, with only explicitly documented normalization.
+An echo, reconstructed source, extraction or readback-only digest proves none of
+this. Refusal, missing/null body, mismatch, unavailable readback or uncertain
+outcome leaves publication unverified and blocks dependent ready/review/finish.
 
 If creation is known, retain its locator and recover GET-only. If its outcome is
-unknown, reconcile bounded native reads without repeating creation; ambiguous or
-absent matches require a human decision. Never silently repair submitted fields.
-Receipt local validity, native extraction/candidate binding, and post-note
-receipt/Lift validation are independent proofs.
+unknown, use one bounded read-only native reconciliation without repeating
+creation; an error is not proof of rollback. Bind this run's new artifact using
+the target's native correlation or pre-write artifact evidence. An old artifact
+is never this run's publication merely because author, head, time or even body
+bytes match. Absent, ambiguous or incomplete evidence requires a human decision;
+never silently repair submitted fields. Receipt local validity, native
+extraction/candidate binding and post-note receipt/Lift validation are independent
+proofs.

@@ -49,7 +49,7 @@ supported.
 
 - Claude Code or OMP with plugin-marketplace support.
 - Git, and Bun 1.4+ on `PATH`. The bundled helpers need no installed packages.
-- For change-request workflows, a tool your runtime can use to reach your code host and issue tracker (an MCP server or a CLI). Nothing is bundled; the `setup-dev-skills` skill records the choice per project.
+- For change-request workflows, a way for your runtime to reach your code host and issue tracker: an MCP server (preferred) or a CLI. Nothing is bundled; the `setup-dev-skills` skill records an MCP-first transport per project, with the CLI as the fallback where the MCP is unavailable.
 - Optional: a memory plugin or MCP server for `retro` lookback.
 
 Contributors to this repository also need bash for the [Check Gate](docs/agents/check-gate.md) (`bun install`, then `bun run check`), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally an OMP source checkout for the loader smoke test.

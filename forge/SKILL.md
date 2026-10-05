@@ -60,11 +60,16 @@ never grants authority.
 ## Packet home
 
 The Review Packet, with its Reviewer Lift, is the canonical durable handoff. It
-lives at the **packet home** the selected reference designates, with confirmed
-supported size limits, units and evidence for the packet and description. Unknown
-limits or Unicode counting units block affected publication, never guessed
-ceilings, truncation or splitting. The default home is the change-request
-description; its existing publication behavior is unchanged.
+lives at the **packet home** the selected reference designates. Record applicable
+authoritative size limits, their units/evidence and any undocumented ceiling or
+unit for packet and description. Enforce known bounds in their declared units;
+unknown is not unlimited and never a guessed cap. A confirmed target-native
+validation/readback recipe may permit one otherwise authorized ordinary
+publication with an undocumented ceiling/unit under the
+[common guard](reference/common-guard.md#authority-verification); without that
+recipe, the affected publication blocks. Never probe a ceiling, truncate, split
+or silently switch home/transport. The default home remains the change-request
+description.
 
 A note-home reference specifies the description pointer form and native refresh
 recipe. First Draft creation may precede note publication, but the change remains
@@ -81,8 +86,9 @@ by latest note or marker search: historical packets and reports may contain
 copied Lift markers. Missing, stale, wrong-change or head-mismatched pointers block
 affected transitions. The one-Lift-block rule applies within the current selected
 packet, not across historical packet/report notes. Publication, safe-text,
-supported-limit checks and byte-exact readback apply unchanged at the selected
-home; a packet over its limit is refused (`blocked`), never truncated.
+applicable known-limit checks and original-source byte equality apply unchanged
+at the selected home; a packet over a known applicable limit is refused
+(`blocked`), never truncated. Unverified publication blocks dependent transitions.
 
 ## Helpers
 
@@ -108,8 +114,8 @@ role/offset/type, never body or parser excerpts. Valid envelope content errors u
 the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
 The selected target reference owns native identifiers/locators, tools, pagination,
-normalization, closure syntax, the [packet home](#packet-home) and its size limit,
-draft/ready, receipt extraction, approval/finish,
+normalization, closure syntax, the [packet home](#packet-home), capacity evidence
+and native-validation/readback recipe, draft/ready, receipt extraction, approval/finish,
 expected-head guarantees, required-check holds with the signal that ends their
 wait and any bound other than the default
 [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),

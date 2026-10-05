@@ -19,7 +19,8 @@ it contains no target identity, vocabulary, host, default paths or detector.
 
 Inspect named fetch **and** push remotes, fork intent, code/change-request,
 work-item and CI configuration separately. Read referenced docs and available-tool
-documentation; use operation-scoped read-only native verification to compare
+documentation (each reachable MCP server's current schema, each CLI's help); use
+operation-scoped read-only native verification to compare
 intended system/repository scopes and authenticated identities. Local work items
 bind confirmed filesystem scope. Do not infer tracker from host branding, a word
 in a path, first remote or installed tools. Unavailable tools are evidence limits,
@@ -35,21 +36,41 @@ Summarize verified, conflicting and unavailable evidence first. With existing
 setup, propose reconciliation in place while preserving custom paths, vocabulary
 and user additions; no legacy reader or bulk profile conversion.
 
-Ask concrete **unresolved** choices one at a time, e.g. which named push repository
-is intended, where work items live, which available tool reaches the named scope,
-or which conflicting reference is authoritative. Do not present a platform menu,
-repeat already-confirmed choices or require unrelated authentication.
+Ask concrete **unresolved owner choices** one at a time, e.g. which named push
+repository is intended, where work items live, or which conflicting reference is
+authoritative. Do not present a platform or tool menu, repeat confirmed choices,
+require unrelated authentication or ask the owner to discover undocumented
+provider ceilings/counting units.
+
+Transport is **MCP first, CLI fallback**. For each native read and write, the
+recipe names the MCP tool that reaches the confirmed scope and, where one reaches
+it, a help-verified CLI fallback (otherwise it records that none exists), used for
+that call only when the MCP is unavailable to the acting session (unconnected or
+unauthenticated for the scope) or for a gap the recipe documents: a missing tool,
+incomplete pages, a lossy body or no exact-head binding that the fallback
+supplies. With no reachable MCP the CLI is the transport and the gap is reported;
+setup installs, configures or authenticates neither. Fallback is chosen before a
+mutation; within an attempt a refusal, guard failure, hold or uncertain write
+keeps its outcome and never switches transport or repeats a write
+([common guard](../forge/reference/common-guard.md)). Both transports bind the
+same scope and immutable identity; no call inherits scope from environment,
+working directory or global configuration. Transports that disagree on scope or
+identity are an unresolved owner choice.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, the
-[packet home](../forge/SKILL.md#packet-home), confirmed supported size limits/units
-and their evidence for packet and description, exact-head guarantees,
+[packet home](../forge/SKILL.md#packet-home), applicable authoritative limits/units
+and their evidence or explicit undocumented capacity, exact-head guarantees,
 required-check holds with the signal that ends their wait and any bound
 other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-normalization and lossless readback/recovery. A note home records the pointer form,
-same-change/current-head resolution and independent append/readback then
-pointer-update/readback recipe; unconfirmed ceilings or Unicode units block
-affected publication, not invented defaults.
+normalization and lossless readback/recovery. A confirmed native-validation recipe
+may permit one otherwise authorized ordinary publication with an undocumented
+ceiling/unit: retain the pre-write original, validate safe text, bind the actual
+native artifact and require full string-valued body/original-byte equality per
+forge. Record possible refusal/unverified artifacts and manual recovery, not
+unlimited capacity or an invented default. A note home still records its pointer
+form, same-change/current-head resolution and independent append/readback then
+pointer-update/readback recipe.
 
 Exact-head direct merge requires a documented stale-head rejection guarantee or
 the owner-confirmed probe below; a request field/schema alone proves no guarantee.
@@ -114,6 +135,10 @@ record exposed identifiers separately from canonical basenames and source files.
 Preserve deterministic native preload identifiers without changing logical skill
 IDs; discovery metadata does not prove preload execution or effort enforcement.
 
-Done when confirmed pointers resolve in the invoked target, recipes support its
-real available operations, docs/declarations preserve custom facts and all limits
-are explicit. Live installation and operator mutations remain outside setup.
+Configuration-complete means confirmed pointers resolve in the invoked target,
+docs/declarations preserve custom facts, and each operation's supported/refused
+recipes, transport order, known bounds and evidence gaps are explicit. Report this separately from
+selected-operation delivery readiness: a refused or unverified publication required
+by that delivery blocks delivery-ready, even when configuration is complete.
+Setup does not claim future publication, gate or review success. Live installation
+and operator mutations remain outside setup; configuration grants no authority.
