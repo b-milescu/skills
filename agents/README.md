@@ -187,6 +187,13 @@ no prompt. In each phase (foreign, spawning, allocated, revision) a fresh
 `omp --mode rpc` process answers one `get_state`, and each route's description in
 its `task` tool inventory must identify exactly one candidate file; the copy marks
 the Claude-dialect plugin descriptions, which otherwise equal the OMP ones.
+OMP must not load a checkout's project `.claude/agents/<route>.md`, whose
+description here equals the `.omp/agents` one: the disposable allocated/revision
+copies mark it the same way, so a listed marked description fails naming that
+project Claude-dialect file. The smoke never edits the spawning checkout or a
+supplied one, so where such a phase's `.claude/agents/<route>.md` shares the
+selected description, the route's proof line and the PASS scope state that the
+phase cannot distinguish the two project dialects.
 `omp read skill://…` then resolves canonical entries and resources byte-exact
 from the installed root and rejects an absent skill. Without explicit
 allocated/revision paths it uses isolated filesystem copies of native

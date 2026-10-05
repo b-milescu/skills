@@ -65,9 +65,14 @@ if [[ -z "$allocated_cwd" || -z "$revision_cwd" ]]; then
   proof_scope='disposable filesystem checkout copies (not live allocated/revision sessions)'
   allocated_cwd="$TMP_ROOT/allocated"
   revision_cwd="$TMP_ROOT/revision"
+  # The copies also carry each route's project Claude-dialect file, marked like
+  # the plugin's; the spawning and supplied checkouts are never edited.
   for checkout in "$allocated_cwd" "$revision_cwd"; do
-    mkdir -p "$checkout/.omp/agents"
+    mkdir -p "$checkout/.omp/agents" "$checkout/.claude/agents"
     cp "$REPO_ROOT/.omp/agents/"*.md "$checkout/.omp/agents/"
+    for file in "$REPO_ROOT/.claude/agents/"*.md; do
+      sed "s/^description: .*/&$marker/" "$file" > "$checkout/.claude/agents/${file##*/}"
+    done
   done
 else
   for checkout in "$allocated_cwd" "$revision_cwd"; do
@@ -105,6 +110,10 @@ for (const [name, entry] of [['change-builder', 'start-build'], ['change-reviewe
   const want = project === '1' ? 'project' : 'plugin';
   const seen = listed.get(name);
   if (seen === undefined) fail(`${name} is missing from the client's task inventory`);
+  // OMP must never select the checkout's project Claude-dialect file; only the smoke's own copies mark it.
+  const claude = path.join(cwd, '.claude/agents', `${name}.md`);
+  const claudeShares = fs.existsSync(claude) && frontmatter(claude).description === seen;
+  if (seen.endsWith(marker) && claudeShares) fail(`${name}: client selected the project Claude-dialect file ${claude}`);
   if (seen.endsWith(marker)) fail(`${name}: client selected the Claude-dialect plugin file`);
   // An installer rewrites a symlink into an absolute link outside the install, so the entrypoint must be a regular file.
   if (!fs.lstatSync(files[want], { throwIfNoEntry: false })?.isFile()) fail(`${name}: ${files[want]} is not a regular file; client listed "${seen}"`);
@@ -117,7 +126,8 @@ for (const [name, entry] of [['change-builder', 'start-build'], ['change-reviewe
   if (preload !== [entry, 'forge'].sort().join()) fail(`${name}: preload must be exactly ${entry} and forge`);
   // An omitted `tools` list inherits the parent's tools; any declared list would be a restriction.
   if (meta.tools !== undefined) fail(`${name}: route must not declare tools`);
-  console.log(JSON.stringify({ proof: 'selected-route', phase, cwd, name, selected: want, filePath: files[want], description: seen }));
+  const limit = claudeShares ? { limit: `${claude} shares the description, so this phase cannot distinguish the two project dialects` } : {};
+  console.log(JSON.stringify({ proof: 'selected-route', phase, cwd, name, selected: want, filePath: files[want], description: seen, ...limit }));
 }
 BUN
 observe() {
@@ -126,7 +136,10 @@ observe() {
   printf '%s\n' '{"type":"get_state"}' | (cd "$cwd" && client --mode rpc --no-session --no-title) > "$TMP_ROOT/$phase.rpc" \
     || fail "$phase: client RPC session failed"
   bun "$selection_js" "$TMP_ROOT/$phase.rpc" "$phase" "$cwd" "$project" "$native_root" "$marker" "$REPO_ROOT" \
-    || fail "$phase: route selection not proven"
+    | tee "$TMP_ROOT/$phase.routes" || fail "$phase: route selection not proven"
+  if grep -q '"limit":' "$TMP_ROOT/$phase.routes"; then
+    proof_scope+="; $phase phase cannot distinguish the project .omp and .claude dialects"
+  fi
   for name in start-build start-review forge; do
     (cd "$cwd" && client read "skill://$name") > "$out" || fail "$phase: skill://$name unreadable"
     IFS= read -r line < "$out" || true
