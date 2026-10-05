@@ -13,8 +13,9 @@ Named `origin` fetch and push must both name it (HTTPS or
 `git@github.com:b-milescu/skills.git`); resolve fork or alternate-remote intent
 explicitly rather than selecting the first remote. Project agents declare no `tools`
 and inherit the parent session's tools, so authentication is supplied by the parent's
-mounted `github` MCP connection and, for the documented gaps below, the logged-in
-`gh` CLI; never inspect or print credential stores or tokens. Every MCP call names
+mounted `github` MCP connection and, where [Transport by call](#transport-by-call)
+selects it, the logged-in `gh` CLI; never inspect or print credential stores or
+tokens. Every MCP call names
 `owner="b-milescu"` and `repo="skills"`; that explicit pair is the destination
 binding. Opaque records map to repository-scoped issue/PR numbers, commit SHA,
 workflow run/job IDs and comment/review IDs **after** native binding:
@@ -27,15 +28,18 @@ workflow run/job IDs and comment/review IDs **after** native binding:
 | Report locator | `review-report:b-milescu/skills#<pr>:<round>`, chosen before publication |
 
 Use mounted tools documented under `xd://mcp__github_<operation>` (OMP) or
-`mcp__github__<operation>` (Claude). Read the current tool schema before use. MCP
-first. `gh` fallback only for a documented unavailable-tool, pagination, native
-artifact resolver/readback or merge robustness gap, after all non-transport guards.
-The documented gaps are repository metadata, closing-reference, merge-state and
-merge-commit fields (`gh pr view -R github.com/b-milescu/skills --json`), source-branch
-deletion, branch containment (`compare`), merge-commit parents, `--paginate`
-completeness and byte-exact body readback. A selected create result can supply only
-`id`/`url` (observed for this repair's Draft), not a full native record. Do not assume
-review-create success text or review pages expose a usable numeric review ID.
+`mcp__github__<operation>` (Claude). Read the current tool schema before use.
+Transport is MCP first. A call uses its `gh` fallback from
+[Transport by call](#transport-by-call) only when the `github` MCP is unavailable to
+the acting session (unconnected, or unauthenticated for `b-milescu/skills`) or for
+that row's documented gap. With no reachable MCP, `gh` is the transport and the gap
+is reported; a row without a fallback has none. Setup installs, configures or
+authenticates neither transport. Choose the transport before a mutation, after all
+non-transport guards; within an attempt a refusal, guard failure, hold or uncertain
+write keeps its outcome and never switches transport or repeats the write. A
+selected create result can supply only `id`/`url` (observed for PR #12's Draft), not
+a full native record. Do not assume review-create success text or review pages
+expose a usable numeric review ID.
 Resolve only a missing locator/field/completeness gap as
 [Publish one artifact](#publish-one-artifact) directs; a known locator uses direct
 GET, not an extra discovery scan on every successful write. These result-shape gaps
@@ -49,15 +53,15 @@ Name the host and repository on every `gh` recipe so `GH_HOST` cannot rebind it.
 `gh api` takes `--hostname github.com`. `gh repo view` and `-R` name
 `github.com/b-milescu/skills`. API paths stay `repos/b-milescu/skills/...` under that
 hostname. Never infer the host from the working directory, and do not write global
-`gh` config or the environment to force it. No fallback for stale head, binding,
-identity, authority, unsafe
-text, missing receipt or failed post-read. Native post-read remains mandatory;
-unavailable readback means unverified, not success. The sections below follow forge's
-operations: preflight, snapshot, publish, act (ready, approval and finish) and
-post_merge_snapshot. Each operation uses only this target's independently
-configured GitHub scopes on `b-milescu/skills`. No unrelated tracker, CI host or
-other authentication is required, and missing unrelated auth never blocks a
-supported operation.
+`gh` config or the environment to force it. Both transports bind this repository and
+the same immutable identity. No fallback for stale head, binding, identity,
+authority, unsafe text, missing receipt or failed post-read. Native post-read remains
+mandatory; unavailable readback means unverified, not success. The sections below
+follow forge's operations: preflight, snapshot, publish, act (ready, approval and
+finish) and post_merge_snapshot. Each operation uses only this target's
+independently configured GitHub scopes on `b-milescu/skills`. No unrelated tracker,
+CI host or other authentication is required, and missing unrelated auth never blocks
+a supported operation.
 
 | Operation | Required GitHub scope | Unrelated auth |
 | --- | --- | --- |
@@ -67,13 +71,58 @@ supported operation.
 | `act` | One guarded mutation on this repository | none |
 | `post_merge_snapshot` | Read-only merged-state reads on this repository | none |
 
+### Transport by call
+
+Each native read and write names its MCP tool and its `gh` fallback, or records that
+none exists. The fallback flags were help-verified on `gh` 2.102.0 (2026-10-05);
+each run still verifies exact command help as above. `-F body=@<run-dir>/source.md`
+sends that retained, validated original unchanged: `gh` 2.102.0 reads an `@` field
+value's file whole and adds no type conversion
+([fields.go](https://github.com/cli/cli/blob/v2.102.0/pkg/cmd/api/fields.go#L160-L167)).
+The last column is the documented gap for which the fallback runs even while the MCP
+is available; `—` means the fallback runs only when the MCP is unavailable to the
+acting session. The recipes below apply unchanged to either transport.
+
+| Operation | Call | MCP first | `gh` fallback | Documented gap |
+| --- | --- | --- | --- | --- |
+| `preflight` | repository metadata | none | `gh repo view github.com/b-milescu/skills --json nameWithOwner,url,defaultBranchRef` | no single-repository metadata tool; `gh` is the transport |
+| `preflight` | caller identity | `get_me()` | `gh api --hostname github.com user --jq '{login,id}'` | — |
+| `preflight`, `snapshot` | issue and its comments | `issue_read` `get`, every `get_comments` page | `gh api --hostname github.com repos/b-milescu/skills/issues/<n>`; `gh api --hostname github.com 'repos/b-milescu/skills/issues/<n>/comments?per_page=100' --paginate --slurp` | lossless body |
+| `preflight` | discovery lists | `list_issues`, `search_issues`, `list_pull_requests`, `actions_list` | `gh api --hostname github.com '<list path>?per_page=100' --paginate --slurp` | incomplete pages |
+| `preflight` | label inventory | `list_label` | `gh api --hostname github.com 'repos/b-milescu/skills/labels?per_page=100' --paginate --slurp` | `labels.length` not `totalCount` |
+| `preflight`, `snapshot`, `act` | PR state, source, target, head | `pull_request_read(get)` | `gh pr view <n> -R github.com/b-milescu/skills --json number,state,isDraft,headRefName,headRefOid,baseRefName,mergeStateStatus,closingIssuesReferences,author` | closing-reference and merge-state fields |
+| `snapshot` | PR files, commits, reviews, review threads, comments | `pull_request_read` `get_files`, `get_commits`, `get_reviews`, `get_review_comments`, `get_comments` pages | `gh api --hostname github.com 'repos/b-milescu/skills/pulls/<n>/<files, commits, reviews or comments>?per_page=100' --paginate --slurp`; conversation comments under `issues/<n>/comments` | incomplete pages, lossless body |
+| `snapshot` | advisory CI | `pull_request_read(get_check_runs)`, `actions_list`, `actions_get`, `get_job_logs` | `gh run list --workflow check.yml --commit <sha> -R github.com/b-milescu/skills` | head-SHA filter |
+| `publish` | byte-exact body readback | none: MCP reads are not byte-exact | `gh api --hostname github.com repos/b-milescu/skills/<resource>` per [Publish one artifact](#publish-one-artifact) | every body write, either transport |
+| `publish` | Draft PR | `create_pull_request` | `gh api --hostname github.com --method POST repos/b-milescu/skills/pulls -f head=<source> -f base=main -f title=<title> -F body=@<run-dir>/source.md -F draft=true` | — |
+| `publish` | PR description | `update_pull_request` (`body` only) | `gh api --hostname github.com --method PATCH repos/b-milescu/skills/pulls/<n> -F body=@<run-dir>/source.md` | — |
+| `publish` | Review Report | `pull_request_review_write` (`create`, `event="COMMENT"`, `commitID`) | `gh api --hostname github.com --method POST repos/b-milescu/skills/pulls/<n>/reviews -f event=COMMENT -f commit_id=<reviewed> -F body=@<run-dir>/source.md` | — |
+| `publish` | PR or issue comment | `add_issue_comment` | `gh api --hostname github.com --method POST repos/b-milescu/skills/issues/<n>/comments -F body=@<run-dir>/source.md` | — |
+| `publish` | issue create | `issue_write` (`create`) | `gh api --hostname github.com --method POST repos/b-milescu/skills/issues -f title=<title> -F body=@<run-dir>/source.md`, one `-f 'labels[]=<name>'` or `-f 'assignees[]=<login>'` per value | — |
+| `publish` | issue body, assignees or labels | `issue_write` (`update`, one scoped field) | `gh api --hostname github.com --method PATCH repos/b-milescu/skills/issues/<n>` with only `-F body=@<run-dir>/source.md` or the complete final `assignees[]`/`labels[]` set (`-f 'assignees[]'` alone sends an empty set) | — |
+| `publish` | review locator resolver | `pull_request_read(get_reviews)` pages | `gh api --hostname github.com 'repos/b-milescu/skills/pulls/<n>/reviews?per_page=100' --paginate --slurp` | missing review ID or fields |
+| `act` | Ready | `update_pull_request` (`draft=false`) | `gh pr ready <n> -R github.com/b-milescu/skills` | — |
+| `act` | approval | none: unavailable | none | — |
+| `act` | direct merge | `merge_pull_request` (`merge_method="merge"`, `expectedHeadSha`) | `gh api --hostname github.com --method PUT repos/b-milescu/skills/pulls/<n>/merge --raw-field merge_method=merge --raw-field sha=<reviewed>` | — |
+| `act` | queue | none: refused | none | — |
+| `act` | required-check wait | `pull_request_read(get_check_runs)` | `gh pr checks <n> -R github.com/b-milescu/skills --required`, confirmed with `--json name,bucket` | — |
+| `act` | source-branch cleanup | none | `gh api --hostname github.com -X DELETE repos/b-milescu/skills/git/refs/heads/<source_branch>` | no ref-delete tool; `gh` is the transport |
+| `post_merge_snapshot` | merged state, merge commit | `pull_request_read(get)` | `gh pr view <n> -R github.com/b-milescu/skills --json state,mergeCommit,mergedAt` | merge-commit field |
+| `post_merge_snapshot` | merge parents | `get_commit` | `gh api --hostname github.com repos/b-milescu/skills/commits/<merge commit> --jq '[.parents[].sha]'` | parents omitted |
+| `post_merge_snapshot` | containment | none: `list_commits` pages only cross-check | `gh api --hostname github.com repos/b-milescu/skills/compare/<reviewed_sha>...main --jq .status` | no compare tool; `gh` is the transport |
+| `post_merge_snapshot` | linked issue state | `issue_read(get)` | `gh api --hostname github.com repos/b-milescu/skills/issues/<n> --jq .state` | — |
+| `post_merge_snapshot` | result-commit CI | `actions_list(list_workflow_runs)` (`event="push"`, `branch="main"`) | `gh run list --workflow check.yml --commit <merge commit> -R github.com/b-milescu/skills` | head-SHA filter |
+| `post_merge_snapshot` | source ref | none | `gh api --hostname github.com repos/b-milescu/skills/git/ref/heads/<source_branch>` | no exact ref-read tool; `gh` is the transport |
+
 ## Preflight and complete reads
 
 1. Compare intended repository against named local remotes and fresh
    `gh repo view github.com/b-milescu/skills --json nameWithOwner,url,defaultBranchRef`; verify
    host `github.com`, name, URL and `main`, not an ID alone. `get_me()` and
    `gh api --hostname github.com user --jq '{login,id}'` must name the same login
-   and the same numeric ID whenever both transports are used.
+   and the same numeric ID whenever both transports are used. Transports that
+   disagree on repository scope or identity block the operation as an unresolved
+   owner choice.
 2. `get_me()` captures caller identity (login and numeric ID) at entry; retain
    immutable identity and re-read immediately before each write.
 3. `issue_read(method="get")` and every page of `issue_read(method="get_comments")`
@@ -289,10 +338,7 @@ capacity or grants publication authority.
 | PR review body | Review Report | undocumented ceiling/unit | same recipe plus this-run review identity |
 
 This target confirms [Publish one artifact](#publish-one-artifact) as its
-native-validation recipe for these undocumented surfaces. The owner-approved
-[issue #11 amendment](https://github.com/b-milescu/skills/issues/11) also permits
-the ordinary repair artifacts under this recipe before the amended shared policy
-lands; that bootstrap is not post-fix consumer evidence. Possible refusal,
+native-validation recipe for these undocumented surfaces. Possible refusal,
 unverified artifacts/notifications and manual recovery are accepted, not corrupted
 decision inputs. Configuration is not action authority. The description still
 holds the complete packet and one Reviewer Lift block; no truncation, splitting,
@@ -533,13 +579,20 @@ the checks pass, re-run the whole guarded finish above (fresh `get_me()` and
 never reused. Poll the reviewed head at each
 [wait floor](../../start-build/reference/parent-orchestrator.md#wait-cadence) until the
 budget is spent; the finisher tracks the elapsed time itself, so no external timeout
-tool is needed:
+tool is needed. Each poll reads `pull_request_read(get_check_runs)`: no `check` run
+yet, or one queued or in progress, keeps the wait going; a completed run with
+conclusion `success`, `skipped` or `neutral` (the statuses GitHub's required-check
+rule accepts) re-runs the guarded finish; any other completed conclusion is a
+failure.
+
+When the `github` MCP is unavailable to the acting session, poll with the `gh`
+fallback instead:
 
 ```text
 gh pr checks <n> -R github.com/b-milescu/skills --required
 ```
 
-Map the exit status of each poll:
+Map the exit status of each fallback poll:
 
 - `0`: not proof (`gh` also exits `0` with a cancelled required check, and `--json`
   exits `0` whatever the buckets). Confirm with
@@ -556,15 +609,10 @@ Map the exit status of each poll:
 - A failure, or the budget spent with no confirmed pass: the PR stays unmerged and
   blocked.
 
-MCP-only sessions instead read `pull_request_read(get_check_runs)` at each wait floor,
-within the same budget: no `check` run yet, or one queued or in progress, keeps the
-wait going; a completed run with conclusion `success`, `skipped` or `neutral` (the
-statuses GitHub's required-check rule accepts) re-runs the guarded finish; any other
-completed conclusion is a failure. Either way the poll only ends the wait:
-it is advisory, never a local gate, and the re-run guard decides (a push during the
-wait moves the head and fails it as `changed-head-sha`). A failed `check` or an
-elapsed budget leaves the PR unmerged and blocked with GitHub's outcome as `other`
-and its one-line reason, never bypassed.
+Either way the poll only ends the wait: it is advisory, never a local gate, and the
+re-run guard decides (a push during the wait moves the head and fails it as
+`changed-head-sha`). A failed `check` or an elapsed budget leaves the PR unmerged and
+blocked with GitHub's outcome as `other` and its one-line reason, never bypassed.
 
 ## Read-only post-merge and cleanup
 

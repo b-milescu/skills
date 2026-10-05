@@ -111,9 +111,10 @@ project_profile:
 Shared installed routes are provider-neutral. This repository's complete
 same-name declarations live in `.claude/agents/` and `.omp/agents/`. Like the
 shared routes they declare no `tools` and inherit all of the parent session's
-tools, and they reach GitHub through the parent's github MCP server or `gh`. Route
-ids, runtime precedence, provenance and what to validate and observe separately
-are owned by
+tools, and they reach GitHub MCP first through the parent's `github` MCP server,
+with `gh` only as [Transport by call](native-integration.md#transport-by-call)
+allows. Route ids, runtime precedence, provenance and what to validate and observe
+separately are owned by
 [agents/README.md](../../agents/README.md#runtime-specific-precedence); the OMP
 loader proof is `tests/omp-agent-loader-smoke.sh`.
 

@@ -11,6 +11,7 @@ not an installed shared profile or a default for foreign targets.
 - GitHub issues are the tracker items for tasks and PRDs.
 - GitHub pull requests are the review vehicle for code, docs, and workflow changes.
 - Comments are native issue and PR comments (plus PR reviews); the [project integration](native-integration.md) owns exact tools, complete reads and publication readback.
+- Transport is MCP first through the `github` MCP server; each native read and write names its help-verified `gh` fallback, or none, in [Transport by call](native-integration.md#transport-by-call).
 - Labels follow this repo's triage vocabulary; see `docs/agents/triage-labels.md`.
 - Follow native pagination for complete discovery; lists are not single-item guard evidence.
 - Verify intended repository against named fetch/push/fork configuration and native repository metadata; never infer work-item scope solely from code-host branding.
