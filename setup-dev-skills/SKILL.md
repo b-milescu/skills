@@ -19,7 +19,8 @@ it contains no target identity, vocabulary, host, default paths or detector.
 
 Inspect named fetch **and** push remotes, fork intent, code/change-request,
 work-item and CI configuration separately. Read referenced docs and available-tool
-documentation; use operation-scoped read-only native verification to compare
+documentation (each reachable MCP server's current schema, each CLI's help); use
+operation-scoped read-only native verification to compare
 intended system/repository scopes and authenticated identities. Local work items
 bind confirmed filesystem scope. Do not infer tracker from host branding, a word
 in a path, first remote or installed tools. Unavailable tools are evidence limits,
@@ -36,10 +37,25 @@ setup, propose reconciliation in place while preserving custom paths, vocabulary
 and user additions; no legacy reader or bulk profile conversion.
 
 Ask concrete **unresolved owner choices** one at a time, e.g. which named push
-repository is intended, where work items live, which available tool reaches the
-named scope, or which conflicting reference is authoritative. Do not present a
-platform menu, repeat confirmed choices, require unrelated authentication or ask
-the owner to discover undocumented provider ceilings/counting units.
+repository is intended, where work items live, or which conflicting reference is
+authoritative. Do not present a platform or tool menu, repeat confirmed choices,
+require unrelated authentication or ask the owner to discover undocumented
+provider ceilings/counting units.
+
+Transport is **MCP first, CLI fallback**. For each native read and write, the
+recipe names the MCP tool that reaches the confirmed scope and, where one reaches
+it, a help-verified CLI fallback (otherwise it records that none exists), used for
+that call only when the MCP is unavailable to the acting session (unconnected or
+unauthenticated for the scope) or for a gap the recipe documents: a missing tool,
+incomplete pages, a lossy body or no exact-head binding that the fallback
+supplies. With no reachable MCP the CLI is the transport and the gap is reported;
+setup installs, configures or authenticates neither. Fallback is chosen before a
+mutation; within an attempt a refusal, guard failure, hold or uncertain write
+keeps its outcome and never switches transport or repeats a write
+([common guard](../forge/reference/common-guard.md)). Both transports bind the
+same scope and immutable identity; no call inherits scope from environment,
+working directory or global configuration. Transports that disagree on scope or
+identity are an unresolved owner choice.
 
 Confirm target-owned integration recipes for forge's five operations, including
 operation-specific required systems, unsupported outcomes, pagination, the
@@ -121,7 +137,7 @@ IDs; discovery metadata does not prove preload execution or effort enforcement.
 
 Configuration-complete means confirmed pointers resolve in the invoked target,
 docs/declarations preserve custom facts, and each operation's supported/refused
-recipes, known bounds and evidence gaps are explicit. Report this separately from
+recipes, transport order, known bounds and evidence gaps are explicit. Report this separately from
 selected-operation delivery readiness: a refused or unverified publication required
 by that delivery blocks delivery-ready, even when configuration is complete.
 Setup does not claim future publication, gate or review success. Live installation

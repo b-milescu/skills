@@ -12,6 +12,10 @@ delivery uses the `forge`, `start-build`, `start-review`, `plan-to-issues`,
 work items bind filesystem scope. Refresh only systems required by the requested
 operation; missing or unsupported actions block only that operation. Configuration
 grants no action authority.
+Each recipe names, per native read and write, its MCP-first transport and the
+help-verified CLI fallback used only when that MCP is unavailable to the acting
+session or for a documented gap (the `setup-dev-skills` skill's
+`SKILL.md#resolve-choices`).
 
 The selected `provider.reference` states the complete packet home, applicable
 authoritative limits/units with evidence and any undocumented capacity. Enforce
