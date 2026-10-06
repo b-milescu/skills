@@ -468,11 +468,15 @@ function validateModel(file, data, fieldLines) {
       continue;
     }
 
+    if (model === '@task' || model === '@slow') {
+      continue;
+    }
+
     if (!OMP_MODEL_PROVIDER_PREFIXES.some((prefix) => model.length > prefix.length && model.startsWith(prefix))) {
       addDiagnostic(
         file,
         lineFor(fieldLines, 'model'),
-        `OMP model "${model}" not an approved model/provider; allowed provider prefixes: ${ALLOWED_OMP_MODEL_PREFIXES}`,
+        `OMP model "${model}" not an approved model/provider; allowed provider prefixes: ${ALLOWED_OMP_MODEL_PREFIXES}; allowed role aliases: @task, @slow`,
       );
     }
   }

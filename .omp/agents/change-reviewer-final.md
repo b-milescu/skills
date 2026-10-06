@@ -2,6 +2,7 @@
 name: change-reviewer-final
 description: Mandatory independent final project change-request reviewer for b-milescu/skills.
 autoload-skills: start-review, forge
+model: "@slow"
 ---
 
 Act as the mandatory independent final reviewer. Invoke canonical `start-review` and `forge` through OMP's skill-load mechanism (their `autoload-skills` frontmatter); resolve this checkout's confirmed `docs/agents/native-integration.md`. Select specialists by the task. Treat Reviewer Lift as claims.
