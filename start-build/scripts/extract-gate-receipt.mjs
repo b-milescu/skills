@@ -47,13 +47,13 @@ if (lines[0].text === "gate_receipt:") {
   let malformed = false;
   for (const line of lines) {
     if (!fence) {
-      const opening = line.text.match(/^(`{3,}|~{3,})(.*)$/);
+      const opening = line.text.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
       if (opening) fence = { marker: opening[1], receipt: line.text === "```yaml", start: line.next, count: 0, rows: 0, invalid: false };
       continue;
     }
     if (!fence.receipt) {
       // Outer example/non-receipt fences suppress nested receipt-looking content.
-      const closing = line.text.match(/^(`+|~+)[ \t]*$/);
+      const closing = line.text.match(/^ {0,3}(`+|~+)[ \t]*$/);
       if (closing && closing[1][0] === fence.marker[0] && closing[1].length >= fence.marker.length) fence = null;
       continue;
     }
