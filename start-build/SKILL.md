@@ -85,8 +85,8 @@ Canonical mode docs: [child](reference/child-builder.md),
    bindings and provider-specific issue closure syntax. Check Reviewer Lift
    presence with
    `bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>`
-   and non-`none` finding bindings with
-   `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --lift <packet> --report <report.md>`,
+   and non-`none` finding bindings against every originating report with
+   `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --lift <packet> --report <report.md> ...`,
    where `<start-build-dir>` and `<start-review-dir>` are the absolute paths of
    the installed `start-build` and `start-review` skill directories, run per the
    `forge` [helper rule](../forge/SKILL.md#helpers).
