@@ -53,7 +53,11 @@ Fill from Tier 1 evidence. `Reviewed commit` stays a bare value here too, repeat
 
 ## Finding identities
 
-Use the tuple contract and validator in [`finding-identities.md`](../reference/finding-identities.md).
+Use the tuple contract in [`finding-identities.md`](../reference/finding-identities.md).
+Before publication, validate this report with start-review's Review Report validator,
+`bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md>`,
+where `<start-review-dir>` is the absolute path of `..` in the installed skill
+([helper rule](../../forge/SKILL.md#helpers)).
 
 The report locator may be a native URL; do not invent another internal ID just
 for the final, change existing report/commit/finding tuples, or rewrite historical

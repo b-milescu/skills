@@ -43,8 +43,12 @@ parent-orchestrated.
    Finish action, Action blocker, Next action, and Report link.
 5. Take final `forge snapshot` reads immediately before publication. If the
    current commit changed, do not publish a stale verdict. Render one Review
-   Report, use `forge publish` to create one durable non-blocking report artifact,
-   and require byte-for-byte provider-native readback.
+   Report and validate it with start-review's Review Report validator,
+   `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md>`,
+   where `<start-review-dir>` is the absolute path of this skill's directory,
+   run per the `forge` [helper rule](../forge/SKILL.md#helpers). Then use
+   `forge publish` to create one durable non-blocking report artifact, and
+   require byte-for-byte provider-native readback.
 6. Keep verdict, approval, finish, action blocker, and next action separate.
    `request-changes` and `blocked` never approve or finish. `reject` publishes the Review Report, then stops and escalates. `pass` permits approval only when authority, exact-candidate local gate/Gate Receipt, and open-question policy allow it.
    For a `request-changes` verdict, record approval `not-approved`, finish `none`,
