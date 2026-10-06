@@ -193,52 +193,41 @@ writes. A watcher (`gh run watch -R github.com/b-milescu/skills`, `gh pr checks 
 never a local gate and never the held-merge wait; that wait polls as in
 [Wait for required checks](#wait-for-required-checks).
 
-Run the gate helper from the installed `start-build` skill, never from this checkout:
-resolve `scripts/validate-gate-receipt.mjs` inside the installed start-build skill (the
-skill the runtime loaded; [skill invocation and resource paths](../../agents/README.md#skill-invocation-and-resource-paths)
-says where each runtime keeps it) and run it by that resolved absolute path.
+Run extraction and validation from the installed `start-build` skill, never from
+this checkout: resolve `scripts/extract-gate-receipt.mjs` and
+`scripts/validate-gate-receipt.mjs` inside the skill the runtime loaded
+([skill invocation and resource paths](../../agents/README.md#skill-invocation-and-resource-paths)
+says where each runtime keeps it), and run each by that resolved absolute path.
 `<start-build-dir>` below stands for that installed directory. A PR must not be
 validated by its own modified validator, and this checkout's `start-build/` is code a
 PR may change. Follow the
 [canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
 using the raw YAML files materialized below for the actual `Gate owner`.
 
-The materialization and owner-mode commands below are unchanged. They validate
-artifacts, not publication authority or capacity. A native comment write separately
-requires [Packet home](#packet-home) and [Publish one artifact](#publish-one-artifact).
+Extraction and owner-mode validation do not establish publication authority or
+capacity. A native comment write separately requires [Packet home](#packet-home)
+and [Publish one artifact](#publish-one-artifact).
 
 ### Materialize the receipt YAML
 
 `--receipt` consumes raw block-style YAML, never a whole Markdown note. Keep
 `authored-note.md` (the complete submitted body), `readback-note.md` (the complete
-lossless native GET body), and the separately materialized
-`authored-receipt.yaml` / `readback-receipt.yaml`. Use this procedure on each
-complete body independently:
+lossless native GET body recovered per [Publish one artifact](#publish-one-artifact)),
+and the separately materialized `authored-receipt.yaml` / `readback-receipt.yaml`.
+The [canonical shared wrapper extraction contract](../../start-build/reference/parent-owned-gate.md#shared-wrapper-extraction)
+owns supported forms, byte preservation and refusals. Invoke the installed
+helper independently on each complete body with fresh, exclusively created
+output paths:
 
-1. For a Markdown note, inspect all top-level fenced blocks, not just the first
-   YAML fence. The supported receipt fence opens with a column-one line exactly
-   ` ```yaml ` (without the surrounding spaces) and closes with a column-one line
-   exactly ` ``` ` (without the surrounding spaces). Within YAML fences, count
-   receipt candidates by a column-one `gate_receipt:` mapping-key line, including
-   nonplain forms such as `gate_receipt: &gate_receipt`. An unrelated YAML fence
-   without that mapping is not a receipt candidate.
-2. Require exactly one receipt candidate in the complete note and a matching
-   closing fence. Require its document to start with the standalone plain line
-   `gate_receipt:` followed only by its indented block-style child fields; no
-   second top-level mapping or receipt anchor. Missing, multiple/ambiguous,
-   unterminated or alias-style (`&` / `*`) receipt anchors refuse materialization.
-   Do not choose the first match, guess a missing fence or repair a document.
-3. Copy the contiguous bytes immediately after the opening fence's line ending
-   up to (excluding) the closing fence line into the raw `.yaml` file, preserving
-   indentation, scalar spelling and line endings. Do not include the title,
-   fence delimiters or evidence bullets, reconstruct fields, trim the document
-   or parse/re-dump YAML.
-4. A parent receipt may instead be published as the raw block-style document:
-   the complete body starts with the standalone plain `gate_receipt:` line and
-   contains only its indented fields, with no Markdown wrapper. For that
-   explicitly supported parent form, copy the entire body byte for byte as the
-   raw input. Refuse duplicate/alias-style anchors or mixed Markdown/YAML;
-   builder publication still requires its titled, fenced, evidence-bearing note.
+```text
+bun <start-build-dir>/scripts/extract-gate-receipt.mjs --input <authored-note.md> --output <authored-receipt.yaml>
+bun <start-build-dir>/scripts/extract-gate-receipt.mjs --input <readback-note.md> --output <readback-receipt.yaml>
+```
+
+Do not hand-code shared extraction or reconstruct receipt fields. Raw parent
+support does not authorize raw builder notes; builder publication still requires
+its titled, fenced, evidence-bearing note. The helper does not recover a native
+JSON `body` string or validate fields, execution, head, actor, scope or custody.
 
 Before publication, safe-text validate the **complete authored body** and run
 the owner-specific receipt validation on `authored-receipt.yaml`. After native
@@ -298,21 +287,22 @@ is not execution proof. Full authored-body safe-text validation and
 requirements. Materialization, local validity, extraction, SHA equality or a
 body digest substitutes for none of those proofs or for authority.
 
-### Parent supported-input smoke
+### Extractor behavior checks
 
-For this documentation/input-seam correction, the parent exercises the procedure
-above in throwaway local authored/readback representations with the actual
-existing installed helper CLI: parent pre-post then post-note with the current
-Lift/locator, and builder pre-post on both raw files. Cover titled/fenced notes
-for both owners and the raw parent form; put an unrelated YAML fence before a
-valid receipt to prove selection is not first-fence selection. Missing, duplicate,
-unterminated and alias-style candidates must refuse materialization before helper
-invocation, without field repair. Retain full-body and extracted-byte comparisons
-and CLI outcomes, not assertions about documentation strings. Do not repeat the
-known whole-Markdown wrong-input command or publish fixtures as real Gate
-Receipts. Fixture success is not gate execution evidence: the normal isolated
-exact-candidate `bun run check`, durable Gate Receipt and fresh independent final
-review still precede an authorized exact-head merge.
+Run `bun tests/gate-receipt-extractor.mjs` per the [targeted Check Gate documentation](check-gate.md#targeted-checks).
+The shipped public-CLI test checks output bytes and file state from a foreign CWD,
+both owners' fenced notes, raw parent form, unrelated/nested fences, decoding,
+malformed/ambiguous wrapper refusals, no-body diagnostics, exclusive output
+creation and compatibility with the unchanged validator.
+
+For installed proof, invoke the public helper above from a foreign CWD on complete
+local authored/readback fixtures using fresh outputs, including a positive
+extraction and a refused malformed wrapper. Retain full-body and extracted-byte
+comparisons and CLI outcomes, then run parent pre-post/post-note and builder
+pre-post on the raw files with the unchanged installed validator. Never publish
+fixtures as real Gate Receipts. Fixture success is not execution evidence: the
+normal isolated exact-candidate `bun run check`, durable Gate Receipt and fresh
+independent final review still precede an authorized exact-head merge.
 
 ## Packet home
 

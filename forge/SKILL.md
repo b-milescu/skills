@@ -115,9 +115,13 @@ non-whitespace C0 and DEL; allow tab/LF/CR and valid Unicode. Failures emit only
 role/offset/type, never body or parser excerpts. Valid envelope content errors use
 the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
+The [shared wrapper extraction contract](../start-build/reference/parent-owned-gate.md#shared-wrapper-extraction)
+owns installed receipt materialization from complete authored and lossless
+readback files; it proves neither receipt validity nor native attribution.
 The selected target reference owns native identifiers/locators, tools, pagination,
-normalization, closure syntax, the [packet home](#packet-home), capacity evidence
-and native-validation/readback recipe, draft/ready, receipt extraction, approval/finish,
+normalization, closure syntax, the [packet home](#packet-home), capacity evidence,
+native body recovery/validation/readback, draft/ready, native receipt field
+extraction and actor/head/scope/custody attribution, approval/finish,
 expected-head guarantees, required-check holds with the signal that ends their
 wait and any bound other than the default
 [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
