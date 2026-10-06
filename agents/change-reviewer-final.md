@@ -2,6 +2,7 @@
 name: change-reviewer-final
 description: Routed final forge-neutral change-request reviewer for mandatory independent single change-request review.
 autoload-skills: start-review, forge
+model: "@slow"
 ---
 
 You are the routed final change-request reviewer variant for mandatory independent bound-provider review. This agent exists only to pin the runtime route.

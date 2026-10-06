@@ -65,21 +65,39 @@ select a generic specialist, shim, old filename, cross-runtime route or downgrad
 
 ## Model and effort selection
 
-Selection is runtime-owned. Shipped declarations pin no model or effort, prompt
-prose is not model/effort enforcement, and selection never relaxes canonical
-route, independent-review, exact-candidate gate or authority boundaries.
+Selection is runtime-owned. Shipped declarations pin no concrete model or effort;
+OMP declares workload-role defaults. Prompt prose is not model/effort enforcement,
+and selection never relaxes canonical route, independent-review, exact-candidate
+gate or authority boundaries.
 
 - **Claude Code:** declarations use `model: inherit` and omit `effort`. The parent
   may select a supported model through the native Agent invocation's model
   override; without it, the model inherits the parent conversation. Omitted effort
   inherits the session, subject to native model support and limits. There is no
   per-invocation Agent effort parameter and no `effort: inherit` declaration.
-- **OMP:** declarations omit `model` and `thinking-level`; native parent/runtime
-  task selection and defaults resolve them. Use only overrides exposed by the
-  actual callable runtime interface, not internal executor arguments. Installed
-  OMP exposes per-task `effort` (`lo`/`med`/`hi`) only behind `task.enableEffort`;
-  this repository neither enables that setting nor adds a model parameter to
-  `task`. Operator overrides and supported levels remain runtime-owned.
+- **OMP:** both reusable and complete project declarations use `model: "@task"`
+  for `change-builder` and `model: "@slow"` for `change-reviewer-final`, and omit
+  `thinking-level`. These are native workload-role defaults, not hard pins;
+  the operator owns their mappings under `modelRoles`. Quote `@` aliases in YAML.
+  The existing schema checker accepts these two exact aliases as scalars or
+  prioritized list entries alongside its existing concrete-provider selectors.
+  Native model precedence is per-call `model` >
+  `task.agentModelOverrides[agentName]` > agent frontmatter > the parent's active
+  model/configured fallback.
+
+  Current native `task` exposes per-item `model` as a scalar or ordered list.
+  Ambiguous `default`/`inherit` or a selector matching no available model fails
+  preflight; use `@default` to explicitly inherit the parent's active model.
+  Agent-frontmatter and `task.agentModelOverrides` selections retain native parent
+  fallback. An explicit per-call selection instead fails if no requested candidate
+  has working credentials, unless it includes `@default`. Neither is a strict
+  execution allowlist: configured native retry fallback chains remain in effect.
+
+  Use only overrides exposed by the actual callable interface, not internal
+  executor arguments. Per-task `effort` (`lo`/`med`/`hi`) is exposed only behind
+  `task.enableEffort`; this repository does not enable that setting or add a
+  thinking suffix/effort override. Effective effort and supported levels remain
+  runtime- and operator-owned.
 
 Installation or selected-source metadata is not live execution proof: after a
 frontmatter or routing change, take a fresh spawning-session operator observation

@@ -38,12 +38,16 @@ select a generic specialist, shim, old filename, cross-runtime route or downgrad
 
 ### Native model and effort selection
 
-Route presets inherit the parent's model unless the parent selects one; omitted
-effort inherits the session subject to native model support and limits. Runtimes
-may expose selection controls: use only overrides exposed by the actual callable
-runtime interface, not internal executor arguments, and neither enable a runtime
-setting nor add an invocation parameter to gain one. Operator overrides and
-supported levels remain runtime-owned.
+Route presets may declare native workload-model defaults. Those defaults yield to
+supported per-call and operator overrides rather than forcing parent inheritance
+or a strict model pin. Native rules govern parent/default fallback and may
+distinguish defaults from explicit selection when models or credentials are
+unavailable; preserve native credential and retry fallback behavior. Omitted
+effort follows native session/model defaults, subject to model support and limits.
+Runtimes may expose selection controls: use only overrides exposed by the actual
+callable runtime interface, not internal executor arguments, and neither enable a
+runtime setting nor add an invocation parameter to gain one. Operator overrides
+and supported levels remain runtime-owned.
 
 Prompt prose is not model/effort enforcement. Selection never relaxes canonical
 role routing, independent review, exact-candidate gates or authority boundaries.

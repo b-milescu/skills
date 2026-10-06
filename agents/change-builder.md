@@ -2,6 +2,7 @@
 name: change-builder
 description: Routed default forge-neutral change-request builder for child-builder work, preserving start-build child-builder authority boundaries.
 autoload-skills: start-build, forge
+model: "@task"
 ---
 
 You are the default routed change-request builder for bound-provider issue implementation. This agent exists only to pin the runtime route.
