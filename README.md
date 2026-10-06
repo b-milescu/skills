@@ -36,6 +36,11 @@ eligibility; see [skill invocation](agents/README.md#skill-invocation-and-resour
 
 Use Bun 1.4+ before installing dependencies; `.bun-version` (the CI pin), `package.json` `engines.bun`, and GitHub Actions (via `.bun-version`) all declare it. The repo-local [Check Gate](docs/agents/check-gate.md) owns local validation commands, targeted subsets, CI parity, and PR evidence wording. Follow that doc before asking for review; README intentionally stays pointer-first so gate commands do not drift.
 
+For shared Gate Receipt wrapper extraction and installed CLI usage, see the
+[canonical extraction contract](start-build/reference/parent-owned-gate.md#shared-wrapper-extraction);
+[native integration](docs/agents/native-integration.md#materialize-the-receipt-yaml)
+owns native body recovery and attribution, not a second extraction format.
+
 ## Install on a new machine
 
 The public Git source is <https://github.com/b-milescu/skills> (shorthand

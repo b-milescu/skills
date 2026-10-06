@@ -111,22 +111,66 @@ need not be recognized correctly by a target's native receipt extraction, where
 one exists, so arbitrary scalar spellings are not proven supported. Keep the
 actual project gate command unchanged.
 
-`--receipt` names a file containing only the raw block-style receipt YAML
-document: the plain `gate_receipt:` mapping and its indented fields, without a
-Markdown title, fence delimiters or evidence bullets. The helper does not extract
-YAML from Markdown. This input contract does not change the required native
-publication form, including the titled, fenced, evidence-bearing builder note.
+`--receipt` on `validate-gate-receipt.mjs` names a file containing only the raw
+block-style receipt YAML document: the plain `gate_receipt:` mapping and its
+indented fields, without a Markdown title, fence delimiters or evidence bullets.
+The validator does not extract YAML from Markdown. This input contract does not
+change native publication requirements, including the titled, fenced,
+evidence-bearing builder note.
 
-Retain the complete authored note and the complete native readback separately.
-Materialize `authored-receipt.yaml` from the authored body before publication and
-`readback-receipt.yaml` from the lossless native body afterward, using the selected
-target reference's supported extraction recipe. Copy the receipt document bytes;
-do not reconstruct fields or parse/re-dump YAML. Keep both raw files and require
-their equality in addition to full authored-note/native-note byte equality.
-Full authored-body safe-text validation with forge's `scripts/validate-text.mjs`,
-run per the [helper rule](../../forge/SKILL.md#helpers), and complete native-body
-equality remain independent publication prerequisites, not checks of only the
-extracted YAML.
+### Shared wrapper extraction
+
+`extract-gate-receipt.mjs` owns provider-neutral wrapper extraction, not native
+body recovery or receipt validation. Retain the complete authored note and the
+complete lossless native readback separately. Resolve `<start-build-dir>` to the
+absolute installed skill directory per the [helper rule](../../forge/SKILL.md#helpers);
+run each complete file independently, using fresh output paths:
+
+```text
+bun <start-build-dir>/scripts/extract-gate-receipt.mjs --input <authored-note.md> --output <authored-receipt.yaml>
+bun <start-build-dir>/scripts/extract-gate-receipt.mjs --input <readback-note.md> --output <readback-receipt.yaml>
+```
+
+The CLI accepts exactly one `--input` and one `--output`, with no provider,
+owner or mode flags. `--help` prints static usage and exits 0. Success exits 0
+after writing the original receipt byte slice, with no stdout body or banner.
+Argument, I/O, strict UTF-8 decoding and wrapper failures exit nonzero with fixed
+no-body/no-argument-value diagnostics and static usage. Output creation is
+exclusive: existing files, input/output collisions and symlink targets are not
+overwritten; wrapper failures create no output.
+
+The supported Markdown wrapper has a top-level, column-one opening line exactly
+` ```yaml ` and closing line exactly ` ``` ` (without the surrounding spaces).
+Require exactly one receipt candidate across all top-level YAML fences, whose
+document starts with the exact plain line `gate_receipt:` and contains only
+indented nonblank child lines thereafter. Blank lines and indented comments are
+preserved, as are indentation, scalar spelling, Unicode, LF/CRLF and final-newline
+distinctions. Copy the bytes after the opening fence's line ending through the
+byte before the closing fence line; never trim, reconstruct fields or parse/dump
+YAML. Unindented comments/content and a second top-level mapping are refused.
+CR-only line endings and alternate receipt fence spellings are unsupported.
+
+Skip unrelated YAML documents and the contents of non-receipt code fences,
+including nested example fences. Count malformed/nonplain/alias-style root
+candidates too: missing, multiple/ambiguous or unterminated candidates refuse
+extraction, as do nonplain/alias roots. Never choose the first valid match or
+repair a candidate. A root-only document may be extracted but is not a valid
+receipt; semantic sufficiency remains the validator's job.
+
+The existing raw parent form is also supported: the whole input starts with the
+exact plain `gate_receipt:` line and contains only its indented child form; copy
+the entire original bytes. This does not authorize raw builder publication.
+Builder title, fence and evidence requirements remain unchanged.
+
+Keep both raw outputs and require their byte equality independently of full
+authored-note/native-note byte equality. Full authored-body safe-text validation
+with forge's `scripts/validate-text.mjs`, run per the helper rule, and complete
+native-body equality remain independent publication prerequisites, not checks
+of only the extracted YAML. Extraction validates no fields, PASS/execution,
+head/owner/Lift, native actor/scope/custody or authority. Native JSON-to-string
+body recovery remains the selected target reference's responsibility.
+
+### Validation and proof boundaries
 
 Three checks stay separate: full local pre-post receipt validation; native
 extraction of the exact `checkout_commit`, `command`, and `result` with
