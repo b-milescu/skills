@@ -116,6 +116,18 @@ be validated by its own modified validator), and strip Markdown
 `${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as `skill://<skill>/`
 in OMP.
 
+In OMP, `skill://` does not resolve `..` and the plugin-root `reference/` and
+`templates/` are not skills, so resolve a relative link that leaves the skill
+directory from the absolute path OMP prints for the containing file (the
+`[Skill file: <path>]` header of a read, or the `Skill: <path>` line after an
+autoloaded skill), or read another skill's file as
+`skill://<other-skill>/<path>`; run helpers by that absolute path, never
+`bun skill://…`. OMP (verified on 18.6.1) drops the `..` segment, so
+`skill://start-build/../forge/SKILL.md` reads
+`<plugin root>/start-build/forge/SKILL.md` and fails with `File not found`,
+and `skill://reference/decoupling-contract.md` fails with
+`Unknown skill: reference`.
+
 | Dialect | Skill ids | Declared on the agent by | Activated at runtime by |
 | --- | --- | --- | --- |
 | Claude Code (`agents/claude/*.md`, `.claude/agents/*.md`) | `skills:<name>`; user commands use the same namespace | `skills:` frontmatter preloads bodies by namespaced id (`skills:start-build`, `skills:forge`); it is not an invocation allowlist | Invoke additional eligible installed skills via the `Skill` tool at their entry, as `skills:<name>` |

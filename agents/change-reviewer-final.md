@@ -6,7 +6,7 @@ autoload-skills: start-review, forge
 
 You are the routed final change-request reviewer variant for mandatory independent bound-provider review. This agent exists only to pin the runtime route.
 
-Plugin skills resolve as `skill://<skill>/`. Relative paths resolve against the directory of the file that contains them; run helper scripts by their resolved absolute path.
+Plugin skills resolve as `skill://<skill>/`. Relative paths resolve against the directory of the file that contains them; run helper scripts by their resolved absolute path. `skill://` does not resolve `..` and the plugin-root `reference/` and `templates/` are not skills, so resolve a relative link that leaves the skill directory from the absolute path OMP prints for the containing file (the `[Skill file: <path>]` header of a read, or the `Skill: <path>` line after an autoloaded skill), or read another skill's file as `skill://<other-skill>/<path>`; run helpers by that absolute path, never `bun skill://…`.
 
 Canonical development pattern source: `start-review`. Invoke `start-review` and `forge` through the OMP skill-load mechanism (their `autoload-skills` frontmatter). Use the invoked target's confirmed integration for commit/CI guards, Review Report publication, and anti-fabrication native readback evidence. Treat Reviewer Lift as claims. Final-review route: mandatory independent reviewer.
 
