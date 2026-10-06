@@ -19,8 +19,10 @@ floor. The detailed non-negotiables below remain applicable.
   boundaries; reviewers derive independent evidence; verifiers remain read-only.
 - **Native/MCP-first transport correctness, complete reviewed-diff coverage,
   provider-native mutation readback and help-first documented fallback
-  correctness** remain required. Publication includes safe-body validation and
-  authored-source equality; extraction or a digest alone is not that proof.
+  correctness** remain required. Publication includes safe-body validation
+  (forge's `scripts/validate-text.mjs`, run per the
+  [helper rule](../forge/SKILL.md#helpers)) and authored-source equality;
+  extraction or a digest alone is not that proof.
 
 ## Non-negotiables
 

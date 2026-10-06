@@ -82,7 +82,14 @@ Canonical mode docs: [child](reference/child-builder.md),
 6. Before handoff, update every affected caller/test/doc/generated copy. Bind
    Reviewer Lift `Reviewed SHA`, any quoted CI observation, local gate, changed
    paths, surfaces, authorities, and delta to the current commit. Validate
-   bindings and provider-specific issue closure syntax.
+   bindings and provider-specific issue closure syntax. Check Reviewer Lift
+   presence with
+   `bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>`
+   and non-`none` finding bindings with
+   `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --lift <packet> --report <report.md>`,
+   where `<start-build-dir>` and `<start-review-dir>` are the absolute paths of
+   the installed `start-build` and `start-review` skill directories, run per the
+   `forge` [helper rule](../forge/SKILL.md#helpers).
 7. Push the final candidate and require local HEAD, remote source ref, `forge
    snapshot` current commit, Review Packet, and final handoff to agree.
 8. Builder-owned mode runs the project Check Gate and uses guarded `forge act`

@@ -308,8 +308,13 @@ in the Review Report's Action / Blocker section.
    evidence gaps before publication. Action-only failures retain the valid
    judgment but deny the affected action with its blocker and next actor/action.
    An advisory CI classification is not a guard.
-4. Use `forge publish` to create one durable non-blocking report with safe-body
-   validation and byte-for-byte provider-native readback.
+4. Validate the report with start-review's Review Report validator,
+   `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md>`,
+   where `<start-review-dir>` is the absolute path of this skill's directory.
+   Then use `forge publish` to create one durable non-blocking report with
+   safe-body validation (forge's `scripts/validate-text.mjs`) and byte-for-byte
+   provider-native readback. Run both helpers per the `forge`
+   [helper rule](../forge/SKILL.md#helpers).
    After publication readback, remove the reviewer-created isolated worktree
    per [Single-change request checkout mode](#single-change-request-checkout-mode)
    when that tree is clean and is not the coordinator path.
@@ -347,8 +352,10 @@ provider refusal, or post-publication guard failure requires a compact plain
 non-blocking action explanation note on the same change request. Intentional
 parent-owned reviewer no-action needs no extra note.
 
-Publish through `forge publish`, with safe-body validation and byte-for-byte
-native readback. Include the original report's stable identity and published
+Publish through `forge publish`, with safe-body validation (forge's
+`scripts/validate-text.mjs`, run per the [helper rule](../forge/SKILL.md#helpers))
+and byte-for-byte native readback.
+Include the original report's stable identity and published
 locator, exact reviewed commit, actor and authority source, action attempted
 or denied, whether a mutation ran, verified outcome or explicit unverified
 state, blocker/reason, next actor/action, and native evidence locators with

@@ -20,7 +20,7 @@ Turn an approved plan into tracker issues or work items for the current target r
 6. If the source is an issue, PRD, URL, or file, fetch/read its full body and comments.
 7. Explore only enough context to name slices accurately: read the glossary/context map and relevant ADR locations declared by `<domain-doc>`, following any map to only topic-relevant scopes. Use the applicable glossary vocabulary and flag ADR conflicts. If optional context/ADR documents are absent, proceed quietly without fabricating them, proposing creation solely for their absence, or substituting installed aliases. Inspect current seams and coupling risk.
 8. Draft vertical slices; ask the user to approve the breakdown before publishing.
-9. After explicit publish approval, publish each approved slice as one `forge publish` tracker-issue or work-item artifact and require provider-native readback. The disclosed provider reference owns native create, labels, comments, safe-body, and fallback.
+9. After explicit publish approval, publish each approved slice as one `forge publish` tracker-issue or work-item artifact with safe-body validation (forge's `scripts/validate-text.mjs`, run per the [helper rule](../forge/SKILL.md#helpers)) and require provider-native readback. The disclosed provider reference owns native create, labels, comments, and fallback.
 
 ## Slice rules
 
