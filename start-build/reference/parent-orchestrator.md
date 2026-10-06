@@ -71,6 +71,7 @@ per-branch invariant, not a one-time batch preflight:
   path, source branch, and change-request/work-item binding in its session-owned worktree ledger:
 
   ```bash
+  stop() { printf '%s\n' "$*" >&2; exit 1; }
   case "$coordinator_path" in
     /*) ;;
     *) stop "coordinator path must be absolute" ;;
@@ -87,9 +88,9 @@ per-branch invariant, not a one-time batch preflight:
     stop "coordinator and child worktree paths collide"
   ```
 
-  No repository-wide worktree discovery result is owned cleanup scope. Pass
-  `--coordinator-path "$coordinator_path"` on every local-mutating finish call,
-  and `--worktree-path "$child_worktree_path"` when the recorded child is in
+  No repository-wide worktree discovery result is owned cleanup scope.
+  Local-mutating finish and cleanup steps act only on the recorded paths:
+  `$coordinator_path`, and `$child_worktree_path` when the recorded child is in
   cleanup scope. Missing, relative, colliding, unknown, or no-longer-bound
   paths stay untouched.
 - After merge, fetch the confirmed named code remote, fast-forward local default in a clean checkout, then remove only clean session-owned local worktrees and source branches.

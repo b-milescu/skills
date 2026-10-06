@@ -107,9 +107,9 @@ Publish the receipt as block-style YAML as above: a standalone `gate_receipt:`
 anchor with indented child fields. JSON text merely placed inside a YAML fence
 is not the publication form; JSON MCP arguments are transport, while the YAML
 receipt body is the durable artifact. Valid YAML for the full local validator
-need not be recognized correctly by the current native extractor, so arbitrary
-scalar spellings are not proven supported. Keep the actual project gate command
-unchanged.
+need not be recognized correctly by a target's native receipt extraction, where
+one exists, so arbitrary scalar spellings are not proven supported. Keep the
+actual project gate command unchanged.
 
 `--receipt` names a file containing only the raw block-style receipt YAML
 document: the plain `gate_receipt:` mapping and its indented fields, without a
@@ -123,8 +123,10 @@ Materialize `authored-receipt.yaml` from the authored body before publication an
 target reference's supported extraction recipe. Copy the receipt document bytes;
 do not reconstruct fields or parse/re-dump YAML. Keep both raw files and require
 their equality in addition to full authored-note/native-note byte equality.
-Full authored-body safe-text validation and complete native-body equality remain
-independent publication prerequisites, not checks of only the extracted YAML.
+Full authored-body safe-text validation with forge's `scripts/validate-text.mjs`,
+run per the [helper rule](../../forge/SKILL.md#helpers), and complete native-body
+equality remain independent publication prerequisites, not checks of only the
+extracted YAML.
 
 Three checks stay separate: full local pre-post receipt validation; native
 extraction of the exact `checkout_commit`, `command`, and `result` with
@@ -243,11 +245,13 @@ the anchor must be the plain mapping key. Builder receipts do not carry the
 parent-only fields (`change_id`, `issue_id`, `checkout_path`, `status_*`,
 `preflight_checks`, `evidence`) — those belong to the parent schema above.
 
-Acceptance is provider-native and exact-candidate: the handoff-evidence tool
-must report `present_anchor: true` and `receipt_commit_eq_head: true` for the
-current head, and publication requires provider-native byte-for-byte readback
-of the complete note. Retain that full authored/read-back pair and materialize
-its two raw YAML files as in [Publication syntax and proof](#publication-syntax-and-proof).
+Acceptance is provider-native and exact-candidate. Two checks must hold for the
+current head, each verified through the selected target reference: the read-back
+note carries the standalone `gate_receipt:` anchor (`present_anchor`), and its
+`checkout_commit` equals the fresh change-request head (`receipt_commit_eq_head`).
+Publication also requires provider-native byte-for-byte readback of the complete
+note. Retain that full authored/read-back pair and materialize its two raw YAML
+files as in [Publication syntax and proof](#publication-syntax-and-proof).
 Validate the authored YAML before publication and the read-back YAML afterward,
 using `--owner builder --mode pre-post` for both. Run the helper per the
 [helper rule](../../forge/SKILL.md#helpers); parent-owned binding flags are

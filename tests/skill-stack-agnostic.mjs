@@ -40,6 +40,8 @@ const RULES = [
   ["model id", /\b(?:opus|sonnet|haiku|gemini|fable|anthropic|openai|grok|llama|mistral|deepseek|qwen)\b|\bgpt[- ]?[0-9]|\bclaude-[a-z]+-[0-9]|\bo[1-9]\b/i, ["Sonnet", "fable", "claude-fable-5", "Anthropic", "OpenAI", "gpt5", "GPT 5", "gpt-4o", "o3", "Grok", "Llama", "Mistral", "DeepSeek", "Qwen"]],
   ["code host", /\b(?:github|gitlab|bitbucket|gitea|forgejo)\b/i, ["GitHub"]],
   ["code-host CLI", /`(?:gh|glab) |^[ \t]*(?:gh|glab) /m, ["`gh pr view`", "text\n  gh pr view"]],
+  // GitLab-only tooling the neutral stack once named: the MCP handoff-evidence tool and the deleted finish script's path flags.
+  ["target-only tool", /\bhandoff[\s_-]+evidence[\s_-]+tool|--(?:coordinator|worktree)-path/i, ["the handoff-evidence tool", "Handoff evidence\ntool", "`--coordinator-path \"$coordinator_path\"`", "`--worktree-path \"$child_worktree_path\"`"], ["No single read returns handoff evidence", "stop \"coordinator path is missing\"", "non-coordinator-path guards", "test -d \"$child_worktree_path\""]],
   ["change-request noun", /\b(?:MRs?|PRs?|IID)\b/, ["the MR"], ["PRIVATE", "a change request"]],
   ["change-request noun", /\b(?:merge|pull)[\s_-]+requests?\b/i, ["Pull Request", "pull-request", "merge_request", "merge-request", "merge\nrequest"]],
   ["bang reference", /(?<![\w/])![0-9]+\b/, ["see !193"], ["urgent!2", "!important"]],
