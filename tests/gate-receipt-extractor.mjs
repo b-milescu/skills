@@ -89,6 +89,19 @@ try {
   extract("gate_receipt:", "gate_receipt:", "raw root-only without final newline");
   extract(`\`\`\`yaml\nunrelated: true\n\`\`\`\n${fence(builder)}`, builder, "unrelated preceding YAML is not first-match selection");
   extract(`\`\`\`\`markdown\n${fence(builder)}\n\`\`\`\`\n~~~text\n${fence("gate_receipt: &example\n")}\n~~~\n\`\`\`json\ngate_receipt: &ignored\n\`\`\`\n${fence(builder)}`, builder, "nested examples and non-YAML fences are ignored");
+  const nestedExample = fence("gate_receipt:\n  kind: \"example-only\"\n");
+  for (const marker of ["````", "~~~~"]) {
+    for (const spaces of ["", " ", "  ", "   "]) {
+      const example = `${spaces}${marker}markdown\n${nestedExample}\n${spaces}${marker}\n`;
+      reject(example, `${marker} outer with ${spaces.length} spaces never promotes its nested receipt`);
+      extract(`${example}${fence(builder)}`, builder, `${marker} outer with ${spaces.length} spaces selects only the real receipt`);
+      if (spaces.length) extract(`${marker}text\n${sentinel}\n${spaces}${marker}\n${fence(builder)}`, builder, `${marker} column-one opener accepts a ${spaces.length}-space generic closer`);
+    }
+    reject(`${marker}markdown\n${nestedExample}\n    ${marker}\n${fence(builder)}`, `${marker} four-space generic closer does not end the example`);
+  }
+  const literalFences = "gate_receipt:\n  example: |-\n   ```yaml\n   gate_receipt:\n     kind: \"literal-only\"\n   ```\n";
+  extract(fence(literalFences), literalFences, "indented delimiter-looking scalar content remains original receipt bytes");
+  reject(`\`\`\`yaml\n${builder}   \`\`\`\n`, "indented-only receipt closer remains unterminated");
 
   for (const [note, label] of [
     [`# ${sentinel}\n\`\`\`yaml\nother: true\n\`\`\``, "missing receipt"],
