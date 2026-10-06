@@ -8,44 +8,55 @@ const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 // Preflight command allowlist: the canonical form plus the strictly stronger
 // untracked-files=all form, which also fails on untracked residue.
 const cleanStatusCommands = new Set(["git status --porcelain", "git status --porcelain --untracked-files=all"]);
+// Static on purpose: argument errors print it after their unchanged first line,
+// and it never echoes a supplied flag or value.
+const usage = `usage, one accepted flag set per line (see ../reference/parent-owned-gate.md, relative to this script):
+  --mode lift-only --review-packet <packet> [--owner parent|builder]
+  [--owner parent] --mode pre-post --receipt <receipt.yaml> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command> [--review-packet <packet>]
+  [--owner parent] [--mode post-note] --receipt <receipt.yaml> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <locator> --gate-command <command> --gate-policy-ref <policy>
+  --owner builder --mode pre-post --receipt <receipt.yaml> --reviewed-commit <commit> --gate-command <command>`;
 
 function fail(message) {
   console.error(`gate-receipt validation failed: ${message}`);
   process.exit(1);
 }
 
+function failWithUsage(message) {
+  fail(`${message}\n${usage}`);
+}
+
 function parseArgs(argv) {
-  if (argv.length % 2 !== 0) fail("expected flag/value pairs");
+  if (argv.length % 2 !== 0) failWithUsage("expected flag/value pairs");
   const args = new Map();
   for (let index = 0; index < argv.length; index += 2) {
     const flag = argv[index];
     const value = argv[index + 1];
-    if (!allowedFlags.includes(flag) || !value || args.has(flag)) fail("invalid arguments");
+    if (!allowedFlags.includes(flag) || !value || args.has(flag)) failWithUsage("invalid arguments");
     args.set(flag, value);
   }
   const owner = args.get("--owner") ?? "parent";
-  if (!["parent", "builder"].includes(owner)) fail("invalid --owner");
+  if (!["parent", "builder"].includes(owner)) failWithUsage("invalid --owner");
   const mode = args.get("--mode") ?? "post-note";
-  if (!["lift-only", "pre-post", "post-note"].includes(mode)) fail("invalid --mode");
+  if (!["lift-only", "pre-post", "post-note"].includes(mode)) failWithUsage("invalid --mode");
   if (mode === "lift-only") {
-    if (!args.has("--review-packet")) fail("missing --review-packet");
-    if ([...commonFlags, "--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) fail("receipt binding flags are invalid in lift-only mode");
+    if (!args.has("--review-packet")) failWithUsage("missing --review-packet");
+    if ([...commonFlags, "--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) failWithUsage("receipt binding flags are invalid in lift-only mode");
     return { args, mode, owner };
   }
   if (owner === "builder" && mode === "post-note") {
-    fail("post-note Reviewer Lift validation is scoped to parent-owned mode; validate builder-owned receipts with --owner builder --mode pre-post");
+    failWithUsage("post-note Reviewer Lift validation is scoped to parent-owned mode; validate builder-owned receipts with --owner builder --mode pre-post");
   }
   const required = owner === "builder"
     ? ["--receipt", "--reviewed-commit", "--gate-command"]
     : mode === "pre-post" ? commonFlags : [...commonFlags, ...postFlags];
-  for (const flag of required) if (!args.has(flag)) fail(`missing ${flag}`);
+  for (const flag of required) if (!args.has(flag)) failWithUsage(`missing ${flag}`);
   if (owner === "builder" && ["--change-id", "--issue-id", ...postFlags].some((flag) => args.has(flag))) {
-    fail("parent-owned binding flags are invalid in builder mode");
+    failWithUsage("parent-owned binding flags are invalid in builder mode");
   }
   // Pre-post may lint the candidate Lift (--review-packet); the receipt pointer
   // and policy binding exist only after the note is posted.
   if (owner === "parent" && mode === "pre-post" && ["--gate-receipt-locator", "--gate-policy-ref"].some((flag) => args.has(flag))) {
-    fail("--gate-receipt-locator and --gate-policy-ref are post-note flags, invalid in pre-post mode");
+    failWithUsage("--gate-receipt-locator and --gate-policy-ref are post-note flags, invalid in pre-post mode");
   }
   return { args, mode, owner };
 }
