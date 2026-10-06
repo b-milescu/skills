@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Focus: runtime schemas, native project paths, scoped-selector syntax and
-# non-empty requested validation. Native availability is a separate proof.
+# Focus: runtime schemas, native project paths, model-role scalar/list boundaries,
+# scoped-selector syntax and non-empty requests. Native availability is separate.
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 TMP_ROOT="$(mktemp -d)"
@@ -233,6 +233,52 @@ autoload-skills: start-build, forge
 ---
 MD
 bun "$checker" "$probe/.omp/agents/tool-probe.md"
+# Model selection is checked through the public CLI; fixtures omit tools to inherit.
+models="$TMP_ROOT/models"
+mkdir -p "$models/.omp/agents" "$models/.claude/agents"
+probe_model() { # dialect, YAML model value
+  printf -- '---\nname: model-probe\ndescription: Model selector probe\nmodel: %s\n---\n' "$2" >"$models/.$1/agents/model-probe.md"
+}
+for model in 'openai-codex/gpt-5.5' '[anthropic/claude-sonnet-4-6, openai-codex/gpt-5.5, pi/model, zai/model]' '"@task"' '"@slow"' "'@task'" "'@slow'" '["@task", "@slow", openai-codex/gpt-5.5]' '[anthropic/claude-sonnet-4-6, "@slow", "@task"]' $'\n  - "@slow"\n  - "@task"\n  - zai/model'; do
+  probe_model omp "$model"
+  expect_checked '0 Claude agent(s), 1 OMP agent(s)' "$models/.omp/agents/model-probe.md"
+done
+for model in '"@default"' '"@smol"' '"@Task"' '"@task-extra"' '"@slow-extra"' '"@task:high"' '"@slow:high"' '" @task"' '"@slow "' '"@task,@slow"' 'bare-model' 'other/model' 'anthropic/' '["@task", "other/model"]'; do
+  probe_model omp "$model"
+  expect_fail "$models/.omp/agents/model-probe.md"
+  if ! grep -Fq 'not an approved model/provider' "$TMP_ROOT/diagnostic"; then
+    echo "missing model-selector rejection: $model" >&2
+    cat "$TMP_ROOT/diagnostic" >&2
+    exit 1
+  fi
+done
+for model in '@task' '@slow' '[@task, "@slow"]' $'\n  - @slow' '["@task"'; do
+  probe_model omp "$model"
+  expect_fail "$models/.omp/agents/model-probe.md"
+  if ! grep -Fq 'frontmatter YAML does not parse' "$TMP_ROOT/diagnostic"; then
+    echo "missing model YAML rejection: $model" >&2
+    cat "$TMP_ROOT/diagnostic" >&2
+    exit 1
+  fi
+done
+for model in '""' 'null' '42' '[]' '[42]' '["@task", 42]' '["@slow", ""]'; do
+  probe_model omp "$model"
+  expect_fail "$models/.omp/agents/model-probe.md"
+  if ! grep -Fq 'frontmatter field "model" must be a non-empty string or string list' "$TMP_ROOT/diagnostic"; then
+    echo "missing model-type rejection: $model" >&2
+    cat "$TMP_ROOT/diagnostic" >&2
+    exit 1
+  fi
+done
+for model in '"@task"' '"@slow"' '["@task", inherit]'; do
+  probe_model claude "$model"
+  expect_fail "$models/.claude/agents/model-probe.md"
+  if ! grep -F 'Claude model' "$TMP_ROOT/diagnostic" | grep -Fq 'is not approved'; then
+    echo "OMP role accepted in Claude dialect: $model" >&2
+    cat "$TMP_ROOT/diagnostic" >&2
+    exit 1
+  fi
+done
 # Real project declarations and shared presets are checked together by default.
 bun "$checker"
 echo 'agents-schema regression: PASS'
