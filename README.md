@@ -92,8 +92,8 @@ not additional skills, and exclude complete project-native agent declarations
 from reusable defaults. The routes declare no `tools` and inherit all of the
 parent session's tools. Canonical logical skill IDs remain unchanged. Skills
 link their resources by relative paths that resolve against the directory of the
-file containing them, as in standard Markdown, so both runtimes resolve them
-without a per-runtime bootstrap; helper scripts run by their resolved absolute path
+file containing them, as in standard Markdown. Follow the runtime-specific guidance
+below for cross-directory links; helper scripts run by their resolved absolute path
 inside the installed skill, including from the target CWD. See
 [route ids, model/effort selection and skill invocation](agents/README.md#skill-invocation-and-resource-paths).
 Source-owned native docs never become a foreign target's profile or policy.
