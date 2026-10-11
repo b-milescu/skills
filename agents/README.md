@@ -122,8 +122,9 @@ Skills link their own resources, the shared reference docs and the shared
 templates by relative paths, never through symlinks (an installer may rewrite a
 symlink into a machine-specific absolute link; each native installation keeps the
 complete plugin tree, so a plain path works). A relative path resolves against the
-directory of the file that contains it, as in standard Markdown, never against the
-skill directory, so skill entries carry no per-runtime bootstrap:
+directory of the file that contains it, as in standard Markdown, not a fixed
+skill root or the target CWD. Each affected entry carries an early
+runtime-neutral bootstrap before its first resource link. For example,
 `start-build/SKILL.md` reaches the shared contract as
 `../reference/decoupling-contract.md`, and `start-build/reference/*.md` as
 `../../reference/decoupling-contract.md`. Run helper scripts by their
@@ -134,17 +135,36 @@ be validated by its own modified validator), and strip Markdown
 `${CLAUDE_PLUGIN_ROOT}/<skill>/` in Claude Code and resolve as `skill://<skill>/`
 in OMP.
 
-In OMP, `skill://` does not resolve `..` and the plugin-root `reference/` and
-`templates/` are not skills, so resolve a relative link that leaves the skill
-directory from the absolute path OMP prints for the containing file (the
-`[Skill file: <path>]` header of a read, or the `Skill: <path>` line after an
-autoloaded skill), or read another skill's file as
-`skill://<other-skill>/<path>`; run helpers by that absolute path, never
-`bun skill://…`. OMP (verified on 18.6.1) drops the `..` segment, so
+Use the selected installation's native metadata to establish the loaded file's
+absolute filesystem path. A skill directory is not a file path:
+
+| Native source | Observed location form | Entry path |
+| --- | --- | --- |
+| OMP resource read | `[Skill file: <absolute-file-path>]` | Use the supplied file path. |
+| OMP autoload | `Skill: <absolute-file-path>` | Use the supplied file path. |
+| OMP direct `/skill:<name>` invocation (18.8.9) | `[Skill directory: <absolute-skill-directory>]` | Append `SKILL.md` to the supplied directory. |
+| Claude Code native `Skill` call (2.1.291) | `Base directory for this skill: <absolute-skill-directory>` | Append `SKILL.md` to the supplied directory. |
+
+For each subsequently loaded document, use its own absolute file path as the
+base for its relative links, not the original entry's directory. Normalize
+parent segments and strip fragments before reading the resolved absolute path;
+matching a basename is insufficient when several directories contain it.
+Target project/profile/provider references still resolve from the verified
+target checkout, not the skill installation.
+
+In OMP, `skill://` does not resolve `..`, and the plugin-root `reference/` and
+`templates/` are not skills. Use the resolved absolute filesystem path for
+cross-directory resources and helper execution, never `bun skill://…`.
+OMP (observed on 18.6.1 and 18.8.9) drops the `..` segment:
 `skill://start-build/../forge/SKILL.md` reads
 `<plugin root>/start-build/forge/SKILL.md` and fails with `File not found`,
 and `skill://reference/decoupling-contract.md` fails with
 `Unknown skill: reference`.
+
+The early rule is an instruction-level mitigation, not a repair of OMP's URI
+resolver. Metadata examples and development-only native resource smoke describe
+the observed runtime versions and actual calls/results; they do not guarantee
+universal model compliance or prove resource reads from discovery or final prose.
 
 | Dialect | Skill ids | Declared on the agent by | Activated at runtime by |
 | --- | --- | --- | --- |
