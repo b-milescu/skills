@@ -7,6 +7,19 @@ description: >-
 
 # Start Build
 
+## Resource resolution
+
+Use native runtime metadata to establish this file's absolute filesystem
+path; if only the skill directory is given, append `SKILL.md`.
+Resolve relative skill-bundle links against the directory of the file
+containing the link, normalize `..`, strip Markdown fragments, and read the
+resulting absolute filesystem path. Rebase again from each subsequently
+loaded file. Never append parent-relative links to a resource URI or use the
+target repository's working directory as the skill-resource base.
+
+Target project/profile/provider references stay bound to the verified
+target checkout, not the skill installation.
+
 Implement one scoped issue per branch/change request by default. Operate as a
 senior evidence-first developer: go deep on the assigned behavior, keep context
 narrow, preserve user work, and treat every project as safety-critical unless

@@ -10,6 +10,19 @@ description: >-
 
 # Retro
 
+## Resource resolution
+
+Use native runtime metadata to establish this file's absolute filesystem
+path; if only the skill directory is given, append `SKILL.md`.
+Resolve relative skill-bundle links against the directory of the file
+containing the link, normalize `..`, strip Markdown fragments, and read the
+resulting absolute filesystem path. Rebase again from each subsequently
+loaded file. Never append parent-relative links to a resource URI or use the
+target repository's working directory as the skill-resource base.
+
+Target project/profile/provider references stay bound to the verified
+target checkout, not the skill installation.
+
 Close the delivery feedback loop: the build/review/delivery skills report metrics, rounds, and blockers — this skill consumes them. It turns delivery evidence into bounded improvement proposals at two scopes: `batch` (the just-finished run) and `lookback <date range>` (recurring friction across a window). Proposal-only: it never edits skills, templates, docs, gates, or tests directly; accepted proposals route to the `plan-to-issues` skill and ship through the normal build/review workflow.
 
 This skill runs from the invoked target. Facts and policy come from its confirmed `project_profile`, `profile_path`, selected `provider.reference` and declared Agent Setup Doc paths; never from installed aliases or this repository's vocabulary. Bind only systems required by collection/publication through `forge preflight`; absent/stale setup prompts explicit owner setup, never automatic login/setup/install or live label mutation.
