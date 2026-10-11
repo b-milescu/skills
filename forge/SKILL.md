@@ -8,6 +8,19 @@ description: >-
 
 # Forge
 
+## Resource resolution
+
+Use native runtime metadata to establish this file's absolute filesystem
+path; if only the skill directory is given, append `SKILL.md`.
+Resolve relative skill-bundle links against the directory of the file
+containing the link, normalize `..`, strip Markdown fragments, and read the
+resulting absolute filesystem path. Rebase again from each subsequently
+loaded file. Never append parent-relative links to a resource URI or use the
+target repository's working directory as the skill-resource base.
+
+Target project/profile/provider references stay bound to the verified
+target checkout, not the skill installation.
+
 A model-invoked instruction seam with five operations. Obtain mechanics from
 **the invoked target's** confirmed `project_profile`, `profile_path` and selected
 `provider.reference`. Resolve that reference in the target checkout, not the
@@ -92,13 +105,10 @@ at the selected home; a packet over a known applicable limit is refused
 
 ## Helpers
 
-Relative paths resolve against the directory of the file that contains them, not
-the target CWD; run helper scripts by their resolved absolute path, from the
-installed skill the runtime loaded and never a copy in the checkout under review
-(a change must not be validated by its own modified validator). A link that
-leaves a skill directory is resolved from the containing file's absolute
-filesystem path, because a runtime's resource-URI join may not normalize `..`.
-Stack files that run a helper cite this rule instead of restating it. For
+Run helper scripts by their resolved absolute path, from the installed skill
+the runtime loaded and never a copy in the checkout under review (a change
+must not be validated by its own modified validator). Stack files that run
+a helper cite this rule instead of restating it. For
 `scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
 file's directory. Its JSON envelope validates exact string/finite role with
 no-body diagnostics before body-bearing writes. Target safe-write tools may add
