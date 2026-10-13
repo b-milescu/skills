@@ -3,12 +3,12 @@
 This is a neutral seed, not a configured target. Substitute only confirmed facts
 from the invoked project and show the draft to its owner before writing.
 
-- Work-item scope: `<verified independent system/repository or local filesystem root>`.
-- Code/change-request scope: `<verified intended named fetch/push/fork repository>`.
-- CI scope: `<configured advisory system and candidate binding, or reasoned unavailable>`.
+- Work-item scope: `<independently configured system/repository or local root, evidence and verification gaps>`.
+- Code/change-request scope: `<intended provider, canonical repository/default branch and named fetch/push/fork binding>`.
+- CI scope: `<independently configured advisory system pointer, evidence and verification gaps>`.
 - Profile pointer: `<confirmed target profile_path>`.
-- Integration recipes: `<selected provider.reference resolving target-owned doc/section>`.
-- Operations and transport: `<per native read/write: MCP-first recipe, help-verified CLI fallback for an unavailable MCP or documented gap (or none), operation-scoped limits>`.
+- Integration binding: `<selected provider.reference resolving target-owned doc/section>`.
+- MCP route: `<applicable connected native route, or unavailable; forge resolves operation mechanics when needed>`.
 - Vocabulary and claiming: `<target-owned live label/state terms and claim policy>`.
 
 Obtain native identity and complete body/discussion evidence in the operation's
@@ -17,7 +17,8 @@ conflicting or missing choices with the owner; unavailable tools preserve known
 configuration. Neither hosting brand nor installed tools selects a tracker.
 
 Use the `forge` skill for binding, evidence, publication, guarded actions and read-only
-post-merge verification. Recipes cover safe text, complete reads, one mutation,
-exact-candidate/authority/identity guards, lossless authored-source readback and
-GET-only/bounded uncertain-write recovery. Configuration grants no authority.
-Do not auto-run setup/login/install or mutate live labels.
+post-merge verification. Its `SKILL.md#operation-time-recipes` establishes missing
+mechanics/proof only for the active operation; preserve valid existing recipes.
+Confirmed documentation and resolving pointers complete setup, not delivery
+readiness or action authority. Do not auto-run setup/login/install or mutate
+live labels.

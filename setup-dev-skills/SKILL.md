@@ -1,6 +1,6 @@
 ---
 name: setup-dev-skills
-description: Establishes or reconciles the invoked project's confirmed integration, policy pointers and runtime declarations from evidence and owner choices.
+description: Drafts and applies the smallest owner-confirmed project documentation delta, preserving custom setup and recording MCP-first integration bindings.
 disable-model-invocation: true
 ---
 
@@ -19,139 +19,78 @@ target repository's working directory as the skill-resource base.
 Target project/profile/provider references stay bound to the verified
 target checkout, not the skill installation.
 
-User-invoked and human-confirmed: inspect, resolve only missing choices, present
-complete draft, confirm, write. Other skills may recommend this entry for absent
-or stale setup, but never auto-run it, login, install or mutate live labels.
+User-invoked and human-confirmed: discover, draft the smallest docs delta,
+resolve genuine choices together, confirm once, apply. Other skills may recommend
+this entry, but never auto-run it, login, install or mutate live labels.
 
 ## Explore the invoked target
 
-Read explicit owner intent and the target rulebook's existing `project_profile`,
-`profile_path`, `provider.reference`, policy/docs pointers and custom roots.
-Shared [field guidance](reference/project-profile-facts.json) is not a profile:
-it contains no target identity, vocabulary, host, default paths or detector.
+Read owner intent, the existing rulebook's `project_profile`, `profile_path`,
+`provider.reference`, policy/docs pointers and custom roots.
+Shared [field guidance](reference/project-profile-facts.json) supplies no target
+identity, vocabulary, host, default paths or detector.
 
-Inspect named fetch **and** push remotes, fork intent, code/change-request,
-work-item and CI configuration separately. Read referenced docs and available-tool
-documentation (each reachable MCP server's current schema, each CLI's help); use
-operation-scoped read-only native verification to compare
-intended system/repository scopes and authenticated identities. Local work items
-bind confirmed filesystem scope. Do not infer tracker from host branding, a word
-in a path, first remote or installed tools. Unavailable tools are evidence limits,
-not permission to erase known configuration or declare unrelated actions blocked.
+Compare named fetch **and** push remotes with intended code/change-request scope
+and fork intent. Prefer the relevant connected MCP; read its current tool/API
+documentation and verify candidate platform, canonical repository and default
+branch natively, including self-hosted instances. Neither host branding, the first
+remote nor installed-tool presence establishes scope. Resolve multiple-target or
+fork conflicts explicitly; keep independently configured tracker/CI bindings.
 
-Inspect current domain/ADR layout, gate commands/runtime/bootstrap, coding
-conventions, live label vocabulary and runtime-specific agent declaration locations.
-Preserve issue/task-selected specialist policy; no unconditional specialist preload.
+Use help-verified CLI fallback only when a needed MCP call is unavailable or has
+a documented gap; establish the same scope and actor when both transports are
+used. Missing tools/authentication do not erase known facts or prevent drafting:
+mark verification gaps, never force login or invent capability. Setup needs no
+all-service identity sweep or exhaustive fallback matrix.
 
-## Resolve choices
+Read existing domain/ADR, gate/runtime/bootstrap, guardrail and label docs only
+as needed for the delta. Preserve task-selected specialist policy and live
+vocabulary; no live label creation/rename/delete.
+Setup never creates, edits, deletes or certifies runtime subagent definitions,
+model/effort selection, preload, precedence or provenance; leave them untouched.
 
-Summarize verified, conflicting and unavailable evidence first. With existing
-setup, propose reconciliation in place while preserving custom paths, vocabulary
-and user additions; no legacy reader or bulk profile conversion.
+## Draft and resolve choices
 
-Ask concrete **unresolved owner choices** one at a time, e.g. which named push
-repository is intended, where work items live, or which conflicting reference is
-authoritative. Do not present a platform or tool menu, repeat confirmed choices,
-require unrelated authentication or ask the owner to discover undocumented
-provider ceilings/counting units.
+Reconcile only missing, owner-requested or evidenced-stale sections in place.
+A newer template alone is not drift. Preserve valid custom paths, vocabulary,
+additions, policy and integration recipes; do not normalize complete documents.
+If nothing needs changing, report no writes and stop.
 
-Transport is **MCP first, CLI fallback**. For each native read and write, the
-recipe names the MCP tool that reaches the confirmed scope and, where one reaches
-it, a help-verified CLI fallback (otherwise it records that none exists), used for
-that call only when the MCP is unavailable to the acting session (unconnected or
-unauthenticated for the scope) or for a gap the recipe documents: a missing tool,
-incomplete pages, a lossy body or no exact-head binding that the fallback
-supplies. With no reachable MCP the CLI is the transport and the gap is reported;
-setup installs, configures or authenticates neither. Fallback is chosen before a
-mutation; within an attempt a refusal, guard failure, hold or uncertain write
-keeps its outcome and never switches transport or repeats a write
-([common guard](../forge/reference/common-guard.md)). Both transports bind the
-same scope and immutable identity; no call inherits scope from environment,
-working directory or global configuration. Transports that disagree on scope or
-identity are an unresolved owner choice.
+Draft the smallest useful delta using [tracker](issue-tracker.md) and
+[workflow](dev-workflows-generic.md) seeds as field guidance, not replacement docs.
+At `provider.reference`, record a compact binding: intended provider, canonical
+repository/default branch, applicable MCP route, tracker/CI pointers, and evidence
+sources marked verified or unverified. Keep existing valid recipes authoritative.
+Do not invent facts where native verification is unavailable.
 
-Confirm target-owned integration recipes for forge's five operations, including
-operation-specific required systems, unsupported outcomes, pagination, the
-[packet home](../forge/SKILL.md#packet-home), applicable authoritative limits/units
-and their evidence or explicit undocumented capacity, exact-head guarantees,
-required-check holds with the signal that ends their wait and any bound
-other than the default [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-normalization and lossless readback/recovery. A confirmed native-validation recipe
-may permit one otherwise authorized ordinary publication with an undocumented
-ceiling/unit: retain the pre-write original, validate safe text, bind the actual
-native artifact and require full string-valued body/original-byte equality per
-forge. Record possible refusal/unverified artifacts and manual recovery, not
-unlimited capacity or an invented default. A note home still records its pointer
-form, same-change/current-head resolution and independent append/readback then
-pointer-update/readback recipe.
-
-Exact-head direct merge requires a documented stale-head rejection guarantee or
-the owner-confirmed probe below; a request field/schema alone proves no guarantee.
-Queue head binding must survive through actual merge, not merely acceptance.
-Unsupported or unproven bindings are refused as `sha-bound-action-unsupported`,
-with no unbound fallback or direct merge under queue authority.
-
-Where rejection is undocumented, describe this probe for an explicitly authorized
-actor; setup does not execute it or implicitly grant probe/cleanup authority:
-create disposable source and target branches and a disposable change request;
-capture the old full head, advance source to a new full head, then request native
-merge bound to the **old** head. Require refusal and an unmerged native post-read.
-Record date, change/request locator and identity, both full SHAs, refusal
-status/response and unmerged post-read in the target reference. Accepted or
-unproven outcomes leave exact-head direct merge unsupported. Obtain explicit
-probe and cleanup authority; after recording, the authorized actor closes/deletes
-disposable artifacts. Never use protected/shared branches. A documented stale-head
-rejection guarantee needs no live probe.
-Configuration is not an action-authority grant. Keep common safety floors with
-forge/delivery owners.
-
-For labels, document live names and triage-role mapping as-is; no automatic live
-creation/rename/delete. For domain, respect existing single/multi-context layout.
-For gate, identify exact local command/runtime/bootstrap; absent full gate requires
-explicit rationale and owner choice, not fabricated PASS. CI remains advisory.
+Batch only genuine unresolved owner choices with their evidence and a suggested
+resolution. Do not repeat known answers, offer a platform/tool menu or ask the
+owner to discover undocumented provider internals. Missing local gate policy
+needs an explicit rationale/owner choice, not fabricated PASS; CI stays advisory.
 
 ## Present and confirm
 
-Show the target profile/reference pointers, complete target-owned integration
-doc, existing-root Agent Setup Docs (tracker, labels, domain, gate, guardrails,
-workflows), and complete runtime-specific same-name project agent declarations.
-Use [neutral tracker seed](issue-tracker.md) and
-[workflow seed](dev-workflows-generic.md) as field guidance only. Include evidence,
-operation limits, unresolved choices and source ownership of installed aliases.
-Write only after human confirmation.
+Preview changed sections and their target paths, why they change, resolving
+profile/reference pointers and verification gaps. Do not require review of
+unchanged full documents. After choices are resolved, obtain one confirmation
+of the final delta before any writes.
 
 ## Write confirmed changes
 
-Update the existing rulebook's Agent skills block and pointers in place without
-touching unrelated content; if no rulebook exists ask which native one to create.
-Multiple blocks/conflicting sources require owner resolution. Substitute paths
-from target `project_profile.agent_setup_docs`, never from installation defaults.
-Preserve valid custom sections and additions. Authored docs stay Markdown.
+Apply only that delta. Update the existing rulebook's Agent skills block/pointers
+without touching unrelated content; if absent, resolve which native rulebook to
+create. Conflicting blocks/sources need an owner choice. Use confirmed
+`project_profile.agent_setup_docs` paths, never installation defaults.
+Authored docs stay Markdown.
 
-Reuse `project_profile`, `profile_path` and selected `provider.reference` resolving
-the target integration doc/section; no second config, catalogue, dispatcher,
-generator or adapter registry. `provider` names and records are opaque scoped
-values. A second target with other mechanics needs only its own confirmed docs.
+Reuse `project_profile`, `profile_path` and selected `provider.reference`; no
+second config, detector, catalogue, dispatcher, generator or adapter registry.
+Installed aliases retain underlying source ownership, not target policy.
 
-Runtime declarations are **complete shallow files**, not metadata overlays:
-canonical builder/reviewer entry pointers, role/authority bounds and
-runtime-specific model/effort neutrality per [native selection](../start-build/reference/parent-orchestrator.md#native-model-and-effort-selection).
-They declare no tool allowlist, so each inherits every tool of the spawning
-session; the target's confirmed integration, not the declaration, names the tools
-its recipes need. Determine each runtime's native project location and precedence
-independently from runtime evidence. Selected-file/skill provenance from the actual
-spawning session and independently invoked allocated/revision checkouts must be
-verified separately from accessible entries/tools; no external runtime patch.
-Resolve canonical roles through the effective runtime inventory under
-[native route selection](../start-build/reference/parent-orchestrator.md#native-route-selection);
-record exposed identifiers separately from canonical basenames and source files.
-Preserve deterministic native preload identifiers without changing logical skill
-IDs; discovery metadata does not prove preload execution or effort enforcement.
-
-Configuration-complete means confirmed pointers resolve in the invoked target,
-docs/declarations preserve custom facts, and each operation's supported/refused
-recipes, transport order, known bounds and evidence gaps are explicit. Report this separately from
-selected-operation delivery readiness: a refused or unverified publication required
-by that delivery blocks delivery-ready, even when configuration is complete.
-Setup does not claim future publication, gate or review success. Live installation
-and operator mutations remain outside setup; configuration grants no authority.
+Completion means confirmed docs applied, pointers resolving in the invoked target,
+custom content preserved and verification gaps reported. No-drift means no writes.
+It does not mean delivery-ready, action authority or future publication/gate/review
+success. [Forge](../forge/SKILL.md#operation-time-recipes) establishes only the
+active operation's mechanics/proofs before acting; setup does not certify all five
+operations or require capacity/merge probes. Live installation/operator mutations
+remain outside setup.
