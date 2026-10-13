@@ -25,23 +25,26 @@ this entry, but never auto-run it, login, install or mutate live labels.
 
 ## Explore the invoked target
 
-Read owner intent, the existing rulebook's `project_profile`, `profile_path`,
-`provider.reference`, policy/docs pointers and custom roots.
+Read owner intent and the existing rulebook's `project_profile`, `profile_path`,
+`provider.reference`, policy/docs pointers and custom roots. Identify only
+missing, owner-requested or evidenced-stale sections; a newer template alone is
+not drift. Preserve valid facts/policy without recertifying complete setup.
+If there is no delta, report no writes and any verification gaps, then stop.
 Shared [field guidance](reference/project-profile-facts.json) supplies no target
 identity, vocabulary, host, default paths or detector.
 
-Compare named fetch **and** push remotes with intended code/change-request scope
-and fork intent. Prefer the relevant connected MCP; read its current tool/API
-documentation and verify candidate platform, canonical repository and default
-branch natively, including self-hosted instances. Neither host branding, the first
-remote nor installed-tool presence establishes scope. Resolve multiple-target or
-fork conflicts explicitly; keep independently configured tracker/CI bindings.
+For integration bindings needing a delta, compare intended profile/owner target
+with named fetch **and** push remotes, fork intent and code/change-request scope.
+Prefer the relevant connected MCP; read current tool/API documentation and match
+its native host and canonical repository/default branch to that evidence,
+including self-hosted instances. Never select by the first remote, host branding
+or installed tools. Resolve multiple-target/fork conflicts explicitly; preserve
+independently configured tracker/CI bindings.
 
-Use help-verified CLI fallback only when a needed MCP call is unavailable or has
-a documented gap; establish the same scope and actor when both transports are
-used. Missing tools/authentication do not erase known facts or prevent drafting:
-mark verification gaps, never force login or invent capability. Setup needs no
-all-service identity sweep or exhaustive fallback matrix.
+Check CLI help only when a needed MCP call is unavailable or has a documented gap;
+bind that call to the same intended scope. Missing tools/authentication do not
+erase known facts or prevent drafting: mark verification gaps, never force login
+or invent capability. No all-service identity sweep or exhaustive fallback matrix.
 
 Read existing domain/ADR, gate/runtime/bootstrap, guardrail and label docs only
 as needed for the delta. Preserve task-selected specialist policy and live
@@ -51,17 +54,14 @@ model/effort selection, preload, precedence or provenance; leave them untouched.
 
 ## Draft and resolve choices
 
-Reconcile only missing, owner-requested or evidenced-stale sections in place.
-A newer template alone is not drift. Preserve valid custom paths, vocabulary,
-additions, policy and integration recipes; do not normalize complete documents.
-If nothing needs changing, report no writes and stop.
-
-Draft the smallest useful delta using [tracker](issue-tracker.md) and
+Draft only that delta using [tracker](issue-tracker.md) and
 [workflow](dev-workflows-generic.md) seeds as field guidance, not replacement docs.
-At `provider.reference`, record a compact binding: intended provider, canonical
-repository/default branch, applicable MCP route, tracker/CI pointers, and evidence
-sources marked verified or unverified. Keep existing valid recipes authoritative.
-Do not invent facts where native verification is unavailable.
+Preserve valid custom paths, vocabulary, additions, policy and integration recipes;
+do not normalize unchanged sections.
+At the selected `provider.reference`, record a compact binding: intended provider
+(opaque), canonical repository/default branch, applicable MCP route, independent
+tracker/CI pointers, and sources marked verified or explicitly unverified.
+Keep valid recipes authoritative; never invent unavailable native evidence.
 
 Batch only genuine unresolved owner choices with their evidence and a suggested
 resolution. Do not repeat known answers, offer a platform/tool menu or ask the

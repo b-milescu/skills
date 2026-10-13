@@ -21,11 +21,10 @@ MCP is preferred; CLI help/fallback proof is required only for the call using it
 Missing binding/proof blocks that operation, not documentation drafting.
 Configuration grants no action authority or delivery readiness.
 
-Record the target's Agent Setup Doc paths, Check Gate command/runtime/bootstrap,
-label/readiness vocabulary, branch policy, advisory CI, domain/ADR paths,
-release/deploy policy, manual evidence and auxiliary index ownership at their
-existing policy pointers; explicitly mark unknown facts. Hooks preserve
-`start-build`'s `SAFETY.md#safety-floors`.
+For changed sections, record Agent Setup Doc paths, Check Gate/runtime/bootstrap,
+label/readiness vocabulary, branch/advisory-CI, domain/ADR, release/deploy, manual
+evidence and auxiliary-index policy at existing pointers; mark unknown facts.
+Hooks preserve `start-build`'s `SAFETY.md#safety-floors`.
 
 Setup neither changes nor certifies runtime subagent definitions. Runtime
 selection and validation remain runtime/workflow-owned, not setup completion.

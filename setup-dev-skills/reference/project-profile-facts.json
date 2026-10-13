@@ -12,13 +12,13 @@
     "skill_resources", "resource_addressing"
   ],
   "field_guidance": {
-    "provider": "Opaque intended integration name; reference resolves a compact target-owned binding: canonical repository/default branch, applicable MCP route, independent tracker/CI pointers and evidence marked verified or unverified. Preserve valid existing recipes and policy. Forge establishes missing mechanics and required safety proof at operation time on that bound target; setup completion is confirmed docs/resolving pointers, not operation certification, delivery readiness or action authority.",
+    "provider": "Opaque intended provider plus selected target-owned reference. Record canonical repository/default branch, applicable MCP route, independent tracker/CI pointers and verified/unverified evidence sources; preserve valid recipes/policy. Forge resolves only the active operation's missing mechanics and required proof.",
     "profile_path": "Confirmed invoked-target profile pointer, never an installed default.",
     "tracker": "Independently configured work-item system/repository or local filesystem scope and applicable native route/pointer; retain known facts and explicitly record verification gaps.",
     "agent_setup_docs": "Confirmed target-relative paths preserving custom roots and additions.",
     "label_vocabulary": "Live target vocabulary and target triage-role mapping; no shared label default.",
     "check_gate": "Target policy ref, exact local command, runtime and bootstrap route.",
-    "dev_workflows": "Target workflow policy and canonical skill entry pointers; setup does not change or certify runtime subagent definitions or runtime selection.",
+    "dev_workflows": "Target workflow policy and canonical skill entry pointers; runtime subagent declarations/selection remain outside setup.",
     "branch_naming": "Target source-branch policy, not a native identifier validator.",
     "ci_parity": "Independently scoped configured advisory CI and binding limits.",
     "domain_docs": "Target context and ADR locations.",

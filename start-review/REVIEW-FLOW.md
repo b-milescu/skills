@@ -4,8 +4,9 @@ Canonical mandatory independent review policy for one change request in the
 invoked target's confirmed integration. Native mechanics live behind the `forge` skill; this file
 owns review judgment, evidence, severity, advisory CI/Open Question classifications,
 authority, and action separation.
-On missing mechanics or provider drift, fall back to the provider reference
-selected through the `forge` skill; never copy provider commands into this policy.
+Resolve missing mechanics through forge's [operation-time recipes](../forge/SKILL.md#operation-time-recipes)
+on the already-bound target, preserving its valid recipes and stricter policy.
+Provider drift blocks the affected operation; never copy provider commands here.
 
 ## Context Firewall
 
@@ -89,9 +90,10 @@ Single-change-request review is the default and preferred mode: one change
 request per fresh reviewer session. Before local commands or targeted checks,
 use an isolated checkout where `git status --porcelain` is empty and the observed
 `git rev-parse HEAD` equals the exact reviewed commit from a fresh
-`forge snapshot`. If either check differs, the confirmed target integration recipe
-materializes that exact commit and the reviewer recreates a detached isolated
-worktree, then repeats both checks. Never run an arbitrary `git pull`.
+`forge snapshot`. If either check differs, use the target recipe or forge's
+[operation-time recipes](../forge/SKILL.md#operation-time-recipes) to materialize
+that exact commit, then recreate a detached isolated worktree and repeat both
+checks. Never run an arbitrary `git pull`.
 
 After the durable Review Report is published, the reviewer removes the isolated
 worktree it created with `git worktree remove` when that tree is clean (`git
@@ -259,8 +261,8 @@ affirmatively allows it, and caller context is eligible, the finish is one guard
 `forge act` bound to the exact reviewed commit. The verified grant selects the
 action, and no grant substitutes for another:
 
-- `queue auto-merge` authorizes queueing, only where the selected provider
-  reference guarantees exact-head queueing.
+- `queue auto-merge` authorizes queueing, only where forge establishes the
+  [exact-head guarantee](../forge/reference/common-guard.md#exact-head-guarantees).
 - `reviewer may merge`, or a verified project default that names direct merge for
   the finisher, authorizes a direct merge bound to the reviewed head.
 
@@ -279,8 +281,8 @@ eligibility, and the finisher never reads CI status to decide eligibility. A
 provider's required checks are native merge protection: they may hold or refuse the
 guarded merge, a provider outcome reported without bypass and never an eligibility
 decision or an authorization. On a hold from pending required checks, the finisher
-waits on the check-completion signal the target's provider reference names, within
-the
+waits on the check-completion signal resolved through forge for the bound target,
+within the
 [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
 then re-runs the full guarded `forge act` from its first guard; the earlier refusal
 is never reused. A failed check or an elapsed budget leaves the change blocked with
@@ -288,9 +290,10 @@ the provider outcome. That wait is the only CI wait.
 
 Queue, auto-completion, direct finish and required-check semantics, including the
 check-completion signal and any bound other than the default required-check wait
-budget, belong to the confirmed target reference. An operation without the requested
-exact-head guarantee returns `sha-bound-action-unsupported`; observational reads
-cannot manufacture atomicity.
+budget, follow forge's [operation-time recipes](../forge/SKILL.md#operation-time-recipes)
+and the target's existing policy. An operation without the requested exact-head
+guarantee returns `sha-bound-action-unsupported`; observational reads cannot
+manufacture atomicity.
 
 ## Publication and actions
 
