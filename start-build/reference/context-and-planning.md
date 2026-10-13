@@ -6,7 +6,7 @@ Detailed discovery, task-selected specialists, Build Plan Packet, check-gate dis
 
 Keep discovery bounded before edits. Read the issue and project rulebook index first, then expand only from evidence. Load affected docs/source/tests needed to establish current behavior, affected surfaces, test entrypoint, safety constraints, and non-goals. Load ADRs, architecture docs, domain docs, and `CONTEXT.md` only when evidence triggers them: issue links, rulebook references, changed paths, imports/callers, tests, safety invariants, failing checks, or explicit user/parent prompt. Record each loaded context source and why it mattered in the Build Plan Packet, Review Packet, or reviewer-facing Context Capsule. Stop expanding once those facts are evidence-backed; do not do open-ended repo spelunking.
 
-If any required fact is still missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits.
+If required implementation facts remain missing after that budget, stop, write the exact unanswered questions, and route the issue back to triage instead of guessing requirements or starting edits. Missing native mechanics use forge's [operation-time recipes](../../forge/SKILL.md#operation-time-recipes) on the bound target; no all-five upfront recipe certification is required, and missing proof blocks only the affected operation.
 
 ### Economy
 
@@ -89,7 +89,7 @@ Builder-owned evidence policy is outside this parent-mode selection rule.
 Before marking ready or requesting review, validate the change-request handoff:
 
 - Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
-- The packet has verified original-source publication readback at its [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the confirmed native-validation recipe for undocumented capacity; a note home's description carries a current pointer to it.
+- The packet has verified original-source publication readback at its [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; a note home's description carries a current pointer to it.
 - Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
 - `Reviewed SHA` equals the change-request head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.

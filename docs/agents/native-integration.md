@@ -501,7 +501,7 @@ allocated open item stay required.
   forwards `expectedHeadSha` to `PullRequestOptions.SHA` and returns that 409 as a
   single-call error with no retry. The mounted schema exposes `expectedHeadSha`;
   exposure is not proof. This reference does not claim those upstream tests were run
-  here, and no live probe was run. No setup stale-head probe applies. Do not use
+  here, and no live probe was run. No disposable stale-head probe is required. Do not use
   `gh pr merge`: verified `gh` 2.102.0 help says it may enable auto-merge for a
   branch that requires a merge queue even without `--auto`, contrary to this
   target's no-queue contract. Do not use the asynchronous merge API. Required check

@@ -21,25 +21,26 @@ target repository's working directory as the skill-resource base.
 Target project/profile/provider references stay bound to the verified
 target checkout, not the skill installation.
 
-A model-invoked instruction seam with five operations. Obtain mechanics from
-**the invoked target's** confirmed `project_profile`, `profile_path` and selected
-`provider.reference`. Resolve that reference in the target checkout, not the
-skill installation or an installed alias. No shared provider catalogue,
-host detector, default target profile or tool-presence inference is used.
+A model-invoked instruction seam with five operations. Bind **the invoked target's**
+confirmed `project_profile`, `profile_path` and selected `provider.reference`.
+Resolve that reference in the target checkout, not the skill installation or an
+installed alias; resolve mechanics under [operation-time recipes](#operation-time-recipes).
+No shared provider catalogue, host detector, default target profile or
+tool-presence inference is used.
 
 ## Preflight
 
 1. Read the target rulebook's profile pointer and selected integration reference.
-   Missing/stale setup prompts the owner to run the `setup-dev-skills` skill; never
-   auto-run setup, authentication, installation or live label changes.
+   Missing/stale binding prompts the owner to run the `setup-dev-skills` skill;
+   never auto-run setup, authentication, installation or live label changes.
 2. Reconcile explicit owner intent, named fetch/push remotes and fork intent,
    configured code/change, work-item and CI scopes, and referenced policy. A
    tracker may be independent of code hosting; local work items bind verified
    filesystem scope and need no invented remote identity.
-3. Follow the confirmed reference's available-tool documentation and read-only
-   native recipes. Verify canonical repository/default branch and operation's
-   required scopes against independent intended-target evidence. Compare IDs
-   and locators within verified system/repository scope, never by local ID alone.
+3. Resolve the active operation's [native mechanics](#operation-time-recipes).
+   Verify canonical repository/default branch and required scopes against
+   independent intended-target evidence. Compare IDs and locators within
+   verified system/repository scope, never by local ID alone.
 4. Capture immutable authenticated identity for each system this operation
    requires. Refresh/authenticate only required systems: unrelated CI or tracker
    authentication never blocks a supported operation. Record unavailable tools
@@ -49,6 +50,35 @@ Ambiguous/conflicting binding blocks the affected operation. Unsupported actions
 return an explicit scoped blocker; no guessed transport, silent integration
 fallback or blanket refusal of unrelated supported operations. Configuration
 never grants authority.
+
+## Operation-time recipes
+
+Use existing valid target recipes and stricter policy first. Consumer references
+to target-owned native mechanics mean those recipes or missing mechanics resolved
+here, never new policy. Resolve only the active operation's missing mechanics from
+current documentation for the selected target's bound MCP/tool/API: required
+scopes/identities, complete reads, write/fallback eligibility, validation,
+post-read/recovery and relevant head/capacity guarantees. Record the selected
+recipe and its documentation/evidence with the operation. A schema field or tool's
+presence alone is not capability proof.
+
+Use MCP first under target policy; resolve a documented native fallback only for
+this call's unavailable MCP or a gap it actually supplies. Verify exact CLI help
+only when that command is needed. Both transports bind the same verified scope
+and immutable actor, never environment/CWD/global-config scope. For writes,
+transport selection remains the ordered guard's fallback-eligibility phase.
+
+Resolution never silently changes target, provider, policy or packet home,
+grants authority, or installs/authenticates/configures tools. Conflicts need owner
+resolution; missing required proof blocks only the affected operation before a
+write. No all-five recipe matrix, unrelated identity sweep or advance capacity/
+merge certification is required. Setup completion is not delivery readiness.
+
+The ordered [common guard](reference/common-guard.md), including
+[native validation](reference/common-guard.md#native-validation) and
+[exact-head guarantees](reference/common-guard.md#exact-head-guarantees), remains
+mandatory: documentation does not replace fresh scope/caller/head/authority
+checks, original-source equality, one mutation/no mid-attempt switch or recovery.
 
 ## Operations
 
@@ -76,13 +106,13 @@ The Review Packet, with its Reviewer Lift, is the canonical durable handoff. It
 lives at the **packet home** the selected reference designates. Record applicable
 authoritative size limits, their units/evidence and any undocumented ceiling or
 unit for packet and description. Enforce known bounds in their declared units;
-unknown is not unlimited and never a guessed cap. A confirmed target-native
-validation/readback recipe may permit one otherwise authorized ordinary
-publication with an undocumented ceiling/unit under the
-[common guard](reference/common-guard.md#authority-verification); without that
-recipe, the affected publication blocks. Never probe a ceiling, truncate, split
-or silently switch home/transport. The default home remains the change-request
-description.
+unknown is not unlimited and never a guessed cap. A target-native
+validation/readback recipe established and validated for the active publication
+may permit one otherwise authorized ordinary attempt with an undocumented
+ceiling/unit under [native validation](reference/common-guard.md#native-validation).
+Without dependable pre-write proof, that publication blocks. Never probe a
+ceiling, truncate, split or silently switch home/transport. The default home
+remains the change-request description.
 
 A note-home reference specifies the description pointer form and native refresh
 recipe. First Draft creation may precede note publication, but the change remains
@@ -138,13 +168,7 @@ wait and any bound other than the default
 and supported recovery. Shared records remain opaque;
 explicit verified bindings, not string shape, establish trust. Ready pre/post
 reads are observational unless the actual native operation guarantees atomicity;
-exact-head finish/queue must be guaranteed by that operation or refused as
-`sha-bound-action-unsupported`. A direct merge needs the reference's documented
-stale-head rejection guarantee or recorded evidence from an explicitly authorized
-disposable stale-head probe described by setup; a request field or schema alone is
-not proof. Queue binding must hold through actual merge, not just request
-acceptance; unsupported or unproven binding is refused with no unbound fallback
-or direct merge under queue authority. Before
-finish re-read the recorded allocated open item and exact
+finish/queue follow the [exact-head guarantees](reference/common-guard.md#exact-head-guarantees).
+Before finish re-read the recorded allocated open item and exact
 change/source/item relationship. Verifier cleanup retains dirty, foreign,
 unknown, unmerged and containment-unverified state.

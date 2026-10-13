@@ -32,9 +32,10 @@ They point to canonical `start-build`/`start-review` and `forge`, plus the targe
 project's integration doc, and reach GitHub through the parent session's github
 MCP server or `gh`. These are whole runtime definitions, not overlays on installed
 presets or copies of skill procedures. Native marketplace metadata excludes these
-project declarations. For another target, manual confirmed setup writes that
-target's complete declarations from its own configuration/evidence; strings alone
-do not establish scoped identity.
+project declarations. Complete same-name project declarations are optional and
+target-maintained. Setup owns documentation deltas only; it never creates, edits,
+deletes or certifies runtime declarations. Reusable routes stay runtime/workflow-owned;
+strings alone establish no scoped identity.
 
 Builder and mandatory independent final-reviewer roles remain distinct.
 Canonical workflows own task-selected specialists.

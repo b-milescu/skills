@@ -16,7 +16,7 @@ No tracked file is a symlink: an installer may rewrite one into a machine-specif
 
 | Skill | Purpose |
 |---|---|
-| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) that scaffolds per-repo Agent Setup Docs. User invocation only; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths) for the runtime command. Agents must ask before running or writing. |
+| `setup-dev-skills` | Manual Setup Skill (`disable-model-invocation: true`) that applies the smallest owner-confirmed Agent Setup Docs delta, preserving custom setup and leaving runtime subagents untouched. User invocation only; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths). |
 | `forge` | Five-operation instruction seam using the invoked target's confirmed integration. |
 | `start-build` | Implement one issue test-first as a Draft change request with a Review Packet. |
 | `start-review` | Independently review one change request at an exact commit. |
@@ -54,7 +54,7 @@ supported.
 
 - Claude Code or OMP with plugin-marketplace support.
 - Git, and Bun 1.4+ on `PATH`. The bundled helpers need no installed packages.
-- For change-request workflows, a way for your runtime to reach your code host and issue tracker: an MCP server (preferred) or a CLI. Nothing is bundled; the `setup-dev-skills` skill records an MCP-first transport per project, with the CLI as the fallback where the MCP is unavailable.
+- For change-request workflows, a way for your runtime to reach your code host and issue tracker: an MCP server (preferred) or a CLI. Nothing is bundled; `setup-dev-skills` records a compact MCP-first target binding, and `forge` establishes operation-specific recipes and eligible CLI fallback when needed.
 - Optional: a memory plugin or MCP server for `retro` lookback.
 
 Contributors to this repository also need bash for the [Check Gate](docs/agents/check-gate.md) (`bun install`, then `bun run check`), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally the installed OMP client (`omp` on `PATH`) for the loader smoke test.

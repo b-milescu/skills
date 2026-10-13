@@ -1,6 +1,6 @@
 # Triage Labels
 
-This repo treats GitHub's live label set as the source of truth. The `setup-dev-skills` skill owns regenerating this file when tracker labels change.
+This repo treats GitHub's live label set as the source of truth. The `setup-dev-skills` skill reconciles evidenced-stale label inventory/mapping sections through an owner-confirmed documentation delta, preserving custom additions and pointers without live label mutations.
 
 Use this file as `project_profile.label_profile_ref` for this repo. The profile
 may point to this label vocabulary, but it must not create live labels, rely on

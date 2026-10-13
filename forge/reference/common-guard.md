@@ -83,13 +83,27 @@ permission uncertainty or same-session self-review/self-finish stops the action.
 Account equality alone does not establish session independence. Commit authors
 and CI variables are not authenticated identity. Verify author/context separately.
 
+## Native validation
+
+An undocumented ceiling/unit permits one otherwise authorized ordinary
+publication only under a dependable target-native validation/readback recipe.
+Establish and validate it for the active operation from a recorded target recipe
+or bound current documentation under [operation-time recipes](../SKILL.md#operation-time-recipes).
+Before writing, establish dependable mechanics to bind the actual native artifact,
+authenticated actor and destination scope, recover the complete string-valued
+native body, and compare it to the retained pre-write authored source. A schema
+body-read field alone proves none of this; missing proof blocks before writing.
+Record possible refusal, unverified artifacts and manual recovery, not unlimited
+capacity. Never probe a ceiling, truncate, split or silently switch home/transport.
+Proven readback capability does not replace the actual native post-read.
+
 Body publication requires exact string/role validation with the helper at
 `../scripts/validate-text.mjs` (relative to this file), run per the
 [helper rule](../SKILL.md#helpers), before native checks. Retain the complete
 pre-write authored source and submit exactly that string. Enforce applicable
 authoritative bounds in their known units; undocumented capacity follows only
-the confirmed [native-validation recipe](../SKILL.md#packet-home), not a guessed
-cap. No diagnostic may echo submitted body or parser excerpts. Require a full
+the native-validation recipe above, not a guessed cap. No diagnostic may echo
+submitted body or parser excerpts. Require a full
 string-valued native body, actual artifact/actor/scope binding and byte equality
 against that retained original, with only explicitly documented normalization.
 An echo, reconstructed source, extraction or readback-only digest proves none of
@@ -105,3 +119,31 @@ bytes match. Absent, ambiguous or incomplete evidence requires a human decision;
 never silently repair submitted fields. Receipt local validity, native
 extraction/candidate binding and post-note receipt/Lift validation are independent
 proofs.
+
+## Exact-head guarantees
+
+Ready pre/post reads are observational unless the actual native operation
+guarantees atomicity. Exact-head finish/queue must be guaranteed by that operation
+or refused as `sha-bound-action-unsupported`. A direct merge needs documented
+stale-head rejection in the target recipe or bound current documentation, or
+recorded evidence from an explicitly authorized [disposable stale-head probe](#disposable-stale-head-probe).
+A request field or schema alone is not proof. Queue binding must hold through
+actual merge, not just request acceptance; unsupported or unproven binding is
+refused with no unbound fallback or direct merge under queue authority.
+
+### Disposable stale-head probe
+
+Where direct-merge rejection is undocumented, obtain explicit probe and cleanup
+authority; neither setup nor recipe resolution grants it. An authorized actor
+creates disposable source and target branches and a disposable change request,
+never protected/shared branches. Capture the old full head, advance the disposable
+source to a new full head, then request the selected native direct merge bound to
+the **old** head. Require stale-head refusal and an unmerged native post-read.
+Accepted or unproven outcomes leave exact-head direct merge unsupported.
+
+Record date, native change/request locator and authenticated identity, both full
+SHAs, refusal status/response and unmerged post-read in the target reference.
+After recording, the authorized actor closes/deletes the disposable artifacts
+under the explicit cleanup grant. A documented stale-head rejection guarantee
+needs no live probe.
+

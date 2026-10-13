@@ -2,76 +2,32 @@
 
 Confirmed profile: `<target profile id>` at `<profile_path>`.
 Selected `provider.reference`: `<target-owned integration doc or section>`.
-Intended code/change, work-item and advisory CI scopes: `<independently verified scopes>`.
+Provider/repository/default branch: `<intended binding, evidence source and verified/unverified status>`.
+Applicable MCP route: `<connected native route for this target, or unavailable>`.
 Named fetch/push remotes and fork intent: `<confirmed target choices>`.
+Tracker/CI pointers: `<independently configured scopes and references, with verification gaps>`.
 
-Shared field guidance: the `setup-dev-skills` skill's
-`reference/project-profile-facts.json` (no default target profile). Shared
-delivery uses the `forge`, `start-build`, `start-review`, `plan-to-issues`,
-`issue-delivery-loop` and `retro` skills through confirmed target pointers. Local
-work items bind filesystem scope. Refresh only systems required by the requested
-operation; missing or unsupported actions block only that operation. Configuration
-grants no action authority.
-Each recipe names, per native read and write, its MCP-first transport and the
-help-verified CLI fallback used only when that MCP is unavailable to the acting
-session or for a documented gap (the `setup-dev-skills` skill's
-`SKILL.md#resolve-choices`).
+This is compact setup guidance, not an operation certification checklist.
+Preserve valid custom paths, vocabulary, additions, policies and recipes; update
+only missing, requested or evidenced-stale sections after owner confirmation.
+Shared field guidance is the `setup-dev-skills` skill's
+`reference/project-profile-facts.json`, not a default target profile.
 
-The selected `provider.reference` states the complete packet home, applicable
-authoritative limits/units with evidence and any undocumented capacity. Enforce
-known bounds in their declared units. A confirmed native-validation recipe may
-permit one otherwise authorized ordinary publication with an undocumented
-ceiling/unit, retaining the pre-write original and requiring safe text, actual
-artifact/actor/scope binding and full string-valued native body/original-byte
-equality. Unknown is not unlimited or a guessed cap; refusal or unverified
-publication blocks dependent transitions. See the `forge` skill's
-`SKILL.md#packet-home` and `reference/common-guard.md#authority-verification`.
-Description remains the default; a note home specifies its current
-description-pointer form and independent append/readback then
-pointer-update/readback refresh, preserving closure syntax. Discovery, gate/Lift
-rebind and review follow only that same-change, current-head pointer, never
-historical notes/markers.
+Shared workflows use the `forge`, `start-build`, `start-review`, `plan-to-issues`,
+`issue-delivery-loop` and `retro` skill entries through confirmed target pointers.
+Forge's `SKILL.md#operation-time-recipes` uses a valid target recipe or establishes
+missing mechanics from the bound native tool/API documentation when needed.
+MCP is preferred; CLI help/fallback proof is required only for the call using it.
+Missing binding/proof blocks that operation, not documentation drafting.
+Configuration grants no action authority or delivery readiness.
 
-Report configuration-complete separately from selected-operation delivery-ready.
-Explicit supported/refused recipes and evidence gaps can complete configuration;
-a refused or unverified publication required by the selected delivery cannot
-complete delivery readiness. Ask only genuine unresolved owner choices, not
-undocumented provider internals. Configuration proves no future publication/gate.
+For changed sections, record Agent Setup Doc paths, Check Gate/runtime/bootstrap,
+label/readiness vocabulary, branch/advisory-CI, domain/ADR, release/deploy, manual
+evidence and auxiliary-index policy at existing pointers; mark unknown facts.
+Hooks preserve `start-build`'s `SAFETY.md#safety-floors`.
 
-Record documented stale-head rejection or evidence from the explicitly authorized
-disposable probe described in the `setup-dev-skills` skill's `SKILL.md#resolve-choices`;
-setup never runs that probe or grants cleanup authority. A request field/schema
-alone proves no guarantee. Queue head binding must survive actual merge, not only
-acceptance; unsupported/unproven bindings return `sha-bound-action-unsupported`,
-with no unbound fallback or direct merge under queue authority.
-
-Canonical resources, each named as its skill plus the path inside that skill:
-
-- `forge` skill: `SKILL.md`, `reference/common-guard.md`
-- `start-build` skill: `templates/delivery-schema.md`, `templates/reviewer-lift-schema.md`, `reference/parent-owned-gate.md`
-- `start-review` skill: `REVIEW-FLOW.md`
-
-This profile declares confirmed custom Agent Setup Doc paths, exact Check Gate
-command/runtime/bootstrap, label/readiness vocabulary, branch policy, advisory CI,
-domain/ADR paths, release/deploy policy, manual acceptance evidence and auxiliary
-index ownership. Hooks preserve the safety floors (`start-build` skill,
-`SAFETY.md#safety-floors`).
-
-Complete runtime-specific same-name project declarations point at canonical skill
-entries and preserve role bounds and task-selected specialists. They declare no
-tool allowlist and inherit every tool of the spawning session. Follow native model
-and effort selection (`start-build` skill,
-`reference/parent-orchestrator.md#native-model-and-effort-selection`). Establish
-each runtime's precedence and selected-file/skill provenance separately from actual
-spawning and allocated/revision sessions.
-Resolve canonical builder/final-reviewer roles through the effective spawning
-inventory, preserving native qualified IDs and verified target-project precedence
-under native route selection (`start-build` skill,
-`reference/parent-orchestrator.md#native-route-selection`).
-Keep logical skill IDs stable: record each skill and route by its logical name;
-runtimes may namespace plugin entries, so each runtime-specific declaration uses
-the identifier its own inventory exposes. Resource access does not supply target
-policy or prove preload execution. Relative paths resolve against the directory of
-the file that contains them; run helper scripts as the `forge` skill's `SKILL.md`
-Helpers section directs. Installed aliases keep underlying source ownership and
-never replace this target's profile, identity, paths, vocabulary or policy.
+Setup neither changes nor certifies runtime subagent definitions. Runtime
+selection and validation remain runtime/workflow-owned, not setup completion.
+Relative resource paths resolve against the file containing them; run helpers
+per the `forge` skill's `SKILL.md#helpers`. Installed aliases retain their source
+ownership and never replace the target's profile, identity or policy.
