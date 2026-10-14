@@ -1,11 +1,6 @@
 ---
 name: retro
-description: >-
-  Delivery retrospective: turn build/review/delivery friction evidence into
-  bounded, routed follow-up issues. Use after a start-build, start-review, or
-  issue-delivery-loop run, when asked for a retro / retrospective / lessons
-  learned on agent delivery work, or to turn per-batch delivery metrics into
-  improvement issues.
+disable-model-invocation: true
 ---
 
 # Retro
@@ -29,7 +24,9 @@ This skill runs from the invoked target. Facts and policy come from its confirme
 
 ## Use when
 
-The trigger conditions live in the skill description (just-finished build/review/delivery runs, an explicit retro/retrospective/lessons-learned request, or unconsumed per-batch metrics); the `lookback` scope additionally covers "what friction recurred across the last week/month of delivery work". Below are only the exclusions:
+User invocation only: run this skill only when the user explicitly invokes `retro`. Completed deliveries, unconsumed metrics, and inferred retrospective intent never authorize autonomous activation. Do not bypass this restriction through reference reads or preloads.
+
+After explicit invocation, use `batch` for a finished delivery session or `lookback <date range>` for recurring friction across a bounded window.
 
 Not this skill: raw memory analytics or aggregate query mechanics (the active memory plugin's own reporting skills), repo cleanup discovery (the `cleanup-codebase` skill), or reviewing a diff (the `start-review` skill).
 

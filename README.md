@@ -23,7 +23,7 @@ No tracked file is a symlink: an installer may rewrite one into a machine-specif
 | `issue-delivery-loop` | Coordinate bounded issue batches under the Decoupling Contract. |
 | `plan-to-issues` | Publish an approved plan as tracker issues; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths) for the runtime command. |
 | `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
-| `retro` | Mine a finished delivery session for friction; proposes follow-up issues only. |
+| `retro` | User-invoked only (`disable-model-invocation: true`): mine delivery evidence for friction and propose follow-up issues. See [skill invocation](agents/README.md#skill-invocation-and-resource-paths). |
 
 ## Task-selected specialists
 
