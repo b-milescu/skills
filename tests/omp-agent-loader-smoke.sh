@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Focus: The installed OMP client (`omp` on PATH) in a disposable HOME: native
 # marketplace installation of the candidate, route selection observed in a fresh
-# client process per phase, and canonical skill access through the client. No OMP
+# client process per phase, and user-only skill discovery/access through the client. No OMP
 # source, prompt, model call or native operation; N/A without `omp`.
 set -euo pipefail
 shopt -s nullglob
@@ -101,6 +101,13 @@ if (!state) fail('no get_state response');
 if (state.messageCount !== 0 || state.model?.baseUrl !== 'http://127.0.0.1:9/v1') {
   fail(`session is not prompt-free on the placeholder model: ${state.model?.baseUrl}, ${state.messageCount} messages`);
 }
+if (!Array.isArray(state.systemPrompt) || !state.systemPrompt.every((part) => typeof part === 'string')) {
+  fail('no complete model system prompt');
+}
+const skills = state.systemPrompt.join('\n').match(/<skills>[\s\S]*?<\/skills>/g)?.join('\n') ?? '';
+if (!/^- `?forge`?:/m.test(skills)) fail('model skill inventory is missing eligible forge control');
+if (/^- `?retro`?:/m.test(skills)) fail('user-only retro is exposed in model skill inventory');
+console.log(JSON.stringify({ proof: 'model-skill-discovery', phase, control: 'forge', excluded: 'retro' }));
 const inventory = state.dumpTools?.find((tool) => tool.name === 'task')?.description ?? '';
 const listed = new Map([...inventory.matchAll(/^- `([^`]+)`(?: \([^)]*\))?: (.*)$/gm)].map((match) => [match[1], match[2]]));
 const frontmatter = (file) => yaml.load(fs.readFileSync(file, 'utf8').split(/^---$/m)[1]);
@@ -140,7 +147,7 @@ observe() {
   if grep -q '"limit":' "$TMP_ROOT/$phase.routes"; then
     proof_scope+="; $phase phase cannot distinguish the project .omp and .claude dialects"
   fi
-  for name in start-build start-review forge; do
+  for name in start-build start-review forge retro; do
     (cd "$cwd" && client read "skill://$name") > "$out" || fail "$phase: skill://$name unreadable"
     IFS= read -r line < "$out" || true
     file="${line#\[Skill file: }"
@@ -148,6 +155,7 @@ observe() {
     [[ "$file" -ef "$native_root/$name/SKILL.md" ]] || fail "$phase: skill://$name resolved outside the installed root: $line"
     (cd "$cwd" && client read "skill://$name:raw") > "$out" || fail "$phase: skill://$name:raw unreadable"
     cmp -s "$out" "$native_root/$name/SKILL.md" || fail "$phase: skill://$name bytes differ from the installed entry"
+    cmp -s "$out" "$REPO_ROOT/$name/SKILL.md" || fail "$phase: skill://$name bytes differ from the complete candidate entry"
     printf '{"proof":"skill-entry","phase":"%s","name":"%s","filePath":"%s"}\n' "$phase" "$name" "$file"
   done
 }
