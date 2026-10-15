@@ -81,7 +81,7 @@ Valid regression evidence includes:
 
 ## Escalation
 
-Stop and escalate by assigning/commenting/applying the project's human-decision label when one exists; otherwise comment clearly. Escalate on external-system safety uncertainty, rule ambiguity, credential exposure, review disagreement after two rounds, or legal/ethical concern.
+Stop and escalate by assigning/commenting/applying the project's human-decision label when one exists; otherwise comment clearly. Escalate on external-system safety uncertainty, rule ambiguity, credential exposure, a review disagreement requiring a human decision, or legal/ethical concern. Repairable findings follow [Class-level revision closure](reference/implementation-flow.md#class-level-revision-closure), not a review-round limit.
 
 ## Done criteria
 

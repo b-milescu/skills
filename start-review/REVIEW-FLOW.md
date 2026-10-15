@@ -12,6 +12,8 @@ Provider drift blocks the affected operation; never copy provider commands here.
 
 A gate-eligible reviewer is fresh: it did not build, plan, revise, or
 parent-orchestrate the change. Same-session review is advisory only.
+A design consultant who helped shape the change is a planner for this rule,
+even without editing it, and cannot perform its final review.
 Parent/builder reasoning, packets, lifts, receipts, handoffs, comments, and
 memory are claims or maps, not evidence. If inherited reasoning cannot be
 separated from independent judgment, return `blocked`,
@@ -114,7 +116,13 @@ reviewer. Serialized review never batches decisions, comments, or actions.
 2. Sweep declared Reviewer Focus and every changed safety/acceptance surface.
 3. Trace only evidence-linked callers, schemas, generated copies, docs, and
    failure paths; confirm no compatibility alias or stale caller remains.
-4. Verify behavior claims through public observable tests.
+4. Verify behavior claims through public observable tests or prompt/docs scenario
+   evidence. For risky source-proof, numeric or publication claims, independently
+   check [proof and unknowns](../start-build/reference/context-and-planning.md#proof-and-unknowns).
+   On revisions, verify [class-level closure](../start-build/reference/implementation-flow.md#class-level-revision-closure)
+   across affected consumers, including recurrence controls, retained accepted
+   capabilities and original finding identities; packet assertions alone do not
+   establish closure.
 5. Perform a structural maintainability sweep across the full diff.
 6. Only after checkout binding, run targeted checks needed to verify findings.
    Never mutate live product/operator systems as review evidence.
@@ -136,6 +144,9 @@ Style alone is non-blocking. Raise evidence-backed structural findings plainly:
 name the smell, location, and bounded remedy. Tone never moves the bar.
 Do not request changes for taste; taste, naming, and formatting remain
 non-blocking `C-N`.
+Report every substantiated in-scope finding without a top-N cap. Group related
+causes coherently without losing distinct impacts or original finding identities;
+unrelated new findings do not establish recurrence of an earlier invariant.
 
 The blocking set is bounded by the delivered work item's acceptance criteria.
 A finding demonstrating a named acceptance criterion of the delivered work item is unmet is blocking.

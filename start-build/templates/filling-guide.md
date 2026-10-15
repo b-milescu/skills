@@ -12,6 +12,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 - Use before first edit, after the Discovery Budget completes.
 - Capture only evidence-backed facts: work item, intended behavior, loaded context sources with why-relevant reasons, affected surfaces, test plan, risk, and non-goals.
+- **Proof / unknowns** — Fill only when [Proof and unknowns](../reference/context-and-planning.md#proof-and-unknowns) applies; mechanical work without that risk omits it.
 - If critical information is missing, route the work item back to triage instead of filling blanks.
 
 ## review-packet.md
@@ -57,7 +58,8 @@ Add the heading only when its trigger applies; the template lists the four most 
 ## revision-packet.md
 
 - Submit with `forge publish` in response to a Review Report or substantive post-ready push. Push fixes as new commits, then refresh the Review Packet and Reviewer Lift at the packet home.
-- **Finding bindings** — Repeat every marked `(Report locator, Reviewed commit, Finding ID)` tuple addressed and run the pure-local validator (per the [helper rule](../../forge/SKILL.md#helpers)) before publishing.
+- **Finding bindings** — Retain every original `(Report locator, Reviewed commit, Finding ID)` tuple across revisions, including unchanged/unresolved findings, and run the pure-local validator (per the [helper rule](../../forge/SKILL.md#helpers)) before publishing.
+- **Invariant closure / Accepted capability coverage** — Follow [Class-level revision closure](../reference/implementation-flow.md#class-level-revision-closure) from the first blocker; record same-invariant recurrence controls before another candidate while retaining complete accepted capabilities.
 - **Response to Must Fix** — One subsection per MF item. Quote the headline/snippet, then response and commit SHA.
 - **What I did not change** — Reviewer comments not acted on, and why.
 - **Updated Safety Impact** — New/changed safety evidence since prior packet, or "No change."
