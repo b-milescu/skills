@@ -334,6 +334,8 @@ receipts and YAML alias anchors (`gate_receipt: &gate_receipt`) are invalid;
 the anchor must be the plain mapping key. Builder receipts do not carry the
 parent-only fields (`change_id`, `issue_id`, `checkout_path`, `status_*`,
 `preflight_checks`, `evidence`) — those belong to the parent schema above.
+Bind the run and verify reuse under [Execution-context binding and reuse](#execution-context-binding-and-reuse);
+the evidence bullets carry that provenance without extending the YAML.
 
 Acceptance is provider-native and exact-candidate. Two checks must hold for the
 current head, each verified through the selected target reference: the read-back
@@ -367,6 +369,8 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
    Reviewer Lift, provider current commit, and remote source all identify the
    same exact candidate.
 3. Checkout is clean and at that commit before the full project Check Gate.
+   Apply [Execution-context binding and reuse](#execution-context-binding-and-reuse)
+   when recording the run and before consuming any earlier receipt.
 4. Gate coverage is `exact-candidate-local`, never `parent-owned`. Provider CI,
    when observed, is advisory and attributed only when bound to the candidate or
    provider-proven integration commit.
@@ -380,11 +384,12 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
    CAS or snapshot-sandwich rules live in the selected `forge` reference.
 9. Provider-native post-read confirms ready and unchanged current commit.
 
-The exact candidate plus a passing parent Gate Receipt is sufficient to mark
-ready and launch independent review. Provider CI is advisory and never changes
-pass or finish eligibility. Literal byte-for-byte acceptance strings receive
-targeted exact-string evidence, which does not substitute for independent
-reviewer verification.
+With this checklist and the [execution-context binding](#execution-context-binding-and-reuse)
+satisfied, the exact candidate plus a passing parent Gate Receipt permits ready
+and independent review. Provider CI is advisory and never changes pass or finish
+eligibility. Literal byte-for-byte acceptance strings receive targeted
+exact-string evidence, which does not substitute for independent reviewer
+verification.
 
 ## Stale exact-SHA evidence fails closed after a revision push
 

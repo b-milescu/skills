@@ -7,7 +7,7 @@ stops without trying another provider or transport:
 2. current target re-read;
 3. reviewed commit binding when relevant;
 4. advisory CI observation: attribute status only when bound to that commit or a native-proven integration candidate; absence, failure, or a binding mismatch is recorded and does not fail the guard;
-5. exact-candidate local Gate Receipt when the action requires quality-gate evidence;
+5. exact-candidate local Gate Receipt, including current [execution-context binding](../../start-build/reference/parent-owned-gate.md#execution-context-binding-and-reuse), when the action requires quality-gate evidence;
 6. action-specific authority and provenance;
 7. caller identity/context;
 8. safe body validation when relevant;

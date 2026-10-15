@@ -86,6 +86,20 @@ Missing, stale, wrong-commit, or red CI is advisory evidence, not a review or
 action blocker; a provider's required checks may still hold or refuse a merge
 ([Default finish](#default-finish)).
 
+For both gate owners, independently verify [Execution-context binding and reuse](../start-build/reference/parent-owned-gate.md#execution-context-binding-and-reuse).
+Read the applicable target gate policy and original run evidence, then establish
+current declared input/configuration/toolchain identities through authorized
+Tier 1/Tier 2 sources. Compare those identities with what the run actually used;
+record the comparison and sources in the existing Context Capsule/report
+evidence. Matching SHA, command or identifiers, receipt-validator success and
+builder claims do not replace execution/custody or independent proof. Verify an
+explicit policy-scoped rationale when no additional inputs are declared; missing
+required context proof is not an empty set. A changed or unproven envelope
+prevents a current pass even at the same SHA: route newly bound gate evidence to
+the selected gate owner and independently verify affected behavioral evidence
+again. Historical receipts/reports remain immutable; resolve only the current
+packet and retain native freshness and source/readback equality.
+
 ## Single-change request checkout mode
 
 Single-change-request review is the default and preferred mode: one change
@@ -251,7 +265,7 @@ Classify the failed predicate, not the blocker token alone:
 | Incomplete coverage or missing required policy/context | `blocked`; no pass | No approval/finish; `partial-review`, `rerun-review` with the builder/parent restoring missing inputs |
 | Wrong/ambiguous repository or unverified target binding | `blocked`; no pass | No approval/finish; `preflight-failure`, `fix-blocker` with the parent restoring binding |
 | Head changed before publication | `blocked`; no current pass | No approval/finish; `changed-head-sha`, `rerun-review` by a fresh reviewer on the new head |
-| Missing, invalid, or wrong-commit required local gate/Gate Receipt | No pass; `request-changes` for a builder evidence gap, otherwise `blocked` | No approval/finish; for revision use `none`, `revise`; otherwise `other` with the gate failure reason, `fix-blocker` with the gate owner |
+| Missing, invalid, wrong-commit or execution-context-stale/unproven required local gate/Gate Receipt | No pass; `request-changes` for a builder evidence gap, otherwise `blocked` | No approval/finish; for revision use `none`, `revise`; otherwise `other` with the gate failure reason, `fix-blocker` with the gate owner |
 | Compromised reviewer independence | `blocked`; no pass | No approval/finish; `human-decision-needed`, `rerun-review` from a fresh context |
 | Authority/provenance absent, contradictory, or restricted only for the requested action | Retain the complete current review's judgment | Deny that action; `missing-authority`, `finish-by-authorized-actor` to the parent/authorized actor; a non-inferable authority decision uses `human-decision-needed`, `human-escalation` |
 | Permission unknown or denied only for the requested action | Retain the complete current review's judgment | Deny that action; `permission-failure`, `finish-by-authorized-actor` to an actor with verified permission |
