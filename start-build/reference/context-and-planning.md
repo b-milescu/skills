@@ -50,6 +50,33 @@ may need distinct specialists. Docs-only work selects applicable authoring or
 review guidance for the actor; a task with no optional match proceeds under the
 workflow rules. These are examples, not a language-to-skill mapping.
 
+## Development-check conflicts
+
+On every initial or revision entry, before planning or edits, reconcile explicit
+assignment/higher-priority restrictions with the required TDD and targeted checks.
+Without a conflict, keep the existing feedback loop. `Gate owner: parent` changes
+only final Check Gate/receipt and ready ownership, not development-check permission;
+finish authority is separate. Preserve the launch-bound gate/finish ownership.
+
+Before editing or revising, record the restriction's source, affected checks and
+actual not-run/RED/GREEN status in the Build Plan Packet's Test plan or Revision
+Packet's Updated Test Evidence. Carry the limitation into the Review Packet's Test
+Evidence, Reviewer Lift and handoff. Not-run is not successful TDD; a docs/config
+`TDD: N/A` rationale does not erase an explicit check prohibition.
+
+Continue only through a remaining authorized route that can complete the accepted
+evidence. A permitted docs/scenario read and an explicitly authorized parent gate
+may suffice for prompt/docs work; a future gate never proves an unexecuted
+RED→GREEN slice. A pause, parent checkpoint, different actor or repository wording
+cannot bypass a higher-priority restriction. Only the authority that owns the
+restriction can change it at the required instruction priority.
+
+If no authorized route supplies required proof, expose the exact missing evidence,
+affected stage and prerequisite/actual owner decision in existing Unanswered
+questions, Open Questions and handoff evidence. Block only that stage and continue
+unrelated supported work; do not invent a human-stop instruction, new blocker token
+or permission schema, silently waive evidence, or change ownership.
+
 ## Build Plan Packet
 
 Before the first edit, write a concise Build Plan Packet from the discovery result. Capture the issue, intended behavior, affected surfaces, test plan, risk, and non-goals. Also record loaded context sources with one-line reasons for why each source was relevant; omit boilerplate for sources that were not loaded. Keep it short enough that reviewers can compare it against the issue and diff without reading a long workflow body. Use [`../templates/build-plan-packet.md`](../templates/build-plan-packet.md) as the shape.

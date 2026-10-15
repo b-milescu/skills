@@ -219,6 +219,9 @@ Minimum evidence pointers: project rulebook path, repository Check Gate path, Ch
 
 The `Gate owner` line is the explicit gate-ownership selection; set it once per batch, and omit it only to select the documented `builder` default. Child interpretation and the finish-authority separation are canonical in [child-builder §Authority boundary](child-builder.md#authority-boundary); parent-owned semantics remain in [parent-owned-gate.md](parent-owned-gate.md).
 
+Initial and revision launches preserve applicable check restrictions and their
+sources for [Development-check conflicts](context-and-planning.md#development-check-conflicts).
+
 ## Minimal revision prompt
 
 When the parent routes request-changes back to a builder, retain the
