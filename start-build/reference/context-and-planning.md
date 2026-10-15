@@ -56,6 +56,21 @@ Before the first edit, write a concise Build Plan Packet from the discovery resu
 
 This packet is pre-edit planning only; builder and reviewer authority boundaries stay in [SKILL.md §Invocation modes](../SKILL.md#invocation-modes) and the active mode-specific flow ([child-builder.md](child-builder.md), [standalone-gate.md](standalone-gate.md), [parent-orchestrator.md](parent-orchestrator.md)).
 
+### Proof and unknowns
+
+When source-proof, numeric or publication work risks certifying an unsupported
+answer, capture in the existing Build Plan Packet:
+
+- the consumer-visible claim and the invariant it depends on;
+- evidence sufficient to establish that claim, not just a plausible example;
+- missing, ambiguous, stale, incomplete or unsupported evidence that must produce
+  unknown rather than a known answer;
+- affected consumers and checks distinguishing established, disproven and unknown
+  outcomes.
+
+Keep this proportional to the risk; mechanical work without it omits the section.
+This is planning evidence, not a new schema, approval stage or human wait.
+
 ## Check gate discovery
 
 Discover the full local gate before claiming it is green.

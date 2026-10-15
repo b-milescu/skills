@@ -60,13 +60,11 @@ duplicate, or replace an active reviewer.
 2. Wait for one provider-published Review Report; missing output is not review
    completion and follows [timeout handling](timeout-handling.md).
 3. On `pass`, keep verdict separate from approval and finish actions. On
-   `request-changes`, push bounded fixes, publish one Revision Packet with
+   `request-changes`, follow [Class-level revision closure](implementation-flow.md#class-level-revision-closure), push bounded fixes, publish one Revision Packet with
    provider-native readback, refresh Reviewer Lift, and start a new reviewer
    under the same [reviewer launch protocol](#reviewer-launch-protocol), with an
    explicit owner and selected-runtime entry invocation. On `reject` or
    unresolved `blocked`, stop and escalate.
-4. Limit the loop to three rounds unless a human explicitly authorizes another
-   bounded revision and fresh review. Record authorization provenance.
 
 ## Review Gate Summary
 

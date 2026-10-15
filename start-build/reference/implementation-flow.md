@@ -36,6 +36,34 @@ candidate SHA belongs in Reviewer Lift `Reviewed SHA` and refreshed gate/CI
 evidence, never in place of a finding's historical SHA. Continue through the
 revision publication and fresh-review handoff in Procedure step 10.
 
+## Class-level revision closure
+
+From the first blocking finding, inspect the shared invariant before producing
+the next candidate. State the failed claim, its establishing evidence and unknown
+conditions; trace the shared implementation or policy and its dependent consumers.
+Repair the invariant across every affected consumer identified by that evidence,
+not just the reported example. Batch related fixes coherently in the existing
+Revision Packet while preserving every original report/SHA/finding tuple and all
+accepted capabilities.
+
+If a later finding exposes the same missed invariant, even through a different
+example or consumer, record the recurrence in that packet: originating and
+recurring finding tuples, the failed assumption, corrected invariant, affected
+consumers, and positive/negative/unknown controls with expected and observed
+results. Recheck this bounded closure before the next candidate; unsupported
+claims remain unknown or blocking evidence gaps, not certified repairs. Use
+public-behavior checks, or bounded scenario walkthroughs for prompt/docs work,
+rather than source-wording pins.
+
+Bound the inspection by the accepted scope, cited failures and evidence-linked
+dependencies. Unrelated defects do not count as recurrence. Review-round counts
+neither trigger nor reset closure, cap reportable findings, force pass, reduce
+accepted scope or create an extra approval stage or human wait. Actual safety
+or human-decision blockers still follow [SAFETY.md](../SAFETY.md#escalation).
+Preserve the selected ownership: every new head needs fresh exact-candidate gate
+evidence before ready/re-review, then fresh independent review before
+approval/finish. Earlier gate/receipt/review evidence is historical.
+
 ## Procedure
 
 1. Resolve the work item(s) first: supplied or via [issue pickup](issue-pickup.md). If multiple, enter [Multiple issue worktree mode](multiple-worktrees.md) and run the rest independently per worktree.
@@ -58,7 +86,7 @@ revision publication and fresh-review handoff in Procedure step 10.
    - **Parent-owned gate mode.** The child records `Gate owner: parent`, the parent-owned/not-run contract, and candidate commit only; [parent-owned-gate.md](parent-owned-gate.md#ownership-contract) owns the parent's gate, receipt, and ready transition.
    - **Advisory CI observation.** Record provider CI locator, status, and commit when available, and attribute a status only when its commit matches the candidate or provider-proven integration commit. Missing, pending, failed, canceled, skipped, stale, wrong-commit, or unavailable CI never changes review, approval, or finish eligibility.
    - **Post-ready push protocol.** If any commit is pushed after ready-marking, publish a provider-native update naming old commit → new commit, reason, changed files, gate rerun, and whether the delta is substantive. Refresh every commit-bound Reviewer Lift field and, in parent-owned gate mode, replace the stale Gate Receipt. Use `../templates/revision-packet.md` for substantive changes.
-10. On revision, push new commits and publish exact evidence through `forge`; never resolve a reviewer discussion without verification/project policy. Render one Revision Packet preserving every originating tuple and validate against all reports with `bun <start-review-dir>/scripts/validate-finding-bindings.mjs` (`<start-review-dir>` and [helper rule](../../forge/SKILL.md#helpers) as in step 8). Bare short IDs do not bind findings; no historical identities are rewritten.
+10. Before a revision candidate, follow [Class-level revision closure](#class-level-revision-closure); then push new commits and publish exact evidence through `forge`. Never resolve a reviewer discussion without verification/project policy. Render one Revision Packet preserving every originating tuple and validate against all reports with `bun <start-review-dir>/scripts/validate-finding-bindings.mjs` (`<start-review-dir>` and [helper rule](../../forge/SKILL.md#helpers) as in step 8). Bare short IDs do not bind findings; no historical identities are rewritten.
     Publish that exact artifact with `forge publish` and require provider-native byte-for-byte readback before handoff. In standalone mode, run a **new** reviewer session per [standalone gate](standalone-gate.md). In child `change-builder` mode, return the revision handoff; the parent orchestrator starts the fresh reviewer.
 
 ## Stuck protocol
