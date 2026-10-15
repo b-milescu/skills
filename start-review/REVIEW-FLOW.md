@@ -138,8 +138,44 @@ reviewer. Serialized review never batches decisions, comments, or actions.
    capabilities and original finding identities; packet assertions alone do not
    establish closure.
 5. Perform a structural maintainability sweep across the full diff.
-6. Only after checkout binding, run targeted checks needed to verify findings.
+6. After checkout binding, select and run independent checks per
+   [Review check selection](#review-check-selection).
    Never mutate live product/operator systems as review evidence.
+
+### Review check selection
+
+Complete review and check execution are separate obligations. A fresh reviewer
+independently verifies the original exact-candidate gate evidence through
+[Binding and completeness](#binding-and-completeness); a receipt or validator
+success alone is not proof. Changing reviewer identity alone does not require
+full-suite replay. Complete current-head diff/discussion and acceptance/safety
+coverage, the Context Firewall and uncapped finding reporting remain unchanged.
+
+Choose checks for actual behavioral uncertainty. Independently exercise the
+changed public paths and relevant failure/counterexample cases, using prompt/docs
+scenarios for non-executable changes. Verified original evidence can avoid
+redundant execution, but cannot replace this exercise or justify receipt-only
+approval.
+
+| Evidence or requirement | Check selection |
+|---|---|
+| Independently verified, currently bound full-gate evidence; no launch-required or risk-justified replay | Retain that evidence and run the required independent public-path/counterexample checks; no automatic full-suite replay. |
+| Launch explicitly requires full replay, or concrete risk requires the full suite beyond targeted checks | Record the instruction or risk and obtain new full-gate evidence through the selected gate owner's authorized route before pass. |
+| Original execution evidence is stale/incomplete, or required evidence is missing/invalid | No pass; route newly bound full-gate evidence to the selected gate owner, not a smaller substitute check. |
+| Relevant declared inputs, configuration, toolchain or policy scope changed or is unproven, even at the same SHA | Apply [Execution-context binding and reuse](../start-build/reference/parent-owned-gate.md#execution-context-binding-and-reuse): reject reuse, obtain newly bound evidence through the selected gate owner and independently verify affected behavioral evidence again. |
+
+A replay requirement does not transfer gate ownership or authorize execution.
+Missing authorization or prerequisites block that required evidence; targeted
+reviewer checks cannot repair or waive an invalid full gate. Preserve historical
+receipts/reports and refresh current evidence under the existing guards.
+
+Use the report's existing `Local checks` and `Local check snapshot` fields to
+summarize reviewer-run checks and the full replay/not-replay decision. In
+`Tests / CI / Local Checks`, distinguish accepted/rejected original gate evidence
+and its independent verification sources from reviewer commands/scenarios,
+results and the risk or launch requirement behind that decision. Record checkout
+and command details in `Code I Ran`; explain any non-execution without waiving
+required behavioral exercise. No new receipt type or report fields are needed.
 
 ## Findings and tone
 
