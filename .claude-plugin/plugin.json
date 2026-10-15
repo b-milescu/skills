@@ -8,7 +8,7 @@
     "./issue-delivery-loop",
     "./plan-to-issues",
     "./cleanup-codebase",
-    "./retro"
+    "./delivery-retro"
   ],
   "agents": [
     "./agents/claude/change-builder.md",

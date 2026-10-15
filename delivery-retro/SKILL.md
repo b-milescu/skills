@@ -1,9 +1,9 @@
 ---
-name: retro
+name: delivery-retro
 disable-model-invocation: true
 ---
 
-# Retro
+# Delivery Retro
 
 ## Resource resolution
 
@@ -24,7 +24,7 @@ This skill runs from the invoked target. Facts and policy come from its confirme
 
 ## Use when
 
-User invocation only: run this skill only when the user explicitly invokes `retro`. Completed deliveries, unconsumed metrics, and inferred retrospective intent never authorize autonomous activation. Do not bypass this restriction through reference reads or preloads.
+User invocation only: run this skill only when the user explicitly invokes `delivery-retro`. Completed deliveries, unconsumed metrics, and inferred retrospective intent never authorize autonomous activation. Do not bypass this restriction through reference reads or preloads.
 
 After explicit invocation, use `batch` for a finished delivery session or `lookback <date range>` for recurring friction across a bounded window.
 
