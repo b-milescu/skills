@@ -47,6 +47,8 @@ parent-orchestrated.
    issue acceptance, Gate Receipt/local gate, changed paths, safety and
    acceptance surfaces, TDD evidence, open questions, and authority provenance.
 4. Read the full diff, then trace only evidence-linked callers and invariants.
+   Select reviewer checks and record full replay/not-replay rationale through
+   [Review check selection](REVIEW-FLOW.md#review-check-selection).
    Findings use stable `MF-N`, `SF-N`, or `C-N` IDs bound to the Report locator
    and exact reviewed commit. Suspected secrets or a partial review fail closed
    without reproducing sensitive content.
