@@ -23,7 +23,7 @@ No tracked file is a symlink: an installer may rewrite one into a machine-specif
 | `issue-delivery-loop` | Coordinate bounded issue batches under the Decoupling Contract. |
 | `plan-to-issues` | Publish an approved plan as tracker issues; see [skill invocation](agents/README.md#skill-invocation-and-resource-paths) for the runtime command. |
 | `cleanup-codebase` | Plan subtractive repo maintenance (deslop, destale); planning only. |
-| `retro` | User-invoked only (`disable-model-invocation: true`): mine delivery evidence for friction and propose follow-up issues. See [skill invocation](agents/README.md#skill-invocation-and-resource-paths). |
+| `delivery-retro` | User-invoked only (`disable-model-invocation: true`): mine delivery evidence for friction and propose follow-up issues. See [skill invocation](agents/README.md#skill-invocation-and-resource-paths). |
 
 ## Task-selected specialists
 
@@ -55,7 +55,7 @@ supported.
 - Claude Code or OMP with plugin-marketplace support.
 - Git, and Bun 1.4+ on `PATH`. The bundled helpers need no installed packages.
 - For change-request workflows, a way for your runtime to reach your code host and issue tracker: an MCP server (preferred) or a CLI. Nothing is bundled; `setup-dev-skills` records a compact MCP-first target binding, and `forge` establishes operation-specific recipes and eligible CLI fallback when needed.
-- Optional: a memory plugin or MCP server for `retro` lookback.
+- Optional: a memory plugin or MCP server for `delivery-retro` lookback.
 
 Contributors to this repository also need bash for the [Check Gate](docs/agents/check-gate.md) (`bun install`, then `bun run check`), `gh` plus the GitHub MCP server for its own workflow (see [native integration](docs/agents/native-integration.md)), and optionally the installed OMP client (`omp` on `PATH`) for the loader smoke test.
 
@@ -73,6 +73,7 @@ The plugin exposes all eight skills and only the two reusable Claude agent
 files. Agent identifiers are `skills:change-builder` and
 `skills:change-reviewer-final`; prefer qualified plugin IDs when selecting
 reusable routes. Skill commands use the `skills:<logical-name>` namespace.
+Use `/skills:delivery-retro` for this bundle's delivery retrospective.
 Local `--plugin-dir` development loading is not equivalent installation proof.
 
 ### OMP
@@ -88,6 +89,7 @@ omp plugin uninstall skills@skills --scope user
 OMP uses the same marketplace and the OMP dialect marker. Its reusable agent
 IDs stay bare: `change-builder` and `change-reviewer-final`; skills use
 `/skill:<logical-name>` and native `skill://<logical-name>[/resource]`.
+Use `/skill:delivery-retro` for this bundle's delivery retrospective.
 OMP Git marketplace installation does not install package dependencies. Installed
 workflow helpers therefore carry their minimal static YAML dependency and
 license; they do not require a developer checkout's `node_modules`.
@@ -95,7 +97,7 @@ license; they do not require a developer checkout's `node_modules`.
 Both native surfaces expose shared reference docs and templates as resources,
 not additional skills, and exclude complete project-native agent declarations
 from reusable defaults. The routes declare no `tools` and inherit all of the
-parent session's tools. Canonical logical skill IDs remain unchanged. Skills
+parent session's tools. Logical skill IDs match across both runtimes. Skills
 link their resources by relative paths that resolve against the directory of the
 file containing them, as in standard Markdown. Follow the runtime-specific guidance
 below for cross-directory links; helper scripts run by their resolved absolute path
@@ -110,6 +112,10 @@ Start a fresh runtime session after installation or route/frontmatter updates.
 [Check Gate](docs/agents/check-gate.md#native-install-smoke-requirement) owns
 isolated installation/discovery/lifecycle proof; discovery metadata alone does
 not prove live model routing or authentication.
+
+This bundle's former `retro` skill is now `delivery-retro`; update direct
+invocations. There is no old-name alias here, and unrelated plugins' generic
+`retro` skills remain unchanged.
 
 ## License
 

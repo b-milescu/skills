@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const root = path.dirname(import.meta.dirname);
-const SKILLS = ["setup-dev-skills", "forge", "start-build", "start-review", "issue-delivery-loop", "plan-to-issues", "cleanup-codebase", "retro"];
+const SKILLS = ["setup-dev-skills", "forge", "start-build", "start-review", "issue-delivery-loop", "plan-to-issues", "cleanup-codebase", "delivery-retro"];
 const STACK = [...SKILLS, "templates", "reference"];
 const SKILL = SKILLS.join("|");
 const VENDORED = "start-build/scripts/vendor";
@@ -29,7 +29,7 @@ const RULES = [
   ["harness env variable", /\$?\{?(?:CLAUDE|OMP)_[A-Z_]+/, ["${CLAUDE_PLUGIN_ROOT}", "$CLAUDE_PLUGIN_ROOT/forge/SKILL.md", "CLAUDE_CODE_SUBAGENT_MODEL", "${OMP_AGENT_DIR}", "$OMP_PLUGIN_ROOT/forge", "OMP_REQUIRE_LOADER"], ["OMPLIB"]],
   ["MCP tool id", /\bmcp__/, ["mcp__server__tool"]],
   ["harness config path", /\.claude(?:-plugin)?\b|\.omp(?:-plugin)?\b|CLAUDE\.md|AGENTS\.md/, [".claude/agents/x.md", ".claude-plugin/plugin.json", ".omp-plugin", ".omp/agents"]],
-  ["harness skill namespace", new RegExp(`\\bskills?:(?:${SKILL})\\b`), ["skills:start-build", "skill:retro"]],
+  ["harness skill namespace", new RegExp(`\\bskills?:(?:${SKILL})\\b`), ["skills:start-build", "skill:delivery-retro"]],
   ["harness frontmatter key", /\bautoload-skills\b/, ["autoload-skills: start-build, forge"]],
   ["harness runtime key", /worktree:\s*true|isolation:\s*worktree|thinking-level|model:\s*inherit|subagent_type/, ["worktree: true", "isolation: worktree", "thinking-level", "model: inherit", "subagent_type"]],
   ["harness tool id", /\b(?:TodoWrite|AskUserQuestion|ListAgents|SendMessage|TaskCreate|TaskList|TaskGet|TaskUpdate)\b/, ["TodoWrite", "TaskCreate", "TaskList", "TaskGet", "TaskUpdate"]],
@@ -47,7 +47,7 @@ const RULES = [
   ["bang reference", /(?<![\w/])![0-9]+\b/, ["see !193"], ["urgent!2", "!important"]],
   ["outside skill", /\b(?:ponytail|mempalace|no-mistakes|caveman|graphify|mattpocock|grill-with-docs|diagnosing-bugs|improve-codebase-architecture|writing-great-skills|security-review|code-review|codebase-memory|superpowers|hindsight)\b/i, ["Ponytail", "codebase-memory", "superpowers", "hindsight"], ["start-review"]],
   ["outside skill", /`simplify`|\bsimplify skill\b|\btdd[\s-]+skill\b|\/(?:simplify|verify)\b/i, ["`simplify`", "simplify skill", "tdd skill", "TDD-skill", "/simplify", "/verify"], ["the `tdd` field", "tdd:", "| tdd | RED/GREEN |"]],
-  ["slash invocation", new RegExp(`(?<![\\w./-])/(?:skills?:)?(?:${SKILL})\\b`), ["run /forge", "Run **/forge preflight** first", "Run \"/retro\" after the batch", "[/plan-to-issues](x)", "/skills:forge", "/skill:retro"], ["../forge/SKILL.md", "owner/retro"]],
+  ["slash invocation", new RegExp(`(?<![\\w./-])/(?:skills?:)?(?:${SKILL})\\b`), ["run /forge", "Run **/forge preflight** first", "Run \"/delivery-retro\" after the batch", "[/plan-to-issues](x)", "/skills:forge", "/skill:delivery-retro"], ["../forge/SKILL.md", "owner/retro"]],
   ["absolute user path", /\/Users\/|\/home\/[a-z]|~\/\.(?:claude|omp|agents)/, ["~/.claude/skills"]],
   // Bun is the stack's one declared runtime: no node invocation (flag, script path with or
   // without an extension, shell/template variable), no other Node package or version manager,

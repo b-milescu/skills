@@ -31,6 +31,6 @@ This rulebook is a pointer-first entry point. Keep live tracker, label, check-ga
 | `docs/agents/native-integration.md` | This project's native scopes, tools and usable operation recipes. | Foreign target defaults or shared workflow judgment. |
 | `start-build/` | Build, merge/CI/authority, TDD, safety policy. | Native transport syntax or review verdicts. |
 | `start-review/` | Review verdict, CI/OQ, authority policy. | Native transport syntax or build policy. |
-| `retro/` | Retrospective signals, taxonomy, dispositions, refuter pass. | Issue filing, forge, safety floors. |
+| `delivery-retro/` | Retrospective signals, taxonomy, dispositions, refuter pass. | Issue filing, forge, safety floors. |
 | `reference/` | Shared runtime-neutral workflow contracts: the Decoupling Contract and the agent-readiness scorecard. | Project policy or per-runtime mechanics. |
 | `agents/README.md` | Per-runtime specifics: route ids (routes declare no `tools` and inherit all of the parent session's tools), model/effort selection, skill invocation and resource paths, dialect rules. | Skill procedures or project policy. |

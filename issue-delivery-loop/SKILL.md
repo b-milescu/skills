@@ -139,9 +139,9 @@ classes in the same split: a *builder defect* (the issue was sound but the work
 missed it), an *evidence gap* (a claim landed without the proof it required), and
 *reviewer scope creep* (the review demanded more than the issue asked). This is
 the four-way root-cause split named in
-[the retro signal catalogue](../retro/reference/signal-catalogue.md); the
+[the delivery-retro signal catalogue](../delivery-retro/reference/signal-catalogue.md); the
 definition lives here so a coordinator can count it at batch close without
-loading the `retro` skill.
+loading the `delivery-retro` skill.
 
 ## Floors
 
