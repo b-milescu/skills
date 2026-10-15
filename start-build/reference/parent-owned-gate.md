@@ -51,6 +51,52 @@ Native snapshots stay evidence-only; the parent derives the next stage, and no
 routing outcome changes receipt validation, ownership selection, or
 approval/finish authority.
 
+## Execution-context binding and reuse
+
+This contract applies to both gate owners. Before a run, resolve the target gate
+policy's relevant external source/input identities, gate configuration and
+toolchain bindings, including how to verify them. The target owns that scope;
+do not infer a universal dependency set. When no additional inputs are relevant,
+record the policy source and its scoped rationale. Missing policy or required
+context proof is unknown, not an empty dependency set.
+
+The selected gate owner records the original run's verifiable, non-secret
+identities and policy source alongside its candidate, command and execution
+evidence. Use the target's declared identity method, such as an immutable source
+revision, input artifact digest, configuration identity or actual toolchain
+release/dependency identity. Bind what the run actually used, not values observed
+only later. Retain the original evidence and its custody:
+
+- **Parent-owned:** use existing receipt `evidence` source/summary and retained
+  run evidence for the declared bindings.
+- **Builder-owned:** use the receipt note's existing evidence bullets and their
+  retained run evidence, outside the restricted receipt YAML.
+
+No receipt or Reviewer Lift fields are added. The receipt validator does not
+discover or compare this context. Collect only target-declared, non-secret
+identities through authorized evidence routes; no environment dumps, credential
+values, generic fingerprint scanner or automatic external/product probes.
+
+Before reusing a PASS for ready, review, approval or finish, resolve the current
+packet and native candidate, then compare the original run's declared bindings
+with independently verified current bindings under the applicable target policy.
+Verify that the run stayed within that declared envelope; missing, ambiguous or
+unverifiable required proof prevents reuse. A changed relevant input,
+configuration, toolchain or policy scope invalidates reuse even when candidate
+SHA and command are unchanged. Matching bindings are necessary, not proof of
+execution or PASS: receipt validation, exact-candidate execution evidence and
+custody, native freshness, authored-source/readback equality, independent review
+and authority checks all remain required.
+
+On a changed or unproven envelope, the selected gate owner must obtain newly
+bound execution evidence and publish a new receipt under the existing guards
+before dependent ready/review/approval/finish can proceed. Missing prerequisites
+block that stage; this rule neither changes ownership nor authorizes automatic
+reruns or live reads. Do not relabel an old run with current identities. Keep old
+receipts and reports immutable and historical, refresh the current packet's
+evidence pointers, and obtain new independent verification of any behavioral
+review evidence invalidated by the context change.
+
 ## Gate Receipt schema
 
 Anchor: `gate_receipt.kind=gate-receipt`. Shared fields use opaque strings; the
