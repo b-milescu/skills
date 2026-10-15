@@ -161,7 +161,7 @@ Use a sandbox per cell and fresh sessions for each step (including separate buil
 4. **D — `start-build` / `start-review`:** Build the third issue standalone, independently review it in a new session, and finish only under the confirmed authority and passing required check.
 5. **E — `forge`:** Run and record target-bound preflight in a fresh session.
 6. **F — `cleanup-codebase`:** Produce a proposal only; make no cleanup changes.
-7. **G — `retro`:** Review the delivered batch and standalone delivery; challenge proposed findings against the evidence and record refuted claims rather than treating every hypothesis as a defect.
+7. **G — `delivery-retro`:** Review the delivered batch and standalone delivery; challenge proposed findings against the evidence and record refuted claims rather than treating every hypothesis as a defect.
 8. **H — Final state:** Verify merges match the reviewed heads, the first three issues are closed, main CI passes, no stray source branches remain, and the fourth issue stays open. Keep the supporting URLs/SHAs and any incomplete proof explicit; this scenario description makes no pass claim.
 
 ## When the gate cannot be run

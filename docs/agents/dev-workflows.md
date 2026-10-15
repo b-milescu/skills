@@ -7,7 +7,7 @@ This repo binds the shared dev workflows to GitHub through the `forge` skill's `
 - **`forge`** — the one provider seam; every shared workflow binds through it.
 - **`issue-delivery-loop`** — coordinates bounded batches using the internal `change-builder` and `change-reviewer-final` routes.
 - **`plan-to-issues`**, **`start-build`**, **`start-review`** — each skill's own `description:` states its scope; invoke them per [Usage rules](#usage-rules).
-- **`retro`** — user-invoked only (`disable-model-invocation: true`); retrospective scope and procedure live in its entry.
+- **`delivery-retro`** — user-invoked only (`disable-model-invocation: true`); retrospective scope and procedure live in its entry.
 
 ## Skill activation mechanism
 
@@ -233,5 +233,5 @@ Parent/coordinator checkouts own generated auxiliary project-index updates by de
 - Invoke the `forge` skill before shared workflow reads or actions; this target's confirmed integration is [native-integration.md](native-integration.md).
 - Before converting an approved plan into tracker issues, invoke the `plan-to-issues` skill after the `forge` skill's `preflight`.
 - Before implementation, invoke the `start-build` skill; before independent review, invoke the `start-review` skill.
-- Invoke `retro` only when the user explicitly invokes it; completed deliveries, metrics, and inferred retrospective intent do not authorize activation. Reference reads and preloads must not bypass this restriction.
+- Invoke `delivery-retro` only when the user explicitly invokes it; completed deliveries, metrics, and inferred retrospective intent do not authorize activation. Reference reads and preloads must not bypass this restriction.
 - Project docs in `CLAUDE.md`, `docs/agents/`, `CONTEXT.md`, and ADRs override generic skill defaults where stricter.

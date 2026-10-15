@@ -14,7 +14,7 @@ Shared field guidance is the `setup-dev-skills` skill's
 `reference/project-profile-facts.json`, not a default target profile.
 
 Shared workflows use the `forge`, `start-build`, `start-review`, `plan-to-issues`,
-`issue-delivery-loop` and `retro` skill entries through confirmed target pointers.
+`issue-delivery-loop` and `delivery-retro` skill entries through confirmed target pointers.
 Forge's `SKILL.md#operation-time-recipes` uses a valid target recipe or establishes
 missing mechanics from the bound native tool/API documentation when needed.
 MCP is preferred; CLI help/fallback proof is required only for the call using it.

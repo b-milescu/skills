@@ -106,8 +106,8 @@ if (!Array.isArray(state.systemPrompt) || !state.systemPrompt.every((part) => ty
 }
 const skills = state.systemPrompt.join('\n').match(/<skills>[\s\S]*?<\/skills>/g)?.join('\n') ?? '';
 if (!/^- `?forge`?:/m.test(skills)) fail('model skill inventory is missing eligible forge control');
-if (/^- `?retro`?:/m.test(skills)) fail('user-only retro is exposed in model skill inventory');
-console.log(JSON.stringify({ proof: 'model-skill-discovery', phase, control: 'forge', excluded: 'retro' }));
+if (/^- `?delivery-retro`?:/m.test(skills)) fail('user-only delivery-retro is exposed in model skill inventory');
+console.log(JSON.stringify({ proof: 'model-skill-discovery', phase, control: 'forge', excluded: 'delivery-retro' }));
 const inventory = state.dumpTools?.find((tool) => tool.name === 'task')?.description ?? '';
 const listed = new Map([...inventory.matchAll(/^- `([^`]+)`(?: \([^)]*\))?: (.*)$/gm)].map((match) => [match[1], match[2]]));
 const frontmatter = (file) => yaml.load(fs.readFileSync(file, 'utf8').split(/^---$/m)[1]);
@@ -147,7 +147,7 @@ observe() {
   if grep -q '"limit":' "$TMP_ROOT/$phase.routes"; then
     proof_scope+="; $phase phase cannot distinguish the project .omp and .claude dialects"
   fi
-  for name in start-build start-review forge retro; do
+  for name in start-build start-review forge delivery-retro; do
     (cd "$cwd" && client read "skill://$name") > "$out" || fail "$phase: skill://$name unreadable"
     IFS= read -r line < "$out" || true
     file="${line#\[Skill file: }"
@@ -165,7 +165,9 @@ observe allocated "$allocated_cwd" 1
 observe revision "$revision_cwd" 1
 
 for resource in start-build/SAFETY.md start-build/reference/issue-pickup.md \
-  start-review/templates/filling-guide.md plan-to-issues/templates/issue-body.md; do
+  start-review/templates/filling-guide.md plan-to-issues/templates/issue-body.md \
+  delivery-retro/reference/signal-catalogue.md delivery-retro/reference/refutation.md \
+  delivery-retro/templates/retro-report.md; do
   (cd "$TMP_ROOT/foreign" && client read "skill://$resource:raw") > "$TMP_ROOT/read.out" || fail "skill://$resource unreadable"
   cmp -s "$TMP_ROOT/read.out" "$native_root/$resource" || fail "skill://$resource bytes differ from the installed resource"
 done
