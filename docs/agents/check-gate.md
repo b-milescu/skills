@@ -20,6 +20,33 @@ automatic ownership change. These are selection rules, not a report of an
 observed local failure. Generic cases, including issues that add a gate, are
 owned by [Check gate discovery](../../start-build/reference/context-and-planning.md#check-gate-discovery).
 
+## Declared gate execution context
+
+For either gate owner, follow the shared [execution-context creation/reuse contract](../../start-build/reference/parent-owned-gate.md#execution-context-binding-and-reuse).
+This target declares the candidate's tracked gate/configuration/fixture inputs
+and lockfile-restored dependencies, plus the actual Bun release used, as relevant
+bindings. Record the candidate and policy source, the `.bun-version`,
+`package.json`/`bun.lock` bootstrap provenance and actual `bun --version` in the
+existing retained run evidence and allowed receipt-note provenance. The tracked
+inputs are identified by the exact candidate; dependency provenance includes the
+documented `bun install --frozen-lockfile` bootstrap, not merely a matching lockfile
+name. Actual Bun must match the candidate's `.bun-version`.
+
+No additional external product/source dataset is declared for the repository-local
+syntax, Markdown and fixture checks: their source, gate configuration and fixture
+inputs are in the candidate, and Markdown link validation performs no live network
+reads. Applicable native install/lifecycle smoke retains its existing declared
+runtime/resource provenance requirements below; its required proof cannot be
+treated as absent inputs. This is a scoped rationale, not an environment inventory
+or a claim that every external tool is pinned.
+
+Before reuse, compare the original run's declared bindings with current proof.
+A different Bun release, dependency/configuration envelope or declared smoke
+input invalidates reuse even at the same SHA/command; missing required proof
+blocks reuse. The selected owner supplies newly bound evidence. Existing receipt
+validation, exact-candidate execution/custody, independent review and native
+publication/readback remain necessary.
+
 ## Project-profile refs
 
 Use this file as this repo's confirmed `project_profile.gate_policy_ref`.

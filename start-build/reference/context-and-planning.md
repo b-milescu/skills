@@ -110,6 +110,13 @@ bootstrap route (including runtime and dependencies). Discover them in this orde
 3. Configured CI definitions and included pipeline files to mirror the target's project gate locally where practical; unrelated CI authentication is not a prerequisite.
 4. If still ambiguous, ask the user or state the limitation in the change request before requesting review.
 
+For either gate owner, also resolve the target's declared input/configuration/
+toolchain scope under [Execution-context binding and reuse](parent-owned-gate.md#execution-context-binding-and-reuse).
+Record its policy source and required proof route, or its explicit scoped
+no-additional-input rationale, in the existing plan/packet evidence. This
+discovery defines which bindings the original run must retain; it does not
+authorize external reads or environment collection.
+
 For parent-mode selection, record the applicable case in the Build Plan Packet:
 
 | Discovered case | Selection and prerequisite |
@@ -137,6 +144,7 @@ Before marking ready or requesting review, validate the change-request handoff:
 - `Reviewed SHA` equals the change-request head SHA at ready-marking; any push invalidates prior SHA-bound local gate, Gate Receipt, review, action, and reported CI pointers until rebound.
 - `Gate owner`, `Gate coverage`, `Gate coverage rationale`, and the advisory `CI pipeline` cell follow their `../templates/reviewer-lift-schema.md` rows; an unattributable pipeline commit records its binding limitation instead of a status.
 - Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
+- Current run evidence satisfies [Execution-context binding and reuse](parent-owned-gate.md#execution-context-binding-and-reuse); an unchanged Git SHA alone does not establish current gate evidence.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority carries a stable policy source, or an explicit restriction plus source. Finish authority stays a quoted claim, not a builder grant, with a verifiable source; missing or conflicting source information blocks finish actions without revoking default approval authority.
