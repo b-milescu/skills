@@ -4,8 +4,8 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## General rules for all builder templates
 
-- Publish the template through `forge publish`: review-packet and compact at the [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; revision-packet and stuck-packet as provider-native discussion artifacts. Require original-source publication readback in either path.
-- Keep it in sync with the diff and require provider-native publication readback after every push.
+- Publish the template through `forge publish`: review-packet and compact at the [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; revision-packet and stuck-packet as provider-native discussion artifacts. Publication verification and evidence reuse follow that contract.
+- Keep it in sync with the diff and candidate after every push; refresh the publication through the same contract.
 - Before publication or ready transition, use the selected `forge` provider to validate the native work-item relationship/closure preview. Provider-specific syntax belongs only in its provider reference.
 
 ## build-plan-packet.md

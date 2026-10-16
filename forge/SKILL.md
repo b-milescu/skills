@@ -78,7 +78,7 @@ The ordered [common guard](reference/common-guard.md), including
 [native validation](reference/common-guard.md#native-validation) and
 [exact-head guarantees](reference/common-guard.md#exact-head-guarantees), remains
 mandatory: documentation does not replace fresh scope/caller/head/authority
-checks, original-source equality, one mutation/no mid-attempt switch or recovery.
+checks, authored-source proof, one mutation/no mid-attempt switch or recovery.
 
 ## Operations
 
@@ -90,10 +90,10 @@ checks, original-source equality, one mutation/no mid-attempt switch or recovery
   reviews; unresolved truncation blocks the decision requiring completeness.
 - **`publish`** — validate one authored durable artifact through
   [common guard](reference/common-guard.md), publish once using the selected
-  recipe, and require native byte-preserving authored-source readback with only
-  explicitly documented target normalization. Echoes and stored-body digests are
-  not submitted-source equality. Known-created artifacts recover GET-only;
-  unknown creation uses bounded reconciliation, never automatic repeat creation.
+  recipe, and verify publication under
+  [Native validation](reference/common-guard.md#native-validation), including
+  conditional reuse of documented native safe-write evidence. That contract owns
+  authored-source proof, normalization and recovery.
 - **`act`** — run the ordered common guard, exactly one native mutation, then
   native post-read. Native protections/refusals are reported without bypass.
 - **`post_merge_snapshot`** — read-only merged/linked-item state, result commit,
@@ -117,11 +117,12 @@ remains the change-request description.
 A note-home reference specifies the description pointer form and native refresh
 recipe. First Draft creation may precede note publication, but the change remains
 Draft/unready until the selected packet and pointer have verified readbacks.
-Publish or refresh in this order: append a new complete packet note; require
-byte-exact native readback; update the description pointer while preserving
-provider-native closure syntax; require exact description readback. Each mutation
-runs `forge publish` independently; there is no assumed transactional double-write.
-Published notes are immutable, not edited to refresh a packet.
+Publish or refresh in this order: append a new complete packet note and verify
+its publication; update the description pointer while preserving provider-native
+closure syntax and verify that publication. Each mutation runs `forge publish`
+independently under [Native validation](reference/common-guard.md#native-validation);
+there is no assumed transactional double-write. Published notes are immutable,
+not edited to refresh a packet.
 
 Discovery, gate/Lift rebind, handoff and review resolve **only the current
 description pointer**, natively scoped to this same change request. Never select
@@ -129,9 +130,9 @@ by latest note or marker search: historical packets and reports may contain
 copied Lift markers. Missing, stale, wrong-change or head-mismatched pointers block
 affected transitions. The one-Lift-block rule applies within the current selected
 packet, not across historical packet/report notes. Publication, safe-text,
-applicable known-limit checks and original-source byte equality apply unchanged
-at the selected home; a packet over a known applicable limit is refused
-(`blocked`), never truncated. Unverified publication blocks dependent transitions.
+applicable known-limit checks and authored-source proof under Native validation
+apply unchanged at the selected home; a packet over a known applicable limit is
+refused (`blocked`), never truncated. Unverified publication blocks dependent transitions.
 
 ## Helpers
 
@@ -141,8 +142,10 @@ must not be validated by its own modified validator). Stack files that run
 a helper cite this rule instead of restating it. For
 `scripts/validate-text.mjs`, `<resolved-forge-dir>` is the absolute path of this
 file's directory. Its JSON envelope validates exact string/finite role with
-no-body diagnostics before body-bearing writes. Target safe-write tools may add
-native checks, not replace common checks.
+no-body diagnostics before body-bearing writes as part of `forge publish`, not
+again in each consumer. Native safe-write evidence discharges only guarantees
+covered under [Native validation](reference/common-guard.md#native-validation);
+local source/envelope validation remains required.
 
 ```text
 bun <resolved-forge-dir>/scripts/validate-text.mjs --input <absolute-envelope.json>

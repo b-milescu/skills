@@ -103,12 +103,36 @@ Body publication requires exact string/role validation with the helper at
 pre-write authored source and submit exactly that string. Enforce applicable
 authoritative bounds in their known units; undocumented capacity follows only
 the native-validation recipe above, not a guessed cap. No diagnostic may echo
-submitted body or parser excerpts. Require a full
-string-valued native body, actual artifact/actor/scope binding and byte equality
-against that retained original, with only explicitly documented normalization.
-An echo, reconstructed source, extraction or readback-only digest proves none of
-this. Refusal, missing/null body, mismatch, unavailable readback or uncertain
-outcome leaves publication unverified and blocks dependent ready/review/finish.
+submitted body or parser excerpts. Require a complete string-valued native body,
+actual artifact/destination/actor binding and comparison against that retained
+original. Compare byte-for-byte unless the target explicitly permits a documented
+normalization, which must be reported and independently confirmed; a normalized
+match is not byte-for-byte equality. Keep the authored source unchanged.
+
+`forge` owns publication verification. Reuse the selected, documented safe-write
+recipe's existing native post-read evidence only for guarantees it actually
+establishes: complete native readback, submitted-source comparison,
+artifact/destination/actor binding, allowed normalization and fail-closed
+mismatch/recovery. Complementary results may jointly establish these guarantees
+only when bound to the same actual artifact and retained intent. Missing fields
+are unknown, not safe defaults. Derive expected hashes/counts independently from
+the retained source, applying only the explicitly allowed normalization; a write's
+stored-body digest, echo or generic success flag is not source proof.
+
+Keep local source/envelope validation and target-specific checks the native
+writer does not implement. Within that publication, do not repeat native reads,
+comparisons or validator invocations for guarantees already established; obtain
+only missing required evidence. A complete body returned by an internal native
+GET may be retained directly as the readback file without refetching it.
+CLI/plain writes and recipes without equivalent proof still require explicit
+native GET and source comparison. Stricter target policy continues to govern
+until its recipe is aligned; this reusable contract alone ships no downstream
+adoption or measured savings.
+
+Reuse does not replace a later actor's independent verification or fresh-state
+reads for ready, review, approval, finish or post-merge decisions. Refusal,
+missing/null body, mismatch, unavailable required evidence or uncertain outcome
+leaves publication unverified and blocks dependent ready/review/finish.
 
 If creation is known, retain its locator and recover GET-only. If its outcome is
 unknown, use one bounded read-only native reconciliation without repeating

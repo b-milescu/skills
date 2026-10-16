@@ -374,11 +374,10 @@ in the Review Report's Action / Blocker section.
    An advisory CI classification is not a guard.
 4. Validate the report with start-review's Review Report validator,
    `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md>`,
-   where `<start-review-dir>` is the absolute path of this skill's directory.
-   Then use `forge publish` to create one durable non-blocking report with
-   safe-body validation (forge's `scripts/validate-text.mjs`) and byte-for-byte
-   provider-native readback. Run both helpers per the `forge`
-   [helper rule](../forge/SKILL.md#helpers).
+   where `<start-review-dir>` is the absolute path of this skill's directory,
+   run per the `forge` [helper rule](../forge/SKILL.md#helpers).
+   Then use `forge publish` to create one durable non-blocking report under
+   [Native validation](../forge/reference/common-guard.md#native-validation).
    After publication readback, remove the reviewer-created isolated worktree
    per [Single-change request checkout mode](#single-change-request-checkout-mode)
    when that tree is clean and is not the coordinator path.
@@ -416,9 +415,8 @@ provider refusal, or post-publication guard failure requires a compact plain
 non-blocking action explanation note on the same change request. Intentional
 parent-owned reviewer no-action needs no extra note.
 
-Publish through `forge publish`, with safe-body validation (forge's
-`scripts/validate-text.mjs`, run per the [helper rule](../forge/SKILL.md#helpers))
-and byte-for-byte native readback.
+Publish through `forge publish` under
+[Native validation](../forge/reference/common-guard.md#native-validation).
 Include the original report's stable identity and published
 locator, exact reviewed commit, actor and authority source, action attempted
 or denied, whether a mutation ran, verified outcome or explicit unverified
