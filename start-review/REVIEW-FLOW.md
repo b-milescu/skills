@@ -415,9 +415,8 @@ provider refusal, or post-publication guard failure requires a compact plain
 non-blocking action explanation note on the same change request. Intentional
 parent-owned reviewer no-action needs no extra note.
 
-Publish through `forge publish`, with safe-body validation (forge's
-`scripts/validate-text.mjs`, run per the [helper rule](../forge/SKILL.md#helpers))
-and byte-for-byte native readback.
+Publish through `forge publish` under
+[Native validation](../forge/reference/common-guard.md#native-validation).
 Include the original report's stable identity and published
 locator, exact reviewed commit, actor and authority source, action attempted
 or denied, whether a mutation ran, verified outcome or explicit unverified
