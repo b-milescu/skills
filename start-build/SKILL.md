@@ -88,7 +88,7 @@ Canonical mode docs: [child](reference/child-builder.md),
    its early Draft once; for reuse/revision, update the existing change request.
    Include a Review Packet at its [packet home](../forge/SKILL.md#packet-home),
    complete Reviewer Lift, provider-native closure link, and quoted
-   approval/finish provenance. Require native readback.
+   approval/finish provenance.
 5. Implement vertical TDD slices. Use provider fixtures or fakes; never use live
    product/operator mutation as test evidence. Run only targeted checks during
    implementation and keep the Draft packet current.

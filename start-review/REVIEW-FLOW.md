@@ -374,11 +374,10 @@ in the Review Report's Action / Blocker section.
    An advisory CI classification is not a guard.
 4. Validate the report with start-review's Review Report validator,
    `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md>`,
-   where `<start-review-dir>` is the absolute path of this skill's directory.
-   Then use `forge publish` to create one durable non-blocking report with
-   safe-body validation (forge's `scripts/validate-text.mjs`) and byte-for-byte
-   provider-native readback. Run both helpers per the `forge`
-   [helper rule](../forge/SKILL.md#helpers).
+   where `<start-review-dir>` is the absolute path of this skill's directory,
+   run per the `forge` [helper rule](../forge/SKILL.md#helpers).
+   Then use `forge publish` to create one durable non-blocking report under
+   [Native validation](../forge/reference/common-guard.md#native-validation).
    After publication readback, remove the reviewer-created isolated worktree
    per [Single-change request checkout mode](#single-change-request-checkout-mode)
    when that tree is clean and is not the coordinator path.

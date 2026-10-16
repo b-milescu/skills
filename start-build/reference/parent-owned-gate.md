@@ -168,9 +168,12 @@ evidence-bearing builder note.
 
 `extract-gate-receipt.mjs` owns provider-neutral wrapper extraction, not native
 body recovery or receipt validation. Retain the complete authored note and the
-complete lossless native readback separately. Resolve `<start-build-dir>` to the
-absolute installed skill directory per the [helper rule](../../forge/SKILL.md#helpers);
-run each complete file independently, using fresh output paths:
+complete lossless native readback separately. A complete body already returned
+by the documented safe-write recipe can supply the readback file without another
+fetch, under [Native validation](../../forge/reference/common-guard.md#native-validation).
+Resolve `<start-build-dir>` to the absolute installed skill directory per the
+[helper rule](../../forge/SKILL.md#helpers); run each complete file independently,
+using fresh output paths:
 
 ```text
 bun <start-build-dir>/scripts/extract-gate-receipt.mjs --input <authored-note.md> --output <authored-receipt.yaml>
@@ -208,13 +211,15 @@ exact plain `gate_receipt:` line and contains only its indented child form; copy
 the entire original bytes. This does not authorize raw builder publication.
 Builder title, fence and evidence requirements remain unchanged.
 
-Keep both raw outputs and require their byte equality independently of full
-authored-note/native-note byte equality. Full authored-body safe-text validation
-with forge's `scripts/validate-text.mjs`, run per the helper rule, and complete
-native-body equality remain independent publication prerequisites, not checks
-of only the extracted YAML. Extraction validates no fields, PASS/execution,
-head/owner/Lift, native actor/scope/custody or authority. Native JSON-to-string
-body recovery remains the selected target reference's responsibility.
+Keep both raw outputs and require their byte equality independently of full-note
+[publication verification](../../forge/reference/common-guard.md#native-validation).
+An allowed full-note normalization, including a terminal line ending, does not
+establish raw extracted YAML byte equality; never normalize those outputs to
+make them match. Full authored-body safe-text validation and complete native
+publication proof remain independent prerequisites, not checks of only the
+extracted YAML. Extraction validates no fields, PASS/execution, head/owner/Lift,
+native actor/scope/custody or authority. Native body recovery remains the selected
+target reference's responsibility.
 
 ### Validation and proof boundaries
 
@@ -239,10 +244,10 @@ exact-candidate binding, clean checkout, review, or authority; the other
 checks on this page still apply.
 
 Render the complete note once, materialize its raw YAML and validate that input
-before publication. Publish the complete note with `forge publish` and require
-provider-native byte-for-byte full-body readback. Materialize the receipt YAML
-from that readback, then validate it, its returned locator and the current
-Review Packet before ready:
+before publication. Publish the complete note with `forge publish` under
+[Native validation](../../forge/reference/common-guard.md#native-validation).
+Materialize the receipt YAML from that retained readback, then validate it, its
+returned locator and the current Review Packet before ready:
 
 Run helpers per the [helper rule](../../forge/SKILL.md#helpers): `<start-build-dir>`
 below is the absolute path of `..` in the installed skill, and each command runs by
@@ -341,9 +346,9 @@ Acceptance is provider-native and exact-candidate. Two checks must hold for the
 current head, each verified through the selected target reference: the read-back
 note carries the standalone `gate_receipt:` anchor (`present_anchor`), and its
 `checkout_commit` equals the fresh change-request head (`receipt_commit_eq_head`).
-Publication also requires provider-native byte-for-byte readback of the complete
-note. Retain that full authored/read-back pair and materialize its two raw YAML
-files as in [Publication syntax and proof](#publication-syntax-and-proof).
+Publication also requires [Native validation](../../forge/reference/common-guard.md#native-validation)
+for the complete note. Retain that full authored/read-back pair and materialize
+its two raw YAML files as in [Publication syntax and proof](#publication-syntax-and-proof).
 Validate the authored YAML before publication and the read-back YAML afterward,
 using `--owner builder --mode pre-post` for both. Run the helper per the
 [helper rule](../../forge/SKILL.md#helpers); parent-owned binding flags are
@@ -377,7 +382,7 @@ two-line handoff ([builder-final-handoff.md](../templates/builder-final-handoff.
 5. Tracked files remain unchanged after the gate. If they changed, the Receipt
    fails: commit them, bind the new exact candidate, and rerun the full gate.
 6. Gate Receipt contains `result: "PASS"`, exact candidate, command, preflights,
-   and evidence; publication readback is byte-for-byte.
+   and evidence; publication is verified under [Native validation](../../forge/reference/common-guard.md#native-validation).
 7. Reviewer Lift `Acceptance surfaces` all have test/smoke/docs-read/ci/N/A
    evidence, and non-`none` finding bindings validate against their reports.
 8. Re-snapshot immediately before one guarded ready mutation. Provider-specific
