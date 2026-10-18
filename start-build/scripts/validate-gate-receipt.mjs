@@ -10,7 +10,7 @@ const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const cleanStatusCommands = new Set(["git status --porcelain", "git status --porcelain --untracked-files=all"]);
 // Static on purpose: argument errors print it after their unchanged first line,
 // and it never echoes a supplied flag or value.
-const usage = `usage, one accepted flag set per line (see ../reference/parent-owned-gate.md, relative to this script):
+const usage = `usage, one accepted flag set per line (see ../reference/gate-receipt.md, relative to this script):
   --mode lift-only --review-packet <packet> [--owner parent|builder]
   [--owner parent] --mode pre-post --receipt <receipt.yaml> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-command <command> [--review-packet <packet>]
   [--owner parent] [--mode post-note] --receipt <receipt.yaml> --review-packet <packet> --change-id <id> --issue-id <id> --reviewed-commit <commit> --gate-receipt-locator <locator> --gate-command <command> --gate-policy-ref <policy>
@@ -170,7 +170,7 @@ function validateReceipt(body, expected) {
   }
 }
 
-// Builder-owned receipt (start-build/reference/parent-owned-gate.md#builder-owned-gate-receipt):
+// Builder-owned receipt (start-build/reference/gate-receipt.md#builder-owned-gate-receipt):
 // anchor-form gate_receipt block with kind/version/owner/checkout_commit/command/result only.
 function validateBuilderReceipt(body, expected) {
   if (/^\s*gate_receipt:\s*&\S/m.test(body)) {

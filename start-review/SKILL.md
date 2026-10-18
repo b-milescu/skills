@@ -43,6 +43,9 @@ parent-orchestrated.
    Before substantive judgment, independently follow
    [Task-selected specialists](../start-build/reference/context-and-planning.md#task-selected-specialists)
    from this verified issue/diff.
+   Before verifying a Gate Receipt, read the [ownership/stage/context interface](../start-build/reference/parent-owned-gate.md)
+   and complete [receipt proof mechanics](../start-build/reference/gate-receipt.md)
+   for its owner; do not rely on a PASS before that proof.
 3. Copy every Reviewer Lift row into the Review Report as a claim. Verify scope,
    issue acceptance, Gate Receipt/local gate, changed paths, safety and
    acceptance surfaces, TDD evidence, open questions, and authority provenance.

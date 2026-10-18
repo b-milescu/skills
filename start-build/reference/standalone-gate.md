@@ -3,6 +3,10 @@
 Detailed mandatory review gate for standalone `start-build` sessions. Child
 builder sessions return to their parent and do not own this gate.
 
+Before running the builder-owned Check Gate or relying on its PASS for ready
+and reviewer launch, read [gate-receipt.md](gate-receipt.md) and apply its complete
+builder-owned receipt/publication proof.
+
 ## Mandatory review gate
 
 The standalone builder starts a fresh independent reviewer through the runtime's

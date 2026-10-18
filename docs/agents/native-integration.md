@@ -200,8 +200,9 @@ this checkout: resolve `scripts/extract-gate-receipt.mjs` and
 says where each runtime keeps it), and run each by that resolved absolute path.
 `<start-build-dir>` below stands for that installed directory. A PR must not be
 validated by its own modified validator, and this checkout's `start-build/` is code a
-PR may change. Follow the
-[canonical owner/mode contract](../../start-build/reference/parent-owned-gate.md),
+PR may change. For receipt production or verification, follow the
+[ownership/stage/context interface](../../start-build/reference/parent-owned-gate.md)
+and complete [receipt mechanics](../../start-build/reference/gate-receipt.md),
 using the raw YAML files materialized below for the actual `Gate owner`.
 
 Extraction and owner-mode validation do not establish publication authority or
@@ -214,7 +215,7 @@ and [Publish one artifact](#publish-one-artifact).
 `authored-note.md` (the complete submitted body), `readback-note.md` (the complete
 lossless native GET body recovered per [Publish one artifact](#publish-one-artifact)),
 and the separately materialized `authored-receipt.yaml` / `readback-receipt.yaml`.
-The [canonical shared wrapper extraction contract](../../start-build/reference/parent-owned-gate.md#shared-wrapper-extraction)
+The [canonical shared wrapper extraction contract](../../start-build/reference/gate-receipt.md#shared-wrapper-extraction)
 owns supported forms, byte preservation and refusals. Invoke the installed
 helper independently on each complete body with fresh, exclusively created
 output paths:

@@ -9,9 +9,10 @@ and rebind every claim before acting.
 Generic IDs and artifact locators are opaque strings. Only the bound provider
 interprets or validates its native ID and URL shapes.
 
-Gate Receipt fields, parent-owned ready behavior, and
+Gate Receipt fields and production/validation are canonical in
+[gate-receipt.md](../reference/gate-receipt.md); parent-owned ready behavior and
 [stage-correct verification](../reference/parent-owned-gate.md#stage-correct-handoff-verification)
-are canonical in [parent-owned-gate.md](../reference/parent-owned-gate.md);
+remain in [parent-owned-gate.md](../reference/parent-owned-gate.md).
 `gate_receipt.kind=gate-receipt` is a durable workflow artifact, not a compact
 delivery record. Final handoffs follow
 [builder-final-handoff.md](builder-final-handoff.md) and the

@@ -86,6 +86,12 @@ Missing, stale, wrong-commit, or red CI is advisory evidence, not a review or
 action blocker; a provider's required checks may still hold or refuse a merge
 ([Default finish](#default-finish)).
 
+Before verifying either owner's receipt for review or action, read
+[gate-receipt.md](../start-build/reference/gate-receipt.md): the applicable
+schema/mode, shared extraction/validation/publication proof and original-log
+custody contract. Its local validation, native attribution and original
+execution/readback proofs remain distinct.
+
 For both gate owners, independently verify [Execution-context binding and reuse](../start-build/reference/parent-owned-gate.md#execution-context-binding-and-reuse).
 Read the applicable target gate policy and original run evidence, then establish
 current declared input/configuration/toolchain identities through authorized

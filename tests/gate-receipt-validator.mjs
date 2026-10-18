@@ -187,7 +187,7 @@ try {
     const result = cli(...argv);
     assert.equal(result.status, 1);
     assert.equal(result.stderr.split("\n")[0], `gate-receipt validation failed: ${first}`);
-    for (const token of ["--mode lift-only", "--mode pre-post", "--mode post-note", "--owner parent", "--owner builder", "../reference/parent-owned-gate.md"]) assert.ok(result.stderr.includes(token), `usage names ${token}`);
+    for (const token of ["--mode lift-only", "--mode pre-post", "--mode post-note", "--owner parent", "--owner builder", "../reference/gate-receipt.md"]) assert.ok(result.stderr.includes(token), `usage names ${token}`);
     assert.doesNotMatch(result.stderr, /bogus|PRIVATE-SENTINEL/);
   }
   assert.equal(cli("--owner", "builder", "--mode", "pre-post", "--receipt", join(work, "absent.yml"), "--reviewed-commit", sha, "--gate-command", command).stderr, "gate-receipt validation failed: cannot read receipt\n");

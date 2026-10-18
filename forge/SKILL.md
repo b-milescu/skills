@@ -158,7 +158,7 @@ non-whitespace C0 and DEL; allow tab/LF/CR and valid Unicode. Failures emit only
 role/offset/type, never body or parser excerpts. Valid envelope content errors use
 the supplied role and a UTF-16 content offset; envelope errors use `body`.
 
-The [shared wrapper extraction contract](../start-build/reference/parent-owned-gate.md#shared-wrapper-extraction)
+The [shared wrapper extraction contract](../start-build/reference/gate-receipt.md#shared-wrapper-extraction)
 owns installed receipt materialization from complete authored and lossless
 readback files; it proves neither receipt validity nor native attribution.
 The selected target reference owns native identifiers/locators, tools, pagination,

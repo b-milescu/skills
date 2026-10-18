@@ -22,6 +22,7 @@ A launch prompt (or agent body) names the skill and instructs invocation; per th
 - [`issue-delivery-loop/SKILL.md`](../../issue-delivery-loop/SKILL.md)
 - [`start-build/reference/parent-orchestrator.md`](../../start-build/reference/parent-orchestrator.md)
 - [`start-build/reference/parent-owned-gate.md`](../../start-build/reference/parent-owned-gate.md)
+- [`start-build/reference/gate-receipt.md`](../../start-build/reference/gate-receipt.md) — gate executors and receipt verifiers before execution or reliance on PASS.
 - [`start-build/reference/post-merge-verifier.md`](../../start-build/reference/post-merge-verifier.md)
 - [`start-build/templates/delivery-schema.md`](../../start-build/templates/delivery-schema.md)
 - [`setup-dev-skills/reference/project-profile-facts.json`](../../setup-dev-skills/reference/project-profile-facts.json)
