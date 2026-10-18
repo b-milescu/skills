@@ -347,13 +347,10 @@ CI status never changes the verdict, review, approval, authority or finish
 eligibility, and the finisher never reads CI status to decide eligibility. A
 provider's required checks are native merge protection: they may hold or refuse the
 guarded merge, a provider outcome reported without bypass and never an eligibility
-decision or an authorization. On a hold from pending required checks, the finisher
-waits on the check-completion signal resolved through forge for the bound target,
-within the
-[required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-then re-runs the full guarded `forge act` from its first guard; the earlier refusal
-is never reused. A failed check or an elapsed budget leaves the change blocked with
-the provider outcome. That wait is the only CI wait.
+decision or an authorization. On a pending-required-check hold, every finisher,
+including a standalone reviewer, must follow the
+[wait contract](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+then restart the [Mutation Guard from its first phase](../forge/reference/common-guard.md#result-contract).
 
 Queue, auto-completion, direct finish and required-check semantics, including the
 check-completion signal and any bound other than the default required-check wait
@@ -397,11 +394,11 @@ in the Review Report's Action / Blocker section.
    Preserve the published judgment, original reviewed commit, and finding
    identities as historical evidence, not a pass for the new head.
 6. Perform exactly one authorized `forge act` only when its guards pass and the
-   finish owner permits it; otherwise emit the no-action result. A merge held by
-   pending required checks ran no mutation, so its guarded re-run after the
-   required-check wait is still that one action. An action-only failure after publication
-   does not change the valid historical judgment; newly discovered invalid review
-   evidence must be reported, not masked as action-only.
+   finish owner permits it; otherwise emit the no-action result. On a
+   pending-required-check hold, follow the mandatory
+   [wait/restart transition](#default-finish). An action-only failure after
+   publication does not change the valid historical judgment; newly discovered
+   invalid review evidence must be reported, not masked as action-only.
 7. The authorized actor owns provider-native post-read and any required
    [action explanation](#post-report-action-evidence). Emit the two-line final
    handoff (change-request locator and Review Report note id); later action
