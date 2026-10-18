@@ -17,7 +17,7 @@ contract. Do not invent an ID or post a note solely to fill this line. An existi
 receipt is usable only after native readback verifies its candidate binding.
 In builder-owned mode the value is the builder-published anchor-form Gate
 Receipt note id per
-[parent-owned-gate.md#builder-owned-gate-receipt](../reference/parent-owned-gate.md#builder-owned-gate-receipt),
+[gate-receipt.md#builder-owned-gate-receipt](../reference/gate-receipt.md#builder-owned-gate-receipt),
 returned only after native readback and `present_anchor`/`receipt_commit_eq_head`
 verify against the current head; before that receipt exists, use `not-created`.
 

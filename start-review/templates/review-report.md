@@ -89,7 +89,7 @@ Copy the builder handoff, then verify it against canonical [`reviewer-lift-schem
 | Gate coverage | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
 | Gate coverage rationale | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
 | CI pipeline | `<copy; verify per ../../start-build/templates/reviewer-lift-schema.md>` |
-| Local gate | `<copy; verify N/A or parent-owned Gate Receipt per ../../start-build/reference/parent-owned-gate.md>` |
+| Local gate | `<copy; verify N/A or either owner's Gate Receipt per ../../start-build/reference/gate-receipt.md>` |
 | RED | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
 | GREEN | `<copy; evaluate behavior-touching implementation or N/A with rationale; do not fake tests>` |
 | Changed paths | `<copy command and measured output; verify with git diff --name-only <base>...HEAD>` |
@@ -107,14 +107,14 @@ Copy the builder handoff, then verify it against canonical [`reviewer-lift-schem
 
 ## Review Context Capsule
 
-Follow [Review Context Capsule](../REVIEW-FLOW.md#review-context-capsule). Treat Reviewer Lift, Gate Receipt, and delivery claims as maps, not proof; record safety-critical verification and source evidence, including parent-owned Gate Receipt validation per `../../start-build/reference/parent-owned-gate.md`.
+Follow [Review Context Capsule](../REVIEW-FLOW.md#review-context-capsule). Treat Reviewer Lift, Gate Receipt, and delivery claims as maps, not proof; record safety-critical verification and source evidence, including mode-correct Gate Receipt validation per `../../start-build/reference/gate-receipt.md`.
 
 | Capsule field | Claim | Reviewer verification | Source |
 |---|---|---|---|
 | Repository | `<claimed host/project/repository/default or target branch; cross-repository choice if any>` | `<verified preflight + repository binding result>` | `<provider snapshot / change request locator / rulebook path>` |
 | Change request | `<claimed locator/source/target/head/reviewed commit/readiness>` | `<verified change request metadata, reviewed-commit match, diff captured>` | `<provider snapshot / change request locator / diff artifact>` |
 | Authority | `<claimed Approval authority/source and Finish authority/source>` | `<verified through ../../forge/reference/common-guard.md: approval policy/restriction, merge source, precedence, conflicts/no-action result, and no-self context>` | `<Reviewer Lift rows + parent/human/rulebook/project sources>` |
-| CI | `<claimed advisory pipeline/local gate/Gate Receipt>` | `<verified exact-candidate local gate/Gate Receipt; CI status attributed only with exact commit binding>` | `<change request pipeline metadata / CI snapshot / Gate Receipt change request comment / ../../start-build/reference/parent-owned-gate.md / local command output>` |
+| CI | `<claimed advisory pipeline/local gate/Gate Receipt>` | `<verified exact-candidate local gate/Gate Receipt; CI status attributed only with exact commit binding>` | `<change request pipeline metadata / CI snapshot / Gate Receipt change request comment / ../../start-build/reference/gate-receipt.md / local command output>` |
 | Scope | `<claimed issue scope, safety surfaces, changed paths, non-goals>` | `<verified diff matches issue/rulebook; scope/safety gaps noted>` | `<issue / Review Packet / diff / rulebook>` |
 | Artifacts | `<claimed Review Packet, Reviewer Lift, revision packet, Gate Receipt, gate/test artifacts>` | `<verified artifact exists, is relevant/redacted, and supports claim>` | `<packet home / comment URL / artifact path / command transcript>` |
 | Context expansion | `<Tier 2 or Tier 3 context used/considered>` | `<verified trigger, bounded read, and Tier 3 human/necessity rationale>` | `<path:line / finding ID / CI log / human instruction / rulebook section>` |

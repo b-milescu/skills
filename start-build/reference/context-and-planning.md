@@ -145,6 +145,7 @@ Before marking ready or requesting review, validate the change-request handoff:
 - `Gate owner`, `Gate coverage`, `Gate coverage rationale`, and the advisory `CI pipeline` cell follow their `../templates/reviewer-lift-schema.md` rows; an unattributable pipeline commit records its binding limitation instead of a status.
 - Local gate command/result is present. Review launch requires the exact-candidate local gate to pass, or parent-owned mode records the ownership contract and waits for the Gate Receipt from [parent-owned-gate.md](parent-owned-gate.md#ownership-contract).
 - Current run evidence satisfies [Execution-context binding and reuse](parent-owned-gate.md#execution-context-binding-and-reuse); an unchanged Git SHA alone does not establish current gate evidence.
+- Gate executors read [gate-receipt.md](gate-receipt.md) before running the gate; receipt verifiers read it before relying on a PASS. Parent-owned children keep their receipt-independent Lift obligation without loading production mechanics.
 - No placeholder `OQ-1` remains; Open Questions is either `none` or lists real stable IDs.
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority carries a stable policy source, or an explicit restriction plus source. Finish authority stays a quoted claim, not a builder grant, with a verifiable source; missing or conflicting source information blocks finish actions without revoking default approval authority.

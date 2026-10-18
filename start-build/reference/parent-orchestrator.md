@@ -14,7 +14,12 @@ Auxiliary project-index updates default to the parent/coordinator checkout unles
 
 ## Parent-owned Gate Receipt mode
 
-When the parent coordinator, not the child builder, owns the final local gate and ready transition, [parent-owned-gate.md](parent-owned-gate.md) is canonical for the ownership contract, receipt schema, ready-transition conditions, and evidence-ready tokens. Work through its [parent verification checklist](parent-owned-gate.md#parent-verification-checklist) before `forge act`; do not redefine the receipt here.
+When the parent coordinator, not the child builder, owns the final local gate and
+ready transition, [parent-owned-gate.md](parent-owned-gate.md) owns the
+ownership/stage/context interface. Before gate execution or reliance on an
+existing PASS, read [gate-receipt.md](gate-receipt.md) for complete receipt
+production/validation and its [parent verification checklist](gate-receipt.md#parent-verification-checklist).
+Apply that checklist before `forge act`; do not redefine the receipt here.
 
 ## Default builder routing
 

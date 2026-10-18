@@ -71,6 +71,9 @@ Canonical mode docs: [child](reference/child-builder.md),
    On initial and revision entry, follow
    [Development-check conflicts](reference/context-and-planning.md#development-check-conflicts)
    before planning or edits.
+   Gate executors also read [gate-receipt.md](reference/gate-receipt.md)
+   before running the Check Gate; parent-owned children use only the pre-gate
+   interface and receipt-independent Lift check.
 2. Invoke `forge preflight` through the target's confirmed profile/reference.
    Bind intended code/work-item/CI scopes together, canonical repository/default
    branch and operation-specific policy/identity; refresh only required systems.
