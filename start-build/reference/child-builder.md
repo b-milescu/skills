@@ -47,9 +47,9 @@ Credential handling discipline applies before every local shell or provider step
 
 ## Reviewer Lift child-seam rule
 
-The Reviewer Lift block is a hard child seam: copy the selected packet's generated-copy Reviewer Lift block verbatim and fill **every** row.
+The Reviewer Lift block is a hard child seam: copy the packet template's generated-copy Reviewer Lift block verbatim and fill **every** row.
 
-- Start from the approved generated-copy block delimited by `REVIEWER-LIFT-SCHEMA:BEGIN ... REVIEWER-LIFT-SCHEMA:END` in `../templates/review-packet.md` or `../templates/review-packet-compact.md`. Copy the whole block and replace each placeholder with a verified value; a re-derived subset that silently drops rows (for example omitting `Acceptance surfaces`) is not acceptable, and fail-closed values (`none`, `N/A — <why>`) are.
+- Start from the approved generated-copy block delimited by `REVIEWER-LIFT-SCHEMA:BEGIN ... REVIEWER-LIFT-SCHEMA:END` in `../templates/review-packet.md`. Copy the whole block and replace each placeholder with a verified value; a re-derived subset that silently drops rows (for example omitting `Acceptance surfaces`) is not acceptable, and fail-closed values (`none`, `N/A — <why>`) are.
 - Authority rows need verifiable sources per `../templates/reviewer-lift-schema.md`. `docs/agents/check-gate.md` does not own authority policy, so it is not a valid authority source.
 - Run helper scripts per the [helper rule](../../forge/SKILL.md#helpers); below, `<start-build-dir>` is the absolute path of `..` and `<start-review-dir>` the absolute path of `../../start-review`, both in the installed skills. Before handoff run `bun <start-build-dir>/scripts/validate-gate-receipt.mjs --mode lift-only --review-packet <packet>`: canonical full-row presence/nonempty/one-block/duplicate checks only, independent of future receipt and either owner context.
 - Validate non-`none` finding tuples against all originating reports with `bun <start-review-dir>/scripts/validate-finding-bindings.mjs --report <report.md> ... --lift <packet>` (same helper rule) per `../../start-review/reference/finding-identities.md`. Bare short IDs are insufficient; native artifact/scope verification remains separate.

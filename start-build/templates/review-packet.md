@@ -1,7 +1,7 @@
 # Review Packet
 
-Summary-first packet. Fill the default sections below; add a conditional section
-only when its trigger applies.
+Use one packet for every work type. Fill the default sections; include
+conditional metadata and evidence only when their triggers apply.
 
 ## Metadata
 
@@ -14,13 +14,13 @@ only when its trigger applies.
 | Branch | |
 | Base commit | |
 | Current/reviewed commit(s) | |
-| ADR needed? | `<yes/no; planned ADR slug if yes>` |
-| Blocks | |
-| Blocked by | |
 
 Section instructions, conditional-section triggers, publication, closure/readback,
 and finding-binding checks are canonical in
 [`filling-guide.md`](filling-guide.md#general-rules-for-all-builder-templates).
+
+Add `ADR needed?`, `Blocks`, or `Blocked by` metadata rows only when an ADR/design
+decision or delivery dependency needs recording. Simple work omits them.
 
 ## Reviewer Lift
 
@@ -76,27 +76,27 @@ relevant), or write `none beyond issue and rulebook index`.
 
 ## Safety / State / External Delta
 
-One line per surface; write `N/A — <reason>` when a surface is untouched.
+When unchanged impact is established, replace this section with **Safety
+Confirmation**: one line confirming no external-system mutation path,
+credential/secret-store handling, domain rule, state schema, migration, deploy
+topology, or enforce-mode behavior changed.
 
-- **Safety invariants:** `<none changed / which invariants + how preserved>`
-- **State / persistence / migration:** `<none / which stores, migration numbers, smoke-test plan>`
-- **External-system / credential:** `<no live external mutation; no secret read/printed/committed / details>`
+Otherwise keep this heading and record each surface below, with supporting
+evidence or `unknown — <missing proof and affected decision>`. An uninvestigated
+surface is unknown, not `none` or an omitted section.
+
+- **Safety invariants:** `<which invariants + how preserved, or established unchanged>`
+- **State / persistence / migration:** `<stores, migration numbers, smoke-test plan, or established unchanged>`
+- **External-system / credential:** `<mutation/credential delta and evidence, or established unchanged>`
 
 ## Test Evidence
 
-Expand on the `RED`/`GREEN` Reviewer Lift fields: targeted tests, full check
-gate output (or CI link), and regression evidence for behavior-touching
-refactors. State `TDD: N/A — <reason>` for non-behavior changes or no native
-test framework.
-
-## Reviewer Focus
-
-What could go wrong and where to read hardest. Mirror the Reviewer Lift >
-Reviewer Focus headline, or write `none`.
-
-## Open Questions
-
-`None.` or stable OQ-N IDs the reviewer can answer/escalate.
+Expand on the `RED`/`GREEN` Reviewer Lift fields with targeted results and
+regression evidence. Record the exact-candidate local gate outcome or the
+parent-owned/not-run contract; CI is advisory, not a replacement. State
+`TDD: N/A — <reason>` when applicable and retain any check restriction/not-run
+status. For risk-relevant claims, name establishing proof and conditions
+requiring unknown per `filling-guide.md`.
 
 ## Follow-ups
 
@@ -108,6 +108,10 @@ applies; filling-guide.md (review-packet.md > Conditional sections) owns them.
 
 ## Architecture / Design Decisions
 ## Diff Summary
+## External-System and Credential Safety
+## State, Persistence, and Migration Impact
 ## Manual / Operational Evidence
 ## Reviewer Hints
+## Reviewer Focus
+## Open Questions
 -->

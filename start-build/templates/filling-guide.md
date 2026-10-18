@@ -4,7 +4,7 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## General rules for all builder templates
 
-- Publish the template through `forge publish`: review-packet and compact at the [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; revision-packet and stuck-packet as provider-native discussion artifacts. Publication verification and evidence reuse follow that contract.
+- Publish the template through `forge publish`: review-packet at the [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; revision-packet and stuck-packet as provider-native discussion artifacts. Publication verification and evidence reuse follow that contract.
 - Keep it in sync with the diff and candidate after every push; refresh the publication through the same contract.
 - Before publication or ready transition, use the selected `forge` provider to validate the native work-item relationship/closure preview. Provider-specific syntax belongs only in its provider reference.
 
@@ -17,18 +17,37 @@ This guide holds instructional prose for builder templates. Read once per sessio
 
 ## review-packet.md
 
-The template ships the default sections only. Pre-edit discovery (rulebook read, mutation/credential/state/TDD-applicability checks) belongs in `build-plan-packet.md`, not a packet checklist; the packet records the resulting evidence. Add a conditional section heading only when its trigger fires — leave it out otherwise instead of pasting a blank heading.
+Use the same template for every work type. Pre-edit discovery (rulebook read, mutation/credential/state/TDD-applicability checks) stays in the distinct `build-plan-packet.md` stage; the Review Packet records its resulting evidence. Omit conditional headings and metadata when their triggers do not apply, rather than leaving blanks. This changes neither source reuse/revision nor Draft publication timing.
 
 ### Default sections
 
+- **Metadata** — The default rows apply to every packet. Add `ADR needed?` for a non-trivial design choice or required ADR assessment; add `Blocks` / `Blocked by` for delivery dependencies. Docs-only, tests-only with no runtime safety impact, typo/lint, and dependency-only work with no API/runtime impact need none of these three rows when no such decision/dependency applies.
 - **Reviewer Lift** — Copy every row unchanged; fill it per `reviewer-lift-schema.md`, which owns field order, gate, and Approval/Finish authority claim/source semantics. `../../start-review/REVIEW-FLOW.md` owns CI and authority decisions. Parent-owned mode follows `../reference/parent-owned-gate.md`; the child records only the ownership contract and candidate.
 - **Finding bindings** — Use `none` until a Review Report finding is in flight. Otherwise copy each originating `(Report locator, Reviewed commit, Finding ID)` exactly from the report and validate before publication or ready transition.
 - **Authority sources** — Record where each approval/finish claim came from. Do not write builder-local interpretation as authority; the reviewer/parent verifies provenance through the `forge` common guard.
-- **Safety / State / External Delta** — One line per surface; write `N/A — <reason>` when untouched. Name each applicable invariant from [SAFETY.md §Non-negotiables](../SAFETY.md#non-negotiables) and how the change preserves it, the state/persistence/migration surfaces touched (with migration numbers and smoke plan), and the external-system/credential delta.
+- **Acceptance Criteria Evidence / Test Evidence** — Bind each claim to sufficient evidence, not just an example. For source-proof or other risk-relevant claims, name the invariant, establishing proof, and missing/ambiguous/stale/incomplete evidence that requires unknown, plus affected consumers/checks. Behavior-touching work retains native RED/GREEN or honest N/A/restriction evidence and regression evidence per [SAFETY.md](../SAFETY.md#behavior-touching-refactors). A not-run check is not a passing slice.
+- **Safety Confirmation or Safety / State / External Delta** — Use a one-line **Safety Confirmation** only when evidence establishes no change to any listed mutation/credential/domain/state/migration/deploy/enforce surface. Otherwise retain the three-surface delta: applicable safety invariants and preservation evidence, state/persistence/migration impact (migration numbers and smoke plan), and external-system/credential impact. Mark an uninvestigated or unproven surface `unknown — <missing proof and affected decision>`; omission never establishes `none`. Expand the triggered detail sections below when one line cannot carry the evidence.
+- **Reviewer Focus / Open Questions** — Their Lift rows are always required. Add separate sections only for detail that does not fit those rows; simple work does not repeat them.
+
+Early Draft pending values are stage-local and cannot satisfy before-ready proof.
+Every packet retains the schema's `Gate owner`, `exact-candidate-local` coverage,
+bound rationale, exact command and applicable result. Parent pre-publication uses
+the [ownership contract](../reference/parent-owned-gate.md#ownership-contract),
+`Local gate: not-run — parent-owned; <cmd>` and rationale
+`result: not-run — parent-owned`. After publication, bind `Local gate` to `PASS`,
+the command and exactly one labelled `Gate Receipt: <locator>` pointer; the
+rationale ends `result: PASS — Gate Receipt: <same locator>`. Builder `PASS`
+likewise needs an exact-candidate
+[builder receipt](../reference/gate-receipt.md#builder-owned-gate-receipt) and
+native binding/readback, not parent-only post-note validation. Receipt-independent
+`lift-only` checks presence, not these proofs. Preserve `PASS`, `FAIL`, `N/A` or
+`not-run` plus exact command per the schema; gate `N/A` requires no runnable gate,
+not merely TDD nonapplicability. Docs/config/mechanical RED/GREEN may be
+`N/A with rationale — <why>` without erasing gate or check-restriction evidence.
 
 ### Conditional sections
 
-Add the heading only when its trigger applies; the template lists the four most common triggers in a comment so blank headings do not appear in every change request.
+Add the heading only when its trigger applies; the template lists these headings in a comment so blank sections do not appear in every change request.
 
 - **Architecture / Design Decisions** — a non-trivial design choice or required ADR: decision, alternatives, why this shape won, trade-offs, ADR link.
 - **Diff Summary** — a large or spread diff: diffstat and per-file map.
@@ -36,6 +55,7 @@ Add the heading only when its trigger applies; the template lists the four most 
 - **State, Persistence, and Migration Impact** — migration numbers, smoke-test plan, rollout notes.
 - **Manual / Operational Evidence** — a dry-run, runbook check, or read-only operator command worth quoting. Never paste secrets.
 - **Reviewer Hints** — files/tests to inspect first. Courtesy, not instruction.
+- **Reviewer Focus / Open Questions** — supporting detail beyond the required Lift rows; keep stable OQ-N identities.
 
 ## builder-final-handoff.md
 
@@ -43,17 +63,6 @@ Add the heading only when its trigger applies; the template lists the four most 
 - Validate canonical Lift presence with `../scripts/validate-gate-receipt.mjs --mode lift-only` (relative to this file, run per the [helper rule](../../forge/SKILL.md#helpers)); verify native locator/artifact bindings independently.
 - Never include secrets, raw private payloads, or unredacted logs. Use synthetic URLs/SHAs in examples.
 - Recover absent/malformed handoffs from the bound change request and durable Review Packet; prose is a locator hint, not verified evidence.
-
-## review-packet-compact.md
-
-- Eligible for docs-only, tests-only with no runtime safety impact, typo/lint, or dependency bump with no API/runtime impact; anything else uses `review-packet.md`.
-- The compact template is a delta: it carries the full Reviewer Lift generated copy plus the sections that differ, and `review-packet.md` owns the rest.
-- Its Reviewer Lift table is an approved generated copy of `reviewer-lift-schema.md`; keep every field name/order. Use `N/A`/`none` only where that schema permits them. Docs/config/mechanical work may use RED/GREEN `N/A with rationale — <why>` without erasing real gate evidence.
-- Both compact and full packets record `Gate owner: builder` or `parent`, `Gate coverage: exact-candidate-local`, and `Gate coverage rationale` as `Policy <ref>; command <cmd>; candidate <sha>; coverage exact-candidate-local; result: <bound result>` per the [canonical schema](reviewer-lift-schema.md#required-fields).
-- Parent pre-publication uses the [ownership contract](../reference/parent-owned-gate.md#ownership-contract), `Local gate: not-run — parent-owned; <cmd>` and rationale `result: not-run — parent-owned`. After publication, rebind `Local gate` to `PASS` plus the exact command and exactly one labelled opaque `Gate Receipt: <locator>` pointer; the rationale ends with `result: PASS — Gate Receipt: <same locator>`.
-- Builder `PASS` likewise requires an exact-candidate [builder receipt](../reference/gate-receipt.md#builder-owned-gate-receipt), the bound rationale and native artifact/readback verification, not parent-only post-note validation. Receipt-independent `lift-only` checks presence, not those proofs.
-- Preserve the schema's `Local gate` forms (`PASS`, `FAIL`, `N/A`, `not-run` plus exact command) and their rationale requirements; `N/A` requires no runnable local gate, not merely TDD nonapplicability. An all-N/A compact gate block is not valid.
-- **Safety Confirmation** — replaces the full packet's three-surface delta. Any surface that did change makes the work compact-ineligible.
 
 ## revision-packet.md
 

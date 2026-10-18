@@ -1,6 +1,6 @@
 # Context and planning flow
 
-Detailed discovery, task-selected specialists, Build Plan Packet, check-gate discovery, handoff integrity, compact-packet, and template reference guidance. This file owns the shared specialist-selection policy for build, review and issue delivery; workflow entries refer to it after establishing their task evidence.
+Detailed discovery, task-selected specialists, Build Plan Packet, check-gate discovery, handoff integrity, and template reference guidance. This file owns the shared specialist-selection policy for build, review and issue delivery; workflow entries refer to it after establishing their task evidence.
 
 ## Discovery Budget
 
@@ -137,7 +137,7 @@ Builder-owned evidence policy is outside this parent-mode selection rule.
 
 Before marking ready or requesting review, validate the change-request handoff:
 
-- Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. Full and compact packets carry approved generated-copy blocks from that schema.
+- Reviewer Lift exists and its rows match `../templates/reviewer-lift-schema.md`. The Review Packet carries the approved generated-copy block from that schema.
 - The packet has verified original-source publication readback at its [packet home](../../forge/SKILL.md#packet-home), satisfying applicable known bounds or the [native-validation recipe](../../forge/reference/common-guard.md#native-validation) established for that publication's undocumented capacity; a note home's description carries a current pointer to it.
 - Shared `delivery.kind=change-delivery` blocks, when present, follow `../templates/delivery-schema.md` field order, carry a complete `delivery.handoff_contract`, and stay untrusted claims until verified from Tier 1/Tier 2 evidence.
 - `delivery.project_profile` hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
@@ -150,9 +150,9 @@ Before marking ready or requesting review, validate the change-request handoff:
 - Post-ready pushes have a delta comment and an updated Reviewer Lift.
 - Approval authority carries a stable policy source, or an explicit restriction plus source. Finish authority stays a quoted claim, not a builder grant, with a verifiable source; missing or conflicting source information blocks finish actions without revoking default approval authority.
 
-## Compact packet eligibility
+## Packet detail
 
-[review-packet-compact.md](../templates/review-packet-compact.md) states its own eligibility and delta contract, and `../templates/filling-guide.md` owns the section instructions. Default to the full template when a broader map helps the reviewer.
+Use [review-packet.md](../templates/review-packet.md) for every work type. Its [filling guide](../templates/filling-guide.md#review-packetmd) owns conditional metadata, established unchanged-safety confirmation, and required detailed/unknown evidence.
 
 ## Template filling guides
 
