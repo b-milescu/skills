@@ -22,14 +22,17 @@ string or `none`; whether a mutation ran; selected provider/transport evidence;
 and the post-read classification. Binding failure, stale head, missing or stale
 Gate Receipt, missing authority, unsupported commit binding, a packet over a
 known applicable [packet home](../SKILL.md#packet-home) limit, or failed post-read
-blocks without transport fallback. CI status never blocks the guard. A `held`
-result (native protection, including a provider's required checks, holds the
-mutation) is reported without bypass; once the hold clears, the retry is a new
-`forge act` that re-runs every step from the first, and nothing from the held
-attempt carries over. A required-check hold is waited out within the
-[required-check wait budget](../../start-build/reference/parent-orchestrator.md#required-check-wait-budget);
-a failed check or an elapsed budget leaves the change blocked with the provider
-outcome.
+blocks without transport fallback. CI status never blocks the guard.
+
+A `held` result means native protection, including a provider's required checks,
+prevented the mutation. Report it without bypass. For pending required checks,
+follow the mandatory
+[wait contract](../../start-build/reference/parent-orchestrator.md#required-check-wait-budget).
+Once the hold clears, the retry is a new `forge act`: restart every ordered phase
+from the first; no guard result carries over, including head, authenticated actor
+or action-grant validation. Deny an ineligible mutation rather than resuming at
+the write step. A held merge ran no mutation, so its guarded retry remains the
+one authorized finish action.
 
 The target's confirmed integration reference validates native identifiers and
 locators; shared callers and validators preserve opaque values and verified scope.

@@ -75,11 +75,9 @@ Default: fan out every provably decoupled subset.
    `missing-authority` with no grant).
    A provider's required checks are native merge protection: they may hold or refuse
    the guarded merge, a provider outcome reported without bypass and never an eligibility
-   decision or an authorization. On a hold from pending required checks, the finisher
-   waits on the check-completion signal the target's provider reference names, within
-   the [required-check wait budget](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
-   then re-runs the full guarded `forge act` from its first guard; a failed check or
-   an elapsed budget leaves the change blocked with the provider outcome.
+   decision or an authorization. On a pending-required-check hold, the finisher must
+   follow the [wait contract](../start-build/reference/parent-orchestrator.md#required-check-wait-budget),
+   then restart the [Mutation Guard from its first phase](../forge/reference/common-guard.md#result-contract).
    The parent owns the finish when `Finish owner: parent`. Every mutation uses one `forge act` and provider-native post-read.
    Immediately before that finish, use fresh `forge snapshot` evidence to re-read
    the allocated work item and require it to remain open. Verify that the current

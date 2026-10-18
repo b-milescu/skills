@@ -128,7 +128,7 @@ per-branch invariant, not a one-time batch preflight:
 7. **Enforce candidate and gate guards.** Before approval or finish, use `forge snapshot` and require the current head to equal the reviewed commit and the exact-candidate local Gate Receipt to be valid. CI state never changes eligibility.
 8. **Finish authority.** Finish authority says which action may be attempted; finish owner says who performs it. Under the literal `Finish owner: parent` contract, reviewers publish only Review Report verdict/evidence and return without waiting for parent action evidence; the parent/authorized finisher verifies provenance and passes the `forge` common guard before one `forge act`, then requires provider-native readback.
    The verified grant selects the finish ([Default finish](../../start-review/REVIEW-FLOW.md#default-finish)): `queue auto-merge` queues only where the target's provider reference guarantees exact-head queueing; `reviewer may merge`, or a verified project default naming direct merge for the finisher, merges directly, bound to the reviewed head. A project default applies only when it is the value quoted in the Lift's `Finish authority`, and an explicit grant takes precedence over it: an explicit `queue auto-merge` grant never authorizes a direct merge, even beside a standing direct-merge default, so return `sha-bound-action-unsupported` where exact-head queueing is not guaranteed (`missing-authority` when no grant exists).
-   CI status never changes the verdict, review, approval, authority or finish eligibility, and the finisher never reads CI status to decide eligibility. A provider's required checks are native merge protection: they may hold or refuse the guarded merge, a provider outcome reported without bypass and never an eligibility decision or an authorization. On a hold from pending required checks, wait on the check-completion signal the target's provider reference names, within the [required-check wait budget](#required-check-wait-budget), then re-run the full guarded `forge act` from its first guard; the earlier refusal is never reused. A failed check or an elapsed budget leaves the change blocked with the provider outcome.
+   CI status never changes the verdict, review, approval, authority or finish eligibility, and the finisher never reads CI status to decide eligibility. A provider's required checks are native merge protection: they may hold or refuse the guarded merge, a provider outcome reported without bypass and never an eligibility decision or an authorization. On a pending-required-check hold, the finisher must follow the [wait contract](#required-check-wait-budget), then restart the [Mutation Guard from its first phase](../../forge/reference/common-guard.md#result-contract).
    Absent verified authority, stop at the most permissive authorized action. Builders and parent-managed reviewers never mint or exercise that authority. Native provider protection may refuse the mutation; report it and never bypass it. That finisher owns native post-read and any required compact action explanation, which next actors verify per [Post-report action evidence](../../start-review/REVIEW-FLOW.md#post-report-action-evidence). The historical Review Report stays immutable; a changed head routes new-head review rather than rebinding its judgment or findings.
    For unblock reconciliation, read the invoked target's confirmed tracker policy/reference, resolving repo-relative references from its confirmed root. Reconcile a dependent issue's `Blocked by` / `Dependencies` text only when that policy authorizes the particular blocker-closure transition, under the existing `forge` guards and native readback. A conventional path, observed closure or finish authority alone grants no dependent-body edit. Without that authority, skip reconciliation while preserving independently authorized finish/readback. Missing/stale/conflicting tracker bindings follow existing setup/owner-choice handling, not inherited policy, auto-running setup or creating absent setup docs.
 9. **Verify after finish.** Follow [Post-merge verifier recipe](post-merge-verifier.md) with `forge post_merge_snapshot` for result/default containment, advisory result-commit CI, linked-item closure, source-ref cleanup/retention, and pending evidence.
@@ -141,9 +141,8 @@ returns as soon as the expected child message, handoff, or signal arrives.
 
 - Builder or parent-owned gate running: wait at least 300 seconds.
 - Reviewer running: wait at least 120 seconds.
-- Direct merge held by pending required checks: wait at least 300 seconds on the
-  check-completion signal the target's provider reference names, repeating at that
-  floor within the [required-check wait budget](#required-check-wait-budget).
+- Direct merge held by pending required checks: follow the
+  [required-check wait contract](#required-check-wait-budget).
 - Short acknowledgements only: the tool default.
 
 Each wait names the expected sender, handoff, or signal. After an empty wait, wait
@@ -160,13 +159,18 @@ finish eligibility, and the finisher never reads CI status to decide eligibility
   unless the target's provider reference sets a different bound.
 - **Owner:** the finisher: the parent under `Finish owner: parent`, otherwise the
   finishing reviewer or authorized actor.
+- **Signal:** use the check-completion signal named by the target's confirmed
+  provider reference; resolve missing mechanics through forge's
+  [operation-time recipes](../../forge/SKILL.md#operation-time-recipes).
+- **Cadence:** use event-driven waits of at least 300 seconds, returning as soon
+  as the signal arrives; repeat at that floor within the same budget.
 - **Completion:** only the checks completing ends the wait. A wait signal that ends
   without that (a required check not yet registered or reported on the head) is not
   completion: keep waiting at the wait floor within the same budget.
-- **Outcome:** when the checks pass, re-run the full guarded `forge act` from its
-  first guard ([step 8](#parent-loop)); the earlier refusal is never reused. A
-  failed check, or an elapsed budget, leaves the change blocked and reported with
-  the provider outcome.
+- **Outcome:** when the checks pass, follow the
+  [held-result restart](../../forge/reference/common-guard.md#result-contract).
+  A failed check, or an elapsed budget, leaves the change blocked and reported
+  with the provider outcome.
 
 ## Reviewer launch timing
 
