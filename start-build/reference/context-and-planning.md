@@ -12,8 +12,7 @@ If required implementation facts remain missing after that budget, stop, write t
 
 Match investigation to observed risk and blast radius. Use one analysis pass
 when the approach is settled; fan out design analysis only for genuinely wide
-solution spaces, and verification only when distinct risks need it. Compact
-packet eligibility remains owned by its template, not a change label.
+solution spaces, and verification only when distinct risks need it.
 
 Gather shared builder-side facts once and reuse the evidence digest when
 delegating. Independent reviewers still re-derive their own evidence; builder
