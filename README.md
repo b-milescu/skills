@@ -113,10 +113,6 @@ Start a fresh runtime session after installation or route/frontmatter updates.
 isolated installation/discovery/lifecycle proof; discovery metadata alone does
 not prove live model routing or authentication.
 
-This bundle's former `retro` skill is now `delivery-retro`; update direct
-invocations. There is no old-name alias here, and unrelated plugins' generic
-`retro` skills remain unchanged.
-
 ## License
 
 Released under the [MIT license](LICENSE).
