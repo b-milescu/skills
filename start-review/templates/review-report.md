@@ -8,7 +8,7 @@ target's confirmed integration reference owns native approval and finish mechani
 
 ## Decision Summary
 
-Fill and reconcile this first-screen summary. This is the immutable pre-action judgment; record intended or no-action state only. `Reviewed commit` and `Findings summary` are machine-read: each holds one bare value with no trailing prose, so the reviewed commit must equal the current provider commit at decision time and every finding must appear by ID. Commentary belongs in a neighbouring cell or the report body.
+Author `Review verdict`, `Finish owner`, `Approval action`, `Finish action`, `Action blocker` and `Next action` only in this first-screen summary. This is the immutable pre-action judgment; record intended or no-action state only. `Reviewed commit` and `Findings summary` are machine-read: each holds one bare value with no trailing prose, so the reviewed commit must equal the current provider commit at decision time and every finding must appear by ID. Commentary belongs in a neighbouring cell or the report body.
 
 | Field | Value |
 |---|---|
@@ -30,6 +30,8 @@ Fill and reconcile this first-screen summary. This is the immutable pre-action j
 | Finish owner | `<parent for parent-managed dev-flow; otherwise reviewer / authorized actor / N/A>` |
 | Next action | `<finish-by-authorized-actor / revise / human-escalation / rerun-review / fix-blocker>` |
 | Report link | `<this durable comment; final locates it by native note ID>` |
+
+For `request-changes`, record approval `not-approved`, finish `none`, action blocker `none` and next action `revise`. For a parent-managed pass, record finish owner `parent`, approval `not-approved`, finish `none` and next action `finish-by-authorized-actor`; return the [two-line locator handoff](reviewer-final-handoff.md) without acting or waiting.
 
 ## Context / Snapshot
 
@@ -175,18 +177,12 @@ execution ran, state `Not run — <rationale>`.
 
 ## Action / Blocker
 
-Required. Fill and reconcile these values per [Publication and actions](../REVIEW-FLOW.md#publication-and-actions). The full enums are defined once in the [Decision Summary](#decision-summary), including `Action blocker`; record only the chosen values here. For a `request-changes` verdict, record `Approval action: not-approved`, `Finish action: none`, `Action blocker: none`, and `Next action: revise`. Use `other` only for a blocker no listed token names, and add a one-line reason in this section.
+Required even when a valid judgment cannot authorize finish. Record bound-target and authority verification details per [Publication and actions](../REVIEW-FLOW.md#publication-and-actions); author the six choices only in [Decision Summary](#decision-summary). Use `other` only for a blocker no listed token names, and add a one-line reason in this section.
 
 | Field | Value |
 |---|---|
-| Review verdict | `<chosen value>` |
 | Bound change request target | `<bound change request URL; bound repository path; bound repo URL>` |
 | Authority result | `<approval policy/source + finish authority/source summary>` |
-| Finish owner | `<chosen value; parent-managed pass uses Finish owner: parent>` |
-| Approval action | `<chosen value>` |
-| Finish action | `<chosen value>` |
-| Action blocker | `<chosen value>` |
-| Next action | `<chosen value>` |
 | Post-report action evidence | `Later actor-owned notes backlink here; discover and verify through native notes/discussions per the action-evidence contract below. Parent-owned reviewer no-action requires no extra note.` |
 
 Later outcomes belong to [Post-report action evidence](../REVIEW-FLOW.md#post-report-action-evidence), not this report. The authorized actor publishes any required explanation with this report's stable identity, published locator, and exact reviewed commit. The next actor discovers and verifies that backlink through native notes/discussions; this report does not predict a future URL.
