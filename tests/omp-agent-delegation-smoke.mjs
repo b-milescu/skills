@@ -350,6 +350,11 @@ try {
           blockedDiscovery.add(request.url);
           return new Response('Native fixture denies discovery egress', { status: 403 });
         }
+        // Unsolicited local GETs receive no provider data and count as no execution evidence.
+        if (request.method === 'GET'
+          && (request.url === `${server.url.origin}/` || request.url === `http://localhost:${server.port}/`)) {
+          return new Response(null, { status: 404 });
+        }
         assert.equal(new URL(request.url).origin, server.url.origin, 'external provider/discovery request blocked');
         assert.equal(new URL(request.url).pathname, '/v1/chat/completions', 'unexpected fixture endpoint');
         assert.equal(request.method, 'POST');
