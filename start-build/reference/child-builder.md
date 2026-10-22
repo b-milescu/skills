@@ -8,6 +8,9 @@ The launch prompt's `Gate owner` line is the **sole binding source** of the gate
 
 The child builder implements one work item and opens/maintains one Draft change request, marking ready only after the local gate is green or explicitly N/A with rationale. The parent orchestrator owns the mandatory review gate and any approval, finish, source-ref cleanup, or post-merge verification allowed by policy; the child must not start a reviewer, approve, finish, clean source refs, or claim the review gate is complete unless explicitly delegated.
 
+For implementation or research helpers, follow
+[Bounded helper delegation](context-and-planning.md#bounded-helper-delegation).
+
 Project-profile hooks may specialize project policy but must preserve the [Safety floors](../SAFETY.md#safety-floors).
 
 Auxiliary project-index policy defaults to parent/coordinator ownership. Child worktrees treat index reports as read-only unless the project profile explicitly assigns index updates to the child, and child worktrees must not copy index artifacts between worktrees.

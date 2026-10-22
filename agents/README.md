@@ -104,6 +104,32 @@ Installation or selected-source metadata is not live execution proof: after a
 frontmatter or routing change, take a fresh spawning-session operator observation
 of the effective model/effort, and report unavailable or unauthorized execution.
 
+## OMP helper delegation
+
+Follow the shared
+[Bounded helper delegation](../start-build/reference/context-and-planning.md#bounded-helper-delegation)
+policy before dispatch. OMP's reusable presets and same-name project declarations
+set these ordered `spawns` allowlists:
+
+| Workflow child | `spawns` | Default when `agent` is omitted |
+| --- | --- | --- |
+| `change-builder` | `task, sonic, scout` | `task` |
+| `change-reviewer-final` | `scout, reviewer, security-reviewer` | `scout` |
+
+The first allowlist entry is the native default; an explicit selector must be
+allowed. In OMP 18.12.6, a child declaration without `spawns` disables its nested
+delegation. These fields do not add a missing `task` tool: tool availability,
+spawn permission and selected-route provenance are separate facts.
+
+The unchanged native recursion default is two, counted from the root session:
+root at depth zero, workflow child at one, helper at two. A depth-two helper
+cannot spawn again, even when its own declaration has `spawns: "*"`. This
+repository changes no live recursion setting or bundled helper declaration.
+
+These are routing/depth restrictions, not security isolation. Omitted `tools`
+still inherits the parent's available tools; neither an allowlist nor a read-only
+assignment is a sandbox or an independent grant of provider-write authority.
+
 ## Durable child output
 
 Parent-readable handoffs must survive isolated-worktree cleanup. In OMP, do not
@@ -251,11 +277,35 @@ allocated/revision paths it uses isolated filesystem copies of native
 declarations, and labels that narrower proof. Project agent provenance and
 canonical installed-entry provenance are separate facts.
 
-No harness claim covers live model routing, native mutation, reviewer
-obedience or Claude execution. Routes inherit every tool of the parent session,
-so verify the tools actually available and the scoped read-only native identity
-from the real spawning session separately, and never patch an external runtime to
-manufacture proof.
+The loader smoke proves no nested execution, live model routing, native mutation,
+reviewer obedience or Claude execution. Routes inherit every tool of the parent
+session, so verify actual tools and scoped read-only native identity from the real
+spawning session separately, and never patch an external runtime to manufacture
+proof.
+
+### Native delegation smoke
+
+```sh
+OMP_REQUIRE_DELEGATION=1 bun tests/omp-agent-delegation-smoke.mjs
+```
+
+This separate top-level Bun test uses the installed `omp` client and a
+deterministic loopback OpenAI-compatible fixture, not an external provider. Fresh
+client processes exercise both installed presets and project overrides: each
+workflow route runs as a child, delegates to its default allowed helper, and
+must deliver native helper completion and results. It also checks that a
+builder's direct final-reviewer launch is refused before a reviewer session
+starts, and that a depth-two generic helper cannot spawn again despite wildcard
+permission.
+
+The fixture uses disposable HOME/config, native marketplace installation and
+isolated session artifacts, then cleans them up. It inherits no credentials or
+user configuration and does not edit the checkout or tracker. Client/version and
+native session/tool evidence establish only this isolated fixture's behavior,
+not real-provider model/effort, reviewer obedience or security isolation.
+Metadata and provider response echoes alone are not execution proof. Missing
+`omp` reports unavailable/N/A, never delegation PASS;
+`OMP_REQUIRE_DELEGATION=1` makes the missing prerequisite fail.
 
 Native installation and lifecycle commands live in [README](../README.md#install-on-a-new-machine);
 [Check Gate](../docs/agents/check-gate.md#native-install-smoke-requirement)
