@@ -49,6 +49,34 @@ may need distinct specialists. Docs-only work selects applicable authoring or
 review guidance for the actor; a task with no optional match proceeds under the
 workflow rules. These are examples, not a language-to-skill mapping.
 
+### Bounded helper delegation
+
+When the effective native route permits delegation, use helpers only for bounded
+parts of the assigned work item. Before dispatch, supply the relevant acceptance
+criteria, constraints, result contract and the supplied absolute worktree path
+verbatim. Assign non-overlapping editing scopes and keep one caller responsible
+for integration; read-only scopes may overlap.
+
+The caller integrates helper output and verifies its claims against source and
+observed evidence. A helper's completion message is not proof of correctness,
+executed checks, or provider publication.
+
+Reviewer helpers are read-only and follow the review Context Firewall: they must
+not have built, planned, revised or parent-orchestrated the change. The final
+reviewer independently verifies findings and owns its judgment and Review Report.
+A helper review is not the mandatory independent final review; child builders
+still cannot launch that review.
+
+Delegation does not reassign gate, ready, mandatory review, approval, finish,
+cleanup or publication ownership. Helpers receive no independent provider-write
+authority. Pass the caller's authority boundaries and development-check
+restrictions into every helper assignment; delegation cannot bypass a prohibited
+check or turn a parent gate into child-executed RED/GREEN evidence. Follow
+[Development-check conflicts](#development-check-conflicts) when proof is blocked.
+
+Native tool availability, route permissions, depth and discovery mechanics belong
+to the active runtime reference, not this shared policy.
+
 ## Development-check conflicts
 
 On every initial or revision entry, before planning or edits, reconcile explicit

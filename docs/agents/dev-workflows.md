@@ -127,6 +127,10 @@ independently invoked allocated/revision checkouts; discovery, accessible
 entries, preload execution and effective model/effort are separate proofs.
 Missing observations remain evidence limits, never inferred PASS.
 
+Nested helper execution has a separate
+[native delegation smoke](../../agents/README.md#native-delegation-smoke); the
+prompt-free loader above does not prove it.
+
 | Project-profile field | Declaration location for this repo |
 | --- | --- |
 | `profile_id` / `profile_path` | `agents-skills` / `docs/agents/dev-workflows.md#project-profile-hooks`. |

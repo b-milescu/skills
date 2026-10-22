@@ -19,6 +19,9 @@ memory are claims or maps, not evidence. If inherited reasoning cannot be
 separated from independent judgment, return `blocked`,
 `human-decision-needed`, and `rerun-review` from a fresh context.
 
+Before delegating read-only analysis, follow
+[Bounded helper delegation](../start-build/reference/context-and-planning.md#bounded-helper-delegation).
+
 ## Review Context Capsule
 
 Record each claim, its independent reviewer verification, and its Tier 1 or
